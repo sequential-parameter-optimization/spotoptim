@@ -1,5 +1,5 @@
 import pytest
-from optspeed.utils.dummy import dummy_prog
+from spotoptim.utils.dummy import dummy_prog
 
 def test_dummy_output(capsys):
     # Test for printing numbers from 1 to 8

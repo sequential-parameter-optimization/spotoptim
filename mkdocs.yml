@@ -1,7 +1,7 @@
-site_name: optspeed
-site_description: optspeed is a Python package for simulating parking lots.
-site_url: https://github.com/sequential-parameter-optimization/optspeed
-repo_url: https://github.com/sequential-parameter-optimization/optspeed/tree/main
+site_name: spotoptim
+site_description: spotoptim is a Python package for simulating parking lots.
+site_url: https://github.com/sequential-parameter-optimization/spotoptim
+repo_url: https://github.com/sequential-parameter-optimization/spotoptim/tree/main
 
 # Copyright
 copyright: Copyright &copy; 2004 - 2024
@@ -52,7 +52,7 @@ plugins:
     - search:
     - exclude:
         glob:
-        - src/optspeed/_version.py
+        - src/spotoptim/_version.py
     - gen-files:
         scripts:
         - docs/gen_ref_pages.py
@@ -73,7 +73,7 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 use_directory_urls: true
 watch:
-- src/optspeed
+- src/spotoptim
 extra:
   social:
     - icon: fontawesome/brands/twitter

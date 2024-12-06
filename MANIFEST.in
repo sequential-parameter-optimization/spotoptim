@@ -1,6 +1,6 @@
-include src/optspeed/data/*.csv
-include src/optspeed/data/*.json
-include src/optspeed/data/*.pkl
+include src/spotoptim/data/*.csv
+include src/spotoptim/data/*.json
+include src/spotoptim/data/*.pkl
 
 prune docs
 prune Figures.d
