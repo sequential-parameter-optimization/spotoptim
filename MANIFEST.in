@@ -1,0 +1,9 @@
+include src/optspeed/data/*.csv
+include src/optspeed/data/*.json
+include src/optspeed/data/*.pkl
+
+prune docs
+prune Figures.d
+prune notebooks
+prune runs
+prune runs_OLD

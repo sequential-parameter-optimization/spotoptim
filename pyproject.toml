@@ -1,0 +1,71 @@
+[build-system]
+requires = [
+  "setuptools>=75.6.0",
+  "setuptools_scm[toml]"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "optspeed"
+authors = [
+  { name = "T. Bartz-Beielstein", email = "tbb@bartzundbartz.de" }
+]
+description = "optspeed - a Python package for optimization of speedlines"
+readme = "README.md"
+license = { text = "AGPL-3.0-or-later" }
+requires-python = ">=3.11"
+classifiers = [
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "build",
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "plotly",
+  "PyQt6",
+  "scikit-learn",
+  "scipy",
+  "seaborn",
+  "tabulate",
+]
+
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+  "mkdocs",
+  "mkdocs-gen-files",
+  "mkdocs-literate-nav",
+  "mkdocs-section-index",
+  "mkdocs-material",
+  "mkdocs-exclude",
+  "mkdocstrings",
+  "mkdocstrings-python",
+  "nbformat",
+  "python-markdown-math",
+]
+
+[project.urls]
+"Homepage" = "https://www.spotseven.de"
+"Issues" = "https://github.com/sequential-parameter-optimization/optspeed/issues"
+"Repository" = "https://github.com/sequential-parameter-optimization/optspeed"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+namespaces = true
+where = ["src"]
+
+[tool.black]
+line-length = 200
+target-version = ["py312"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
