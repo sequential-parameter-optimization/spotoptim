@@ -1,6 +1,6 @@
 
 def dummy_prog(n: int) -> None:
-    """Prints numbers from 1 to n
+    """Prints numbers from 1 to n. Used for pytest testing.
     
     Args:
         n (int): The upper limit of the range to print numbers (inclusive)
