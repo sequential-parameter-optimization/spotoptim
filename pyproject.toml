@@ -70,6 +70,3 @@ target-version = ["py312"]
 addopts = [
     "--import-mode=importlib",
 ]
-
-# [tool.setuptools.dynamic]
-# version = {attr = "spotoptim.__version__"}  # any module attribute compatible with ast.literal_eval
