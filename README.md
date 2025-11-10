@@ -90,6 +90,7 @@ result = optimizer.optimize()
 
 **Methods:**
 - `optimize(X0=None)`: Run optimization, optionally with initial design points
+- `plot_surrogate(i=0, j=1, show=True, **kwargs)`: Visualize the fitted surrogate model
 
 ### Kriging
 
@@ -105,12 +106,36 @@ result = optimizer.optimize()
 - `fit(X, y)`: Fit the model to training data
 - `predict(X, return_std=False)`: Predict at new points
 
+## Visualizing Results
+
+SpotOptim includes a `plot_surrogate()` method to visualize the fitted surrogate model:
+
+```python
+# After running optimization
+optimizer.plot_surrogate(
+    i=0, j=1,                    # Dimensions to plot
+    var_name=['x1', 'x2'],       # Variable names
+    add_points=True,             # Show evaluated points
+    cmap='viridis',              # Colormap
+    show=True
+)
+```
+
+The plot shows:
+- **Top left**: 3D surface of predictions
+- **Top right**: 3D surface of prediction uncertainty
+- **Bottom left**: Contour plot of predictions with evaluated points
+- **Bottom right**: Contour plot of prediction uncertainty
+
+For higher-dimensional problems, the method visualizes a 2D slice by fixing other dimensions at their mean values.
+
 ## Examples
 
 See the `notebooks/demos.ipynb` for comprehensive examples including:
 1. 2D Rosenbrock function optimization
 2. 6D Rosenbrock with budget constraints
 3. Using Kriging surrogate vs default GP
+4. Visualizing surrogate models with `plot_surrogate()`
 
 ## Development
 

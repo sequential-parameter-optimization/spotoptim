@@ -6,6 +6,8 @@ from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
 import warnings
+import matplotlib.pyplot as plt
+from numpy import linspace, meshgrid
 
 
 class SpotOptim(BaseEstimator):
@@ -380,3 +382,189 @@ class SpotOptim(BaseEstimator):
             X=self.X_,
             y=self.y_,
         )
+
+    def plot_surrogate(
+        self,
+        i: int = 0,
+        j: int = 1,
+        show: bool = True,
+        alpha: float = 0.8,
+        var_name: Optional[List[str]] = None,
+        cmap: str = "jet",
+        num: int = 100,
+        vmin: Optional[float] = None,
+        vmax: Optional[float] = None,
+        add_points: bool = True,
+        grid_visible: bool = True,
+        contour_levels: int = 30,
+        figsize: Tuple[int, int] = (12, 10),
+    ) -> None:
+        """
+        Plot the surrogate model for two dimensions.
+
+        Creates a 2x2 plot showing:
+        - Top left: 3D surface of predictions
+        - Top right: 3D surface of prediction uncertainty
+        - Bottom left: Contour plot of predictions with evaluated points
+        - Bottom right: Contour plot of prediction uncertainty
+
+        Parameters
+        ----------
+        i : int, default=0
+            Index of the first dimension to plot.
+        j : int, default=1
+            Index of the second dimension to plot.
+        show : bool, default=True
+            If True, displays the plot immediately.
+        alpha : float, default=0.8
+            Transparency of the 3D surface plots (0=transparent, 1=opaque).
+        var_name : list of str, optional
+            Names for each dimension. If None, uses generic labels.
+        cmap : str, default='jet'
+            Matplotlib colormap name.
+        num : int, default=100
+            Number of grid points per dimension for mesh grid.
+        vmin : float, optional
+            Minimum value for color scale. If None, determined from data.
+        vmax : float, optional
+            Maximum value for color scale. If None, determined from data.
+        add_points : bool, default=True
+            If True, overlay evaluated points on contour plots.
+        grid_visible : bool, default=True
+            If True, show grid lines on contour plots.
+        contour_levels : int, default=30
+            Number of contour levels.
+        figsize : tuple of int, default=(12, 10)
+            Figure size in inches (width, height).
+
+        Raises
+        ------
+        ValueError
+            If optimization hasn't been run yet, or if i, j are invalid.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from spotoptim import SpotOptim
+        >>> def sphere(X):
+        ...     return np.sum(X**2, axis=1)
+        >>> opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], 
+        ...                 max_iter=10, n_initial=5)
+        >>> result = opt.optimize()
+        >>> opt.plot_surrogate(i=0, j=1, var_name=['x1', 'x2'])
+        """
+        # Validation
+        if self.X_ is None or self.y_ is None:
+            raise ValueError(
+                "No optimization data available. Run optimize() first."
+            )
+
+        k = self.n_dim
+        if i >= k or j >= k:
+            raise ValueError(
+                f"Dimensions i={i} and j={j} must be less than n_dim={k}."
+            )
+        if i == j:
+            raise ValueError("Dimensions i and j must be different.")
+
+        # Generate mesh grid
+        X_i, X_j, grid_points = self._generate_mesh_grid(i, j, num)
+
+        # Predict on grid
+        y_pred, y_std = self.surrogate.predict(grid_points, return_std=True)
+        Z_pred = y_pred.reshape(X_i.shape)
+        Z_std = y_std.reshape(X_i.shape)
+
+        # Create figure
+        fig = plt.figure(figsize=figsize)
+
+        # Plot 1: 3D surface of predictions
+        ax1 = fig.add_subplot(221, projection="3d")
+        ax1.plot_surface(X_i, X_j, Z_pred, cmap=cmap, alpha=alpha, vmin=vmin, vmax=vmax)
+        ax1.set_title("Prediction Surface")
+        ax1.set_xlabel(var_name[i] if var_name else f"x{i}")
+        ax1.set_ylabel(var_name[j] if var_name else f"x{j}")
+        ax1.set_zlabel("Prediction")
+
+        # Plot 2: 3D surface of prediction uncertainty
+        ax2 = fig.add_subplot(222, projection="3d")
+        ax2.plot_surface(X_i, X_j, Z_std, cmap=cmap, alpha=alpha)
+        ax2.set_title("Prediction Uncertainty Surface")
+        ax2.set_xlabel(var_name[i] if var_name else f"x{i}")
+        ax2.set_ylabel(var_name[j] if var_name else f"x{j}")
+        ax2.set_zlabel("Std. Dev.")
+
+        # Plot 3: Contour of predictions
+        ax3 = fig.add_subplot(223)
+        contour3 = ax3.contourf(
+            X_i, X_j, Z_pred, levels=contour_levels, cmap=cmap, vmin=vmin, vmax=vmax
+        )
+        plt.colorbar(contour3, ax=ax3)
+        if add_points:
+            ax3.scatter(self.X_[:, i], self.X_[:, j], c='red', s=30, 
+                       edgecolors='black', zorder=5, label='Evaluated points')
+            ax3.legend()
+        ax3.set_title("Prediction Contour")
+        ax3.set_xlabel(var_name[i] if var_name else f"x{i}")
+        ax3.set_ylabel(var_name[j] if var_name else f"x{j}")
+        ax3.grid(visible=grid_visible)
+
+        # Plot 4: Contour of prediction uncertainty
+        ax4 = fig.add_subplot(224)
+        contour4 = ax4.contourf(X_i, X_j, Z_std, levels=contour_levels, cmap=cmap)
+        plt.colorbar(contour4, ax=ax4)
+        if add_points:
+            ax4.scatter(self.X_[:, i], self.X_[:, j], c='red', s=30,
+                       edgecolors='black', zorder=5, label='Evaluated points')
+            ax4.legend()
+        ax4.set_title("Uncertainty Contour")
+        ax4.set_xlabel(var_name[i] if var_name else f"x{i}")
+        ax4.set_ylabel(var_name[j] if var_name else f"x{j}")
+        ax4.grid(visible=grid_visible)
+
+        plt.tight_layout()
+
+        if show:
+            plt.show()
+
+    def _generate_mesh_grid(
+        self, i: int, j: int, num: int = 100
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Generate a mesh grid for two dimensions, filling others with mean values.
+
+        Parameters
+        ----------
+        i : int
+            Index of the first dimension to vary.
+        j : int
+            Index of the second dimension to vary.
+        num : int, default=100
+            Number of grid points per dimension.
+
+        Returns
+        -------
+        X_i : ndarray
+            Meshgrid for dimension i.
+        X_j : ndarray
+            Meshgrid for dimension j.
+        grid_points : ndarray of shape (num*num, n_dim)
+            Grid points for prediction.
+        """
+        k = self.n_dim
+        mean_values = self.X_.mean(axis=0)
+
+        # Create grid for dimensions i and j
+        x_i = linspace(self.lower[i], self.upper[i], num=num)
+        x_j = linspace(self.lower[j], self.upper[j], num=num)
+        X_i, X_j = meshgrid(x_i, x_j)
+
+        # Initialize grid points with mean values
+        grid_points = np.tile(mean_values, (X_i.size, 1))
+        grid_points[:, i] = X_i.ravel()
+        grid_points[:, j] = X_j.ravel()
+
+        # Apply type constraints
+        grid_points = self._repair_non_numeric(grid_points, self.var_type)
+
+        return X_i, X_j, grid_points
