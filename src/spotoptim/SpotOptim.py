@@ -1,10 +1,10 @@
 import numpy as np
 from typing import Callable, Optional, Tuple, List
 from scipy.optimize import OptimizeResult, differential_evolution
+from scipy.stats.qmc import LatinHypercube
 from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
-from spotpython.design.spacefilling import SpaceFilling
 import warnings
 
 
@@ -72,14 +72,22 @@ class SpotOptim(BaseEstimator):
         surrogate: Optional[object] = None,
         acquisition: str = "ei",
         var_type: Optional[list] = None,
-        tolerance_x: float = 1e-6,
+        tolerance_x: Optional[float] = None,
         seed: Optional[int] = None,
         verbose: bool = False,
         warnings_filter: str = "ignore",
     ):
 
         warnings.filterwarnings(warnings_filter)
+    
+        # small value, converted to float
+        self.eps = np.sqrt(np.spacing(1))
 
+        if tolerance_x is None:
+            self.tolerance_x = self.eps
+        else:
+            self.tolerance_x = tolerance_x
+    
         self.fun = fun
         self.bounds = bounds
         self.max_iter = max_iter
@@ -87,7 +95,6 @@ class SpotOptim(BaseEstimator):
         self.surrogate = surrogate
         self.acquisition = acquisition
         self.var_type = var_type
-        self.tolerance_x = tolerance_x
         self.seed = seed
         self.verbose = verbose
 
@@ -113,7 +120,7 @@ class SpotOptim(BaseEstimator):
             )
 
         # Design generator
-        self.design = SpaceFilling(k=self.n_dim, seed=self.seed)
+        self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
 
         # Storage for results
         self.X_ = None
@@ -139,17 +146,22 @@ class SpotOptim(BaseEstimator):
         return y
 
     def _generate_initial_design(self) -> np.ndarray:
-        """Generate initial space-filling design."""
-        X0 = self.design.scipy_lhd(
-            n=self.n_initial, repeats=1, lower=self.lower, upper=self.upper
-        )
+        """Generate initial space-filling design using Latin Hypercube Sampling."""
+        # Generate samples in [0, 1]^d
+        X0_unit = self.lhs_sampler.random(n=self.n_initial)
+
+        # Scale to [lower, upper]
+        X0 = self.lower + X0_unit * (self.upper - self.lower)
+
         return self._repair_non_numeric(X0, self.var_type)
 
     def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data."""
         self.surrogate.fit(X, y)
 
-    def _select_new(self, A: np.ndarray, X: np.ndarray, tolerance: float = 0) -> Tuple[np.ndarray, np.ndarray]:
+    def _select_new(
+        self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Select rows from A that are not in X.
 
@@ -278,9 +290,9 @@ class SpotOptim(BaseEstimator):
             # If too close, generate random point
             if self.verbose:
                 print("Proposed point too close, generating random point")
-            x_next = self.design.scipy_lhd(
-                n=1, repeats=1, lower=self.lower, upper=self.upper
-            )[0]
+            # Generate a random point using LHS
+            x_next_unit = self.lhs_sampler.random(n=1)[0]
+            x_next = self.lower + x_next_unit * (self.upper - self.lower)
 
         return self._repair_non_numeric(x_next.reshape(1, -1), self.var_type)[0]
 

@@ -1,6 +1,6 @@
 [project]
 name = "spotoptim"
-version = "0.0.3"
+version = "0.0.4"
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -8,12 +8,9 @@ authors = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "fastapi>=0.121.1",
     "numpy>=1.24.3",
     "scipy>=1.10.1",
-    "uvicorn>=0.22.0",
-    "scikit-learn",
-    "spotpython"
+    "scikit-learn>=1.3.0",
 ]
 
 [dependency-groups]
