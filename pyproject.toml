@@ -1,0 +1,21 @@
+[project]
+name = "spotoptim"
+version = "0.0.2"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "bartzbeielstein", email = "32470350+bartzbeielstein@users.noreply.github.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.121.1",
+    "numpy>=1.24.3",
+    "scipy>=1.10.1",
+    "uvicorn>=0.22.0",
+    "scikit-learn",
+    "spotpython"
+]
+
+[build-system]
+requires = ["uv_build>=0.9.8,<0.10.0"]
+build-backend = "uv_build"
