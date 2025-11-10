@@ -1,12 +1,11 @@
 import numpy as np
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, List
 from scipy.optimize import OptimizeResult, differential_evolution
 from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
 from spotpython.design.spacefilling import SpaceFilling
-from spotpython.utils.repair import repair_non_numeric
-from spotpython.utils.compare import selectNew
+import warnings
 
 
 class SpotOptim(BaseEstimator):
@@ -35,6 +34,7 @@ class SpotOptim(BaseEstimator):
         Random seed for reproducibility.
     verbose : bool, default=False
         Print progress information.
+    warnings_filter : str, default="ignore". Filter for warnings. One of "error", "ignore", "always", "all", "default", "module", or "once".
 
     Attributes
     ----------
@@ -48,6 +48,8 @@ class SpotOptim(BaseEstimator):
         Best function value found.
     n_iter_ : int
         Number of iterations performed.
+    warnings_filter : str
+        Filter for warnings during optimization.
 
     Examples
     --------
@@ -73,7 +75,11 @@ class SpotOptim(BaseEstimator):
         tolerance_x: float = 1e-6,
         seed: Optional[int] = None,
         verbose: bool = False,
+        warnings_filter: str = "ignore",
     ):
+
+        warnings.filterwarnings(warnings_filter)
+
         self.fun = fun
         self.bounds = bounds
         self.max_iter = max_iter
@@ -137,11 +143,56 @@ class SpotOptim(BaseEstimator):
         X0 = self.design.scipy_lhd(
             n=self.n_initial, repeats=1, lower=self.lower, upper=self.upper
         )
-        return repair_non_numeric(X0, self.var_type)
+        return self._repair_non_numeric(X0, self.var_type)
 
     def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data."""
         self.surrogate.fit(X, y)
+
+    def _select_new(self, A: np.ndarray, X: np.ndarray, tolerance: float = 0) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Select rows from A that are not in X.
+
+        Parameters
+        ----------
+        A : ndarray
+            Array with new values.
+        X : ndarray
+            Array with known values.
+        tolerance : float, default=0
+            Tolerance value for comparison.
+
+        Returns
+        -------
+        ndarray
+            Array with unknown (new) values.
+        ndarray
+            Array with True if value is new, otherwise False.
+        """
+        B = np.abs(A[:, None] - X)
+        ind = np.any(np.all(B <= tolerance, axis=2), axis=1)
+        return A[~ind], ~ind
+
+    def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
+        """
+        Round non-numeric values to integers.
+        This applies to all variables except for "num" and "float".
+
+        Parameters
+        ----------
+        X : ndarray
+            X array.
+        var_type : list of str
+            List with type information.
+
+        Returns
+        -------
+        ndarray
+            X array with non-numeric values rounded to integers.
+        """
+        mask = np.isin(var_type, ["num", "float"], invert=True)
+        X[:, mask] = np.around(X[:, mask])
+        return X
 
     def _acquisition_function(self, x: np.ndarray) -> float:
         """
@@ -221,7 +272,7 @@ class SpotOptim(BaseEstimator):
 
         # Ensure minimum distance to existing points
         x_next_2d = x_next.reshape(1, -1)
-        x_new, _ = selectNew(A=x_next_2d, X=self.X_, tolerance=self.tolerance_x)
+        x_new, _ = self._select_new(A=x_next_2d, X=self.X_, tolerance=self.tolerance_x)
 
         if x_new.shape[0] == 0:
             # If too close, generate random point
@@ -231,7 +282,7 @@ class SpotOptim(BaseEstimator):
                 n=1, repeats=1, lower=self.lower, upper=self.upper
             )[0]
 
-        return repair_non_numeric(x_next.reshape(1, -1), self.var_type)[0]
+        return self._repair_non_numeric(x_next.reshape(1, -1), self.var_type)[0]
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
         """
@@ -259,7 +310,7 @@ class SpotOptim(BaseEstimator):
             X0 = self._generate_initial_design()
         else:
             X0 = np.atleast_2d(X0)
-            X0 = repair_non_numeric(X0, self.var_type)
+            X0 = self._repair_non_numeric(X0, self.var_type)
 
         # Evaluate initial design
         y0 = self._evaluate_function(X0)
