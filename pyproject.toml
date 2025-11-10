@@ -1,0 +1,14 @@
+[project]
+name = "spotoptim"
+version = "0.0.1"
+description = "spotoptim: A tool for sequential parameter optimization."
+readme = "README.md"
+authors = [
+    { name = "bartzbeielstein", email = "32470350+bartzbeielstein@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.9.8,<0.10.0"]
+build-backend = "uv_build"
