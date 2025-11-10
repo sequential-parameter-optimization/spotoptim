@@ -79,7 +79,7 @@ class SpotOptim(BaseEstimator):
     ):
 
         warnings.filterwarnings(warnings_filter)
-    
+
         # small value, converted to float
         self.eps = np.sqrt(np.spacing(1))
 
@@ -87,7 +87,7 @@ class SpotOptim(BaseEstimator):
             self.tolerance_x = self.eps
         else:
             self.tolerance_x = tolerance_x
-    
+
         self.fun = fun
         self.bounds = bounds
         self.max_iter = max_iter

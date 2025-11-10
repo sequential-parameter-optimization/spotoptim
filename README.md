@@ -1,0 +1,138 @@
+# SpotOptim
+
+Sequential Parameter Optimization with Bayesian Optimization.
+
+## Features
+
+- **Bayesian Optimization**: Uses surrogate models to efficiently optimize expensive black-box functions
+- **Multiple Acquisition Functions**: Expected Improvement (EI), Predicted Mean (y), Probability of Improvement (PI)
+- **Flexible Surrogates**: Default Gaussian Process or custom Kriging surrogate
+- **Variable Types**: Support for continuous, integer, and mixed variable types
+- **scipy-compatible**: Returns OptimizeResult objects compatible with scipy.optimize
+
+## Installation
+
+```bash
+pip install spotoptim
+```
+
+## Quick Start
+
+```python
+import numpy as np
+from spotoptim import SpotOptim
+
+# Define objective function
+def rosenbrock(X):
+    X = np.atleast_2d(X)
+    x, y = X[:, 0], X[:, 1]
+    return (1 - x)**2 + 100 * (y - x**2)**2
+
+# Set up optimization
+bounds = [(-2, 2), (-2, 2)]
+
+optimizer = SpotOptim(
+    fun=rosenbrock,
+    bounds=bounds,
+    max_iter=50,
+    n_initial=10,
+    seed=42
+)
+
+# Run optimization
+result = optimizer.optimize()
+
+print(f"Best point: {result.x}")
+print(f"Best value: {result.fun}")
+```
+
+## Using Kriging Surrogate
+
+SpotOptim includes a simplified Kriging (Gaussian Process) surrogate as an alternative to scikit-learn's GaussianProcessRegressor:
+
+```python
+from spotoptim import SpotOptim, Kriging
+
+# Create Kriging surrogate
+kriging = Kriging(
+    noise=1e-6,
+    min_theta=-3.0,
+    max_theta=2.0,
+    seed=42
+)
+
+# Use with SpotOptim
+optimizer = SpotOptim(
+    fun=rosenbrock,
+    bounds=bounds,
+    surrogate=kriging,  # Use Kriging instead of default GP
+    seed=42
+)
+
+result = optimizer.optimize()
+```
+
+## API Reference
+
+### SpotOptim
+
+**Parameters:**
+- `fun` (callable): Objective function to minimize
+- `bounds` (list of tuples): Bounds for each dimension as [(low, high), ...]
+- `max_iter` (int, default=20): Maximum number of optimization iterations
+- `n_initial` (int, default=10): Number of initial design points
+- `surrogate` (object, optional): Surrogate model (default: GaussianProcessRegressor)
+- `acquisition` (str, default='ei'): Acquisition function ('ei', 'y', 'pi')
+- `var_type` (list of str, optional): Variable types for each dimension
+- `tolerance_x` (float, optional): Minimum distance between points
+- `seed` (int, optional): Random seed for reproducibility
+- `verbose` (bool, default=False): Print progress information
+
+**Methods:**
+- `optimize(X0=None)`: Run optimization, optionally with initial design points
+
+### Kriging
+
+**Parameters:**
+- `noise` (float, optional): Regularization parameter
+- `kernel` (str, default='gauss'): Kernel type
+- `n_theta` (int, optional): Number of theta parameters
+- `min_theta` (float, default=-3.0): Minimum log10(theta) bound
+- `max_theta` (float, default=2.0): Maximum log10(theta) bound
+- `seed` (int, optional): Random seed
+
+**Methods:**
+- `fit(X, y)`: Fit the model to training data
+- `predict(X, return_std=False)`: Predict at new points
+
+## Examples
+
+See the `notebooks/demos.ipynb` for comprehensive examples including:
+1. 2D Rosenbrock function optimization
+2. 6D Rosenbrock with budget constraints
+3. Using Kriging surrogate vs default GP
+
+## Development
+
+```bash
+# Clone repository
+git clone https://github.com/sequential-parameter-optimization/spotoptim.git
+cd spotoptim
+
+# Install with uv
+uv pip install -e .
+
+# Run tests
+uv run pytest tests/
+
+# Build package
+uv build
+```
+
+## License
+
+See LICENSE file.
+
+## References
+
+Based on the SPOT (Sequential Parameter Optimization Toolbox) methodology.
