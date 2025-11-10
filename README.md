@@ -87,10 +87,44 @@ result = optimizer.optimize()
 - `tolerance_x` (float, optional): Minimum distance between points
 - `seed` (int, optional): Random seed for reproducibility
 - `verbose` (bool, default=False): Print progress information
+- `max_surrogate_points` (int, optional): Maximum number of points for surrogate fitting (default: None, use all points)
+- `selection_method` (str, default='distant'): Point selection method ('distant' or 'best')
 
 **Methods:**
 - `optimize(X0=None)`: Run optimization, optionally with initial design points
 - `plot_surrogate(i=0, j=1, show=True, **kwargs)`: Visualize the fitted surrogate model
+
+## Point Selection for Surrogate Training
+
+When optimizing expensive functions with many iterations, the number of evaluated points can become large, making surrogate model training computationally expensive. SpotOptim implements an automatic point selection mechanism to address this:
+
+### Usage
+
+```python
+optimizer = SpotOptim(
+    fun=expensive_function,
+    bounds=bounds,
+    max_iter=100,
+    n_initial=20,
+    max_surrogate_points=50,  # Use only 50 points for surrogate training
+    selection_method='distant',  # or 'best'
+    verbose=True
+)
+```
+
+### Selection Methods
+
+1. **'distant' (default)**: Uses K-means clustering to select points that are maximally distant from each other, ensuring good space-filling properties.
+
+2. **'best'**: Clusters points and selects all points from the cluster with the best (lowest) mean objective function value, focusing on promising regions.
+
+### Benefits
+
+- **Reduced computational cost**: Surrogate training scales with the number of points
+- **Maintained accuracy**: Carefully selected points preserve model quality
+- **Scalability**: Enables optimization with hundreds or thousands of function evaluations
+
+See `examples/point_selection_example.py` for a complete demonstration.
 
 ### Kriging
 
@@ -131,11 +165,31 @@ For higher-dimensional problems, the method visualizes a 2D slice by fixing othe
 
 ## Examples
 
-See the `notebooks/demos.ipynb` for comprehensive examples including:
+### Notebooks
+
+See `notebooks/demos.ipynb` for interactive examples:
 1. 2D Rosenbrock function optimization
 2. 6D Rosenbrock with budget constraints
 3. Using Kriging surrogate vs default GP
 4. Visualizing surrogate models with `plot_surrogate()`
+
+### Real-World Applications
+
+The `examples/` directory contains detailed tutorials:
+
+**Aircraft Wing Weight Optimization (AWWE)**
+- `awwe.qmd` - Comprehensive Quarto tutorial teaching surrogate-based optimization
+- `awwe_optimization.py` - Standalone Python script demonstrating complete workflow
+- 9-dimensional optimization problem from engineering design
+- Includes homework exercise for 10-dimensional extension
+
+Run the example:
+```bash
+cd examples
+python awwe_optimization.py
+```
+
+See `examples/README.md` for more details and additional examples.
 
 ## Development
 

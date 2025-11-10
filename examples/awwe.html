@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Optimizing Aircraft Wing Weight with SpotOptim</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="awwe_files/libs/clipboard/clipboard.min.js"></script>
+<script src="awwe_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="awwe_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="awwe_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="awwe_files/libs/quarto-html/popper.min.js"></script>
+<script src="awwe_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="awwe_files/libs/quarto-html/anchor.min.js"></script>
+<link href="awwe_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="awwe_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="awwe_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="awwe_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="awwe_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning Objectives</a></li>
+  <li><a href="#the-aircraft-wing-weight-problem" id="toc-the-aircraft-wing-weight-problem" class="nav-link" data-scroll-target="#the-aircraft-wing-weight-problem">The Aircraft Wing Weight Problem</a>
+  <ul class="collapse">
+  <li><a href="#design-parameters" id="toc-design-parameters" class="nav-link" data-scroll-target="#design-parameters">Design Parameters</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#step-1-import-required-packages" id="toc-step-1-import-required-packages" class="nav-link" data-scroll-target="#step-1-import-required-packages">Step 1: Import Required Packages</a></li>
+  <li><a href="#step-2-implement-the-objective-function" id="toc-step-2-implement-the-objective-function" class="nav-link" data-scroll-target="#step-2-implement-the-objective-function">Step 2: Implement the Objective Function</a></li>
+  <li><a href="#step-3-define-the-optimization-problem" id="toc-step-3-define-the-optimization-problem" class="nav-link" data-scroll-target="#step-3-define-the-optimization-problem">Step 3: Define the Optimization Problem</a></li>
+  <li><a href="#step-4-configure-spotoptim" id="toc-step-4-configure-spotoptim" class="nav-link" data-scroll-target="#step-4-configure-spotoptim">Step 4: Configure SpotOptim</a></li>
+  <li><a href="#step-5-run-the-optimization" id="toc-step-5-run-the-optimization" class="nav-link" data-scroll-target="#step-5-run-the-optimization">Step 5: Run the Optimization</a></li>
+  <li><a href="#step-6-analyze-the-results" id="toc-step-6-analyze-the-results" class="nav-link" data-scroll-target="#step-6-analyze-the-results">Step 6: Analyze the Results</a>
+  <ul class="collapse">
+  <li><a href="#optimal-configuration" id="toc-optimal-configuration" class="nav-link" data-scroll-target="#optimal-configuration">Optimal Configuration</a></li>
+  <li><a href="#optimization-progress" id="toc-optimization-progress" class="nav-link" data-scroll-target="#optimization-progress">Optimization Progress</a></li>
+  <li><a href="#key-insights" id="toc-key-insights" class="nav-link" data-scroll-target="#key-insights">Key Insights</a></li>
+  </ul></li>
+  <li><a href="#step-7-visualize-the-surrogate-model" id="toc-step-7-visualize-the-surrogate-model" class="nav-link" data-scroll-target="#step-7-visualize-the-surrogate-model">Step 7: Visualize the Surrogate Model</a>
+  <ul class="collapse">
+  <li><a href="#understanding-the-surrogate-plot" id="toc-understanding-the-surrogate-plot" class="nav-link" data-scroll-target="#understanding-the-surrogate-plot">Understanding the Surrogate Plot</a></li>
+  </ul></li>
+  <li><a href="#step-8-compare-surrogate-model-to-standard-optimization-from-scipy" id="toc-step-8-compare-surrogate-model-to-standard-optimization-from-scipy" class="nav-link" data-scroll-target="#step-8-compare-surrogate-model-to-standard-optimization-from-scipy">Step 8: Compare Surrogate Model to Standard Optimization from scipy</a></li>
+  <li><a href="#summary-and-key-takeaways" id="toc-summary-and-key-takeaways" class="nav-link" data-scroll-target="#summary-and-key-takeaways">Summary and Key Takeaways</a>
+  <ul class="collapse">
+  <li><a href="#what-we-learned" id="toc-what-we-learned" class="nav-link" data-scroll-target="#what-we-learned">What We Learned</a></li>
+  <li><a href="#optimization-results" id="toc-optimization-results" class="nav-link" data-scroll-target="#optimization-results">Optimization Results</a></li>
+  <li><a href="#why-surrogate-based-optimization" id="toc-why-surrogate-based-optimization" class="nav-link" data-scroll-target="#why-surrogate-based-optimization">Why Surrogate-Based Optimization?</a></li>
+  </ul></li>
+  <li><a href="#homework-exercise" id="toc-homework-exercise" class="nav-link" data-scroll-target="#homework-exercise">Homework Exercise</a>
+  <ul class="collapse">
+  <li><a href="#challenge-10-dimensional-problem-with-paint-weight" id="toc-challenge-10-dimensional-problem-with-paint-weight" class="nav-link" data-scroll-target="#challenge-10-dimensional-problem-with-paint-weight">Challenge: 10-Dimensional Problem with Paint Weight</a>
+  <ul class="collapse">
+  <li><a href="#tasks" id="toc-tasks" class="nav-link" data-scroll-target="#tasks">Tasks</a></li>
+  <li><a href="#hints" id="toc-hints" class="nav-link" data-scroll-target="#hints">Hints</a></li>
+  <li><a href="#bonus-challenges" id="toc-bonus-challenges" class="nav-link" data-scroll-target="#bonus-challenges">Bonus Challenges</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Optimizing Aircraft Wing Weight with SpotOptim</h1>
+<p class="subtitle lead">Surrogate-Based Optimization Tutorial</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>This tutorial demonstrates how to use <strong>SpotOptim</strong>, a surrogate-based Bayesian optimizer, to find the minimum weight configuration for an aircraft wing. We’ll work through the 9-dimensional Aircraft Wing Weight Example (AWWE) from <span class="citation" data-cites="Forr08a">@Forr08a</span>, showing all steps necessary for building a surrogate model and performing optimization.</p>
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning Objectives</h2>
+<p>By the end of this tutorial, you will understand:</p>
+<ol type="1">
+<li>How to formulate a real-world engineering problem for optimization</li>
+<li>How to set up and configure SpotOptim</li>
+<li>How surrogate models work in Bayesian optimization</li>
+<li>How to visualize optimization results</li>
+<li>How to interpret surrogate model predictions</li>
+</ol>
+</section>
+<section id="the-aircraft-wing-weight-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-aircraft-wing-weight-problem">The Aircraft Wing Weight Problem</h2>
+<p>We want to minimize the unpainted weight of a light aircraft wing as a function of nine design and operational parameters. The weight function is:</p>
+<p><span class="math display">\[ W = 0.036 S_W^{0.758} \times W_{fw}^{0.0035} \left( \frac{A}{\cos^2 \Lambda} \right)^{0.6} \times  q^{0.006}  \times \lambda^{0.04} \]</span> <span class="math display">\[ \times \left( \frac{100 R_{tc}}{\cos \Lambda} \right)^{-0.3} \times (N_z W_{dg})^{0.49}\]</span></p>
+<section id="design-parameters" class="level3">
+<h3 class="anchored" data-anchor-id="design-parameters">Design Parameters</h3>
+<p>The nine parameters with their bounds are:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Description</th>
+<th>Min</th>
+<th>Max</th>
+<th>Baseline</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(S_W\)</span></td>
+<td>Wing area (ft²)</td>
+<td>150</td>
+<td>200</td>
+<td>174</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(W_{fw}\)</span></td>
+<td>Fuel weight (lb)</td>
+<td>220</td>
+<td>300</td>
+<td>252</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(A\)</span></td>
+<td>Aspect ratio</td>
+<td>6</td>
+<td>10</td>
+<td>7.52</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\Lambda\)</span></td>
+<td>Quarter-chord sweep (deg)</td>
+<td>-10</td>
+<td>10</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(q\)</span></td>
+<td>Dynamic pressure (lb/ft²)</td>
+<td>16</td>
+<td>45</td>
+<td>34</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\lambda\)</span></td>
+<td>Taper ratio</td>
+<td>0.5</td>
+<td>1</td>
+<td>0.672</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(R_{tc}\)</span></td>
+<td>Airfoil thickness to chord</td>
+<td>0.08</td>
+<td>0.18</td>
+<td>0.12</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(N_z\)</span></td>
+<td>Ultimate load factor</td>
+<td>2.5</td>
+<td>6</td>
+<td>3.8</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(W_{dg}\)</span></td>
+<td>Design gross weight (lb)</td>
+<td>1700</td>
+<td>2500</td>
+<td>2000</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="step-1-import-required-packages" class="level1">
+<h1>Step 1: Import Required Packages</h1>
+<div id="ea1ea644" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim, Kriging</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set random seed for reproducibility</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="step-2-implement-the-objective-function" class="level1">
+<h1>Step 2: Implement the Objective Function</h1>
+<p>The objective function must: 1. Accept a 2D numpy array of shape <code>(n_samples, n_features)</code> 2. Return a 1D array of objective values 3. Map from the problem bounds to the natural scale</p>
+<div id="499e84a7" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> wingwt(X):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">    Aircraft Wing Weight function.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">    X : ndarray of shape (n_samples, 9)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">        Input parameters in their natural scales:</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">        [Sw, Wfw, A, Lambda, q, lambda, Rtc, Nz, Wdg]</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">    -------</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">    W : ndarray of shape (n_samples,)</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">        Wing weight in pounds</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.atleast_2d(X)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Extract parameters (already on natural scale)</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    Sw <span class="op">=</span> X[:, <span class="dv">0</span>]      <span class="co"># Wing area</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    Wfw <span class="op">=</span> X[:, <span class="dv">1</span>]     <span class="co"># Fuel weight</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    A <span class="op">=</span> X[:, <span class="dv">2</span>]       <span class="co"># Aspect ratio</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    Lambda <span class="op">=</span> X[:, <span class="dv">3</span>]  <span class="co"># Quarter-chord sweep (degrees)</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    q <span class="op">=</span> X[:, <span class="dv">4</span>]       <span class="co"># Dynamic pressure</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    lam <span class="op">=</span> X[:, <span class="dv">5</span>]     <span class="co"># Taper ratio (lambda)</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    Rtc <span class="op">=</span> X[:, <span class="dv">6</span>]     <span class="co"># Thickness to chord ratio</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    Nz <span class="op">=</span> X[:, <span class="dv">7</span>]      <span class="co"># Load factor</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    Wdg <span class="op">=</span> X[:, <span class="dv">8</span>]     <span class="co"># Design gross weight</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert sweep angle to radians</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    Lambda_rad <span class="op">=</span> Lambda <span class="op">*</span> np.pi <span class="op">/</span> <span class="dv">180</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate wing weight using the formula</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    W <span class="op">=</span> <span class="fl">0.036</span> <span class="op">*</span> Sw<span class="op">**</span><span class="fl">0.758</span> <span class="op">*</span> Wfw<span class="op">**</span><span class="fl">0.0035</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    W <span class="op">*=</span> (A <span class="op">/</span> np.cos(Lambda_rad)<span class="op">**</span><span class="dv">2</span>)<span class="op">**</span><span class="fl">0.6</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    W <span class="op">*=</span> q<span class="op">**</span><span class="fl">0.006</span> <span class="op">*</span> lam<span class="op">**</span><span class="fl">0.04</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    W <span class="op">*=</span> (<span class="dv">100</span> <span class="op">*</span> Rtc <span class="op">/</span> np.cos(Lambda_rad))<span class="op">**</span>(<span class="op">-</span><span class="fl">0.3</span>)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    W <span class="op">*=</span> (Nz <span class="op">*</span> Wdg)<span class="op">**</span><span class="fl">0.49</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> W</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Let’s verify the function works with the baseline values:</p>
+<div id="d01ac646" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Baseline configuration</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>baseline <span class="op">=</span> np.array([[<span class="dv">174</span>, <span class="dv">252</span>, <span class="fl">7.52</span>, <span class="dv">0</span>, <span class="dv">34</span>, <span class="fl">0.672</span>, <span class="fl">0.12</span>, <span class="fl">3.8</span>, <span class="dv">2000</span>]])</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>baseline_weight <span class="op">=</span> wingwt(baseline)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Baseline wing weight: </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Baseline wing weight: 233.83 lb</code></pre>
+</div>
+</div>
+</section>
+<section id="step-3-define-the-optimization-problem" class="level1">
+<h1>Step 3: Define the Optimization Problem</h1>
+<p>We need to specify the bounds for each parameter:</p>
+<div id="613bbb06" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define bounds: [(min, max), ...] for each of the 9 parameters</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>bounds <span class="op">=</span> [</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    (<span class="dv">150</span>, <span class="dv">200</span>),    <span class="co"># Sw: Wing area</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    (<span class="dv">220</span>, <span class="dv">300</span>),    <span class="co"># Wfw: Fuel weight</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    (<span class="dv">6</span>, <span class="dv">10</span>),       <span class="co"># A: Aspect ratio</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    (<span class="op">-</span><span class="dv">10</span>, <span class="dv">10</span>),     <span class="co"># Lambda: Quarter-chord sweep</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    (<span class="dv">16</span>, <span class="dv">45</span>),      <span class="co"># q: Dynamic pressure</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    (<span class="fl">0.5</span>, <span class="fl">1.0</span>),    <span class="co"># lambda: Taper ratio</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    (<span class="fl">0.08</span>, <span class="fl">0.18</span>),  <span class="co"># Rtc: Thickness to chord ratio</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    (<span class="fl">2.5</span>, <span class="fl">6.0</span>),    <span class="co"># Nz: Load factor</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    (<span class="dv">1700</span>, <span class="dv">2500</span>)   <span class="co"># Wdg: Design gross weight</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Variable names for plotting and interpretation</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>var_names <span class="op">=</span> [<span class="st">'Sw'</span>, <span class="st">'Wfw'</span>, <span class="st">'A'</span>, <span class="st">'Lambda'</span>, <span class="st">'q'</span>, <span class="st">'lambda'</span>, <span class="st">'Rtc'</span>, <span class="st">'Nz'</span>, <span class="st">'Wdg'</span>]</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Optimization problem: Minimize wing weight"</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of dimensions: </span><span class="sc">{</span><span class="bu">len</span>(bounds)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Search space volume: </span><span class="sc">{</span>np<span class="sc">.</span>prod([b[<span class="dv">1</span>] <span class="op">-</span> b[<span class="dv">0</span>] <span class="cf">for</span> b <span class="kw">in</span> bounds])<span class="sc">:.2e}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization problem: Minimize wing weight
+Number of dimensions: 9
+Search space volume: 1.30e+09</code></pre>
+</div>
+</div>
+</section>
+<section id="step-4-configure-spotoptim" class="level1">
+<h1>Step 4: Configure SpotOptim</h1>
+<p>SpotOptim uses Bayesian optimization with a surrogate model (Gaussian Process by default). Key configuration parameters:</p>
+<ul>
+<li><strong>n_initial</strong>: Number of initial random samples (exploration)</li>
+<li><strong>max_iter</strong>: Number of optimization iterations (exploitation)</li>
+<li><strong>acquisition</strong>: Strategy for selecting next point (‘ei’ = Expected Improvement)</li>
+<li><strong>surrogate</strong>: Model type (default GP or Kriging)</li>
+</ul>
+<div id="optimizer-setup" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create optimizer with default Gaussian Process surrogate</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process.kernels <span class="im">import</span> Matern, ConstantKernel</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Used a Matern kernel instead of the standard spotpython RBF kernel</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>kernel <span class="op">=</span> ConstantKernel(<span class="fl">1.0</span>, (<span class="fl">1e-2</span>, <span class="fl">1e12</span>)) <span class="op">*</span> Matern(length_scale<span class="op">=</span><span class="fl">1.0</span>, length_scale_bounds<span class="op">=</span>(<span class="fl">1e-4</span>, <span class="fl">1e2</span>), nu<span class="op">=</span><span class="fl">2.5</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>S_GP <span class="op">=</span> GaussianProcessRegressor(kernel<span class="op">=</span>kernel, n_restarts_optimizer<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> SpotOptim(</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>wingwt,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>bounds,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">9</span>,        <span class="co"># Initial space-filling design</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">100</span>,         <span class="co"># Sequential optimization iterations</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    acquisition<span class="op">=</span><span class="st">'y'</span>,    <span class="co"># Expected Improvement acquisition function</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span>,             <span class="co"># Reproducibility</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span>,         <span class="co"># Show progress</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    surrogate<span class="op">=</span>S_GP,    <span class="co"># Use custom GP surrogate from above</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    max_surrogate_points<span class="op">=</span><span class="va">None</span>  <span class="co"># Limit points used in surrogate training</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Optimizer Configuration:"</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Initial samples: </span><span class="sc">{</span>optimizer<span class="sc">.</span>n_initial<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Optimization iterations: </span><span class="sc">{</span>optimizer<span class="sc">.</span>max_iter<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Total function evaluations: </span><span class="sc">{</span>optimizer<span class="sc">.</span>n_initial <span class="op">+</span> optimizer<span class="sc">.</span>max_iter<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Acquisition function: </span><span class="sc">{</span>optimizer<span class="sc">.</span>acquisition<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Surrogate model: </span><span class="sc">{</span><span class="bu">type</span>(optimizer.surrogate)<span class="sc">.</span><span class="va">__name__</span><span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Optimizer Configuration:
+  Initial samples: 9
+  Optimization iterations: 100
+  Total function evaluations: 109
+  Acquisition function: y
+  Surrogate model: GaussianProcessRegressor</code></pre>
+</div>
+</div>
+</section>
+<section id="step-5-run-the-optimization" class="level1">
+<h1>Step 5: Run the Optimization</h1>
+<p>The optimization process consists of:</p>
+<ol type="1">
+<li><strong>Initial Design</strong>: Generate space-filling samples using Latin Hypercube Sampling</li>
+<li><strong>Sequential Loop</strong>: For each iteration:
+<ul>
+<li>Fit surrogate model to all evaluated points</li>
+<li>Use acquisition function to select next promising point</li>
+<li>Evaluate objective function at new point</li>
+<li>Update best solution if improved</li>
+</ul></li>
+</ol>
+<div id="run-optimization" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span> <span class="op">+</span> <span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"STARTING OPTIMIZATION"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"="</span><span class="op">*</span><span class="dv">70</span> <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer.optimize()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span> <span class="op">+</span> <span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"OPTIMIZATION COMPLETE"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+======================================================================
+STARTING OPTIMIZATION
+======================================================================
+
+Initial best: f(x) = 174.460235
+Iteration 1: f(x) = 181.922300
+Iteration 2: f(x) = 192.186666
+Iteration 3: New best f(x) = 170.527471
+Iteration 4: New best f(x) = 144.648119
+Iteration 5: f(x) = 184.198872
+Iteration 6: f(x) = 146.523409
+Iteration 7: f(x) = 145.421219
+Iteration 8: f(x) = 222.370522
+Iteration 9: New best f(x) = 142.986095
+Iteration 10: f(x) = 144.978746
+Iteration 11: f(x) = 333.211662
+Iteration 12: f(x) = 358.643007
+Iteration 13: f(x) = 237.643167
+Iteration 14: f(x) = 188.515182
+Iteration 15: f(x) = 239.037403
+Iteration 16: f(x) = 164.795607
+Iteration 17: f(x) = 224.799128
+Iteration 18: f(x) = 145.876665
+Iteration 19: f(x) = 144.781580
+Iteration 20: f(x) = 212.657930
+Iteration 21: f(x) = 224.770379
+Iteration 22: f(x) = 192.488239
+Iteration 23: f(x) = 241.495516
+Iteration 24: f(x) = 222.866808
+Iteration 25: f(x) = 143.114603
+Iteration 26: f(x) = 143.549571
+Iteration 27: f(x) = 220.546643
+Iteration 28: New best f(x) = 142.307196
+Iteration 29: f(x) = 146.590084
+Iteration 30: f(x) = 142.939167
+Iteration 31: New best f(x) = 142.259817
+Iteration 32: f(x) = 143.312884
+Iteration 33: f(x) = 142.677447
+Iteration 34: New best f(x) = 141.315296
+Iteration 35: f(x) = 141.807485
+Iteration 36: f(x) = 141.390497
+Iteration 37: f(x) = 141.862544
+Iteration 38: New best f(x) = 141.108375
+Iteration 39: f(x) = 141.120031
+Iteration 40: f(x) = 143.277357
+Iteration 41: f(x) = 142.296873
+Iteration 42: f(x) = 143.051627
+Iteration 43: f(x) = 173.375055
+Iteration 44: f(x) = 141.173146
+Iteration 45: f(x) = 144.756503
+Iteration 46: New best f(x) = 141.012000
+Iteration 47: New best f(x) = 140.943422
+Iteration 48: New best f(x) = 140.862612
+Iteration 49: f(x) = 141.061656
+Iteration 50: f(x) = 144.702058
+Iteration 51: New best f(x) = 140.788849
+Iteration 52: New best f(x) = 140.717728
+Iteration 53: f(x) = 142.411974
+Iteration 54: f(x) = 142.395203
+Iteration 55: f(x) = 147.435331
+Iteration 56: f(x) = 142.394074
+Iteration 57: f(x) = 142.397482
+Iteration 58: f(x) = 142.378688
+Iteration 59: New best f(x) = 140.647723
+Iteration 60: f(x) = 142.337239
+Iteration 61: f(x) = 142.316727
+Iteration 62: f(x) = 142.312873
+Iteration 63: f(x) = 142.373314
+Iteration 64: f(x) = 142.281431
+Iteration 65: f(x) = 142.278639
+Iteration 66: f(x) = 174.310698
+Iteration 67: f(x) = 142.258968
+Iteration 68: f(x) = 142.279883
+Iteration 69: f(x) = 142.242799
+Iteration 70: f(x) = 156.772493
+Iteration 71: f(x) = 144.383297
+Iteration 72: f(x) = 151.786972
+Iteration 73: f(x) = 145.166481
+Iteration 74: f(x) = 143.874277
+Iteration 75: f(x) = 144.635249
+Iteration 76: f(x) = 144.700159
+Iteration 77: f(x) = 144.853060
+Iteration 78: f(x) = 144.812599
+Iteration 79: f(x) = 173.659656
+Iteration 80: f(x) = 177.637613
+Iteration 81: f(x) = 147.320227
+Iteration 82: f(x) = 144.484737
+Iteration 83: f(x) = 160.643533
+Iteration 84: f(x) = 183.161287
+Iteration 85: f(x) = 150.848134
+Proposed point too close, generating random point
+Iteration 86: f(x) = 324.763735
+Iteration 87: f(x) = 193.696777
+Proposed point too close, generating random point
+Iteration 88: f(x) = 199.965001
+Iteration 89: f(x) = 197.804378
+Iteration 90: New best f(x) = 137.217262
+Iteration 91: New best f(x) = 136.840946
+Iteration 92: f(x) = 137.768302
+Iteration 93: New best f(x) = 131.561007
+Iteration 94: New best f(x) = 128.900818
+Iteration 95: f(x) = 129.239557
+Iteration 96: New best f(x) = 126.451958
+Iteration 97: New best f(x) = 125.958688
+Iteration 98: f(x) = 147.435331
+Iteration 99: New best f(x) = 121.293180
+Proposed point too close, generating random point
+Iteration 100: f(x) = 196.494538
+
+======================================================================
+OPTIMIZATION COMPLETE
+======================================================================</code></pre>
+</div>
+</div>
+</section>
+<section id="step-6-analyze-the-results" class="level1">
+<h1>Step 6: Analyze the Results</h1>
+<section id="optimal-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="optimal-configuration">Optimal Configuration</h2>
+<div id="results-summary" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Optimal Configuration Found:"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"-"</span> <span class="op">*</span> <span class="dv">50</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, (name, value) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(var_names, result.x)):</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    baseline_val <span class="op">=</span> baseline[<span class="dv">0</span>, i]</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    change <span class="op">=</span> ((value <span class="op">-</span> baseline_val) <span class="op">/</span> baseline_val) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:8s}</span><span class="ss"> = </span><span class="sc">{</span>value<span class="sc">:8.3f}</span><span class="ss">  (baseline: </span><span class="sc">{</span>baseline_val<span class="sc">:7.3f}</span><span class="ss">, change: </span><span class="sc">{</span>change<span class="sc">:+6.1f}</span><span class="ss">%)"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span> <span class="op">+</span> <span class="st">"="</span><span class="op">*</span><span class="dv">50</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Optimal wing weight: </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Baseline weight:     </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Weight reduction:    </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>] <span class="op">-</span> result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb (</span><span class="sc">{</span>((baseline_weight[<span class="dv">0</span>] <span class="op">-</span> result.fun)<span class="op">/</span>baseline_weight[<span class="dv">0</span>]<span class="op">*</span><span class="dv">100</span>)<span class="sc">:.1f}</span><span class="ss">%)"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total evaluations:   </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"="</span><span class="op">*</span><span class="dv">50</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Optimal Configuration Found:
+--------------------------------------------------
+Sw       =  150.000  (baseline: 174.000, change:  -13.8%)
+Wfw      =  300.000  (baseline: 252.000, change:  +19.0%)
+A        =    6.000  (baseline:   7.520, change:  -20.2%)
+Lambda   =   10.000  (baseline:   0.000, change:   +inf%)
+q        =   16.000  (baseline:  34.000, change:  -52.9%)
+lambda   =    0.500  (baseline:   0.672, change:  -25.6%)
+Rtc      =    0.180  (baseline:   0.120, change:  +50.0%)
+Nz       =    2.500  (baseline:   3.800, change:  -34.2%)
+Wdg      = 1700.000  (baseline: 2000.000, change:  -15.0%)
+
+==================================================
+Optimal wing weight: 121.29 lb
+Baseline weight:     233.83 lb
+Weight reduction:    112.54 lb (48.1%)
+Total evaluations:   109
+==================================================</code></pre>
+</div>
+</div>
+</section>
+<section id="optimization-progress" class="level2">
+<h2 class="anchored" data-anchor-id="optimization-progress">Optimization Progress</h2>
+<p>Let’s visualize how the optimizer found better solutions over time:</p>
+<div id="cell-optimization-progress" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">5</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: All evaluated points</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>ax1.scatter(<span class="bu">range</span>(<span class="bu">len</span>(optimizer.y_)), optimizer.y_, </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>           alpha<span class="op">=</span><span class="fl">0.6</span>, s<span class="op">=</span><span class="dv">50</span>, c<span class="op">=</span><span class="bu">range</span>(<span class="bu">len</span>(optimizer.y_)), </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>           cmap<span class="op">=</span><span class="st">'viridis'</span>, edgecolors<span class="op">=</span><span class="st">'black'</span>, linewidth<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>ax1.axhline(y<span class="op">=</span>result.fun, color<span class="op">=</span><span class="st">'r'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, </span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>           linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="ss">f'Best: </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb'</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>ax1.axhline(y<span class="op">=</span>baseline_weight[<span class="dv">0</span>], color<span class="op">=</span><span class="st">'g'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>           linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="ss">f'Baseline: </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss"> lb'</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>ax1.set_xlabel(<span class="st">'Evaluation Number'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>ax1.set_ylabel(<span class="st">'Wing Weight (lb)'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>ax1.set_title(<span class="st">'All Function Evaluations'</span>, fontsize<span class="op">=</span><span class="dv">14</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>ax1.legend(fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>ax1.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Best value found so far (convergence)</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>best_so_far <span class="op">=</span> np.minimum.accumulate(optimizer.y_)</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>ax2.plot(best_so_far, linewidth<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=</span><span class="st">'darkblue'</span>, label<span class="op">=</span><span class="st">'Best so far'</span>)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>ax2.axhline(y<span class="op">=</span>result.fun, color<span class="op">=</span><span class="st">'r'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, </span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>           linewidth<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, label<span class="op">=</span><span class="ss">f'Final best: </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb'</span>)</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>ax2.axhline(y<span class="op">=</span>baseline_weight[<span class="dv">0</span>], color<span class="op">=</span><span class="st">'g'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, </span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>           linewidth<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, label<span class="op">=</span><span class="ss">f'Baseline: </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss"> lb'</span>)</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>ax2.axvline(x<span class="op">=</span>optimizer.n_initial, color<span class="op">=</span><span class="st">'orange'</span>, linestyle<span class="op">=</span><span class="st">':'</span>, </span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>           linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'End of initial design'</span>)</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>ax2.fill_between(<span class="bu">range</span>(optimizer.n_initial), </span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>                 ax2.get_ylim()[<span class="dv">0</span>], ax2.get_ylim()[<span class="dv">1</span>], </span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>                 alpha<span class="op">=</span><span class="fl">0.2</span>, color<span class="op">=</span><span class="st">'orange'</span>, label<span class="op">=</span><span class="st">'Initial exploration'</span>)</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>ax2.set_xlabel(<span class="st">'Evaluation Number'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>ax2.set_ylabel(<span class="st">'Best Wing Weight (lb)'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>ax2.set_title(<span class="st">'Optimization Convergence'</span>, fontsize<span class="op">=</span><span class="dv">14</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>ax2.legend(fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>ax2.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="awwe_files/figure-html/optimization-progress-output-1.png" id="optimization-progress" width="1335" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="key-insights" class="level2">
+<h2 class="anchored" data-anchor-id="key-insights">Key Insights</h2>
+<div id="key-insights" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify which parameters changed the most</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>changes <span class="op">=</span> np.<span class="bu">abs</span>(result.x <span class="op">-</span> baseline[<span class="dv">0</span>])</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>relative_changes <span class="op">=</span> changes <span class="op">/</span> (np.array([b[<span class="dv">1</span>] <span class="op">-</span> b[<span class="dv">0</span>] <span class="cf">for</span> b <span class="kw">in</span> bounds]))</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>sorted_idx <span class="op">=</span> np.argsort(relative_changes)[::<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Parameters with Largest Changes (relative to search range):"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"-"</span> <span class="op">*</span> <span class="dv">60</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx <span class="kw">in</span> sorted_idx[:<span class="dv">5</span>]:</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> var_names[idx]</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    opt_val <span class="op">=</span> result.x[idx]</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    base_val <span class="op">=</span> baseline[<span class="dv">0</span>, idx]</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    range_pct <span class="op">=</span> relative_changes[idx] <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">:8s}</span><span class="ss">: </span><span class="sc">{</span>base_val<span class="sc">:7.3f}</span><span class="ss"> → </span><span class="sc">{</span>opt_val<span class="sc">:7.3f}</span><span class="ss">  (moved </span><span class="sc">{</span>range_pct<span class="sc">:5.1f}</span><span class="ss">% of range)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Parameters with Largest Changes (relative to search range):
+------------------------------------------------------------
+q       :  34.000 →  16.000  (moved  62.1% of range)
+Rtc     :   0.120 →   0.180  (moved  60.0% of range)
+Wfw     : 252.000 → 300.000  (moved  60.0% of range)
+Lambda  :   0.000 →  10.000  (moved  50.0% of range)
+Sw      : 174.000 → 150.000  (moved  48.0% of range)</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="step-7-visualize-the-surrogate-model" class="level1">
+<h1>Step 7: Visualize the Surrogate Model</h1>
+<p>The surrogate model captures the relationship between inputs and outputs. Let’s visualize it for the two most important parameters.</p>
+<div id="surrogate-visualization" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find the two parameters that changed the most</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>top_2_params <span class="op">=</span> sorted_idx[:<span class="dv">2</span>]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>i, j <span class="op">=</span> top_2_params[<span class="dv">0</span>], top_2_params[<span class="dv">1</span>]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Visualizing surrogate model for </span><span class="sc">{</span>var_names[i]<span class="sc">}</span><span class="ss"> (dim </span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">) vs </span><span class="sc">{</span>var_names[j]<span class="sc">}</span><span class="ss"> (dim </span><span class="sc">{</span>j<span class="sc">}</span><span class="ss">)"</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Other parameters fixed at their mean values from all evaluations."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Visualizing surrogate model for q (dim 4) vs Rtc (dim 6)
+Other parameters fixed at their mean values from all evaluations.</code></pre>
+</div>
+</div>
+<div id="f17fcfc3" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the surrogate visualization</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>optimizer.plot_surrogate(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    i<span class="op">=</span>i, </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    j<span class="op">=</span>j,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    var_name<span class="op">=</span>var_names,</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    add_points<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    cmap<span class="op">=</span><span class="st">'viridis'</span>,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    contour_levels<span class="op">=</span><span class="dv">25</span>,</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">12</span>)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="awwe_files/figure-html/cell-12-output-1.png" width="1309" height="1142" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="understanding-the-surrogate-plot" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-the-surrogate-plot">Understanding the Surrogate Plot</h2>
+<p>The four panels show:</p>
+<ol type="1">
+<li><strong>Top Left - Prediction Surface</strong>: The surrogate model’s belief about wing weight across the parameter space</li>
+<li><strong>Top Right - Uncertainty Surface</strong>: Model uncertainty (high where we haven’t explored)</li>
+<li><strong>Bottom Left - Prediction Contour</strong>: 2D view with evaluated points (red dots) overlaid</li>
+<li><strong>Bottom Right - Uncertainty Contour</strong>: Shows exploration strategy (uncertainty reduces near samples)</li>
+</ol>
+<p><strong>Key observations:</strong> - Red dots show where we evaluated the true function - Uncertainty is low near evaluated points (surrogate is confident) - Uncertainty is high in unexplored regions (surrogate needs more data) - The optimizer balances <strong>exploitation</strong> (searching near good points) and <strong>exploration</strong> (trying uncertain regions)</p>
+</section>
+</section>
+<section id="step-8-compare-surrogate-model-to-standard-optimization-from-scipy" class="level1">
+<h1>Step 8: Compare Surrogate Model to Standard Optimization from scipy</h1>
+<p>scipy offers various optimization algorithms. Let’s compare our surrogate-based approach to a standard gradient-based method like L-BFGS-B.</p>
+<div id="d7bb980d" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> minimize</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Track function evaluations during optimization</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>scipy_history <span class="op">=</span> []</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> wingwt_callback(X):</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Callback to track function values during scipy optimization."""</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.atleast_1d(X)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> X.ndim <span class="op">==</span> <span class="dv">1</span>:</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>        X <span class="op">=</span> X.reshape(<span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> wingwt(X)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    scipy_history.append(y[<span class="dv">0</span>] <span class="cf">if</span> <span class="bu">isinstance</span>(y, np.ndarray) <span class="cf">else</span> y)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Run L-BFGS-B optimization from baseline</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Running scipy L-BFGS-B optimization..."</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>res_scipy <span class="op">=</span> minimize(</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span><span class="kw">lambda</span> x: wingwt(x.reshape(<span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>))[<span class="dv">0</span>],  <span class="co"># Scalar return for scipy</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    x0<span class="op">=</span>baseline[<span class="dv">0</span>],</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    method<span class="op">=</span><span class="st">'L-BFGS-B'</span>,</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>bounds,</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    callback<span class="op">=</span>wingwt_callback,</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    options<span class="op">=</span>{<span class="st">'maxiter'</span>: <span class="dv">100</span>, <span class="st">'ftol'</span>: <span class="fl">1e-6</span>}</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">L-BFGS-B Results:"</span>)</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Final weight: </span><span class="sc">{</span>res_scipy<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Success: </span><span class="sc">{</span>res_scipy<span class="sc">.</span>success<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Function evaluations: </span><span class="sc">{</span>res_scipy<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  Message: </span><span class="sc">{</span>res_scipy<span class="sc">.</span>message<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running scipy L-BFGS-B optimization...
+
+L-BFGS-B Results:
+  Final weight: 119.50 lb
+  Success: True
+  Function evaluations: 520
+  Message: CONVERGENCE: NORM OF PROJECTED GRADIENT &lt;= PGTOL</code></pre>
+</div>
+</div>
+<p>Compare the convergence behavior of both methods:</p>
+<div id="fb02e487" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot optimization progress comparison</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>fig, (ax1, ax2) <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">14</span>, <span class="dv">5</span>))</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Function evaluations over iterations</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>ax1.plot(scipy_history, marker<span class="op">=</span><span class="st">'o'</span>, markersize<span class="op">=</span><span class="dv">4</span>, linewidth<span class="op">=</span><span class="dv">2</span>, </span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>         color<span class="op">=</span><span class="st">'darkred'</span>, label<span class="op">=</span><span class="st">'L-BFGS-B'</span>, alpha<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>ax1.plot(optimizer.y_, marker<span class="op">=</span><span class="st">'s'</span>, markersize<span class="op">=</span><span class="dv">4</span>, linewidth<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>         color<span class="op">=</span><span class="st">'darkblue'</span>, label<span class="op">=</span><span class="st">'SpotOptim'</span>, alpha<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>ax1.axhline(y<span class="op">=</span>baseline_weight[<span class="dv">0</span>], color<span class="op">=</span><span class="st">'green'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, </span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>            linewidth<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="st">'Baseline'</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>ax1.set_xlabel(<span class="st">'Evaluation Number'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>ax1.set_ylabel(<span class="st">'Wing Weight (lb)'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>ax1.set_title(<span class="st">'All Function Evaluations'</span>, fontsize<span class="op">=</span><span class="dv">14</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>ax1.legend(fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>ax1.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 2: Best value found so far (convergence)</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>scipy_best <span class="op">=</span> np.minimum.accumulate(scipy_history)</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>spotoptim_best <span class="op">=</span> np.minimum.accumulate(optimizer.y_)</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>ax2.plot(scipy_best, linewidth<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=</span><span class="st">'darkred'</span>, label<span class="op">=</span><span class="st">'L-BFGS-B'</span>)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>ax2.plot(spotoptim_best, linewidth<span class="op">=</span><span class="fl">2.5</span>, color<span class="op">=</span><span class="st">'darkblue'</span>, label<span class="op">=</span><span class="st">'SpotOptim'</span>)</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>ax2.axhline(y<span class="op">=</span>baseline_weight[<span class="dv">0</span>], color<span class="op">=</span><span class="st">'green'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, </span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>            linewidth<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.5</span>, label<span class="op">=</span><span class="st">'Baseline'</span>)</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>ax2.axvline(x<span class="op">=</span>optimizer.n_initial, color<span class="op">=</span><span class="st">'orange'</span>, linestyle<span class="op">=</span><span class="st">':'</span>, </span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>            linewidth<span class="op">=</span><span class="dv">2</span>, alpha<span class="op">=</span><span class="fl">0.7</span>, label<span class="op">=</span><span class="st">'SpotOptim initial phase end'</span>)</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>ax2.set_xlabel(<span class="st">'Evaluation Number'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>ax2.set_ylabel(<span class="st">'Best Wing Weight (lb)'</span>, fontsize<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>ax2.set_title(<span class="st">'Optimization Convergence Comparison'</span>, fontsize<span class="op">=</span><span class="dv">14</span>, fontweight<span class="op">=</span><span class="st">'bold'</span>)</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>ax2.legend(fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>ax2.grid(<span class="va">True</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="awwe_files/figure-html/cell-14-output-1.png" width="1335" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Analyze the comparison:</p>
+<div id="comparison-analysis" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span> <span class="op">+</span> <span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"COMPARISON: SpotOptim vs L-BFGS-B"</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="sc">{</span><span class="st">'Method'</span><span class="sc">:&lt;20s}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'Best Weight'</span><span class="sc">:&gt;12s}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'Evaluations'</span><span class="sc">:&gt;12s}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'Improvement'</span><span class="sc">:&gt;12s}</span><span class="ss">"</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"-"</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'Baseline'</span><span class="sc">:&lt;20s}</span><span class="ss"> </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>]<span class="sc">:&gt;12.2f}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'-'</span><span class="sc">:&gt;12s}</span><span class="ss"> </span><span class="sc">{</span><span class="st">'-'</span><span class="sc">:&gt;12s}</span><span class="ss">"</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'SpotOptim (BO)'</span><span class="sc">:&lt;20s}</span><span class="ss"> </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:&gt;12.2f}</span><span class="ss"> </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">:&gt;12d}</span><span class="ss"> </span><span class="sc">{</span>((baseline_weight[<span class="dv">0</span>]<span class="op">-</span>result.fun)<span class="op">/</span>baseline_weight[<span class="dv">0</span>]<span class="op">*</span><span class="dv">100</span>)<span class="sc">:&gt;11.1f}</span><span class="ss">%"</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'L-BFGS-B (Gradient)'</span><span class="sc">:&lt;20s}</span><span class="ss"> </span><span class="sc">{</span>res_scipy<span class="sc">.</span>fun<span class="sc">:&gt;12.2f}</span><span class="ss"> </span><span class="sc">{</span>res_scipy<span class="sc">.</span>nfev<span class="sc">:&gt;12d}</span><span class="ss"> </span><span class="sc">{</span>((baseline_weight[<span class="dv">0</span>]<span class="op">-</span>res_scipy.fun)<span class="op">/</span>baseline_weight[<span class="dv">0</span>]<span class="op">*</span><span class="dv">100</span>)<span class="sc">:&gt;11.1f}</span><span class="ss">%"</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Key Observations:"</span>)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  • L-BFGS-B found solution in </span><span class="sc">{</span>res_scipy<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss"> evaluations"</span>)</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  • SpotOptim found solution in </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss"> evaluations"</span>)</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  • L-BFGS-B final weight: </span><span class="sc">{</span>res_scipy<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  • SpotOptim final weight: </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  • Difference: </span><span class="sc">{</span><span class="bu">abs</span>(res_scipy.fun <span class="op">-</span> result.fun)<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> res_scipy.nfev <span class="op">&lt;</span> result.nfev:</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">  → L-BFGS-B was more efficient (used </span><span class="sc">{</span>result<span class="sc">.</span>nfev <span class="op">-</span> res_scipy<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss"> fewer evaluations)"</span>)</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">  → SpotOptim was more efficient (used </span><span class="sc">{</span>res_scipy<span class="sc">.</span>nfev <span class="op">-</span> result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss"> fewer evaluations)"</span>)</span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> res_scipy.fun <span class="op">&lt;</span> result.fun:</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  → L-BFGS-B found a better solution (</span><span class="sc">{</span>res_scipy<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> vs </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb)"</span>)</span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  → SpotOptim found a better solution (</span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> vs </span><span class="sc">{</span>res_scipy<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+======================================================================
+COMPARISON: SpotOptim vs L-BFGS-B
+======================================================================
+
+Method                Best Weight  Evaluations  Improvement
+----------------------------------------------------------------------
+Baseline                   233.83            -            -
+SpotOptim (BO)             121.29          109        48.1%
+L-BFGS-B (Gradient)        119.50          520        48.9%
+======================================================================
+
+Key Observations:
+  • L-BFGS-B found solution in 520 evaluations
+  • SpotOptim found solution in 109 evaluations
+  • L-BFGS-B final weight: 119.50 lb
+  • SpotOptim final weight: 121.29 lb
+  • Difference: 1.79 lb
+
+  → SpotOptim was more efficient (used 411 fewer evaluations)
+  → L-BFGS-B found a better solution (119.50 vs 121.29 lb)</code></pre>
+</div>
+</div>
+</section>
+<section id="summary-and-key-takeaways" class="level1">
+<h1>Summary and Key Takeaways</h1>
+<section id="what-we-learned" class="level2">
+<h2 class="anchored" data-anchor-id="what-we-learned">What We Learned</h2>
+<ol type="1">
+<li><strong>Problem Formulation</strong>: Defined objective function and parameter bounds</li>
+<li><strong>SpotOptim Setup</strong>: Configured optimizer with appropriate hyperparameters</li>
+<li><strong>Bayesian Optimization</strong>: Balanced exploration and exploitation using surrogate models</li>
+<li><strong>Results Analysis</strong>: Found significant weight reduction compared to baseline</li>
+<li><strong>Visualization</strong>: Used surrogate plots to understand the optimization landscape</li>
+<li><strong>Validation</strong>: Verified surrogate model accuracy</li>
+</ol>
+</section>
+<section id="optimization-results" class="level2">
+<h2 class="anchored" data-anchor-id="optimization-results">Optimization Results</h2>
+<div id="final-summary" class="cell" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span> <span class="op">+</span> <span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"FINAL SUMMARY"</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Baseline wing weight:  </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>]<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Optimized weight:      </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb"</span>)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Weight reduction:      </span><span class="sc">{</span>baseline_weight[<span class="dv">0</span>] <span class="op">-</span> result<span class="sc">.</span>fun<span class="sc">:.2f}</span><span class="ss"> lb (</span><span class="sc">{</span>((baseline_weight[<span class="dv">0</span>] <span class="op">-</span> result.fun)<span class="op">/</span>baseline_weight[<span class="dv">0</span>]<span class="op">*</span><span class="dv">100</span>)<span class="sc">:.1f}</span><span class="ss">%)"</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Function evaluations:  </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Success:               </span><span class="sc">{</span>result<span class="sc">.</span>success<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"="</span><span class="op">*</span><span class="dv">70</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+======================================================================
+FINAL SUMMARY
+======================================================================
+
+Baseline wing weight:  233.83 lb
+Optimized weight:      121.29 lb
+Weight reduction:      112.54 lb (48.1%)
+
+Function evaluations:  109
+Success:               True
+======================================================================</code></pre>
+</div>
+</div>
+</section>
+<section id="why-surrogate-based-optimization" class="level2">
+<h2 class="anchored" data-anchor-id="why-surrogate-based-optimization">Why Surrogate-Based Optimization?</h2>
+<p>For this problem, we could have used traditional optimization methods (gradient-based, genetic algorithms, etc.). However, surrogate-based optimization excels when:</p>
+<ol type="1">
+<li><strong>Expensive evaluations</strong>: Each function call is costly (e.g., CFD simulations, physical experiments)</li>
+<li><strong>Black-box functions</strong>: No gradients available or function is noisy</li>
+<li><strong>Limited budget</strong>: Need to find good solutions with few evaluations</li>
+<li><strong>Global optimization</strong>: Want to explore the entire space, not just local optima</li>
+</ol>
+<p>The surrogate model learns the function’s behavior from evaluations, enabling intelligent sampling decisions.</p>
+</section>
+</section>
+<section id="homework-exercise" class="level1">
+<h1>Homework Exercise</h1>
+<section id="challenge-10-dimensional-problem-with-paint-weight" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-10-dimensional-problem-with-paint-weight">Challenge: 10-Dimensional Problem with Paint Weight</h2>
+<p>Extend this tutorial to include paint weight as a 10th parameter:</p>
+<p><span class="math display">\[ W = 0.036S_W^{0.758} \times W_{fw}^{0.0035} \times \left( \frac{A}{\cos^2 \Lambda} \right)^{0.6} \times q^{0.006} \times \lambda^{0.04} \]</span> <span class="math display">\[ \times \left( \frac{100 R_{tc}}{\cos \Lambda} \right)^{-0.3} \times (N_z W_{dg})^{0.49} + S_w W_p\]</span></p>
+<p>Where <span class="math inline">\(W_p\)</span> is paint weight per square foot with bounds [0.025, 0.08] lb/ft² and baseline 0.064 lb/ft².</p>
+<section id="tasks" class="level3">
+<h3 class="anchored" data-anchor-id="tasks">Tasks</h3>
+<ol type="1">
+<li>Modify the <code>wingwt</code> function to include paint weight</li>
+<li>Update the bounds and variable names</li>
+<li>Run optimization with SpotOptim</li>
+<li>Compare results with and without paint weight optimization</li>
+<li>Analyze which parameters are most sensitive</li>
+<li>Visualize the surrogate model for different parameter pairs</li>
+</ol>
+</section>
+<section id="hints" class="level3">
+<h3 class="anchored" data-anchor-id="hints">Hints</h3>
+<ul>
+<li>Add <span class="math inline">\(W_p\)</span> as the 10th dimension</li>
+<li>The paint weight contribution is: <span class="math inline">\(S_w \times W_p\)</span></li>
+<li>Consider how paint weight interacts with wing area</li>
+</ul>
+</section>
+<section id="bonus-challenges" class="level3">
+<h3 class="anchored" data-anchor-id="bonus-challenges">Bonus Challenges</h3>
+<ol type="1">
+<li>Try different acquisition functions: ‘y’, ‘pi’, ‘ei’</li>
+<li>Experiment with different numbers of initial samples</li>
+<li>Compare GP vs Kriging surrogate performance</li>
+<li>Implement constraints (e.g., minimum wing area for structural integrity)</li>
+</ol>
+<p>Good luck! 🚀</p>
+</section>
+</section>
+</section>
+<section id="references" class="level1">
+<h1>References</h1>
+<p>This tutorial is based on:</p>
+<ul>
+<li>Forrester, A., Sobester, A., &amp; Keane, A. (2008). <em>Engineering Design via Surrogate Modelling: A Practical Guide</em>. Wiley.</li>
+<li>Aircraft wing weight function from Chapter 1.3</li>
+</ul>
+<p>Additional resources:</p>
+<ul>
+<li>SpotOptim documentation: <a href="https://github.com/sequential-parameter-optimization/spotoptim">GitHub Repository</a></li>
+<li>Sequential Parameter Optimization Toolbox (SPOT) methodology</li>
+</ul>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

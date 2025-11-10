@@ -36,7 +36,17 @@ class SpotOptim(BaseEstimator):
         Random seed for reproducibility.
     verbose : bool, default=False
         Print progress information.
-    warnings_filter : str, default="ignore". Filter for warnings. One of "error", "ignore", "always", "all", "default", "module", or "once".
+    warnings_filter : str, default="ignore"
+        Filter for warnings. One of "error", "ignore", "always", "all", "default", "module", or "once".
+    max_surrogate_points : int, optional
+        Maximum number of points to use for surrogate model fitting.
+        If None, all points are used. If the number of evaluated points exceeds this limit,
+        a subset is selected using the selection method.
+    selection_method : str, default='distant'
+        Method for selecting points when max_surrogate_points is exceeded.
+        Options:
+        - 'distant': Select points that are distant from each other (K-means clustering).
+        - 'best': Select all points from the cluster with the best mean objective value.
 
     Attributes
     ----------
@@ -52,6 +62,10 @@ class SpotOptim(BaseEstimator):
         Number of iterations performed.
     warnings_filter : str
         Filter for warnings during optimization.
+    max_surrogate_points : int or None
+        Maximum number of points for surrogate fitting.
+    selection_method : str
+        Point selection method.
 
     Examples
     --------
@@ -78,6 +92,8 @@ class SpotOptim(BaseEstimator):
         seed: Optional[int] = None,
         verbose: bool = False,
         warnings_filter: str = "ignore",
+        max_surrogate_points: Optional[int] = None,
+        selection_method: str = "distant",
     ):
 
         warnings.filterwarnings(warnings_filter)
@@ -99,6 +115,8 @@ class SpotOptim(BaseEstimator):
         self.var_type = var_type
         self.seed = seed
         self.verbose = verbose
+        self.max_surrogate_points = max_surrogate_points
+        self.selection_method = selection_method
 
         # Derived attributes
         self.n_dim = len(bounds)
@@ -157,9 +175,203 @@ class SpotOptim(BaseEstimator):
 
         return self._repair_non_numeric(X0, self.var_type)
 
+    def _select_distant_points(
+        self, X: np.ndarray, y: np.ndarray, k: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Selects k points that are distant from each other using K-means clustering.
+
+        This method performs K-means clustering to find k clusters, then selects
+        the point closest to each cluster center. This ensures a space-filling
+        subset of points for surrogate model training.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_samples, n_features)
+            Design points.
+        y : ndarray of shape (n_samples,)
+            Function values at X.
+        k : int
+            Number of points to select.
+
+        Returns
+        -------
+        selected_X : ndarray of shape (k, n_features)
+            Selected design points.
+        selected_y : ndarray of shape (k,)
+            Function values at selected points.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from spotoptim import SpotOptim
+        >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), 
+        ...                 bounds=[(-5, 5), (-5, 5)],
+        ...                 max_surrogate_points=5)
+        >>> X = np.random.rand(100, 2)
+        >>> y = np.random.rand(100)
+        >>> X_sel, y_sel = opt._select_distant_points(X, y, 5)
+        >>> X_sel.shape
+        (5, 2)
+        """
+        from sklearn.cluster import KMeans
+
+        # Perform k-means clustering
+        kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
+
+        # Find the closest point to each cluster center
+        selected_indices = []
+        for center in kmeans.cluster_centers_:
+            distances = np.linalg.norm(X - center, axis=1)
+            closest_idx = np.argmin(distances)
+            selected_indices.append(closest_idx)
+
+        selected_indices = np.array(selected_indices)
+        return X[selected_indices], y[selected_indices]
+
+    def _select_best_cluster(
+        self, X: np.ndarray, y: np.ndarray, k: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Selects all points from the cluster with the smallest mean y value.
+
+        This method performs K-means clustering and selects all points from the
+        cluster whose center corresponds to the best (smallest) mean objective
+        function value.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_samples, n_features)
+            Design points.
+        y : ndarray of shape (n_samples,)
+            Function values at X.
+        k : int
+            Number of clusters.
+
+        Returns
+        -------
+        selected_X : ndarray of shape (m, n_features)
+            Selected design points from best cluster.
+        selected_y : ndarray of shape (m,)
+            Function values at selected points.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from spotoptim import SpotOptim
+        >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), 
+        ...                 bounds=[(-5, 5), (-5, 5)],
+        ...                 max_surrogate_points=5,
+        ...                 selection_method='best')
+        >>> X = np.random.rand(100, 2)
+        >>> y = np.random.rand(100)
+        >>> X_sel, y_sel = opt._select_best_cluster(X, y, 5)
+        """
+        from sklearn.cluster import KMeans
+
+        # Perform k-means clustering
+        kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
+        labels = kmeans.labels_
+
+        # Compute mean y for each cluster
+        cluster_means = []
+        for cluster_idx in range(k):
+            cluster_y = y[labels == cluster_idx]
+            if len(cluster_y) == 0:
+                cluster_means.append(np.inf)
+            else:
+                cluster_means.append(np.mean(cluster_y))
+
+        # Find cluster with smallest mean y
+        best_cluster = np.argmin(cluster_means)
+
+        # Select all points from the best cluster
+        mask = labels == best_cluster
+        return X[mask], y[mask]
+
+    def _selection_dispatcher(
+        self, X: np.ndarray, y: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Dispatcher for selection methods.
+
+        Depending on the value of `self.selection_method`, this method calls
+        the appropriate selection function to choose a subset of points for
+        surrogate model training when the total number of points exceeds
+        `self.max_surrogate_points`.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_samples, n_features)
+            Design points.
+        y : ndarray of shape (n_samples,)
+            Function values at X.
+
+        Returns
+        -------
+        selected_X : ndarray
+            Selected design points.
+        selected_y : ndarray
+            Function values at selected points.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from spotoptim import SpotOptim
+        >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), 
+        ...                 bounds=[(-5, 5), (-5, 5)],
+        ...                 max_surrogate_points=5)
+        >>> X = np.random.rand(100, 2)
+        >>> y = np.random.rand(100)
+        >>> X_sel, y_sel = opt._selection_dispatcher(X, y)
+        >>> X_sel.shape[0] <= 5
+        True
+        """
+        if self.max_surrogate_points is None:
+            return X, y
+
+        if self.selection_method == "distant":
+            return self._select_distant_points(
+                X=X, y=y, k=self.max_surrogate_points
+            )
+        elif self.selection_method == "best":
+            return self._select_best_cluster(
+                X=X, y=y, k=self.max_surrogate_points
+            )
+        else:
+            # If no valid selection method, return all points
+            return X, y
+
     def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
-        """Fit surrogate model to data."""
-        self.surrogate.fit(X, y)
+        """
+        Fit surrogate model to data.
+
+        If the number of points exceeds `self.max_surrogate_points`,
+        a subset of points is selected using the selection dispatcher.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_samples, n_features)
+            Design points.
+        y : ndarray of shape (n_samples,)
+            Function values at X.
+        """
+        X_fit = X
+        y_fit = y
+
+        # Select subset if needed
+        if (
+            self.max_surrogate_points is not None
+            and X.shape[0] > self.max_surrogate_points
+        ):
+            if self.verbose:
+                print(
+                    f"Selecting subset of {self.max_surrogate_points} points "
+                    f"from {X.shape[0]} total points for surrogate fitting."
+                )
+            X_fit, y_fit = self._selection_dispatcher(X, y)
+
+        self.surrogate.fit(X_fit, y_fit)
 
     def _select_new(
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
