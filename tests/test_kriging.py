@@ -97,8 +97,8 @@ class TestKriging:
 
         # Check results
         assert result.success is True
-        assert result.nfev == 15  # 5 initial + 10 iterations
-        assert result.nit == 10
+        assert result.nfev == 10  # max_iter now includes initial design
+        assert result.nit == 5  # 10 total - 5 initial = 5 sequential iterations
         assert len(result.x) == 2
 
         # Solution should be close to [0, 0]

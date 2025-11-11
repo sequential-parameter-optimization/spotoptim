@@ -144,7 +144,7 @@ def test_plot_surrogate_with_kriging():
     opt = SpotOptim(
         fun=sphere_function,
         bounds=bounds,
-        max_iter=5,
+        max_iter=10,  # Need at least one sequential iteration to fit surrogate
         n_initial=5,
         surrogate=Kriging(seed=42),
         seed=42

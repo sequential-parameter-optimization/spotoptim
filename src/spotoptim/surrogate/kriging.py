@@ -13,49 +13,37 @@ from sklearn.base import BaseEstimator, RegressorMixin
 
 
 class Kriging(BaseEstimator, RegressorMixin):
-    """
-    A simplified Kriging (Gaussian Process) surrogate model for SpotOptim.
+    """A simplified Kriging (Gaussian Process) surrogate model for SpotOptim.
 
     This class provides a scikit-learn compatible interface with fit() and predict()
     methods, making it suitable for use as a surrogate in SpotOptim.
 
-    Parameters
-    ----------
-    noise : float, optional
-        Regularization parameter (nugget effect). If None, uses sqrt(eps).
-    kernel : str, default='gauss'
-        Kernel type. Currently only 'gauss' (Gaussian/RBF) is supported.
-    n_theta : int, optional
-        Number of theta parameters. If None, uses k (number of dimensions).
-    min_theta : float, default=-3.0
-        Minimum log10(theta) bound for optimization.
-    max_theta : float, default=2.0
-        Maximum log10(theta) bound for optimization.
-    seed : int, optional
-        Random seed for reproducibility.
+    Args:
+        noise (float, optional): Regularization parameter (nugget effect). If None, uses sqrt(eps).
+            Defaults to None.
+        kernel (str, optional): Kernel type. Currently only 'gauss' (Gaussian/RBF) is supported.
+            Defaults to 'gauss'.
+        n_theta (int, optional): Number of theta parameters. If None, uses k (number of dimensions).
+            Defaults to None.
+        min_theta (float, optional): Minimum log10(theta) bound for optimization. Defaults to -3.0.
+        max_theta (float, optional): Maximum log10(theta) bound for optimization. Defaults to 2.0.
+        seed (int, optional): Random seed for reproducibility. Defaults to None.
 
-    Attributes
-    ----------
-    X_ : ndarray of shape (n_samples, n_features)
-        Training data.
-    y_ : ndarray of shape (n_samples,)
-        Training targets.
-    theta_ : ndarray
-        Optimized theta parameters (log10 scale).
-    mu_ : float
-        Mean of the Kriging predictor.
-    sigma2_ : float
-        Variance of the Kriging predictor.
+    Attributes:
+        X_ (ndarray): Training data, shape (n_samples, n_features).
+        y_ (ndarray): Training targets, shape (n_samples,).
+        theta_ (ndarray): Optimized theta parameters (log10 scale).
+        mu_ (float): Mean of the Kriging predictor.
+        sigma2_ (float): Variance of the Kriging predictor.
 
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from spotoptim.surrogate import Kriging
-    >>> X = np.array([[0.0], [0.5], [1.0]])
-    >>> y = np.array([0.0, 0.25, 1.0])
-    >>> model = Kriging()
-    >>> model.fit(X, y)
-    >>> predictions = model.predict(np.array([[0.25], [0.75]]))
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.surrogate import Kriging
+        >>> X = np.array([[0.0], [0.5], [1.0]])
+        >>> y = np.array([0.0, 0.25, 1.0])
+        >>> model = Kriging()
+        >>> model.fit(X, y)
+        >>> predictions = model.predict(np.array([[0.25], [0.75]]))
     """
 
     def __init__(
@@ -85,24 +73,23 @@ class Kriging(BaseEstimator, RegressorMixin):
         self.Rinv_r_ = None
 
     def _get_noise(self) -> float:
-        """Get the noise/regularization parameter."""
+        """Get the noise/regularization parameter.
+
+        Returns:
+            float: Noise/regularization value.
+        """
         if self.noise is None:
             return np.sqrt(np.finfo(float).eps)
         return self.noise
 
     def _correlation(self, D: np.ndarray) -> np.ndarray:
-        """
-        Compute correlation from distance matrix using Gaussian kernel.
+        """Compute correlation from distance matrix using Gaussian kernel.
 
-        Parameters
-        ----------
-        D : ndarray
-            Squared distance matrix.
+        Args:
+            D (ndarray): Squared distance matrix.
 
-        Returns
-        -------
-        ndarray
-            Correlation matrix.
+        Returns:
+            ndarray: Correlation matrix.
         """
         if self.kernel == "gauss":
             return np.exp(-D)
@@ -110,20 +97,14 @@ class Kriging(BaseEstimator, RegressorMixin):
             raise ValueError(f"Unsupported kernel: {self.kernel}")
 
     def _build_correlation_matrix(self, X: np.ndarray, theta: np.ndarray) -> np.ndarray:
-        """
-        Build correlation matrix R for training data.
+        """Build correlation matrix R for training data.
 
-        Parameters
-        ----------
-        X : ndarray of shape (n, k)
-            Input data.
-        theta : ndarray of shape (k,)
-            Theta parameters (10^theta used as weights).
+        Args:
+            X (ndarray): Input data, shape (n, k).
+            theta (ndarray): Theta parameters (10^theta used as weights), shape (k,).
 
-        Returns
-        -------
-        ndarray of shape (n, n)
-            Correlation matrix with noise on diagonal.
+        Returns:
+            ndarray: Correlation matrix with noise on diagonal, shape (n, n).
         """
         n = X.shape[0]
         theta10 = 10.0**theta
@@ -149,22 +130,15 @@ class Kriging(BaseEstimator, RegressorMixin):
     def _build_correlation_vector(
         self, x: np.ndarray, X: np.ndarray, theta: np.ndarray
     ) -> np.ndarray:
-        """
-        Build correlation vector between new point x and training data X.
+        """Build correlation vector between new point x and training data X.
 
-        Parameters
-        ----------
-        x : ndarray of shape (k,)
-            New point.
-        X : ndarray of shape (n, k)
-            Training data.
-        theta : ndarray of shape (k,)
-            Theta parameters.
+        Args:
+            x (ndarray): New point, shape (k,).
+            X (ndarray): Training data, shape (n, k).
+            theta (ndarray): Theta parameters, shape (k,).
 
-        Returns
-        -------
-        ndarray of shape (n,)
-            Correlation vector.
+        Returns:
+            ndarray: Correlation vector, shape (n,).
         """
         theta10 = 10.0**theta
         diff = X - x.reshape(1, -1)
@@ -172,18 +146,13 @@ class Kriging(BaseEstimator, RegressorMixin):
         return self._correlation(D)
 
     def _neg_log_likelihood(self, log_theta: np.ndarray) -> float:
-        """
-        Compute negative concentrated log-likelihood.
+        """Compute negative concentrated log-likelihood.
 
-        Parameters
-        ----------
-        log_theta : ndarray
-            Log10(theta) parameters.
+        Args:
+            log_theta (ndarray): Log10(theta) parameters.
 
-        Returns
-        -------
-        float
-            Negative log-likelihood (to be minimized).
+        Returns:
+            float: Negative log-likelihood (to be minimized).
         """
         try:
             n = self.X_.shape[0]
@@ -227,20 +196,14 @@ class Kriging(BaseEstimator, RegressorMixin):
             return 1e10
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "Kriging":
-        """
-        Fit the Kriging model to training data.
+        """Fit the Kriging model to training data.
 
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Training input data.
-        y : ndarray of shape (n_samples,)
-            Training target values.
+        Args:
+            X (ndarray): Training input data, shape (n_samples, n_features).
+            y (ndarray): Training target values, shape (n_samples,).
 
-        Returns
-        -------
-        self
-            Fitted estimator.
+        Returns:
+            Kriging: Fitted estimator (self).
         """
         X = np.atleast_2d(X)
         y = np.asarray(y).flatten()
@@ -307,22 +270,16 @@ class Kriging(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X: np.ndarray, return_std: bool = False) -> np.ndarray:
-        """
-        Predict using the Kriging model.
+        """Predict using the Kriging model.
 
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Points to predict at.
-        return_std : bool, default=False
-            If True, return standard deviations as well.
+        Args:
+            X (ndarray): Points to predict at, shape (n_samples, n_features).
+            return_std (bool, optional): If True, return standard deviations as well.
+                Defaults to False.
 
-        Returns
-        -------
-        y_pred : ndarray of shape (n_samples,)
-            Predicted values.
-        y_std : ndarray of shape (n_samples,), optional
-            Standard deviations (only if return_std=True).
+        Returns:
+            ndarray or tuple: If return_std is False, returns predicted values (n_samples,).
+                If return_std is True, returns tuple of (predictions, std_devs) both shape (n_samples,).
         """
         X = np.atleast_2d(X)
 

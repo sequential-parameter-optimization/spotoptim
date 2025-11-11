@@ -133,8 +133,7 @@ def test_fit_surrogate_with_selection():
     optimizer = SpotOptim(
         fun=sphere,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=5,
-        n_initial=10,
+        max_iter=10, n_initial=10,
         max_surrogate_points=5,
         selection_method="distant",
         verbose=False,
@@ -247,8 +246,7 @@ def test_verbose_output(capsys):
     optimizer = SpotOptim(
         fun=sphere,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=3,
-        n_initial=5,
+        max_iter=5, n_initial=5,
         max_surrogate_points=8,
         selection_method="distant",
         verbose=True,

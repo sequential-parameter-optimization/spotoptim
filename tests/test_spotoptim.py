@@ -38,8 +38,8 @@ class TestSpotOptimOptimize:
 
         # Check result attributes
         assert result.success is True
-        assert result.nfev == 15  # 5 initial + 10 iterations
-        assert result.nit == 10
+        assert result.nfev == 10  # max_iter now includes initial design
+        assert result.nit == 5  # 10 total - 5 initial = 5 sequential iterations
 
     def test_optimize_rosenbrock_2d(self):
         """Test optimization on 2D Rosenbrock function."""
@@ -66,8 +66,8 @@ class TestSpotOptimOptimize:
 
         assert isinstance(result, OptimizeResult)
         assert result.success is True
-        assert result.nfev == 30  # 10 initial + 20 iterations
-        assert result.nit == 20
+        assert result.nfev == 20  # max_iter now includes initial design
+        assert result.nit == 10  # 20 total - 10 initial = 10 sequential iterations
         assert len(result.x) == 2
 
         # Check that result is reasonable (Rosenbrock optimum is at [1, 1])
@@ -92,8 +92,8 @@ class TestSpotOptimOptimize:
         result = optimizer.optimize(X0=X0)
 
         assert isinstance(result, OptimizeResult)
-        assert result.nfev == 10  # 5 initial + 5 iterations
-        assert result.nit == 5
+        assert result.nfev == 5  # max_iter now includes initial design
+        assert result.nit == 0  # 5 total - 5 initial = 0 sequential iterations
 
     def test_optimize_different_acquisitions(self):
         """Test optimization with different acquisition functions."""
@@ -171,7 +171,7 @@ class TestSpotOptimOptimize:
 
         assert isinstance(result, OptimizeResult)
         assert len(result.x) == n_dim
-        assert result.nfev == 25  # 10 initial + 15 iterations
+        assert result.nfev == 15  # max_iter now includes initial design
 
     def test_optimize_result_attributes(self):
         """Test that all expected result attributes are present."""
@@ -236,10 +236,10 @@ class TestSpotOptimOptimize:
         result = optimizer.optimize()
 
         # Check that all evaluations are stored
-        total_evals = n_initial + max_iter
-        assert len(result.X) == total_evals
-        assert len(result.y) == total_evals
-        assert result.X.shape[0] == total_evals
+        # max_iter now includes initial design, so total = max_iter
+        assert len(result.X) == max_iter
+        assert len(result.y) == max_iter
+        assert result.X.shape[0] == max_iter
         assert result.X.shape[1] == 2  # 2D problem
 
     def test_optimize_best_is_minimum(self):
@@ -361,7 +361,7 @@ class TestSpotOptimOptimize:
             return np.sum(X**2, axis=1)
 
         bounds = [(-5, 5), (-5, 5), (-5, 5)]
-        var_type = ["num", "int", "float"]
+        var_type = ["float", "int", "float"]
 
         optimizer = SpotOptim(
             fun=mixed_func,
@@ -418,8 +418,7 @@ class TestSpotOptimOptimize:
         optimizer = SpotOptim(
             fun=test_func,
             bounds=bounds,
-            max_iter=0,
-            n_initial=5,
+            max_iter=5, n_initial=5,
             seed=42,
             verbose=False,
         )
