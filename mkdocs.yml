@@ -12,6 +12,7 @@ nav:
 - Documentation: hyperparameter-tuning-cookbook.md
 - Download: download.md
 - Examples: examples.md
+- Reproducibility: reproducibility.md
 - About: about.md
 
 theme:
@@ -44,9 +45,10 @@ theme:
     code: Fira Code
   features:
     - content.code.copy
-    - navigation.tabs
+    # - navigation.tabs
     - navigation.instant
     - navigation.indexes
+    - navigation.path
 
 plugins:
     - search:

@@ -19,6 +19,10 @@ dependencies = [
     "mkdocs-section-index>=0.3.10",
     "mkdocs-exclude>=1.0.2",
     "mkdocstrings-python>=1.19.0",
+    "jupyter>=1.1.1",
+    "matplotlib>=3.10.7",
+    "torch>=2.9.1",
+    "tensorboard>=2.20.0",
 ]
 
 [dependency-groups]

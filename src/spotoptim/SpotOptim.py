@@ -9,7 +9,6 @@ import warnings
 import matplotlib.pyplot as plt
 from numpy import linspace, meshgrid, append
 import time
-from spotpython.budget.ocba import get_ocba_X
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 import os
