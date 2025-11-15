@@ -638,4 +638,4 @@ loaded_opt.fun = same_objective_function  # Same function definition
 
 - [Reproducibility Manual](reproducibility.md): Learn about using seeds for reproducible results
 - [TensorBoard Manual](tensorboard.md): Monitor optimization progress in real-time
-- [Noisy Optimization](../guides/noisy_optimization.md): Handle noisy objective functions
+

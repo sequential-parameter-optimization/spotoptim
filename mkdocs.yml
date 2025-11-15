@@ -14,6 +14,7 @@ nav:
 - Examples: examples.md
 - Manuals:
   - Reproducibility: manuals/reproducibility.md
+  - Save and Laod: manuals/save_load.md
   - Success Rate Tracking: manuals/success_rate.md
   - Acquisition Failure Handling: manuals/acquisition_failure.md
   - Handling Variable Types: manuals/var_type.md
