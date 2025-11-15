@@ -12,15 +12,16 @@ nav:
 - Documentation: hyperparameter-tuning-cookbook.md
 - Download: download.md
 - Examples: examples.md
-- Reproducibility: reproducibility.md
-- Handling Variable Types: var_type.md
-- Kriging (internal Surrogate): kriging.md
-- Multiobjective Optimization: multiobjective.md
-- Point Selection Strategy: point_selection.md
-- Plot Surrogate: plot_surrogate.md
-- Plot Using TensorBoard: tensorboard.md
-- TensorBoard Clean Feature: tensorboard_clean.md
-- About: about.md
+- Manuals:
+  - Reproducibility: manuals/reproducibility.md
+  - Handling Variable Types: manuals/var_type.md
+  - Kriging (internal Surrogate): manuals/kriging.md
+  - Multiobjective Optimization: manuals/multiobjective.md
+  - Plot Surrogate: manuals/plot_surrogate.md
+  - Point Selection Strategy: manuals/point_selection.md
+  - Plot Using TensorBoard: manuals/tensorboard.md
+  - TensorBoard Clean Feature: manuals/tensorboard_clean.md
+  - About: about.md
 
 theme:
   name: material
@@ -56,6 +57,10 @@ theme:
     - navigation.instant
     - navigation.indexes
     - navigation.path
+    # - navigation.sections
+    - navigation.prune
+    - navigation.expand
+    # - toc.integrate
 
 plugins:
     - search:
