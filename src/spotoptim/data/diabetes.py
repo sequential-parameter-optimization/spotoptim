@@ -97,7 +97,7 @@ class DiabetesDataset(Dataset):
         self.n_features = self.X.shape[1]
         self.n_samples = self.X.shape[0]
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the number of samples in the dataset.
 
         Returns:
@@ -105,7 +105,7 @@ class DiabetesDataset(Dataset):
         """
         return len(self.X)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> tuple:
         """Get a sample from the dataset.
 
         Args:
@@ -127,15 +127,15 @@ class DiabetesDataset(Dataset):
 
 
 def get_diabetes_dataloaders(
-    test_size=0.2,
-    batch_size=32,
-    shuffle_train=True,
-    shuffle_test=False,
-    random_state=42,
-    scale_features=True,
-    num_workers=0,
-    pin_memory=False,
-):
+    test_size: float = 0.2,
+    batch_size: int = 32,
+    shuffle_train: bool = True,
+    shuffle_test: bool = False,
+    random_state: int = 42,
+    scale_features: bool = True,
+    num_workers: int = 0,
+    pin_memory: bool = False,
+) -> tuple:
     """Get train and test DataLoaders for the diabetes dataset.
 
     Convenience function that loads the diabetes dataset, splits it into train/test,
