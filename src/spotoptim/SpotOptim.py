@@ -13,6 +13,8 @@ from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 import os
 import shutil
+import pickle
+import copy
 
 
 class SpotOptim(BaseEstimator):
@@ -1901,3 +1903,391 @@ class SpotOptim(BaseEstimator):
         grid_points = self._repair_non_numeric(grid_points, self.var_type)
 
         return X_i, X_j, grid_points
+
+    def _get_experiment_filename(self, prefix: str) -> str:
+        """Generate experiment filename from prefix.
+        
+        Args:
+            prefix (str): Prefix for the filename.
+            
+        Returns:
+            str: Filename with '_exp.pkl' suffix.
+        """
+        if prefix is None:
+            return "experiment_exp.pkl"
+        return f"{prefix}_exp.pkl"
+
+    def _get_result_filename(self, prefix: str) -> str:
+        """Generate result filename from prefix.
+        
+        Args:
+            prefix (str): Prefix for the filename.
+            
+        Returns:
+            str: Filename with '_res.pkl' suffix.
+        """
+        if prefix is None:
+            return "result_res.pkl"
+        return f"{prefix}_res.pkl"
+
+    def _close_and_del_tensorboard_writer(self) -> None:
+        """Close and delete TensorBoard writer to prepare for pickling."""
+        if hasattr(self, "tb_writer") and self.tb_writer is not None:
+            try:
+                self.tb_writer.flush()
+                self.tb_writer.close()
+            except Exception:
+                pass
+            self.tb_writer = None
+
+    def _get_pickle_safe_optimizer(self, unpickleables: str = "file_io", verbosity: int = 0) -> "SpotOptim":
+        """Create a pickle-safe copy of the optimizer.
+        
+        This method creates a copy of the optimizer instance with unpickleable components removed
+        or set to None to enable safe serialization.
+        
+        Args:
+            unpickleables (str): Type of unpickleable components to exclude.
+                - "file_io": Excludes only file I/O components (tb_writer) and fun
+                - "all": Excludes file I/O, fun, surrogate, and lhs_sampler
+                Defaults to "file_io".
+            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
+            
+        Returns:
+            SpotOptim: A copy of the optimizer with unpickleable components removed.
+        """
+        # Always exclude fun and tb_writer (can't reliably pickle lambda/local functions)
+        # Determine which additional attributes to exclude
+        if unpickleables == "file_io":
+            unpickleable_attrs = ["tb_writer", "fun"]
+        else:
+            unpickleable_attrs = ["tb_writer", "fun", "surrogate", "lhs_sampler"]
+        
+        # Prepare picklable state dictionary
+        picklable_state = {}
+        
+        for key, value in self.__dict__.items():
+            if key not in unpickleable_attrs:
+                try:
+                    # Test if attribute can be pickled
+                    pickle.dumps(value, protocol=pickle.HIGHEST_PROTOCOL)
+                    picklable_state[key] = value
+                    if verbosity > 1:
+                        print(f"Attribute '{key}' is picklable and will be included.")
+                except Exception as e:
+                    if verbosity > 0:
+                        print(f"Attribute '{key}' is not picklable and will be excluded: {e}")
+                    continue
+            else:
+                if verbosity > 1:
+                    print(f"Attribute '{key}' explicitly excluded from pickling.")
+        
+        # Create new instance with picklable state
+        picklable_instance = self.__class__.__new__(self.__class__)
+        picklable_instance.__dict__.update(picklable_state)
+        
+        # Set excluded attributes to None
+        for attr in unpickleable_attrs:
+            if not hasattr(picklable_instance, attr):
+                setattr(picklable_instance, attr, None)
+        
+        return picklable_instance
+
+    def save_experiment(
+        self,
+        filename: Optional[str] = None,
+        prefix: str = "experiment",
+        path: Optional[str] = None,
+        overwrite: bool = True,
+        unpickleables: str = "all",
+        verbosity: int = 0
+    ) -> None:
+        """Save the experiment configuration to a pickle file.
+        
+        An experiment contains the optimizer configuration needed to run optimization,
+        but excludes the results. This is useful for defining experiments locally and
+        executing them on remote machines.
+        
+        The experiment includes:
+        - Bounds, variable types, variable names
+        - Optimization parameters (max_iter, n_initial, etc.)
+        - Surrogate and acquisition settings
+        - Random seed
+        
+        The experiment excludes:
+        - Function evaluations (X_, y_)
+        - Optimization results
+        - Objective function (must be re-attached after loading)
+        
+        Args:
+            filename (str, optional): Filename for the experiment file. If None, generates
+                from prefix. Defaults to None.
+            prefix (str): Prefix for auto-generated filename. Defaults to "experiment".
+            path (str, optional): Directory path to save the file. If None, saves in current
+                directory. Creates directory if it doesn't exist. Defaults to None.
+            overwrite (bool): If True, overwrites existing file. If False, raises error if
+                file exists. Defaults to True.
+            unpickleables (str): Components to exclude for pickling:
+                - "all": Excludes fun, surrogate, lhs_sampler, tb_writer (experiment only)
+                - "file_io": Excludes only tb_writer (lighter exclusion)
+                Defaults to "all".
+            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
+            
+        Returns:
+            None
+            
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> 
+            >>> # Define experiment locally
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> 
+            >>> # Save experiment (without results)
+            >>> opt.save_experiment(prefix="sphere_opt")
+            Experiment saved to sphere_opt_exp.pkl
+            >>> 
+            >>> # On remote machine: load and run
+            >>> # opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            >>> # opt_remote.fun = objective_function  # Re-attach function
+            >>> # result = opt_remote.optimize()
+            >>> # opt_remote.save_result(prefix="sphere_opt")  # Save results
+        """
+        # Close TensorBoard writer before pickling
+        self._close_and_del_tensorboard_writer()
+        
+        # Create pickle-safe copy
+        optimizer_copy = self._get_pickle_safe_optimizer(
+            unpickleables=unpickleables,
+            verbosity=verbosity
+        )
+        
+        # Determine filename
+        if filename is None:
+            filename = self._get_experiment_filename(prefix)
+        
+        # Add path if provided
+        if path is not None:
+            if not os.path.exists(path):
+                os.makedirs(path)
+            filename = os.path.join(path, filename)
+        
+        # Check for existing file
+        if os.path.exists(filename) and not overwrite:
+            raise FileExistsError(
+                f"File {filename} already exists. Use overwrite=True to overwrite."
+            )
+        
+        # Save to pickle file
+        try:
+            with open(filename, "wb") as handle:
+                pickle.dump(optimizer_copy, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            print(f"Experiment saved to {filename}")
+        except Exception as e:
+            print(f"Error during pickling: {e}")
+            raise
+
+    def save_result(
+        self,
+        filename: Optional[str] = None,
+        prefix: str = "result",
+        path: Optional[str] = None,
+        overwrite: bool = True,
+        verbosity: int = 0
+    ) -> None:
+        """Save the complete optimization results to a pickle file.
+        
+        A result contains all information from a completed optimization run, including
+        the experiment configuration and all evaluation results. This is useful for
+        saving completed runs for later analysis.
+        
+        The result includes everything in an experiment plus:
+        - All evaluated points (X_)
+        - All function values (y_)
+        - Best point and best value
+        - Iteration count
+        - Success rate statistics
+        - Noise statistics (if applicable)
+        
+        Args:
+            filename (str, optional): Filename for the result file. If None, generates
+                from prefix. Defaults to None.
+            prefix (str): Prefix for auto-generated filename. Defaults to "result".
+            path (str, optional): Directory path to save the file. If None, saves in current
+                directory. Creates directory if it doesn't exist. Defaults to None.
+            overwrite (bool): If True, overwrites existing file. If False, raises error if
+                file exists. Defaults to True.
+            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
+            
+        Returns:
+            None
+            
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> 
+            >>> # Run optimization
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> 
+            >>> # Save complete results
+            >>> opt.save_result(prefix="sphere_opt")
+            Result saved to sphere_opt_res.pkl
+            >>> 
+            >>> # Later: load and analyze
+            >>> # opt_loaded = SpotOptim.load_result("sphere_opt_res.pkl")
+            >>> # print("Best value:", opt_loaded.best_y_)
+            >>> # opt_loaded.plot_surrogate()
+        """
+        # Use save_experiment with file_io unpickleables to preserve results
+        if filename is None:
+            filename = self._get_result_filename(prefix)
+        
+        self.save_experiment(
+            filename=filename,
+            path=path,
+            overwrite=overwrite,
+            unpickleables="file_io",
+            verbosity=verbosity
+        )
+        
+        # Update message
+        if path is not None:
+            full_path = os.path.join(path, filename)
+        else:
+            full_path = filename
+        print(f"Result saved to {full_path}")
+
+    def _reinitialize_components(self) -> None:
+        """Reinitialize components that were excluded during pickling.
+        
+        This method recreates the surrogate model and LHS sampler that were
+        excluded when saving an experiment or result.
+        """
+        # Reinitialize LHS sampler if needed
+        if not hasattr(self, 'lhs_sampler') or self.lhs_sampler is None:
+            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+        
+        # Reinitialize surrogate if needed
+        if not hasattr(self, 'surrogate') or self.surrogate is None:
+            kernel = ConstantKernel(1.0) * Matern(
+                length_scale=np.ones(self.n_dim),
+                length_scale_bounds=(1e-2, 1e2),
+                nu=2.5
+            )
+            self.surrogate = GaussianProcessRegressor(
+                kernel=kernel,
+                n_restarts_optimizer=10,
+                random_state=self.seed,
+                normalize_y=True
+            )
+
+    @staticmethod
+    def load_experiment(filename: str) -> "SpotOptim":
+        """Load an experiment configuration from a pickle file.
+        
+        Loads an experiment that was saved with save_experiment(). The loaded optimizer
+        will have the configuration but not the objective function (which must be
+        re-attached) or results.
+        
+        Args:
+            filename (str): Path to the experiment pickle file.
+            
+        Returns:
+            SpotOptim: Loaded optimizer instance (without fun attached).
+            
+        Raises:
+            FileNotFoundError: If the specified file doesn't exist.
+            
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> 
+            >>> # Load experiment
+            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            Loaded experiment from sphere_opt_exp.pkl
+            >>> 
+            >>> # Re-attach objective function
+            >>> opt.fun = lambda X: np.sum(X**2, axis=1)
+            >>> 
+            >>> # Run optimization
+            >>> result = opt.optimize()
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"Experiment file not found: {filename}")
+        
+        try:
+            with open(filename, "rb") as handle:
+                optimizer = pickle.load(handle)
+            print(f"Loaded experiment from {filename}")
+            
+            # Reinitialize components that were excluded
+            optimizer._reinitialize_components()
+            
+            return optimizer
+        except Exception as e:
+            print(f"Error loading experiment: {e}")
+            raise
+
+    @staticmethod
+    def load_result(filename: str) -> "SpotOptim":
+        """Load complete optimization results from a pickle file.
+        
+        Loads results that were saved with save_result(). The loaded optimizer
+        will have both configuration and all optimization results.
+        
+        Args:
+            filename (str): Path to the result pickle file.
+            
+        Returns:
+            SpotOptim: Loaded optimizer instance with complete results.
+            
+        Raises:
+            FileNotFoundError: If the specified file doesn't exist.
+            
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> 
+            >>> # Load results
+            >>> opt = SpotOptim.load_result("sphere_opt_res.pkl")
+            Loaded result from sphere_opt_res.pkl
+            >>> 
+            >>> # Analyze results
+            >>> print("Best point:", opt.best_x_)
+            >>> print("Best value:", opt.best_y_)
+            >>> print("Total evaluations:", opt.counter)
+            >>> print("Success rate:", opt.success_rate)
+            >>> 
+            >>> # Continue optimization if needed
+            >>> # opt.fun = lambda X: np.sum(X**2, axis=1)  # Re-attach if continuing
+            >>> # opt.max_iter = 50  # Increase budget
+            >>> # result = opt.optimize()
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"Result file not found: {filename}")
+        
+        try:
+            with open(filename, "rb") as handle:
+                optimizer = pickle.load(handle)
+            print(f"Loaded result from {filename}")
+            
+            # Reinitialize components that were excluded
+            optimizer._reinitialize_components()
+            
+            return optimizer
+        except Exception as e:
+            print(f"Error loading result: {e}")
+            raise
