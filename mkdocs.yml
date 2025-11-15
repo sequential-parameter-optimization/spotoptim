@@ -14,6 +14,8 @@ nav:
 - Examples: examples.md
 - Manuals:
   - Reproducibility: manuals/reproducibility.md
+  - Success Rate Tracking: manuals/success_rate.md
+  - Acquisition Failure Handling: manuals/acquisition_failure.md
   - Handling Variable Types: manuals/var_type.md
   - Kriging (internal Surrogate): manuals/kriging.md
   - Multiobjective Optimization: manuals/multiobjective.md
@@ -21,7 +23,7 @@ nav:
   - Point Selection Strategy: manuals/point_selection.md
   - Plot Using TensorBoard: manuals/tensorboard.md
   - TensorBoard Clean Feature: manuals/tensorboard_clean.md
-  - About: about.md
+- About: about.md
 
 theme:
   name: material

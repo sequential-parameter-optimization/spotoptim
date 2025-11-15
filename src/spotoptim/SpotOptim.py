@@ -73,6 +73,10 @@ class SpotOptim(BaseEstimator):
             Options: 'distant' (Select points that are distant from each other via K-means clustering) or
             'best' (Select all points from the cluster with the best mean objective value).
             Defaults to 'distant'.
+        acquisition_failure_strategy (str, optional): Strategy for handling acquisition function failures.
+            Options: 'random' (space-filling design via Latin Hypercube Sampling) or
+            'mm' (Morris-Mitchell phi minimizing point for maximal distance from existing points).
+            Defaults to 'random'.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -83,9 +87,13 @@ class SpotOptim(BaseEstimator):
         best_x_ (ndarray): Best point found, shape (n_features,).
         best_y_ (float): Best function value found.
         n_iter_ (int): Number of iterations performed.
+        counter (int): Total number of function evaluations.
+        success_rate (float): Rolling success rate over the last window_size evaluations.
+            A success is counted when a new evaluation improves upon the best value found so far.
         warnings_filter (str): Filter for warnings during optimization.
         max_surrogate_points (int or None): Maximum number of points for surrogate fitting.
         selection_method (str): Point selection method.
+        acquisition_failure_strategy (str): Strategy for handling acquisition failures ('random' or 'mm').
         noise (bool): True if noise handling is active (repeats > 1).
         mean_X (ndarray or None): Aggregated unique design points (if noise=True).
         mean_y (ndarray or None): Mean y values per design point (if noise=True).
@@ -199,6 +207,7 @@ class SpotOptim(BaseEstimator):
         warnings_filter: str = "ignore",
         max_surrogate_points: Optional[int] = None,
         selection_method: str = "distant",
+        acquisition_failure_strategy: str = "random",
     ):
 
         warnings.filterwarnings(warnings_filter)
@@ -238,6 +247,7 @@ class SpotOptim(BaseEstimator):
         self.verbose = verbose
         self.max_surrogate_points = max_surrogate_points
         self.selection_method = selection_method
+        self.acquisition_failure_strategy = acquisition_failure_strategy
         
         # Determine if noise handling is active
         self.noise = (repeats_initial > 1) or (repeats_surrogate > 1)
@@ -291,6 +301,12 @@ class SpotOptim(BaseEstimator):
         self.min_X = None
         self.min_y = None
         self.counter = 0
+        
+        # Success rate tracking (similar to Spot class)
+        self.success_rate = 0.0
+        self.success_counter = 0
+        self.window_size = 100
+        self._success_history = []
         
         # Clean old TensorBoard logs if requested
         self._clean_tensorboard_logs()
@@ -506,6 +522,9 @@ class SpotOptim(BaseEstimator):
         2. `min_X`: X value corresponding to minimum y
         3. `counter`: Total number of function evaluations
 
+        Note: `success_rate` is updated separately via `_update_success_rate()` method,
+        which is called after each batch of function evaluations.
+
         If `noise` is True (repeats > 1), additionally computes:
         1. `mean_X`: Unique design points (aggregated from repeated evaluations)
         2. `mean_y`: Mean y values per design point
@@ -565,6 +584,78 @@ class SpotOptim(BaseEstimator):
             self.min_mean_y = self.mean_y[best_mean_idx]
             # Variance of the best mean y value so far
             self.min_var_y = self.var_y[best_mean_idx]
+
+    def _update_success_rate(self, y_new: np.ndarray) -> None:
+        """Update the rolling success rate of the optimization process.
+        
+        A success is counted only if the new value is better (smaller) than the best
+        found y value so far. The success rate is calculated based on the last
+        `window_size` successes.
+        
+        Important: This method should be called BEFORE updating self.y_ to correctly
+        track improvements against the previous best value.
+        
+        Args:
+            y_new (ndarray): The new function values to consider for the success rate update.
+            
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 max_iter=10, n_initial=5)
+            >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
+            >>> opt.y_ = np.array([5.0, 3.0, 2.0])
+            >>> opt._update_success_rate(np.array([1.5, 2.5]))
+            >>> opt.success_rate > 0
+            True
+        """
+        # Initialize or update the rolling history of successes (1 for success, 0 for failure)
+        if not hasattr(self, '_success_history') or self._success_history is None:
+            self._success_history = []
+        
+        # Get the best y value so far (before adding new evaluations)
+        # Since this is called BEFORE updating self.y_, we can safely use min(self.y_)
+        if self.y_ is not None and len(self.y_) > 0:
+            best_y_before = min(self.y_)
+        else:
+            # This is the initial design, no previous best
+            best_y_before = float('inf')
+        
+        successes = []
+        current_best = best_y_before
+        
+        for val in y_new:
+            if val < current_best:
+                successes.append(1)
+                current_best = val  # Update for next comparison within this batch
+            else:
+                successes.append(0)
+        
+        # Add new successes to the history
+        self._success_history.extend(successes)
+        # Keep only the last window_size successes
+        self._success_history = self._success_history[-self.window_size:]
+        
+        # Calculate the rolling success rate
+        window_size = len(self._success_history)
+        num_successes = sum(self._success_history)
+        self.success_rate = num_successes / window_size if window_size > 0 else 0.0
+
+    def _get_success_rate(self) -> float:
+        """Get the current success rate of the optimization process.
+        
+        Returns:
+            float: The current success rate.
+            
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x,
+            ...                 bounds=[(-5, 5), (-5, 5)])
+            >>> print(opt._get_success_rate())
+            0.0
+        """
+        return float(getattr(self, 'success_rate', 0.0) or 0.0)
 
     def _clean_tensorboard_logs(self) -> None:
         """Clean old TensorBoard log directories from the runs folder.
@@ -670,6 +761,8 @@ class SpotOptim(BaseEstimator):
                 {"min": self.min_y, "last": y_last},
                 step
             )
+            # Log success rate
+            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
             # Log best X coordinates
             for i in range(self.n_dim):
                 self.tb_writer.add_scalar(
@@ -686,6 +779,8 @@ class SpotOptim(BaseEstimator):
             )
             # Log variance of best mean
             self.tb_writer.add_scalar("y_variance_at_best", self.min_var_y, step)
+            # Log success rate
+            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
             
             # Log best X coordinates (by mean)
             for i in range(self.n_dim):
@@ -873,6 +968,132 @@ class SpotOptim(BaseEstimator):
             y0 = y_mo
             
         return y0
+
+    def _get_ranks(self, x: np.ndarray) -> np.ndarray:
+        """Returns ranks of numbers within input array x.
+        
+        Args:
+            x (ndarray): Input array.
+            
+        Returns:
+            ndarray: Ranks array where ranks[i] is the rank of x[i].
+            
+        Examples:
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> opt._get_ranks(np.array([2, 1]))
+            array([1, 0])
+            >>> opt._get_ranks(np.array([20, 10, 100]))
+            array([1, 0, 2])
+        """
+        ts = x.argsort()
+        ranks = np.empty_like(ts)
+        ranks[ts] = np.arange(len(x))
+        return ranks
+
+    def _get_ocba(self, means: np.ndarray, vars: np.ndarray, delta: int, verbose: bool = False) -> np.ndarray:
+        """Optimal Computing Budget Allocation (OCBA).
+        
+        Calculates budget recommendations for given means, variances, and incremental
+        budget using the OCBA algorithm.
+        
+        References:
+            [1] Chun-Hung Chen and Loo Hay Lee: Stochastic Simulation Optimization: 
+                An Optimal Computer Budget Allocation, pp. 49 and pp. 215
+        
+        Args:
+            means (ndarray): Array of means.
+            vars (ndarray): Array of variances.
+            delta (int): Incremental budget.
+            verbose (bool): If True, print debug information. Defaults to False.
+            
+        Returns:
+            ndarray: Array of budget recommendations, or None if conditions not met.
+            
+        Examples:
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> means = np.array([1, 2, 3, 4, 5])
+            >>> vars = np.array([1, 1, 9, 9, 4])
+            >>> allocations = opt._get_ocba(means, vars, 50)
+            >>> allocations
+            array([11,  9, 19,  9,  2])
+        """
+        if np.all(vars > 0) and (means.shape[0] > 2):
+            n_designs = means.shape[0]
+            allocations = np.zeros(n_designs, np.int32)
+            ratios = np.zeros(n_designs, np.float64)
+            budget = delta
+            ranks = self._get_ranks(means)
+            best, second_best = np.argpartition(ranks, 2)[:2]
+            ratios[second_best] = 1.0
+            select = [i for i in range(n_designs) if i not in [best, second_best]]
+            temp = (means[best] - means[second_best]) / (means[best] - means[select])
+            ratios[select] = np.square(temp) * (vars[select] / vars[second_best])
+            select = [i for i in range(n_designs) if i not in [best]]
+            temp = (np.square(ratios[select]) / vars[select]).sum()
+            ratios[best] = np.sqrt(vars[best] * temp)
+            more_runs = np.full(n_designs, True, dtype=bool)
+            add_budget = np.zeros(n_designs, dtype=float)
+            more_alloc = True
+            
+            if verbose:
+                print("\nIn _get_ocba():")
+                print(f"means: {means}")
+                print(f"vars: {vars}")
+                print(f"delta: {delta}")
+                print(f"n_designs: {n_designs}")
+                print(f"Ratios: {ratios}")
+                print(f"Best: {best}, Second best: {second_best}")
+            
+            while more_alloc:
+                more_alloc = False
+                ratio_s = (more_runs * ratios).sum()
+                add_budget[more_runs] = (budget / ratio_s) * ratios[more_runs]
+                add_budget = np.around(add_budget).astype(int)
+                mask = add_budget < allocations
+                add_budget[mask] = allocations[mask]
+                more_runs[mask] = 0
+                
+                if mask.sum() > 0:
+                    more_alloc = True
+                if more_alloc:
+                    budget = allocations.sum() + delta
+                    budget -= (add_budget * ~more_runs).sum()
+            
+            t_budget = add_budget.sum()
+            add_budget[best] += allocations.sum() + delta - t_budget
+            return add_budget - allocations
+        else:
+            return None
+
+    def _get_ocba_X(self, X: np.ndarray, means: np.ndarray, vars: np.ndarray, 
+                    delta: int, verbose: bool = False) -> np.ndarray:
+        """Calculate OCBA allocation and repeat input array X.
+        
+        Args:
+            X (ndarray): Input array to be repeated, shape (n_designs, n_features).
+            means (ndarray): Array of means for each design.
+            vars (ndarray): Array of variances for each design.
+            delta (int): Incremental budget.
+            verbose (bool): If True, print debug information. Defaults to False.
+            
+        Returns:
+            ndarray: Repeated array of X based on OCBA allocation, or None if
+                     conditions not met.
+                     
+        Examples:
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> X = np.array([[1, 2], [4, 5], [7, 8]])
+            >>> means = np.array([1.5, 35, 550])
+            >>> vars = np.array([0.5, 50, 5000])
+            >>> X_new = opt._get_ocba_X(X, means, vars, delta=5, verbose=False)
+            >>> X_new.shape[0] == 5  # Should have 5 additional evaluations
+            True
+        """
+        if np.all(vars > 0) and (means.shape[0] > 2):
+            o = self._get_ocba(means=means, vars=vars, delta=delta, verbose=verbose)
+            return np.repeat(X, o, axis=0)
+        else:
+            return None
 
     def _evaluate_function(self, X: np.ndarray) -> np.ndarray:
         """Evaluate objective function at points X.
@@ -1167,6 +1388,66 @@ class SpotOptim(BaseEstimator):
         X[:, mask] = np.around(X[:, mask])
         return X
 
+    def _handle_acquisition_failure(self) -> np.ndarray:
+        """Handle acquisition failure by proposing new design points.
+        
+        This method is called when no new design points can be suggested
+        by the surrogate model (e.g., when the proposed point is too close
+        to existing points). Depending on the specified strategy, it either
+        proposes a Morris-Mitchell minimizing point or generates a new
+        space-filling design as a fallback.
+        
+        Returns:
+            ndarray: New design point as a fallback, shape (n_features,).
+            
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     acquisition_failure_strategy='random'
+            ... )
+            >>> opt.X_ = np.array([[0, 0], [1, 1]])
+            >>> opt.y_ = np.array([0, 2])
+            >>> x_fallback = opt._handle_acquisition_failure()
+            >>> x_fallback.shape
+            (2,)
+        """
+        if self.acquisition_failure_strategy == "mm":
+            # Morris-Mitchell phi minimizing point
+            # This strategy finds a point that maximizes the minimum distance
+            # to all existing points, providing good space-filling properties
+            if self.verbose:
+                print("Acquisition failure: Using Morris-Mitchell minimizing point as fallback.")
+            
+            # Calculate distances from all possible candidates to existing points
+            # We'll use a simple approach: generate many random candidates and pick the one
+            # with maximum minimum distance to existing points
+            n_candidates = 100
+            candidates_unit = self.lhs_sampler.random(n=n_candidates)
+            candidates = self.lower + candidates_unit * (self.upper - self.lower)
+            
+            # Calculate minimum distance from each candidate to existing points
+            min_distances = np.zeros(n_candidates)
+            for i, candidate in enumerate(candidates):
+                distances = np.linalg.norm(self.X_ - candidate, axis=1)
+                min_distances[i] = np.min(distances)
+            
+            # Select candidate with maximum minimum distance
+            best_idx = np.argmax(min_distances)
+            x_new = candidates[best_idx]
+            
+        else:
+            # Default: random space-filling design (Latin Hypercube Sampling)
+            if self.verbose:
+                print("Acquisition failure: Using random space-filling design as fallback.")
+            
+            x_new_unit = self.lhs_sampler.random(n=1)[0]
+            x_new = self.lower + x_new_unit * (self.upper - self.lower)
+        
+        return self._repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
+
     def _acquisition_function(self, x: np.ndarray) -> float:
         """Compute acquisition function value.
 
@@ -1222,6 +1503,9 @@ class SpotOptim(BaseEstimator):
 
     def _suggest_next_point(self) -> np.ndarray:
         """Suggest next point to evaluate using acquisition function optimization.
+        
+        If the acquisition function optimization fails to find a sufficiently distant
+        point, falls back to the strategy specified by acquisition_failure_strategy.
 
         Returns:
             ndarray: Next point to evaluate, shape (n_features,).
@@ -1240,13 +1524,9 @@ class SpotOptim(BaseEstimator):
         x_new, _ = self._select_new(A=x_next_2d, X=self.X_, tolerance=self.tolerance_x)
 
         if x_new.shape[0] == 0:
-            # If too close, generate random point
-            if self.verbose:
-                print("Proposed point too close, generating random point")
-            # Generate a random point using LHS
-            x_next_unit = self.lhs_sampler.random(n=1)[0]
-            x_next = self.lower + x_next_unit * (self.upper - self.lower)
-
+            # No new point found on surrogate - use fallback strategy
+            return self._handle_acquisition_failure()
+        
         return self._repair_non_numeric(x_next.reshape(1, -1), self.var_type)[0]
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
@@ -1300,6 +1580,9 @@ class SpotOptim(BaseEstimator):
         # Evaluate initial design
         y0 = self._evaluate_function(X0)
 
+        # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
+        self._update_success_rate(y0)
+
         # Initialize storage
         self.X_ = X0.copy()
         self.y_ = y0.copy()
@@ -1349,7 +1632,7 @@ class SpotOptim(BaseEstimator):
                         print(f"Warning: OCBA skipped (need >2 points with variance > 0)")
                 elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
                     # Get OCBA allocation
-                    X_ocba = get_ocba_X(self.mean_X, self.mean_y, self.var_y, self.ocba_delta)
+                    X_ocba = self._get_ocba_X(self.mean_X, self.mean_y, self.var_y, self.ocba_delta)
                     if self.verbose and X_ocba is not None:
                         print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")
 
@@ -1368,6 +1651,9 @@ class SpotOptim(BaseEstimator):
 
             # Evaluate next point(s) including OCBA points
             y_next = self._evaluate_function(x_next_repeated)
+
+            # Update success rate BEFORE updating storage (so it compares against previous best)
+            self._update_success_rate(y_next)
 
             # Update storage
             self.X_ = np.vstack([self.X_, x_next_repeated])
