@@ -228,7 +228,7 @@ class SpotOptim(BaseEstimator):
                 f"max_iter ({max_iter}) must be >= n_initial ({n_initial}). "
                 f"max_iter represents the total function evaluation budget including initial design."
             )
-        
+
         self.fun = fun
         self.bounds = bounds
         self.max_iter = max_iter
@@ -250,7 +250,7 @@ class SpotOptim(BaseEstimator):
         self.max_surrogate_points = max_surrogate_points
         self.selection_method = selection_method
         self.acquisition_failure_strategy = acquisition_failure_strategy
-        
+
         # Determine if noise handling is active
         self.noise = (repeats_initial > 1) or (repeats_surrogate > 1)
 
@@ -292,7 +292,7 @@ class SpotOptim(BaseEstimator):
         self.best_x_ = None
         self.best_y_ = None
         self.n_iter_ = 0
-        
+
         # Noise handling attributes (initialized in update_stats if noise=True)
         self.mean_X = None
         self.mean_y = None
@@ -303,16 +303,16 @@ class SpotOptim(BaseEstimator):
         self.min_X = None
         self.min_y = None
         self.counter = 0
-        
+
         # Success rate tracking (similar to Spot class)
         self.success_rate = 0.0
         self.success_counter = 0
         self.window_size = 100
         self._success_history = []
-        
+
         # Clean old TensorBoard logs if requested
         self._clean_tensorboard_logs()
-        
+
         # Initialize TensorBoard writer
         self._init_tensorboard_writer()
 
@@ -348,10 +348,14 @@ class SpotOptim(BaseEstimator):
 
             # Reduce variable types and names
             self.var_type = [
-                vtype for vtype, fixed in zip(self.all_var_type, self.ident) if not fixed
+                vtype
+                for vtype, fixed in zip(self.all_var_type, self.ident)
+                if not fixed
             ]
             self.var_name = [
-                vname for vname, fixed in zip(self.all_var_name, self.ident) if not fixed
+                vname
+                for vname, fixed in zip(self.all_var_name, self.ident)
+                if not fixed
             ]
 
             # Update bounds list for reduced dimensions
@@ -589,17 +593,17 @@ class SpotOptim(BaseEstimator):
 
     def _update_success_rate(self, y_new: np.ndarray) -> None:
         """Update the rolling success rate of the optimization process.
-        
+
         A success is counted only if the new value is better (smaller) than the best
         found y value so far. The success rate is calculated based on the last
         `window_size` successes.
-        
+
         Important: This method should be called BEFORE updating self.y_ to correctly
         track improvements against the previous best value.
-        
+
         Args:
             y_new (ndarray): The new function values to consider for the success rate update.
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -613,32 +617,32 @@ class SpotOptim(BaseEstimator):
             True
         """
         # Initialize or update the rolling history of successes (1 for success, 0 for failure)
-        if not hasattr(self, '_success_history') or self._success_history is None:
+        if not hasattr(self, "_success_history") or self._success_history is None:
             self._success_history = []
-        
+
         # Get the best y value so far (before adding new evaluations)
         # Since this is called BEFORE updating self.y_, we can safely use min(self.y_)
         if self.y_ is not None and len(self.y_) > 0:
             best_y_before = min(self.y_)
         else:
             # This is the initial design, no previous best
-            best_y_before = float('inf')
-        
+            best_y_before = float("inf")
+
         successes = []
         current_best = best_y_before
-        
+
         for val in y_new:
             if val < current_best:
                 successes.append(1)
                 current_best = val  # Update for next comparison within this batch
             else:
                 successes.append(0)
-        
+
         # Add new successes to the history
         self._success_history.extend(successes)
         # Keep only the last window_size successes
-        self._success_history = self._success_history[-self.window_size:]
-        
+        self._success_history = self._success_history[-self.window_size :]
+
         # Calculate the rolling success rate
         window_size = len(self._success_history)
         num_successes = sum(self._success_history)
@@ -646,10 +650,10 @@ class SpotOptim(BaseEstimator):
 
     def _get_success_rate(self) -> float:
         """Get the current success rate of the optimization process.
-        
+
         Returns:
             float: The current success rate.
-            
+
         Examples:
             >>> from spotoptim import SpotOptim
             >>> opt = SpotOptim(fun=lambda x: x,
@@ -657,18 +661,18 @@ class SpotOptim(BaseEstimator):
             >>> print(opt._get_success_rate())
             0.0
         """
-        return float(getattr(self, 'success_rate', 0.0) or 0.0)
+        return float(getattr(self, "success_rate", 0.0) or 0.0)
 
     def _clean_tensorboard_logs(self) -> None:
         """Clean old TensorBoard log directories from the runs folder.
-        
+
         Removes all subdirectories in the 'runs' directory if tensorboard_clean is True.
         This is useful for removing old logs before starting a new optimization run.
-        
+
         Warning:
             This will permanently delete all subdirectories in the 'runs' folder.
             Use with caution.
-        
+
         Examples:
             >>> from spotoptim import SpotOptim
             >>> opt = SpotOptim(
@@ -688,7 +692,7 @@ class SpotOptim(BaseEstimator):
                     for d in os.listdir(runs_dir)
                     if os.path.isdir(os.path.join(runs_dir, d))
                 ]
-                
+
                 if subdirs:
                     removed_count = 0
                     for subdir in subdirs:
@@ -700,9 +704,11 @@ class SpotOptim(BaseEstimator):
                         except Exception as e:
                             if self.verbose:
                                 print(f"Warning: Could not remove {subdir}: {e}")
-                    
+
                     if self.verbose and removed_count > 0:
-                        print(f"Cleaned {removed_count} old TensorBoard log director{'y' if removed_count == 1 else 'ies'}")
+                        print(
+                            f"Cleaned {removed_count} old TensorBoard log director{'y' if removed_count == 1 else 'ies'}"
+                        )
                 elif self.verbose:
                     print("No old TensorBoard logs to clean in 'runs' directory")
             elif self.verbose:
@@ -710,10 +716,10 @@ class SpotOptim(BaseEstimator):
 
     def _init_tensorboard_writer(self) -> None:
         """Initialize TensorBoard SummaryWriter if logging is enabled.
-        
+
         Creates a unique log directory based on timestamp if tensorboard_log is True.
         The log directory will be in the format: runs/spotoptim_YYYYMMDD_HHMMSS
-        
+
         Examples:
             >>> from spotoptim import SpotOptim
             >>> opt = SpotOptim(
@@ -729,10 +735,10 @@ class SpotOptim(BaseEstimator):
                 # Create default path with timestamp
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 self.tensorboard_path = f"runs/spotoptim_{timestamp}"
-            
+
             # Create directory if it doesn't exist
             os.makedirs(self.tensorboard_path, exist_ok=True)
-            
+
             self.tb_writer = SummaryWriter(log_dir=self.tensorboard_path)
             if self.verbose:
                 print(f"TensorBoard logging enabled: {self.tensorboard_path}")
@@ -743,7 +749,7 @@ class SpotOptim(BaseEstimator):
 
     def _write_tensorboard_scalars(self) -> None:
         """Write scalar metrics to TensorBoard.
-        
+
         Logs the following metrics:
         - Best y value found so far (min_y)
         - Last y value evaluated
@@ -752,83 +758,75 @@ class SpotOptim(BaseEstimator):
         """
         if self.tb_writer is None or self.y_ is None or len(self.y_) == 0:
             return
-        
+
         step = self.counter
         y_last = self.y_[-1]
-        
+
         if not self.noise:
             # Non-noisy optimization
             self.tb_writer.add_scalars(
-                "y_values",
-                {"min": self.min_y, "last": y_last},
-                step
+                "y_values", {"min": self.min_y, "last": y_last}, step
             )
             # Log success rate
             self.tb_writer.add_scalar("success_rate", self.success_rate, step)
             # Log best X coordinates
             for i in range(self.n_dim):
-                self.tb_writer.add_scalar(
-                    f"X_best/x{i}",
-                    self.min_X[i],
-                    step
-                )
+                self.tb_writer.add_scalar(f"X_best/x{i}", self.min_X[i], step)
         else:
             # Noisy optimization
             self.tb_writer.add_scalars(
                 "y_values",
                 {"min": self.min_y, "mean_best": self.min_mean_y, "last": y_last},
-                step
+                step,
             )
             # Log variance of best mean
             self.tb_writer.add_scalar("y_variance_at_best", self.min_var_y, step)
             # Log success rate
             self.tb_writer.add_scalar("success_rate", self.success_rate, step)
-            
+
             # Log best X coordinates (by mean)
             for i in range(self.n_dim):
-                self.tb_writer.add_scalar(
-                    f"X_mean_best/x{i}",
-                    self.min_mean_X[i],
-                    step
-                )
-        
+                self.tb_writer.add_scalar(f"X_mean_best/x{i}", self.min_mean_X[i], step)
+
         self.tb_writer.flush()
 
     def _write_tensorboard_hparams(self, X: np.ndarray, y: float) -> None:
         """Write hyperparameters and metric to TensorBoard.
-        
+
         Args:
             X (ndarray): Design point coordinates, shape (n_features,)
             y (float): Function value at X
         """
         if self.tb_writer is None:
             return
-        
+
         # Create hyperparameter dict with variable names
         hparam_dict = {self.var_name[i]: float(X[i]) for i in range(self.n_dim)}
         metric_dict = {"hp_metric": float(y)}
-        
+
         self.tb_writer.add_hparams(hparam_dict, metric_dict)
         self.tb_writer.flush()
 
     def _close_tensorboard_writer(self) -> None:
         """Close TensorBoard writer and cleanup."""
-        if hasattr(self, 'tb_writer') and self.tb_writer is not None:
+        if hasattr(self, "tb_writer") and self.tb_writer is not None:
             self.tb_writer.flush()
             self.tb_writer.close()
             if self.verbose:
-                print(f"TensorBoard writer closed. View logs with: tensorboard --logdir={self.tensorboard_path}")
+                print(
+                    f"TensorBoard writer closed. View logs with: tensorboard --logdir={self.tensorboard_path}"
+                )
             del self.tb_writer
 
     def _get_shape(self, y: np.ndarray) -> Tuple[int, Optional[int]]:
         """Get the shape of the objective function output.
-        
+
         Args:
             y (ndarray): Objective function output, shape (n_samples,) or (n_samples, n_objectives).
-            
+
         Returns:
             tuple: (n_samples, n_objectives) where n_objectives is None for single-objective.
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -857,15 +855,15 @@ class SpotOptim(BaseEstimator):
 
     def _store_mo(self, y_mo: np.ndarray) -> None:
         """Store multi-objective values in self.y_mo.
-        
+
         If multi-objective values are present (ndim==2), they are stored in self.y_mo.
-        New values are appended to existing ones. For single-objective problems, 
+        New values are appended to existing ones. For single-objective problems,
         self.y_mo remains None.
-        
+
         Args:
             y_mo (ndarray): If multi-objective, shape (n_samples, n_objectives).
                            If single-objective, shape (n_samples,).
-                           
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -899,21 +897,21 @@ class SpotOptim(BaseEstimator):
 
     def _mo2so(self, y_mo: np.ndarray) -> np.ndarray:
         """Convert multi-objective values to single-objective.
-        
+
         Converts multi-objective values to a single-objective value by applying a user-defined
         function from `fun_mo2so`. If no user-defined function is given, the
         values in the first objective column are used.
-        
+
         This method is called after the objective function evaluation. It returns a 1D array
         with the single-objective values.
-        
+
         Args:
             y_mo (ndarray): If multi-objective, shape (n_samples, n_objectives).
                            If single-objective, shape (n_samples,).
-                           
+
         Returns:
             ndarray: Single-objective values, shape (n_samples,).
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -923,7 +921,7 @@ class SpotOptim(BaseEstimator):
             ...         np.sum(X**2, axis=1),
             ...         np.sum((X-1)**2, axis=1)
             ...     ])
-            >>> 
+            >>>
             >>> # Example 1: Default behavior (use first objective)
             >>> opt1 = SpotOptim(
             ...     fun=mo_fun,
@@ -935,11 +933,11 @@ class SpotOptim(BaseEstimator):
             >>> y_so = opt1._mo2so(y_mo)
             >>> print(f"Single-objective (default): {y_so}")
             Single-objective (default): [1. 3.]
-            >>> 
+            >>>
             >>> # Example 2: Custom conversion function (sum of objectives)
             >>> def custom_mo2so(y_mo):
             ...     return y_mo[:, 0] + y_mo[:, 1]
-            >>> 
+            >>>
             >>> opt2 = SpotOptim(
             ...     fun=mo_fun,
             ...     bounds=[(-5, 5), (-5, 5)],
@@ -953,7 +951,7 @@ class SpotOptim(BaseEstimator):
         """
         n, m = self._get_shape(y_mo)
         self._store_mo(y_mo)
-        
+
         # Use ndim to check if multi-objective
         if y_mo.ndim == 2:
             if self.fun_mo2so is not None:
@@ -968,18 +966,18 @@ class SpotOptim(BaseEstimator):
         else:
             # Single-objective, return as-is
             y0 = y_mo
-            
+
         return y0
 
     def _get_ranks(self, x: np.ndarray) -> np.ndarray:
         """Returns ranks of numbers within input array x.
-        
+
         Args:
             x (ndarray): Input array.
-            
+
         Returns:
             ndarray: Ranks array where ranks[i] is the rank of x[i].
-            
+
         Examples:
             >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
             >>> opt._get_ranks(np.array([2, 1]))
@@ -992,25 +990,27 @@ class SpotOptim(BaseEstimator):
         ranks[ts] = np.arange(len(x))
         return ranks
 
-    def _get_ocba(self, means: np.ndarray, vars: np.ndarray, delta: int, verbose: bool = False) -> np.ndarray:
+    def _get_ocba(
+        self, means: np.ndarray, vars: np.ndarray, delta: int, verbose: bool = False
+    ) -> np.ndarray:
         """Optimal Computing Budget Allocation (OCBA).
-        
+
         Calculates budget recommendations for given means, variances, and incremental
         budget using the OCBA algorithm.
-        
+
         References:
-            [1] Chun-Hung Chen and Loo Hay Lee: Stochastic Simulation Optimization: 
+            [1] Chun-Hung Chen and Loo Hay Lee: Stochastic Simulation Optimization:
                 An Optimal Computer Budget Allocation, pp. 49 and pp. 215
-        
+
         Args:
             means (ndarray): Array of means.
             vars (ndarray): Array of variances.
             delta (int): Incremental budget.
             verbose (bool): If True, print debug information. Defaults to False.
-            
+
         Returns:
             ndarray: Array of budget recommendations, or None if conditions not met.
-            
+
         Examples:
             >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
             >>> means = np.array([1, 2, 3, 4, 5])
@@ -1036,7 +1036,7 @@ class SpotOptim(BaseEstimator):
             more_runs = np.full(n_designs, True, dtype=bool)
             add_budget = np.zeros(n_designs, dtype=float)
             more_alloc = True
-            
+
             if verbose:
                 print("\nIn _get_ocba():")
                 print(f"means: {means}")
@@ -1045,7 +1045,7 @@ class SpotOptim(BaseEstimator):
                 print(f"n_designs: {n_designs}")
                 print(f"Ratios: {ratios}")
                 print(f"Best: {best}, Second best: {second_best}")
-            
+
             while more_alloc:
                 more_alloc = False
                 ratio_s = (more_runs * ratios).sum()
@@ -1054,34 +1054,40 @@ class SpotOptim(BaseEstimator):
                 mask = add_budget < allocations
                 add_budget[mask] = allocations[mask]
                 more_runs[mask] = 0
-                
+
                 if mask.sum() > 0:
                     more_alloc = True
                 if more_alloc:
                     budget = allocations.sum() + delta
                     budget -= (add_budget * ~more_runs).sum()
-            
+
             t_budget = add_budget.sum()
             add_budget[best] += allocations.sum() + delta - t_budget
             return add_budget - allocations
         else:
             return None
 
-    def _get_ocba_X(self, X: np.ndarray, means: np.ndarray, vars: np.ndarray, 
-                    delta: int, verbose: bool = False) -> np.ndarray:
+    def _get_ocba_X(
+        self,
+        X: np.ndarray,
+        means: np.ndarray,
+        vars: np.ndarray,
+        delta: int,
+        verbose: bool = False,
+    ) -> np.ndarray:
         """Calculate OCBA allocation and repeat input array X.
-        
+
         Args:
             X (ndarray): Input array to be repeated, shape (n_designs, n_features).
             means (ndarray): Array of means for each design.
             vars (ndarray): Array of variances for each design.
             delta (int): Incremental budget.
             verbose (bool): If True, print debug information. Defaults to False.
-            
+
         Returns:
             ndarray: Repeated array of X based on OCBA allocation, or None if
                      conditions not met.
-                     
+
         Examples:
             >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
             >>> X = np.array([[1, 2], [4, 5], [7, 8]])
@@ -1109,7 +1115,7 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             ndarray: Function values, shape (n_samples,).
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -1124,7 +1130,7 @@ class SpotOptim(BaseEstimator):
             >>> y = opt_so._evaluate_function(X)
             >>> print(f"Single-objective output: {y}")
             Single-objective output: [ 5. 25.]
-            >>> 
+            >>>
             >>> # Multi-objective function (default: use first objective)
             >>> opt_mo = SpotOptim(
             ...     fun=lambda X: np.column_stack([
@@ -1152,7 +1158,7 @@ class SpotOptim(BaseEstimator):
         # Convert to numpy array if needed
         if not isinstance(y_raw, np.ndarray):
             y_raw = np.array([y_raw])
-        
+
         # Handle multi-objective case
         y = self._mo2so(y_raw)
 
@@ -1392,16 +1398,16 @@ class SpotOptim(BaseEstimator):
 
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
-        
+
         This method is called when no new design points can be suggested
         by the surrogate model (e.g., when the proposed point is too close
         to existing points). Depending on the specified strategy, it either
         proposes a Morris-Mitchell minimizing point or generates a new
         space-filling design as a fallback.
-        
+
         Returns:
             ndarray: New design point as a fallback, shape (n_features,).
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -1421,33 +1427,37 @@ class SpotOptim(BaseEstimator):
             # This strategy finds a point that maximizes the minimum distance
             # to all existing points, providing good space-filling properties
             if self.verbose:
-                print("Acquisition failure: Using Morris-Mitchell minimizing point as fallback.")
-            
+                print(
+                    "Acquisition failure: Using Morris-Mitchell minimizing point as fallback."
+                )
+
             # Calculate distances from all possible candidates to existing points
             # We'll use a simple approach: generate many random candidates and pick the one
             # with maximum minimum distance to existing points
             n_candidates = 100
             candidates_unit = self.lhs_sampler.random(n=n_candidates)
             candidates = self.lower + candidates_unit * (self.upper - self.lower)
-            
+
             # Calculate minimum distance from each candidate to existing points
             min_distances = np.zeros(n_candidates)
             for i, candidate in enumerate(candidates):
                 distances = np.linalg.norm(self.X_ - candidate, axis=1)
                 min_distances[i] = np.min(distances)
-            
+
             # Select candidate with maximum minimum distance
             best_idx = np.argmax(min_distances)
             x_new = candidates[best_idx]
-            
+
         else:
             # Default: random space-filling design (Latin Hypercube Sampling)
             if self.verbose:
-                print("Acquisition failure: Using random space-filling design as fallback.")
-            
+                print(
+                    "Acquisition failure: Using random space-filling design as fallback."
+                )
+
             x_new_unit = self.lhs_sampler.random(n=1)[0]
             x_new = self.lower + x_new_unit * (self.upper - self.lower)
-        
+
         return self._repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
 
     def _acquisition_function(self, x: np.ndarray) -> float:
@@ -1505,7 +1515,7 @@ class SpotOptim(BaseEstimator):
 
     def _suggest_next_point(self) -> np.ndarray:
         """Suggest next point to evaluate using acquisition function optimization.
-        
+
         If the acquisition function optimization fails to find a sufficiently distant
         point, falls back to the strategy specified by acquisition_failure_strategy.
 
@@ -1528,7 +1538,7 @@ class SpotOptim(BaseEstimator):
         if x_new.shape[0] == 0:
             # No new point found on surrogate - use fallback strategy
             return self._handle_acquisition_failure()
-        
+
         return self._repair_non_numeric(x_next.reshape(1, -1), self.var_type)[0]
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
@@ -1560,7 +1570,7 @@ class SpotOptim(BaseEstimator):
             >>> # Will perform 10 initial + 20 sequential iterations = 30 total evaluations
             >>>
             >>> # Example 2: Time-based termination
-            >>> opt = SpotOptim(fun=expensive_objective, bounds=bounds, 
+            >>> opt = SpotOptim(fun=expensive_objective, bounds=bounds,
             ...                 max_iter=1000, max_time=5.0)  # 5 minutes max
             >>> result = opt.optimize()
             >>> # Will stop after 5 minutes OR 1000 evaluations, whichever comes first
@@ -1592,7 +1602,7 @@ class SpotOptim(BaseEstimator):
 
         # Update stats after initial design
         self.update_stats()
-        
+
         # Log initial design to TensorBoard
         if self.tb_writer is not None:
             for i in range(len(self.y_)):
@@ -1606,7 +1616,9 @@ class SpotOptim(BaseEstimator):
 
         if self.verbose:
             if self.noise:
-                print(f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}")
+                print(
+                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
+                )
             else:
                 print(f"Initial best: f(x) = {self.best_y_:.6f}")
 
@@ -1615,7 +1627,9 @@ class SpotOptim(BaseEstimator):
 
         # Main optimization loop
         # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
-        while (len(self.y_) < self.max_iter) and (time.time() < timeout_start + self.max_time * 60):
+        while (len(self.y_) < self.max_iter) and (
+            time.time() < timeout_start + self.max_time * 60
+        ):
             self.n_iter_ += 1
 
             # Fit surrogate (use mean_y if noise, otherwise y_)
@@ -1631,10 +1645,14 @@ class SpotOptim(BaseEstimator):
                 # Check conditions for OCBA (need variance > 0 and at least 3 points)
                 if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
                     if self.verbose:
-                        print(f"Warning: OCBA skipped (need >2 points with variance > 0)")
+                        print(
+                            f"Warning: OCBA skipped (need >2 points with variance > 0)"
+                        )
                 elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
                     # Get OCBA allocation
-                    X_ocba = self._get_ocba_X(self.mean_X, self.mean_y, self.var_y, self.ocba_delta)
+                    X_ocba = self._get_ocba_X(
+                        self.mean_X, self.mean_y, self.var_y, self.ocba_delta
+                    )
                     if self.verbose and X_ocba is not None:
                         print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")
 
@@ -1643,7 +1661,9 @@ class SpotOptim(BaseEstimator):
 
             # Repeat next point if repeats_surrogate > 1
             if self.repeats_surrogate > 1:
-                x_next_repeated = np.repeat(x_next.reshape(1, -1), self.repeats_surrogate, axis=0)
+                x_next_repeated = np.repeat(
+                    x_next.reshape(1, -1), self.repeats_surrogate, axis=0
+                )
             else:
                 x_next_repeated = x_next.reshape(1, -1)
 
@@ -1663,7 +1683,7 @@ class SpotOptim(BaseEstimator):
 
             # Update stats
             self.update_stats()
-            
+
             # Log to TensorBoard
             if self.tb_writer is not None:
                 # Log each new evaluation
@@ -1695,7 +1715,11 @@ class SpotOptim(BaseEstimator):
                     print(f"Iteration {self.n_iter_}: f(x) = {y_next[0]:.6f}")
 
         # Expand results to full dimensions if needed
-        best_x_full = self.to_all_dim(self.best_x_.reshape(1, -1))[0] if self.red_dim else self.best_x_
+        best_x_full = (
+            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+            if self.red_dim
+            else self.best_x_
+        )
         X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
 
         # Determine termination reason
@@ -1703,10 +1727,12 @@ class SpotOptim(BaseEstimator):
         if len(self.y_) >= self.max_iter:
             message = f"Optimization terminated: maximum evaluations ({self.max_iter}) reached"
         elif elapsed_time >= self.max_time * 60:
-            message = f"Optimization terminated: time limit ({self.max_time:.2f} min) reached"
+            message = (
+                f"Optimization terminated: time limit ({self.max_time:.2f} min) reached"
+            )
         else:
             message = "Optimization finished successfully"
-        
+
         # Close TensorBoard writer
         self._close_tensorboard_writer()
 
@@ -1906,10 +1932,10 @@ class SpotOptim(BaseEstimator):
 
     def _get_experiment_filename(self, prefix: str) -> str:
         """Generate experiment filename from prefix.
-        
+
         Args:
             prefix (str): Prefix for the filename.
-            
+
         Returns:
             str: Filename with '_exp.pkl' suffix.
         """
@@ -1919,10 +1945,10 @@ class SpotOptim(BaseEstimator):
 
     def _get_result_filename(self, prefix: str) -> str:
         """Generate result filename from prefix.
-        
+
         Args:
             prefix (str): Prefix for the filename.
-            
+
         Returns:
             str: Filename with '_res.pkl' suffix.
         """
@@ -1940,19 +1966,21 @@ class SpotOptim(BaseEstimator):
                 pass
             self.tb_writer = None
 
-    def _get_pickle_safe_optimizer(self, unpickleables: str = "file_io", verbosity: int = 0) -> "SpotOptim":
+    def _get_pickle_safe_optimizer(
+        self, unpickleables: str = "file_io", verbosity: int = 0
+    ) -> "SpotOptim":
         """Create a pickle-safe copy of the optimizer.
-        
+
         This method creates a copy of the optimizer instance with unpickleable components removed
         or set to None to enable safe serialization.
-        
+
         Args:
             unpickleables (str): Type of unpickleable components to exclude.
                 - "file_io": Excludes only file I/O components (tb_writer) and fun
                 - "all": Excludes file I/O, fun, surrogate, and lhs_sampler
                 Defaults to "file_io".
             verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
-            
+
         Returns:
             SpotOptim: A copy of the optimizer with unpickleable components removed.
         """
@@ -1962,10 +1990,10 @@ class SpotOptim(BaseEstimator):
             unpickleable_attrs = ["tb_writer", "fun"]
         else:
             unpickleable_attrs = ["tb_writer", "fun", "surrogate", "lhs_sampler"]
-        
+
         # Prepare picklable state dictionary
         picklable_state = {}
-        
+
         for key, value in self.__dict__.items():
             if key not in unpickleable_attrs:
                 try:
@@ -1976,21 +2004,23 @@ class SpotOptim(BaseEstimator):
                         print(f"Attribute '{key}' is picklable and will be included.")
                 except Exception as e:
                     if verbosity > 0:
-                        print(f"Attribute '{key}' is not picklable and will be excluded: {e}")
+                        print(
+                            f"Attribute '{key}' is not picklable and will be excluded: {e}"
+                        )
                     continue
             else:
                 if verbosity > 1:
                     print(f"Attribute '{key}' explicitly excluded from pickling.")
-        
+
         # Create new instance with picklable state
         picklable_instance = self.__class__.__new__(self.__class__)
         picklable_instance.__dict__.update(picklable_state)
-        
+
         # Set excluded attributes to None
         for attr in unpickleable_attrs:
             if not hasattr(picklable_instance, attr):
                 setattr(picklable_instance, attr, None)
-        
+
         return picklable_instance
 
     def save_experiment(
@@ -2000,25 +2030,25 @@ class SpotOptim(BaseEstimator):
         path: Optional[str] = None,
         overwrite: bool = True,
         unpickleables: str = "all",
-        verbosity: int = 0
+        verbosity: int = 0,
     ) -> None:
         """Save the experiment configuration to a pickle file.
-        
+
         An experiment contains the optimizer configuration needed to run optimization,
         but excludes the results. This is useful for defining experiments locally and
         executing them on remote machines.
-        
+
         The experiment includes:
         - Bounds, variable types, variable names
         - Optimization parameters (max_iter, n_initial, etc.)
         - Surrogate and acquisition settings
         - Random seed
-        
+
         The experiment excludes:
         - Function evaluations (X_, y_)
         - Optimization results
         - Objective function (must be re-attached after loading)
-        
+
         Args:
             filename (str, optional): Filename for the experiment file. If None, generates
                 from prefix. Defaults to None.
@@ -2032,14 +2062,14 @@ class SpotOptim(BaseEstimator):
                 - "file_io": Excludes only tb_writer (lighter exclusion)
                 Defaults to "all".
             verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
-            
+
         Returns:
             None
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> 
+            >>>
             >>> # Define experiment locally
             >>> opt = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
@@ -2048,11 +2078,11 @@ class SpotOptim(BaseEstimator):
             ...     n_initial=10,
             ...     seed=42
             ... )
-            >>> 
+            >>>
             >>> # Save experiment (without results)
             >>> opt.save_experiment(prefix="sphere_opt")
             Experiment saved to sphere_opt_exp.pkl
-            >>> 
+            >>>
             >>> # On remote machine: load and run
             >>> # opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
             >>> # opt_remote.fun = objective_function  # Re-attach function
@@ -2061,29 +2091,28 @@ class SpotOptim(BaseEstimator):
         """
         # Close TensorBoard writer before pickling
         self._close_and_del_tensorboard_writer()
-        
+
         # Create pickle-safe copy
         optimizer_copy = self._get_pickle_safe_optimizer(
-            unpickleables=unpickleables,
-            verbosity=verbosity
+            unpickleables=unpickleables, verbosity=verbosity
         )
-        
+
         # Determine filename
         if filename is None:
             filename = self._get_experiment_filename(prefix)
-        
+
         # Add path if provided
         if path is not None:
             if not os.path.exists(path):
                 os.makedirs(path)
             filename = os.path.join(path, filename)
-        
+
         # Check for existing file
         if os.path.exists(filename) and not overwrite:
             raise FileExistsError(
                 f"File {filename} already exists. Use overwrite=True to overwrite."
             )
-        
+
         # Save to pickle file
         try:
             with open(filename, "wb") as handle:
@@ -2099,14 +2128,14 @@ class SpotOptim(BaseEstimator):
         prefix: str = "result",
         path: Optional[str] = None,
         overwrite: bool = True,
-        verbosity: int = 0
+        verbosity: int = 0,
     ) -> None:
         """Save the complete optimization results to a pickle file.
-        
+
         A result contains all information from a completed optimization run, including
         the experiment configuration and all evaluation results. This is useful for
         saving completed runs for later analysis.
-        
+
         The result includes everything in an experiment plus:
         - All evaluated points (X_)
         - All function values (y_)
@@ -2114,7 +2143,7 @@ class SpotOptim(BaseEstimator):
         - Iteration count
         - Success rate statistics
         - Noise statistics (if applicable)
-        
+
         Args:
             filename (str, optional): Filename for the result file. If None, generates
                 from prefix. Defaults to None.
@@ -2124,14 +2153,14 @@ class SpotOptim(BaseEstimator):
             overwrite (bool): If True, overwrites existing file. If False, raises error if
                 file exists. Defaults to True.
             verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
-            
+
         Returns:
             None
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> 
+            >>>
             >>> # Run optimization
             >>> opt = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
@@ -2141,11 +2170,11 @@ class SpotOptim(BaseEstimator):
             ...     seed=42
             ... )
             >>> result = opt.optimize()
-            >>> 
+            >>>
             >>> # Save complete results
             >>> opt.save_result(prefix="sphere_opt")
             Result saved to sphere_opt_res.pkl
-            >>> 
+            >>>
             >>> # Later: load and analyze
             >>> # opt_loaded = SpotOptim.load_result("sphere_opt_res.pkl")
             >>> # print("Best value:", opt_loaded.best_y_)
@@ -2154,15 +2183,15 @@ class SpotOptim(BaseEstimator):
         # Use save_experiment with file_io unpickleables to preserve results
         if filename is None:
             filename = self._get_result_filename(prefix)
-        
+
         self.save_experiment(
             filename=filename,
             path=path,
             overwrite=overwrite,
             unpickleables="file_io",
-            verbosity=verbosity
+            verbosity=verbosity,
         )
-        
+
         # Update message
         if path is not None:
             full_path = os.path.join(path, filename)
@@ -2172,70 +2201,70 @@ class SpotOptim(BaseEstimator):
 
     def _reinitialize_components(self) -> None:
         """Reinitialize components that were excluded during pickling.
-        
+
         This method recreates the surrogate model and LHS sampler that were
         excluded when saving an experiment or result.
         """
         # Reinitialize LHS sampler if needed
-        if not hasattr(self, 'lhs_sampler') or self.lhs_sampler is None:
+        if not hasattr(self, "lhs_sampler") or self.lhs_sampler is None:
             self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
-        
+
         # Reinitialize surrogate if needed
-        if not hasattr(self, 'surrogate') or self.surrogate is None:
+        if not hasattr(self, "surrogate") or self.surrogate is None:
             kernel = ConstantKernel(1.0) * Matern(
                 length_scale=np.ones(self.n_dim),
                 length_scale_bounds=(1e-2, 1e2),
-                nu=2.5
+                nu=2.5,
             )
             self.surrogate = GaussianProcessRegressor(
                 kernel=kernel,
                 n_restarts_optimizer=10,
                 random_state=self.seed,
-                normalize_y=True
+                normalize_y=True,
             )
 
     @staticmethod
     def load_experiment(filename: str) -> "SpotOptim":
         """Load an experiment configuration from a pickle file.
-        
+
         Loads an experiment that was saved with save_experiment(). The loaded optimizer
         will have the configuration but not the objective function (which must be
         re-attached) or results.
-        
+
         Args:
             filename (str): Path to the experiment pickle file.
-            
+
         Returns:
             SpotOptim: Loaded optimizer instance (without fun attached).
-            
+
         Raises:
             FileNotFoundError: If the specified file doesn't exist.
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> 
+            >>>
             >>> # Load experiment
             >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
             Loaded experiment from sphere_opt_exp.pkl
-            >>> 
+            >>>
             >>> # Re-attach objective function
             >>> opt.fun = lambda X: np.sum(X**2, axis=1)
-            >>> 
+            >>>
             >>> # Run optimization
             >>> result = opt.optimize()
         """
         if not os.path.exists(filename):
             raise FileNotFoundError(f"Experiment file not found: {filename}")
-        
+
         try:
             with open(filename, "rb") as handle:
                 optimizer = pickle.load(handle)
             print(f"Loaded experiment from {filename}")
-            
+
             # Reinitialize components that were excluded
             optimizer._reinitialize_components()
-            
+
             return optimizer
         except Exception as e:
             print(f"Error loading experiment: {e}")
@@ -2244,33 +2273,33 @@ class SpotOptim(BaseEstimator):
     @staticmethod
     def load_result(filename: str) -> "SpotOptim":
         """Load complete optimization results from a pickle file.
-        
+
         Loads results that were saved with save_result(). The loaded optimizer
         will have both configuration and all optimization results.
-        
+
         Args:
             filename (str): Path to the result pickle file.
-            
+
         Returns:
             SpotOptim: Loaded optimizer instance with complete results.
-            
+
         Raises:
             FileNotFoundError: If the specified file doesn't exist.
-            
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> 
+            >>>
             >>> # Load results
             >>> opt = SpotOptim.load_result("sphere_opt_res.pkl")
             Loaded result from sphere_opt_res.pkl
-            >>> 
+            >>>
             >>> # Analyze results
             >>> print("Best point:", opt.best_x_)
             >>> print("Best value:", opt.best_y_)
             >>> print("Total evaluations:", opt.counter)
             >>> print("Success rate:", opt.success_rate)
-            >>> 
+            >>>
             >>> # Continue optimization if needed
             >>> # opt.fun = lambda X: np.sum(X**2, axis=1)  # Re-attach if continuing
             >>> # opt.max_iter = 50  # Increase budget
@@ -2278,15 +2307,15 @@ class SpotOptim(BaseEstimator):
         """
         if not os.path.exists(filename):
             raise FileNotFoundError(f"Result file not found: {filename}")
-        
+
         try:
             with open(filename, "rb") as handle:
                 optimizer = pickle.load(handle)
             print(f"Loaded result from {filename}")
-            
+
             # Reinitialize components that were excluded
             optimizer._reinitialize_components()
-            
+
             return optimizer
         except Exception as e:
             print(f"Error loading result: {e}")
