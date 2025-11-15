@@ -1,10 +1,10 @@
 # SpotOptim
 
-Sequential Parameter Optimization with Bayesian Optimization.
+Sequential Parameter Optimization 
 
 ## Features
 
-- **Bayesian Optimization**: Uses surrogate models to efficiently optimize expensive black-box functions
+- **Surrogate Model Based Optimization**: Uses surrogate models to efficiently optimize expensive black-box functions
 - **Multiple Acquisition Functions**: Expected Improvement (EI), Predicted Mean (y), Probability of Improvement (PI)
 - **Flexible Surrogates**: Default Gaussian Process or custom Kriging surrogate
 - **Variable Types**: Support for continuous, integer, and mixed variable types
@@ -77,6 +77,7 @@ result = optimizer.optimize()
 ### SpotOptim
 
 **Parameters:**
+
 - `fun` (callable): Objective function to minimize
 - `bounds` (list of tuples): Bounds for each dimension as [(low, high), ...]
 - `max_iter` (int, default=20): Maximum number of optimization iterations
@@ -91,6 +92,7 @@ result = optimizer.optimize()
 - `selection_method` (str, default='distant'): Point selection method ('distant' or 'best')
 
 **Methods:**
+
 - `optimize(X0=None)`: Run optimization, optionally with initial design points
 - `plot_surrogate(i=0, j=1, show=True, **kwargs)`: Visualize the fitted surrogate model
 
@@ -129,6 +131,7 @@ See `examples/point_selection_example.py` for a complete demonstration.
 ### Kriging
 
 **Parameters:**
+
 - `noise` (float, optional): Regularization parameter
 - `kernel` (str, default='gauss'): Kernel type
 - `n_theta` (int, optional): Number of theta parameters
@@ -137,6 +140,7 @@ See `examples/point_selection_example.py` for a complete demonstration.
 - `seed` (int, optional): Random seed
 
 **Methods:**
+
 - `fit(X, y)`: Fit the model to training data
 - `predict(X, return_std=False)`: Predict at new points
 
@@ -156,6 +160,7 @@ optimizer.plot_surrogate(
 ```
 
 The plot shows:
+
 - **Top left**: 3D surface of predictions
 - **Top right**: 3D surface of prediction uncertainty
 - **Bottom left**: Contour plot of predictions with evaluated points
@@ -168,6 +173,7 @@ For higher-dimensional problems, the method visualizes a 2D slice by fixing othe
 ### Notebooks
 
 See `notebooks/demos.ipynb` for interactive examples:
+
 1. 2D Rosenbrock function optimization
 2. 6D Rosenbrock with budget constraints
 3. Using Kriging surrogate vs default GP
@@ -178,6 +184,7 @@ See `notebooks/demos.ipynb` for interactive examples:
 The `examples/` directory contains detailed tutorials:
 
 **Aircraft Wing Weight Optimization (AWWE)**
+
 - `awwe.qmd` - Comprehensive Quarto tutorial teaching surrogate-based optimization
 - `awwe_optimization.py` - Standalone Python script demonstrating complete workflow
 - 9-dimensional optimization problem from engineering design

@@ -13,8 +13,13 @@ nav:
 - Download: download.md
 - Examples: examples.md
 - Reproducibility: reproducibility.md
+- Handling Variable Types: var_type.md
+- Kriging (internal Surrogate): kriging.md
 - Multiobjective Optimization: multiobjective.md
 - Point Selection Strategy: point_selection.md
+- Plot Surrogate: plot_surrogate.md
+- Plot Using TensorBoard: tensorboard.md
+- TensorBoard Clean Feature: tensorboard_clean.md
 - About: about.md
 
 theme:

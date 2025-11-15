@@ -79,21 +79,25 @@ optimizer.plot_surrogate(i=1, j=3, var_name=['x0', 'x1', 'x2', 'x3'])
 The visualization consists of 4 panels:
 
 ### Top Left: Prediction Surface
+
 - Shows the surrogate model's predicted function values as a 3D surface
 - Helps understand the model's belief about the objective function landscape
 - Lower values (blue in default colormap) indicate predicted minima
 
 ### Top Right: Prediction Uncertainty Surface
+
 - Shows the standard deviation of predictions as a 3D surface
 - Indicates where the model is uncertain and might benefit from more samples
 - Lower values (blue) indicate high confidence, higher values (red) indicate uncertainty
 
 ### Bottom Left: Prediction Contour with Points
+
 - 2D contour plot of predictions
 - Red dots show the actual points evaluated during optimization
 - Useful for understanding the exploration-exploitation trade-off
 
 ### Bottom Right: Uncertainty Contour with Points
+
 - 2D contour plot of prediction uncertainty
 - Shows how uncertainty decreases around evaluated points
 - Helps identify unexplored regions
@@ -101,25 +105,30 @@ The visualization consists of 4 panels:
 ## Parameters
 
 ### Dimension Selection
+
 - `i` (int, default=0): Index of first dimension to plot
 - `j` (int, default=1): Index of second dimension to plot
 
 ### Appearance
+
 - `var_name` (list of str, optional): Names for each dimension
 - `cmap` (str, default='jet'): Matplotlib colormap name
 - `alpha` (float, default=0.8): Surface transparency (0=transparent, 1=opaque)
 - `figsize` (tuple, default=(12, 10)): Figure size in inches (width, height)
 
 ### Grid and Resolution
+
 - `num` (int, default=100): Number of grid points per dimension
 - `contour_levels` (int, default=30): Number of contour levels
 - `grid_visible` (bool, default=True): Show grid lines on contour plots
 
 ### Color Scaling
+
 - `vmin` (float, optional): Minimum value for color scale
 - `vmax` (float, optional): Maximum value for color scale
 
 ### Display
+
 - `show` (bool, default=True): Display plot immediately
 - `add_points` (bool, default=True): Overlay evaluated points on contours
 
@@ -215,11 +224,13 @@ optimizer.plot_surrogate(i=1, j=2, var_name=['x0', 'x1', 'x2'])
 The `plot_surrogate()` method is inspired by spotpython's `plotkd()` function but adapted for SpotOptim's simplified interface:
 
 ### Similarities
+
 - Same 4-panel layout (2 surfaces + 2 contours)
 - Visualizes predictions and uncertainty
 - Supports dimension selection and customization
 
 ### Differences
+
 - **Integration**: Method of SpotOptim class (no separate function needed)
 - **Simpler**: Fewer parameters, more sensible defaults
 - **Automatic**: Uses optimizer's bounds and data automatically

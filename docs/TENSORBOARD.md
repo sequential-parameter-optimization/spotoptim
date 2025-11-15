@@ -1,6 +1,6 @@
 # TensorBoard Logging in SpotOptim
 
-SpotOptim now supports TensorBoard logging for monitoring optimization progress in real-time.
+SpotOptim supports TensorBoard logging for monitoring optimization progress in real-time.
 
 ## Quick Start
 
@@ -87,11 +87,13 @@ optimizer = SpotOptim(
 ### Scalar Metrics
 
 **For Deterministic Functions:**
+
 - `y_values/min`: Best (minimum) y value found so far
 - `y_values/last`: Most recently evaluated y value
 - `X_best/x0, X_best/x1, ...`: Coordinates of the best point
 
 **For Noisy Functions (repeats > 1):**
+
 - `y_values/min`: Best single evaluation
 - `y_values/mean_best`: Best mean y value
 - `y_values/last`: Most recent evaluation
@@ -101,6 +103,7 @@ optimizer = SpotOptim(
 ### Hyperparameters
 
 Each function evaluation is logged with:
+
 - Input coordinates (x0, x1, x2, ...)
 - Function value (hp_metric)
 
@@ -183,16 +186,19 @@ tensorboard --logdir=runs
 ## TensorBoard Features
 
 ### SCALARS Tab
+
 - View convergence curves
 - Compare optimization progress across runs
 - Track how metrics change over iterations
 
 ### HPARAMS Tab
+
 - Explore hyperparameter space
 - See which parameter combinations work best
 - Identify patterns in successful configurations
 
 ### Text Tab
+
 - View configuration details
 - Check run metadata
 
@@ -229,6 +235,7 @@ python demo_tensorboard.py
 ```
 
 This demonstrates:
+
 - Deterministic optimization (Rosenbrock function)
 - Noisy optimization with repeated evaluations
 - OCBA for intelligent re-evaluation
@@ -239,12 +246,14 @@ python demo_tensorboard_clean.py
 ```
 
 This demonstrates:
+
 - Creating multiple log directories
 - Preserving old logs (default behavior)
 - Cleaning old logs automatically
 - Cleaning without creating new logs
 
 This demonstrates:
+
 - Deterministic optimization (Rosenbrock function)
 - Noisy optimization with repeated evaluations
 - OCBA for intelligent re-evaluation
@@ -277,6 +286,7 @@ A: Set `tensorboard_clean=True` when creating your optimizer. This will remove a
 ## Performance Notes
 
 TensorBoard logging has minimal overhead:
+
 - < 1% slowdown for typical optimizations
 - Event files are efficiently buffered and written
 - Writer is properly closed after optimization completes

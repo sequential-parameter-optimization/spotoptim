@@ -1,4 +1,4 @@
-# Variable Type (var_type) Implementation and Testing
+# Variable Type (var_type) Implementation
 
 ## Overview
 
@@ -9,18 +9,21 @@ This document describes the `var_type` implementation in SpotOptim, which allows
 SpotOptim supports three main data types:
 
 ### 1. **'float'**
+
 - **Purpose**: Continuous optimization with Python floats
 - **Behavior**: No rounding applied, values remain continuous
 - **Use case**: Standard continuous optimization variables
 - **Example**: Temperature (23.5°C), Distance (1.234m)
 
 ### 2. **'int'**
+
 - **Purpose**: Discrete integer optimization
 - **Behavior**: Float values are automatically rounded to integers
 - **Use case**: Count variables, discrete parameters
 - **Example**: Number of layers (5), Population size (100)
 
 ### 3. **'factor'**
+
 - **Purpose**: Unordered categorical data
 - **Behavior**: Internally mapped to integer values (0, 1, 2, ...)
 - **Use case**: Categorical choices like colors, algorithms, modes
@@ -34,22 +37,27 @@ SpotOptim supports three main data types:
 The `var_type` parameter is properly propagated throughout the optimization process:
 
 1. **Initialization** (`__init__`):
+
    - Stored as `self.var_type`
    - Default: `["float"] * n_dim` if not specified
 
 2. **Initial Design Generation** (`_generate_initial_design`):
+
    - Applies type constraints via `_repair_non_numeric()`
    - Ensures initial points respect variable types
 
 3. **New Point Suggestion** (`_suggest_next_point`):
+
    - Applies type constraints to acquisition function optimization results
    - Ensures suggested points respect variable types
 
 4. **User-Provided Initial Design** (`optimize`):
+
    - Applies type constraints to X0 if provided
    - Ensures consistency regardless of input source
 
 5. **Mesh Grid Generation** (`_generate_mesh_grid`):
+
    - Used for plotting, respects variable types
    - Ensures visualization shows correct discrete/continuous behavior
 
@@ -66,41 +74,9 @@ def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
 ```
 
 **Logic:**
+
 - Variables with type `'float'`: No change (continuous)
 - Variables with type `'int'` or `'factor'`: Rounded to integers
-
-## Test Coverage
-
-Created comprehensive test suite: `tests/test_var_type.py` with **21 tests**
-
-### Test Categories
-
-#### 1. Initialization Tests (6 tests)
-- Default var_type is 'float'
-- Initialization with 'float', 'int', 'factor'
-- Mixed types initialization
-- Length mismatch handling
-
-#### 2. Type Enforcement Tests (4 tests)
-- Int type variables are rounded
-- Float type variables are NOT rounded
-- Factor type variables are rounded
-- Mixed types handled correctly
-
-#### 3. Full Optimization Tests (7 tests)
-- Optimization with float variables
-- Optimization with int variables
-- Optimization with factor variables
-- Comprehensive mixed-type optimization
-- Unsupported type handling (treated as discrete)
-- Persistence through point suggestion
-- User-provided initial design
-
-#### 4. Integration Tests (4 tests)
-- Bounds compatibility with factors
-- Plotting with mixed types
-- Direct `_repair_non_numeric()` calls
-- Edge cases (single dimension)
 
 ## Usage Examples
 
@@ -117,6 +93,7 @@ opt1 = SpotOptim(
     upper=np.array([10, 10, 10])
     # var_type defaults to ["float", "float", "float"]
 )
+```
 
 ### Example 2: Pure Integer Optimization
 ```python
@@ -185,14 +162,6 @@ result = opt.optimize()
 # result.x[2]: integer category like 0.0
 ```
 
-## Test Results
-
-```
-✅ All 21 var_type tests PASSED
-✅ Total test suite: 74 tests PASSED (53 existing + 21 new)
-✅ No errors or warnings
-```
-
 ## Key Findings
 
 1. **Type Persistence**: Variable types are correctly maintained throughout the entire optimization process, from initial design through all iterations.
@@ -204,21 +173,6 @@ result = opt.optimize()
 4. **User-Provided Data**: Type constraints are applied even to user-provided initial designs, ensuring consistency.
 
 5. **Plotting Compatibility**: The plotting functionality respects variable types, ensuring correct visualization of discrete vs. continuous variables.
-
-## Implementation Locations
-
-### Where var_type is stored:
-- Line 93: `self.var_type = var_type`
-
-### Where var_type is defaulted:
-- Line 109: `self.var_type = ["float"] * self.n_dim`
-
-### Where var_type is used:
-- Line 173: `_generate_initial_design()` - initial design
-- Line 361: `_repair_non_numeric()` - method definition
-- Line 457: `_suggest_next_point()` - new point suggestions
-- Line 481: `optimize()` - user-provided X0
-- Line 711: `_generate_mesh_grid()` - plotting
 
 ## Recommendations
 

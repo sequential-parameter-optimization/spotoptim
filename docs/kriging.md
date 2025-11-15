@@ -2,11 +2,9 @@
 
 ## Overview
 
-Successfully added a Kriging (Gaussian Process) surrogate model to SpotOptim, providing an alternative to scikit-learn's GaussianProcessRegressor.
+Implementation of a Kriging (Gaussian Process) surrogate model to SpotOptim, providing an alternative to scikit-learn's GaussianProcessRegressor.
 
-## What Was Added
-
-### 1. New Module Structure
+##  Module Structure
 ```
 src/spotoptim/surrogate/
 ├── __init__.py          # Module exports
@@ -14,9 +12,10 @@ src/spotoptim/surrogate/
 └── README.md            # Module documentation
 ```
 
-### 2. Kriging Class (`src/spotoptim/surrogate/kriging.py`)
+## Kriging Class (`src/spotoptim/surrogate/kriging.py`)
 
 **Key Features:**
+
 - Scikit-learn compatible interface (`fit()`, `predict()`)
 - Gaussian (RBF) kernel: R = exp(-D)
 - Automatic hyperparameter optimization via maximum likelihood
@@ -25,19 +24,21 @@ src/spotoptim/surrogate/
 - Reproducible results via seed parameter
 
 **Implementation Details:**
-- ~350 lines of clean, well-documented code
+
+- lean, well-documented code
 - No external dependencies beyond NumPy, SciPy
-- Simplified from spotpython.surrogate.kriging (~2500 lines)
+- Simplified from spotpython.surrogate.kriging
 - Focused on core functionality needed for SpotOptim
 
 **Parameters:**
+
 - `noise`: Regularization (nugget effect)
 - `kernel`: Currently 'gauss' (Gaussian/RBF)
 - `n_theta`: Number of length scale parameters
 - `min_theta`, `max_theta`: Bounds for hyperparameter optimization
 - `seed`: Random seed for reproducibility
 
-### 3. Integration with SpotOptim
+## Integration with SpotOptim
 
 **No Changes Required to SpotOptim Core!**
 
@@ -55,29 +56,10 @@ optimizer = SpotOptim(
 )
 ```
 
-### 4. Comprehensive Tests (`tests/test_kriging.py`)
+## Documentation
 
-**9 new test functions covering:**
-- Basic initialization and fit/predict
-- 1D and 2D problems
-- Prediction with standard deviations
-- Integration with SpotOptim
-- Comparison with default GP
-- Custom parameters
-- Input validation
-- Seed reproducibility
+Added Example  to `notebooks/demos.ipynb`
 
-**All 25 tests pass:** 16 original SpotOptim tests + 9 new Kriging tests
-
-### 5. Documentation
-
-**Created:**
-- `src/spotoptim/surrogate/README.md` - Detailed surrogate module docs
-- Updated `README.md` - Added Kriging section with examples
-- Docstrings in Kriging class following NumPy style
-
-**Notebook Example:**
-- Added Example 3 to `notebooks/demos.ipynb`
 - Demonstrates Kriging vs GP comparison
 - Shows custom parameter usage
 
@@ -124,16 +106,19 @@ y_pred, y_std = model.predict(X_test, return_std=True)
 ### Algorithm
 
 1. **Correlation Matrix:**
+
    - Compute squared distances: D_ij = Σ_k θ_k(x_ik - x_jk)²
    - Apply kernel: R_ij = exp(-D_ij)
    - Add nugget: R_ii += noise
 
 2. **Maximum Likelihood:**
+
    - Optimize θ via differential evolution
    - Minimize: (n/2)log(σ²) + (1/2)log|R|
    - Concentrated likelihood (μ profiled out)
 
 3. **Prediction:**
+
    - Mean: f̂(x) = μ̂ + ψ(x)ᵀR⁻¹r
    - Variance: s²(x) = σ̂²[1 + λ - ψ(x)ᵀR⁻¹ψ(x)]
    - Uses Cholesky decomposition for efficiency
@@ -156,24 +141,9 @@ mu, sigma = surrogate.predict(x, return_std=True)  # For acquisition='ei', 'pi'
 ```
 
 **Implicit parameters via seed:**
+
 - `random_state=seed` (for GaussianProcessRegressor)
 - `seed=seed` (for Kriging)
-
-## Testing Results
-
-```
-tests/test_kriging.py::TestKriging::test_kriging_initialization PASSED
-tests/test_kriging.py::TestKriging::test_kriging_fit_predict PASSED
-tests/test_kriging.py::TestKriging::test_kriging_predict_with_std PASSED
-tests/test_kriging.py::TestKriging::test_kriging_2d PASSED
-tests/test_kriging.py::TestKriging::test_spotoptim_with_kriging PASSED
-tests/test_kriging.py::TestKriging::test_spotoptim_kriging_vs_gp PASSED
-tests/test_kriging.py::TestKriging::test_kriging_custom_parameters PASSED
-tests/test_kriging.py::TestKriging::test_kriging_input_validation PASSED
-tests/test_kriging.py::TestKriging::test_kriging_seed_reproducibility PASSED
-
-================================== 25 passed in 19.83s ==================================
-```
 
 ## Benefits
 
@@ -186,6 +156,7 @@ tests/test_kriging.py::TestKriging::test_kriging_seed_reproducibility PASSED
 ## Future Enhancements
 
 Potential additions:
+
 - [ ] Additional kernels (Matern, Exponential, Cubic)
 - [ ] Anisotropic hyperparameters (separate θ per dimension)
 - [ ] Gradient-enhanced predictions
@@ -193,26 +164,11 @@ Potential additions:
 - [ ] Parallel hyperparameter optimization
 - [ ] ARD (Automatic Relevance Determination)
 
-## Files Modified/Created
-
-**Created:**
-- `src/spotoptim/surrogate/__init__.py`
-- `src/spotoptim/surrogate/kriging.py`
-- `src/spotoptim/surrogate/README.md`
-- `tests/test_kriging.py`
-
-**Modified:**
-- `src/spotoptim/__init__.py` - Export Kriging
-- `README.md` - Add Kriging documentation
-- `notebooks/demos.ipynb` - Add Example 3
-
-**No modifications to:**
-- `src/spotoptim/SpotOptim.py` - Works as-is!
-- Any existing tests - All still pass
 
 ## Conclusion
 
-Successfully integrated a Kriging surrogate into SpotOptim with:
+Implementation of a Kriging surrogate into SpotOptim with:
+
 - ✅ Full scikit-learn compatibility
 - ✅ Comprehensive test coverage (9 new tests)
 - ✅ Complete documentation
