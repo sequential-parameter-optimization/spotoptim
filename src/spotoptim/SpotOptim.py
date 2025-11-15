@@ -79,6 +79,11 @@ class SpotOptim(BaseEstimator):
             Options: 'random' (space-filling design via Latin Hypercube Sampling) or
             'mm' (Morris-Mitchell phi minimizing point for maximal distance from existing points).
             Defaults to 'random'.
+        penalty (float, optional): Penalty value to replace NaN/inf values in objective function evaluations.
+            When the objective function returns NaN or inf, these values are replaced with penalty plus
+            a small random noise (sampled from N(0, 0.1)) to avoid identical penalty values.
+            This allows optimization to continue despite occasional function evaluation failures.
+            Defaults to np.inf.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -210,6 +215,7 @@ class SpotOptim(BaseEstimator):
         max_surrogate_points: Optional[int] = None,
         selection_method: str = "distant",
         acquisition_failure_strategy: str = "random",
+        penalty: float = np.inf,
     ):
 
         warnings.filterwarnings(warnings_filter)
@@ -250,18 +256,28 @@ class SpotOptim(BaseEstimator):
         self.max_surrogate_points = max_surrogate_points
         self.selection_method = selection_method
         self.acquisition_failure_strategy = acquisition_failure_strategy
+        self.penalty = penalty
 
         # Determine if noise handling is active
         self.noise = (repeats_initial > 1) or (repeats_surrogate > 1)
 
+        # Process bounds and factor variables
+        self._factor_maps = {}  # Maps dimension index to {int: str} mapping
+        self._original_bounds = bounds.copy()  # Store original bounds
+        self._process_factor_bounds()
+
         # Derived attributes
         self.n_dim = len(bounds)
-        self.lower = np.array([b[0] for b in bounds])
-        self.upper = np.array([b[1] for b in bounds])
+        self.lower = np.array([b[0] for b in self.bounds])
+        self.upper = np.array([b[1] for b in self.bounds])
 
         # Default variable types
         if self.var_type is None:
-            self.var_type = ["float"] * self.n_dim
+            # Auto-detect: factors for dims with string mappings, float otherwise
+            self.var_type = [
+                "factor" if i in self._factor_maps else "float"
+                for i in range(self.n_dim)
+            ]
 
         # Default variable names
         if self.var_name is None:
@@ -315,6 +331,52 @@ class SpotOptim(BaseEstimator):
 
         # Initialize TensorBoard writer
         self._init_tensorboard_writer()
+
+    def _process_factor_bounds(self) -> None:
+        """Process bounds to handle factor variables.
+        
+        For dimensions with tuple bounds (factor variables), creates internal
+        integer mappings and replaces bounds with (0, n_levels-1).
+        
+        Stores mappings in self._factor_maps: {dim_idx: {int_val: str_val}}
+        """
+        processed_bounds = []
+        
+        for dim_idx, bound in enumerate(self.bounds):
+            if isinstance(bound, (tuple, list)) and len(bound) >= 1:
+                # Check if this is a factor variable (contains strings)
+                if all(isinstance(v, str) for v in bound) and len(bound) > 0:
+                    # Factor variable: create integer mapping
+                    factor_levels = list(bound)
+                    n_levels = len(factor_levels)
+                    
+                    # Create mapping: {0: "level1", 1: "level2", ...}
+                    self._factor_maps[dim_idx] = {i: level for i, level in enumerate(factor_levels)}
+                    
+                    # Replace with integer bounds
+                    processed_bounds.append((0, n_levels - 1))
+                    
+                    if self.verbose:
+                        print(f"Factor variable at dimension {dim_idx}:")
+                        print(f"  Levels: {factor_levels}")
+                        print(f"  Mapped to integers: 0 to {n_levels - 1}")
+                elif len(bound) == 2 and all(isinstance(v, (int, float)) for v in bound):
+                    # Numeric bound tuple
+                    processed_bounds.append(bound)
+                else:
+                    raise ValueError(
+                        f"Invalid bound at dimension {dim_idx}: {bound}. "
+                        f"Expected either (lower, upper) for numeric variables or "
+                        f"tuple of strings for factor variables."
+                    )
+            else:
+                raise ValueError(
+                    f"Invalid bound at dimension {dim_idx}: {bound}. "
+                    f"Expected a tuple/list with at least 1 element."
+                )
+        
+        # Update bounds with processed values
+        self.bounds = processed_bounds
 
     def _setup_dimension_reduction(self) -> None:
         """Set up dimension reduction by identifying fixed dimensions.
@@ -1151,9 +1213,12 @@ class SpotOptim(BaseEstimator):
         # Expand to full dimensions if needed
         if self.red_dim:
             X = self.to_all_dim(X)
+        
+        # Map factor variables to original string values
+        X_for_eval = self._map_to_factor_values(X)
 
         # Evaluate function
-        y_raw = self.fun(X)
+        y_raw = self.fun(X_for_eval)
 
         # Convert to numpy array if needed
         if not isinstance(y_raw, np.ndarray):
@@ -1377,6 +1442,38 @@ class SpotOptim(BaseEstimator):
         ind = np.any(np.all(B <= tolerance, axis=2), axis=1)
         return A[~ind], ~ind
 
+    def _map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
+        """Map internal integer values to original factor strings.
+        
+        For factor variables, converts integer indices back to original string values.
+        Other variable types remain unchanged.
+        
+        Args:
+            X (ndarray): Array with internal numeric values, shape (n_samples, n_features).
+        
+        Returns:
+            ndarray: Array with factor values as strings where applicable, shape (n_samples, n_features).
+        """
+        if not self._factor_maps:
+            # No factor variables
+            return X
+        
+        X = np.atleast_2d(X)
+        # Create object array to hold mixed types (strings and numbers)
+        X_mapped = np.empty(X.shape, dtype=object)
+        X_mapped[:] = X  # Copy numeric values
+        
+        for dim_idx, mapping in self._factor_maps.items():
+            # Round to nearest integer and map to string
+            int_values = np.round(X[:, dim_idx]).astype(int)
+            # Clip to valid range
+            int_values = np.clip(int_values, 0, len(mapping) - 1)
+            # Map to strings
+            for i, val in enumerate(int_values):
+                X_mapped[i, dim_idx] = mapping[int(val)]
+        
+        return X_mapped
+
     def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
         """Round non-numeric values to integers based on variable type.
 
@@ -1395,6 +1492,77 @@ class SpotOptim(BaseEstimator):
         mask = np.isin(var_type, ["float"], invert=True)
         X[:, mask] = np.around(X[:, mask])
         return X
+
+    def _apply_penalty_NA(self, y: np.ndarray, penalty_value: Optional[float] = None, sd: float = 0.1) -> np.ndarray:
+        """Replace NaN and infinite values with penalty plus random noise.
+
+        This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
+        replacing NaN/inf values with a penalty value plus random noise to avoid
+        identical penalty values.
+
+        Args:
+            y (ndarray): Array of objective function values.
+            penalty_value (float, optional): Value to replace NaN/inf with. 
+                If None, uses self.penalty. Default is None.
+            sd (float): Standard deviation for random noise added to penalty.
+                Default is 0.1.
+
+        Returns:
+            ndarray: Array with NaN/inf replaced by penalty_value + random noise.
+        """
+        if penalty_value is None:
+            penalty_value = self.penalty
+            
+        y = np.copy(y)
+        # Identify NaN and inf values
+        mask = ~np.isfinite(y)
+        
+        if np.any(mask):
+            n_bad = np.sum(mask)
+            if self.verbose:
+                print(f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise")
+            
+            # Generate random noise and add to penalty
+            random_noise = np.random.normal(0, sd, y.shape)
+            penalty_values = penalty_value + random_noise
+            
+            # Replace NaN/inf with penalty + noise
+            y[mask] = penalty_values[mask]
+        
+        return y
+
+    def _remove_nan(self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True) -> tuple:
+        """Remove rows where y contains NaN or inf values.
+
+        Args:
+            X (ndarray): Design matrix, shape (n_samples, n_features).
+            y (ndarray): Objective values, shape (n_samples,).
+            stop_on_zero_return (bool): If True, raise error when all values are removed.
+
+        Returns:
+            tuple: (X_clean, y_clean) with NaN/inf rows removed.
+
+        Raises:
+            ValueError: If all values are NaN/inf and stop_on_zero_return is True.
+        """
+        # Find finite values
+        finite_mask = np.isfinite(y)
+        
+        if not np.any(finite_mask):
+            msg = "All objective function values are NaN or inf."
+            if stop_on_zero_return:
+                raise ValueError(msg)
+            else:
+                if self.verbose:
+                    print(f"Warning: {msg} Returning empty arrays.")
+                return np.array([]).reshape(0, X.shape[1]), np.array([])
+        
+        # Filter out non-finite values
+        n_removed = np.sum(~finite_mask)
+        if n_removed > 0 and self.verbose:
+            print(f"Warning: Removed {n_removed} sample(s) with NaN/inf values")
+        
+        return X[finite_mask], y[finite_mask]
 
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
@@ -1591,8 +1759,10 @@ class SpotOptim(BaseEstimator):
 
         # Evaluate initial design
         y0 = self._evaluate_function(X0)
-
-        # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
+        
+        # Handle NaN/inf values in initial design
+        y0 = self._apply_penalty_NA(y0)
+        X0, y0 = self._remove_nan(X0, y0, stop_on_zero_return=True)        # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
         self._update_success_rate(y0)
 
         # Initialize storage
@@ -1673,6 +1843,14 @@ class SpotOptim(BaseEstimator):
 
             # Evaluate next point(s) including OCBA points
             y_next = self._evaluate_function(x_next_repeated)
+            
+            # Handle NaN/inf values in new evaluations
+            y_next = self._apply_penalty_NA(y_next)
+            x_next_repeated, y_next = self._remove_nan(x_next_repeated, y_next, stop_on_zero_return=False)            # Skip this iteration if all new points were NaN/inf
+            if len(y_next) == 0:
+                if self.verbose:
+                    print(f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}")
+                continue
 
             # Update success rate BEFORE updating storage (so it compares against previous best)
             self._update_success_rate(y_next)
@@ -1736,15 +1914,19 @@ class SpotOptim(BaseEstimator):
         # Close TensorBoard writer
         self._close_tensorboard_writer()
 
+        # Map factor variables back to original strings for results
+        best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        X_result = self._map_to_factor_values(X_full) if self._factor_maps else X_full
+
         # Return scipy-style result
         return OptimizeResult(
-            x=best_x_full,
+            x=best_x_result,
             fun=self.best_y_,
             nfev=len(self.y_),
             nit=self.n_iter_,
             success=True,
             message=message,
-            X=X_full,
+            X=X_result,
             y=self.y_,
         )
 
