@@ -2,35 +2,33 @@
 
 ## Overview
 
-SpotOptim now supports multi-objective optimization functions with automatic detection and flexible scalarization strategies. This implementation follows the same approach as the Spot class from spotPython.
+SpotOptim supports multi-objective optimization functions with automatic detection and flexible scalarization strategies. This implementation follows the same approach as the Spot class from spotPython.
 
 ## What Was Implemented
 
 ### 1. Core Functionality
 
-**New Parameter:**
+**Parameter:**
+
 - `fun_mo2so` (callable, optional): Function to convert multi-objective values to single-objective
   - Takes array of shape `(n_samples, n_objectives)`
   - Returns array of shape `(n_samples,)`
   - If `None`, uses first objective (default behavior)
 
-**New Attribute:**
+**Attribute:**
+
 - `y_mo` (ndarray or None): Stores all multi-objective function values
   - Shape: `(n_samples, n_objectives)` for multi-objective problems
   - `None` for single-objective problems
 
-**New Methods:**
+**Methods:**
+
 - `_get_shape(y)`: Get shape of objective function output
 - `_store_mo(y_mo)`: Store multi-objective values with automatic appending
 - `_mo2so(y_mo)`: Convert multi-objective to single-objective values
 
-### 2. Modified Methods
-
-**`_evaluate_function(X)`:**
-- Now automatically detects multi-objective functions
-- Calls `_mo2so()` to convert multi-objective to single-objective
-- Stores original multi-objective values in `y_mo`
-- Returns single-objective values for optimization
+The method `_evaluate_function(X)` automatically detects multi-objective functions. It 
+calls `_mo2so()` to convert multi-objective to single-objective. It also stores the original multi-objective values in `y_mo`. And it returns single-objective values for optimization.
 
 ## Usage Examples
 
@@ -208,6 +206,7 @@ Multi-objective support works seamlessly with:
 ### Automatic Detection
 
 SpotOptim automatically detects multi-objective functions:
+
 - If function returns 2D array (n_samples, n_objectives), it's multi-objective
 - If function returns 1D array (n_samples,), it's single-objective
 
@@ -228,22 +227,12 @@ User Function → y_mo (raw) → _mo2so() → y_ (single-objective)
 ### Backward Compatibility
 
 ✅ Fully backward compatible:
+
 - Single-objective functions work unchanged
 - `fun_mo2so` defaults to `None`
 - `y_mo` is `None` for single-objective problems
 - No breaking changes to existing code
 
-## Test Coverage
-
-**21 new tests** covering:
-- Basic multi-objective functionality (5 tests)
-- Storage mechanisms (3 tests)
-- Conversion strategies (4 tests)
-- Full optimization (3 tests)
-- Edge cases (3 tests)
-- Integration with other features (3 tests)
-
-**All 197 tests pass:** 176 previous + 21 new
 
 ## Limitations and Notes
 
@@ -263,33 +252,22 @@ User Function → y_mo (raw) → _mo2so() → y_ (single-objective)
 ### For True Multi-Objective Optimization
 
 For finding the complete Pareto front, consider specialized tools:
+
 - **pymoo**: Comprehensive multi-objective optimization framework
 - **platypus**: Multi-objective optimization library
 - **NSGA-II, MOEA/D**: Dedicated multi-objective algorithms
 
-## Files Modified/Created
 
-1. **src/spotoptim/SpotOptim.py** - Core implementation
-   - Added `fun_mo2so` parameter
-   - Added `y_mo` attribute
-   - Added `_get_shape()`, `_store_mo()`, `_mo2so()` methods
-   - Modified `_evaluate_function()` to handle multi-objective
-   - Updated docstrings
-
-2. **tests/test_multiobjective.py** (NEW) - 21 comprehensive tests
-
-3. **demo_multiobjective.py** (NEW) - 5 demonstration scenarios
-
-4. **MULTIOBJECTIVE.md** (THIS FILE) - Complete documentation
 
 ## Demo Script
 
-Run the comprehensive demo:
+Run the comprehensive demo (the demos files are located in the `examples` folder):
 ```bash
 python demo_multiobjective.py
 ```
 
 This demonstrates:
+
 - Default behavior (first objective)
 - Weighted sum scalarization
 - Min-max scalarization
@@ -298,7 +276,8 @@ This demonstrates:
 
 ## Summary
 
-SpotOptim now provides flexible multi-objective optimization support through:
+SpotOptim provides flexible multi-objective optimization support through:
+
 - Automatic detection of multi-objective functions
 - Customizable scalarization strategies via `fun_mo2so`
 - Complete storage of multi-objective values in `y_mo`

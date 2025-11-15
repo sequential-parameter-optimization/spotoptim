@@ -95,6 +95,8 @@ class SpotOptim(BaseEstimator):
         min_var_y (float or None): Variance of best mean y (if noise=True).
 
     Examples:
+        >>> import numpy as np
+        >>> from spotoptim import SpotOptim
         >>> def objective(X):
         ...     return np.sum(X**2, axis=1)
         ...
