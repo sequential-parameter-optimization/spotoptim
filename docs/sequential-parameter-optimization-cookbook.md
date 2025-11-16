@@ -1,0 +1,5 @@
+# Sequential Parameter Optimization Cookbook
+
+The following is a cookbook of optimization and hyperparameter tuning recipes. It is not meant to be exhaustive, but instead act as a place to capture a number of the common patterns used in hyperparameter tuning.
+
+[Sequential Parameter Optimization Cookbook](https://sequential-parameter-optimization.github.io/spotoptim-cookbook/)
