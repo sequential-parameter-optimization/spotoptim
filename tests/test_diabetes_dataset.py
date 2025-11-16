@@ -349,6 +349,10 @@ class TestIntegration:
         """Test that dataloaders work with actual model training."""
         from spotoptim.nn.linear_regressor import LinearRegressor
         import torch.nn as nn
+        import torch
+        
+        # Set seed for reproducibility
+        torch.manual_seed(42)
         
         # Get dataloaders
         train_loader, test_loader, _ = get_diabetes_dataloaders(
@@ -361,23 +365,38 @@ class TestIntegration:
         optimizer = model.get_optimizer("Adam", lr=0.01)
         criterion = nn.MSELoss()
         
-        # Train for a few epochs
-        initial_loss = None
-        for epoch in range(5):
+        # Compute initial average loss
+        model.eval()
+        initial_losses = []
+        with torch.no_grad():
+            for batch_X, batch_y in train_loader:
+                predictions = model(batch_X)
+                loss = criterion(predictions, batch_y)
+                initial_losses.append(loss.item())
+        initial_avg_loss = sum(initial_losses) / len(initial_losses)
+        
+        # Train for multiple epochs
+        model.train()
+        for epoch in range(20):
             for batch_X, batch_y in train_loader:
                 optimizer.zero_grad()
                 predictions = model(batch_X)
                 loss = criterion(predictions, batch_y)
-                
-                if initial_loss is None:
-                    initial_loss = loss.item()
-                
                 loss.backward()
                 optimizer.step()
         
-        # Final loss should be less than initial
-        final_loss = loss.item()
-        assert final_loss < initial_loss
+        # Compute final average loss
+        model.eval()
+        final_losses = []
+        with torch.no_grad():
+            for batch_X, batch_y in train_loader:
+                predictions = model(batch_X)
+                loss = criterion(predictions, batch_y)
+                final_losses.append(loss.item())
+        final_avg_loss = sum(final_losses) / len(final_losses)
+        
+        # Final loss should be significantly less than initial
+        assert final_avg_loss < initial_avg_loss * 0.95
 
     def test_evaluation_with_dataloader(self):
         """Test model evaluation using test dataloader."""
