@@ -356,6 +356,7 @@ print(f"\nBest result with seed {best_seed}: {best_overall:.6f}")
 ### 1. Always Use Seeds for Production Code
 
 ```{python}
+#| eval: false
 # Good: Reproducible
 optimizer = SpotOptim(fun=objective, bounds=bounds, seed=42)
 
@@ -366,6 +367,7 @@ optimizer = SpotOptim(fun=objective, bounds=bounds)
 ### 2. Document Your Seeds
 
 ```{python}
+#| eval: false
 # Configuration for experiment reported in Section 4.2
 EXPERIMENT_SEED = 2024
 MAX_ITERATIONS = 100
@@ -381,6 +383,7 @@ optimizer = SpotOptim(
 ### 3. Use Different Seeds for Different Experiments
 
 ```{python}
+#| eval: false
 # Different experiments should use different seeds
 BASELINE_SEED = 100
 EXPERIMENT_A_SEED = 200
@@ -390,6 +393,7 @@ EXPERIMENT_B_SEED = 300
 ### 4. Test Robustness Across Multiple Seeds
 
 ```{python}
+#| eval: false
 # Run same optimization with multiple seeds
 for seed in [42, 123, 456, 789, 1011]:
     optimizer = SpotOptim(fun=objective, bounds=bounds, seed=seed)
