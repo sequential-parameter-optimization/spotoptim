@@ -22,7 +22,11 @@ class LinearRegressor(nn.Module):
         activation (str, optional): Name of activation function from torch.nn to use
             between layers. Common options: "ReLU", "Sigmoid", "Tanh", "LeakyReLU",
             "ELU", "SELU", "GELU", "Softplus", "Softsign", "Mish". Defaults to "ReLU".
-        optimizer (str, optional): Name of the optimizer to use. Common options: "Adam", "SGD", "RMSprop". Defaults to "Adam".
+        lr (float, optional): Unified learning rate multiplier. This value is automatically
+            scaled to optimizer-specific learning rates using the map_lr() function.
+            A value of 1.0 corresponds to the optimizer's default learning rate.
+            For example, lr=1.0 gives 0.001 for Adam and 0.01 for SGD. Typical range: 
+            [0.001, 100.0]. Defaults to 1.0.
 
 
     Attributes:
@@ -32,6 +36,7 @@ class LinearRegressor(nn.Module):
         num_hidden_layers (int): Number of hidden layers in the network.
         activation_name (str): Name of the activation function.
         activation (nn.Module): Instance of the activation function.
+        lr (float): Unified learning rate multiplier.
         network (nn.Sequential): The complete neural network architecture.
 
 
@@ -200,7 +205,7 @@ class LinearRegressor(nn.Module):
     """
 
     def __init__(
-        self, input_dim, output_dim, l1=64, num_hidden_layers=0, activation="ReLU"
+        self, input_dim, output_dim, l1=64, num_hidden_layers=0, activation="ReLU", lr=1.0
     ):
         super(LinearRegressor, self).__init__()
 
@@ -209,6 +214,7 @@ class LinearRegressor(nn.Module):
         self.l1 = l1
         self.num_hidden_layers = num_hidden_layers
         self.activation_name = activation
+        self.lr = lr
 
         # Get activation function class from string
         if hasattr(nn, activation):
@@ -260,19 +266,26 @@ class LinearRegressor(nn.Module):
         """
         return self.network(x)
 
-    def get_optimizer(self, optimizer_name="Adam", lr=0.001, **kwargs):
+    def get_optimizer(self, optimizer_name="Adam", lr=None, **kwargs):
         """Get a PyTorch optimizer configured for this model.
 
         Convenience method to instantiate optimizers using string names instead of
         importing optimizer classes. Automatically configures the optimizer with the
-        model's parameters.
+        model's parameters and applies learning rate mapping for unified interface.
+
+        If lr is not specified, uses the model's lr attribute (default 1.0) which
+        is automatically mapped to optimizer-specific learning rates using map_lr().
+        For example, lr=1.0 gives 0.001 for Adam, 0.01 for SGD, etc.
 
         Args:
             optimizer_name (str, optional): Name of the optimizer from torch.optim.
                 Common options: "Adam", "AdamW", "Adamax", "SGD", "RMSprop", "Adagrad",
                 "Adadelta", "NAdam", "RAdam", "ASGD", "LBFGS", "Rprop".
                 Defaults to "Adam".
-            lr (float, optional): Learning rate for the optimizer. Defaults to 0.001.
+            lr (float, optional): Unified learning rate multiplier. If None, uses self.lr.
+                This value is automatically scaled to optimizer-specific learning rates.
+                A value of 1.0 corresponds to the optimizer's default learning rate.
+                Typical range: [0.001, 100.0]. Defaults to None (uses self.lr).
             **kwargs: Additional optimizer-specific parameters (e.g., momentum for SGD,
                 weight_decay for AdamW, alpha for RMSprop).
 
@@ -280,25 +293,34 @@ class LinearRegressor(nn.Module):
             torch.optim.Optimizer: Configured optimizer instance ready for training.
 
         Raises:
-            ValueError: If the specified optimizer name is not found in torch.optim.
+            ValueError: If the specified optimizer name is not found in torch.optim or
+                not supported by map_lr().
 
         Examples:
-            Basic usage with default Adam:
+            Basic usage with model's default unified lr (1.0):
 
-            >>> model = LinearRegressor(input_dim=10, output_dim=1)
-            >>> optimizer = model.get_optimizer()  # Uses Adam with lr=0.001
+            >>> model = LinearRegressor(input_dim=10, output_dim=1, lr=1.0)
+            >>> optimizer = model.get_optimizer("Adam")  # Uses 1.0 * 0.001 = 0.001
+            >>> optimizer = model.get_optimizer("SGD")   # Uses 1.0 * 0.01 = 0.01
 
-            SGD with momentum:
+            Using custom unified learning rate in model:
 
-            >>> optimizer = model.get_optimizer("SGD", lr=0.01, momentum=0.9)
+            >>> model = LinearRegressor(input_dim=10, output_dim=1, lr=0.5)
+            >>> optimizer = model.get_optimizer("Adam")  # Uses 0.5 * 0.001 = 0.0005
+            >>> optimizer = model.get_optimizer("SGD")   # Uses 0.5 * 0.01 = 0.005
 
-            AdamW with weight decay for regularization:
+            Override model's lr with method parameter:
 
-            >>> optimizer = model.get_optimizer("AdamW", lr=0.001, weight_decay=0.01)
+            >>> model = LinearRegressor(input_dim=10, output_dim=1, lr=1.0)
+            >>> optimizer = model.get_optimizer("Adam", lr=2.0)  # Uses 2.0 * 0.001 = 0.002
 
-            RMSprop with custom alpha:
+            SGD with momentum and unified learning rate:
 
-            >>> optimizer = model.get_optimizer("RMSprop", lr=0.01, alpha=0.99)
+            >>> optimizer = model.get_optimizer("SGD", lr=0.5, momentum=0.9)
+
+            AdamW with weight decay:
+
+            >>> optimizer = model.get_optimizer("AdamW", lr=1.0, weight_decay=0.01)
 
             Complete training example with diabetes dataset:
 
@@ -314,9 +336,10 @@ class LinearRegressor(nn.Module):
             >>> X_tensor = torch.FloatTensor(X)
             >>> y_tensor = torch.FloatTensor(y)
             >>>
-            >>> # Create model and optimizer
-            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16, num_hidden_layers=1)
-            >>> optimizer = model.get_optimizer("Adam", lr=0.01)
+            >>> # Create model and optimizer with unified learning rate
+            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
+            ...                         num_hidden_layers=1, lr=10.0)
+            >>> optimizer = model.get_optimizer("Adam")  # Uses 10.0 * 0.001 = 0.01
             >>> criterion = nn.MSELoss()
             >>>
             >>> # Training
@@ -356,9 +379,10 @@ class LinearRegressor(nn.Module):
             >>> dataset = DiabetesDataset(X, y)
             >>> dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
             >>>
-            >>> # Create model and optimizer
-            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16, num_hidden_layers=1)
-            >>> optimizer = model.get_optimizer("SGD", lr=0.01, momentum=0.9)
+            >>> # Create model and optimizer with unified learning rate
+            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
+            ...                         num_hidden_layers=1, lr=1.0)
+            >>> optimizer = model.get_optimizer("SGD", momentum=0.9)  # Uses 1.0 * 0.01 = 0.01
             >>> criterion = nn.MSELoss()
             >>>
             >>> # Training with mini-batches
@@ -370,16 +394,63 @@ class LinearRegressor(nn.Module):
             ...         loss.backward()
             ...         optimizer.step()
 
+            Hyperparameter optimization across optimizers:
+
+            >>> from spotoptim import SpotOptim
+            >>> import numpy as np
+            >>>
+            >>> def optimize_model(X):
+            ...     results = []
+            ...     for params in X:
+            ...         lr_unified = 10 ** params[0]  # Log scale: [-2, 2]
+            ...         optimizer_name = params[1]     # Factor: "Adam", "SGD", "RMSprop"
+            ...         
+            ...         # Create model with unified lr - automatically scaled per optimizer
+            ...         model = LinearRegressor(input_dim=10, output_dim=1, lr=lr_unified)
+            ...         optimizer = model.get_optimizer(optimizer_name)
+            ...         
+            ...         # Train and evaluate
+            ...         # ... training code ...
+            ...         results.append(test_loss)
+            ...     return np.array(results)
+            >>>
+            >>> spot = SpotOptim(
+            ...     fun=optimize_model,
+            ...     bounds=[(-2, 2), ("Adam", "SGD", "RMSprop")],
+            ...     var_type=["num", "factor"]
+            ... )
+
         Note:
-            The optimizer is automatically initialized with self.parameters(), so you
-            don't need to manually pass the model parameters. Using DataLoader enables
-            efficient mini-batch training, shuffling, and parallel data loading.
+            - The optimizer uses self.parameters() automatically
+            - Learning rates are mapped using spotoptim.utils.mapping.map_lr()
+            - Unified lr interface enables fair comparison across optimizers
+            - A unified lr of 1.0 always corresponds to optimizer's PyTorch default
+            - DataLoader enables efficient mini-batch training and data shuffling
         """
+        from spotoptim.utils.mapping import map_lr
+        
+        # Use model's lr if not specified
+        if lr is None:
+            lr = self.lr
+        
+        # Map unified learning rate to optimizer-specific learning rate
+        try:
+            lr_actual = map_lr(lr, optimizer_name)
+        except ValueError as e:
+            # If optimizer not in map_lr, try to use it directly with torch.optim
+            if not hasattr(optim, optimizer_name):
+                raise ValueError(
+                    f"Optimizer '{optimizer_name}' not found in torch.optim and not supported by map_lr(). "
+                    f"Please use a valid PyTorch optimizer name like 'Adam', 'SGD', 'AdamW', etc."
+                )
+            # Use unified lr directly if optimizer not in mapping
+            lr_actual = lr
+        
         # Check if optimizer exists in torch.optim
         if hasattr(optim, optimizer_name):
             optimizer_class = getattr(optim, optimizer_name)
-            # Create optimizer with model parameters, learning rate, and additional kwargs
-            return optimizer_class(self.parameters(), lr=lr, **kwargs)
+            # Create optimizer with model parameters, mapped learning rate, and additional kwargs
+            return optimizer_class(self.parameters(), lr=lr_actual, **kwargs)
         else:
             raise ValueError(
                 f"Optimizer '{optimizer_name}' not found in torch.optim. "

@@ -404,12 +404,13 @@ class TestOptimizer:
         assert optimizer.defaults['lr'] == 0.001
 
     def test_get_optimizer_custom_learning_rate(self):
-        """Test getting optimizer with custom learning rate."""
+        """Test getting optimizer with custom learning rate (unified lr mapping)."""
         model = LinearRegressor(input_dim=10, output_dim=1)
+        # lr=0.01 is unified lr, mapped to 0.01 * 0.001 = 0.00001 for Adam
         optimizer = model.get_optimizer("Adam", lr=0.01)
         
         assert isinstance(optimizer, torch.optim.Adam)
-        assert optimizer.defaults['lr'] == 0.01
+        assert optimizer.defaults['lr'] == 0.01 * 0.001  # 0.00001
 
     @pytest.mark.parametrize("optimizer_name,optimizer_class", [
         ("Adam", torch.optim.Adam),
@@ -430,12 +431,13 @@ class TestOptimizer:
         assert isinstance(optimizer, optimizer_class)
 
     def test_sgd_with_momentum(self):
-        """Test SGD optimizer with momentum parameter."""
+        """Test SGD optimizer with momentum parameter (unified lr mapping)."""
         model = LinearRegressor(input_dim=10, output_dim=1)
+        # lr=0.01 is unified lr, mapped to 0.01 * 0.01 = 0.0001 for SGD
         optimizer = model.get_optimizer("SGD", lr=0.01, momentum=0.9)
         
         assert isinstance(optimizer, torch.optim.SGD)
-        assert optimizer.defaults['lr'] == 0.01
+        assert optimizer.defaults['lr'] == 0.01 * 0.01  # 0.0001
         assert optimizer.defaults['momentum'] == 0.9
 
     def test_adamw_with_weight_decay(self):

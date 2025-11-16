@@ -18,6 +18,7 @@ nav:
   - Success Rate Tracking: manuals/success_rate.md
   - Acquisition Failure Handling: manuals/acquisition_failure.md
   - Handling Variable Types: manuals/var_type.md
+  - Factor Variables: manuals/factor_variables.md
   - Kriging (internal Surrogate): manuals/kriging.md
   - Multiobjective Optimization: manuals/multiobjective.md
   - Plot Surrogate: manuals/plot_surrogate.md
@@ -25,6 +26,8 @@ nav:
   - Plot Using TensorBoard: manuals/tensorboard.md
   - TensorBoard Clean Feature: manuals/tensorboard_clean.md
   - Diabetes Dataset Utilities: manuals/diabetes_dataset.md
+  - Unified Learning Rate: manuals/unified_learning_rate.md
+  - Learning Rate Mapping: manuals/learning_rate_mapping.md
 - About: about.md
 
 theme:

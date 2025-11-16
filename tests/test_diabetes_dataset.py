@@ -360,9 +360,9 @@ class TestIntegration:
             random_state=42
         )
         
-        # Create model
-        model = LinearRegressor(input_dim=10, output_dim=1, l1=16, num_hidden_layers=1)
-        optimizer = model.get_optimizer("Adam", lr=0.01)
+        # Create model with unified lr that gives Adam a reasonable lr (10.0 * 0.001 = 0.01)
+        model = LinearRegressor(input_dim=10, output_dim=1, l1=32, num_hidden_layers=2, lr=10.0)
+        optimizer = model.get_optimizer("Adam")
         criterion = nn.MSELoss()
         
         # Compute initial average loss
@@ -375,9 +375,9 @@ class TestIntegration:
                 initial_losses.append(loss.item())
         initial_avg_loss = sum(initial_losses) / len(initial_losses)
         
-        # Train for multiple epochs
+        # Train for more epochs with a decent model architecture
         model.train()
-        for epoch in range(20):
+        for epoch in range(50):
             for batch_X, batch_y in train_loader:
                 optimizer.zero_grad()
                 predictions = model(batch_X)
@@ -396,7 +396,8 @@ class TestIntegration:
         final_avg_loss = sum(final_losses) / len(final_losses)
         
         # Final loss should be significantly less than initial
-        assert final_avg_loss < initial_avg_loss * 0.95
+        # Using 90% threshold for more robustness
+        assert final_avg_loss < initial_avg_loss * 0.9
 
     def test_evaluation_with_dataloader(self):
         """Test model evaluation using test dataloader."""
