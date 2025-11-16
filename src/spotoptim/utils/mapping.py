@@ -1,7 +1,7 @@
 """Learning rate mapping functions for unified optimizer interface.
 
-This module provides utilities to map a unified learning rate scale to 
-optimizer-specific learning rates, accounting for the different default 
+This module provides utilities to map a unified learning rate scale to
+optimizer-specific learning rates, accounting for the different default
 and typical ranges used by different PyTorch optimizers.
 """
 
@@ -27,13 +27,15 @@ OPTIMIZER_DEFAULT_LR: Dict[str, float] = {
 }
 
 
-def map_lr(lr_unified: float, optimizer_name: str, use_default_scale: bool = True) -> float:
+def map_lr(
+    lr_unified: float, optimizer_name: str, use_default_scale: bool = True
+) -> float:
     """Map a unified learning rate to an optimizer-specific learning rate.
 
     This function provides a unified interface for learning rates across different
     PyTorch optimizers. Different optimizers operate on vastly different learning
     rate scales (e.g., SGD typically uses lr ~ 0.01-0.1, while Adam uses lr ~ 0.0001-0.001).
-    
+
     The mapping uses the default learning rates from PyTorch as scaling factors,
     allowing users to work with a normalized learning rate scale where 1.0 represents
     the optimizer's default learning rate.
@@ -108,10 +110,10 @@ def map_lr(lr_unified: float, optimizer_name: str, use_default_scale: bool = Tru
         ...     for params in X:
         ...         lr_unified = 10 ** params[0]  # Log scale: [-4, 0]
         ...         optimizer_name = params[1]     # Factor variable
-        ...         
+        ...
         ...         # Map to optimizer-specific learning rate
         ...         lr_actual = map_lr(lr_unified, optimizer_name)
-        ...         
+        ...
         ...         # Train model with this configuration
         ...         # ... training code ...
         ...         results.append(test_loss)

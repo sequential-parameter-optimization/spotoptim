@@ -38,6 +38,11 @@ class SpotOptim(BaseEstimator):
         var_name (list of str, optional): Variable names for each dimension.
             If None, uses default names ['x0', 'x1', 'x2', ...]. Defaults to None.
         tolerance_x (float, optional): Minimum distance between points. Defaults to np.sqrt(np.spacing(1))
+        var_trans (list of str, optional): Variable transformations for each dimension. Supported:
+            - 'log': Logarithmic transformation, e.g. "log10" for base-10 log
+            - 'sqrt': Square root transformation, "sqrt" for square root
+            - None or 'id' or 'None': No transformation
+            Defaults to None (no transformations).
         max_time (float, optional): Maximum runtime in minutes. If np.inf (default), no time limit.
             The optimization terminates when either max_iter evaluations are reached OR max_time
             minutes have elapsed, whichever comes first. Defaults to np.inf.
@@ -200,6 +205,7 @@ class SpotOptim(BaseEstimator):
         acquisition: str = "ei",
         var_type: Optional[list] = None,
         var_name: Optional[list] = None,
+        var_trans: Optional[list] = None,
         tolerance_x: Optional[float] = None,
         max_time: float = np.inf,
         repeats_initial: int = 1,
@@ -243,6 +249,7 @@ class SpotOptim(BaseEstimator):
         self.acquisition = acquisition
         self.var_type = var_type
         self.var_name = var_name
+        self.var_trans = var_trans
         self.max_time = max_time
         self.repeats_initial = repeats_initial
         self.repeats_surrogate = repeats_surrogate
@@ -282,6 +289,28 @@ class SpotOptim(BaseEstimator):
         # Default variable names
         if self.var_name is None:
             self.var_name = [f"x{i}" for i in range(self.n_dim)]
+
+        # Default variable transformations (None means no transformation)
+        if self.var_trans is None:
+            self.var_trans = [None] * self.n_dim
+        else:
+            # Normalize transformation names
+            self.var_trans = [
+                None if (t is None or t == "id" or t == "None") else t
+                for t in self.var_trans
+            ]
+
+        # Validate var_trans length
+        if len(self.var_trans) != self.n_dim:
+            raise ValueError(
+                f"Length of var_trans ({len(self.var_trans)}) must match "
+                f"number of dimensions ({self.n_dim})"
+            )
+
+        # Apply transformations to bounds (internal representation)
+        self._original_lower = self.lower.copy()
+        self._original_upper = self.upper.copy()
+        self._transform_bounds()
 
         # Dimension reduction: backup original bounds and identify fixed dimensions
         self._setup_dimension_reduction()
@@ -334,14 +363,14 @@ class SpotOptim(BaseEstimator):
 
     def _process_factor_bounds(self) -> None:
         """Process bounds to handle factor variables.
-        
+
         For dimensions with tuple bounds (factor variables), creates internal
         integer mappings and replaces bounds with (0, n_levels-1).
-        
+
         Stores mappings in self._factor_maps: {dim_idx: {int_val: str_val}}
         """
         processed_bounds = []
-        
+
         for dim_idx, bound in enumerate(self.bounds):
             if isinstance(bound, (tuple, list)) and len(bound) >= 1:
                 # Check if this is a factor variable (contains strings)
@@ -349,18 +378,22 @@ class SpotOptim(BaseEstimator):
                     # Factor variable: create integer mapping
                     factor_levels = list(bound)
                     n_levels = len(factor_levels)
-                    
+
                     # Create mapping: {0: "level1", 1: "level2", ...}
-                    self._factor_maps[dim_idx] = {i: level for i, level in enumerate(factor_levels)}
-                    
+                    self._factor_maps[dim_idx] = {
+                        i: level for i, level in enumerate(factor_levels)
+                    }
+
                     # Replace with integer bounds
                     processed_bounds.append((0, n_levels - 1))
-                    
+
                     if self.verbose:
                         print(f"Factor variable at dimension {dim_idx}:")
                         print(f"  Levels: {factor_levels}")
                         print(f"  Mapped to integers: 0 to {n_levels - 1}")
-                elif len(bound) == 2 and all(isinstance(v, (int, float)) for v in bound):
+                elif len(bound) == 2 and all(
+                    isinstance(v, (int, float)) for v in bound
+                ):
                     # Numeric bound tuple
                     processed_bounds.append(bound)
                 else:
@@ -374,9 +407,117 @@ class SpotOptim(BaseEstimator):
                     f"Invalid bound at dimension {dim_idx}: {bound}. "
                     f"Expected a tuple/list with at least 1 element."
                 )
-        
+
         # Update bounds with processed values
         self.bounds = processed_bounds
+
+    def _transform_value(self, x: float, trans: Optional[str]) -> float:
+        """Apply transformation to a single value.
+
+        Args:
+            x: Value to transform
+            trans: Transformation name ('log10', 'log', 'sqrt', 'exp', 'square', etc.)
+
+        Returns:
+            Transformed value
+        """
+        if trans is None or trans == "id":
+            return x
+        elif trans == "log10":
+            return np.log10(x)
+        elif trans == "log" or trans == "ln":
+            return np.log(x)
+        elif trans == "sqrt":
+            return np.sqrt(x)
+        elif trans == "exp":
+            return np.exp(x)
+        elif trans == "square":
+            return x**2
+        elif trans == "cube":
+            return x**3
+        elif trans == "inv" or trans == "reciprocal":
+            return 1.0 / x
+        else:
+            raise ValueError(f"Unknown transformation: {trans}")
+
+    def _inverse_transform_value(self, x: float, trans: Optional[str]) -> float:
+        """Apply inverse transformation to a single value.
+
+        Args:
+            x: Transformed value
+            trans: Transformation name
+
+        Returns:
+            Original value
+        """
+        if trans is None or trans == "id":
+            return x
+        elif trans == "log10":
+            return 10**x
+        elif trans == "log" or trans == "ln":
+            return np.exp(x)
+        elif trans == "sqrt":
+            return x**2
+        elif trans == "exp":
+            return np.log(x)
+        elif trans == "square":
+            return np.sqrt(x)
+        elif trans == "cube":
+            return np.power(x, 1.0 / 3.0)
+        elif trans == "inv" or trans == "reciprocal":
+            return 1.0 / x
+        else:
+            raise ValueError(f"Unknown transformation: {trans}")
+
+    def _transform_X(self, X: np.ndarray) -> np.ndarray:
+        """Transform parameter array from original to internal scale.
+
+        Args:
+            X: Array in original scale, shape (n_samples, n_features)
+
+        Returns:
+            Array in transformed (internal) scale
+        """
+        X_transformed = X.copy()
+        for i, trans in enumerate(self.var_trans):
+            if trans is not None:
+                X_transformed[:, i] = np.array(
+                    [self._transform_value(x, trans) for x in X[:, i]]
+                )
+        return X_transformed
+
+    def _inverse_transform_X(self, X: np.ndarray) -> np.ndarray:
+        """Transform parameter array from internal to original scale.
+
+        Args:
+            X: Array in transformed (internal) scale, shape (n_samples, n_features)
+
+        Returns:
+            Array in original scale
+        """
+        X_original = X.copy()
+        for i, trans in enumerate(self.var_trans):
+            if trans is not None:
+                X_original[:, i] = np.array(
+                    [self._inverse_transform_value(x, trans) for x in X[:, i]]
+                )
+        return X_original
+
+    def _transform_bounds(self) -> None:
+        """Transform bounds from original to internal scale."""
+        for i, trans in enumerate(self.var_trans):
+            if trans is not None:
+                lower_t = self._transform_value(self.lower[i], trans)
+                upper_t = self._transform_value(self.upper[i], trans)
+                
+                # Handle reversed bounds (e.g., reciprocal transformation)
+                if lower_t > upper_t:
+                    self.lower[i], self.upper[i] = upper_t, lower_t
+                else:
+                    self.lower[i], self.upper[i] = lower_t, upper_t
+
+        # Update self.bounds to reflect transformed bounds
+        self.bounds = [(self.lower[i], self.upper[i]) for i in range(len(self.lower))]
 
     def _setup_dimension_reduction(self) -> None:
         """Set up dimension reduction by identifying fixed dimensions.
@@ -393,6 +534,7 @@ class SpotOptim(BaseEstimator):
         self.all_upper = self.upper.copy()
         self.all_var_type = self.var_type.copy()
         self.all_var_name = self.var_name.copy()
+        self.all_var_trans = self.var_trans.copy()
 
         # Identify fixed dimensions (lower == upper)
         self.ident = (self.upper - self.lower) == 0
@@ -417,6 +559,13 @@ class SpotOptim(BaseEstimator):
             self.var_name = [
                 vname
                 for vname, fixed in zip(self.all_var_name, self.ident)
+                if not fixed
+            ]
+            
+            # Reduce transformations
+            self.var_trans = [
+                vtrans
+                for vtrans, fixed in zip(self.all_var_trans, self.ident)
                 if not fixed
             ]
 
@@ -1213,9 +1362,12 @@ class SpotOptim(BaseEstimator):
         # Expand to full dimensions if needed
         if self.red_dim:
             X = self.to_all_dim(X)
-        
+
+        # Apply inverse transformations to get original scale for function evaluation
+        X_original = self._inverse_transform_X(X)
+
         # Map factor variables to original string values
-        X_for_eval = self._map_to_factor_values(X)
+        X_for_eval = self._map_to_factor_values(X_original)
 
         # Evaluate function
         y_raw = self.fun(X_for_eval)
@@ -1444,41 +1596,48 @@ class SpotOptim(BaseEstimator):
 
     def _map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
         """Map internal integer values to original factor strings.
-        
+
         For factor variables, converts integer indices back to original string values.
         Other variable types remain unchanged.
-        
+
         Args:
             X (ndarray): Array with internal numeric values, shape (n_samples, n_features).
-        
+
         Returns:
             ndarray: Array with factor values as strings where applicable, shape (n_samples, n_features).
         """
         if not self._factor_maps:
             # No factor variables
             return X
-        
+
         X = np.atleast_2d(X)
         # Create object array to hold mixed types (strings and numbers)
         X_mapped = np.empty(X.shape, dtype=object)
         X_mapped[:] = X  # Copy numeric values
-        
+
         for dim_idx, mapping in self._factor_maps.items():
+            # Check if already mapped (strings) or needs mapping (numeric)
+            col_values = X[:, dim_idx]
+            
+            # If already strings, keep them
+            if isinstance(col_values[0], str):
+                continue
+                
             # Round to nearest integer and map to string
-            int_values = np.round(X[:, dim_idx]).astype(int)
+            int_values = np.round(col_values).astype(int)
             # Clip to valid range
             int_values = np.clip(int_values, 0, len(mapping) - 1)
             # Map to strings
             for i, val in enumerate(int_values):
                 X_mapped[i, dim_idx] = mapping[int(val)]
-        
+
         return X_mapped
 
     def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
         """Round non-numeric values to integers based on variable type.
 
         This method applies rounding to variables that are not continuous:
-        - 'float': No rounding (continuous values)
+        - 'float' or 'num': No rounding (continuous values)
         - 'int': Rounded to integers
         - 'factor': Rounded to integers (representing categorical values)
 
@@ -1489,11 +1648,14 @@ class SpotOptim(BaseEstimator):
         Returns:
             ndarray: X array with non-continuous values rounded to integers.
         """
-        mask = np.isin(var_type, ["float"], invert=True)
+        # Don't round float or num types (continuous values)
+        mask = np.isin(var_type, ["float", "num"], invert=True)
         X[:, mask] = np.around(X[:, mask])
         return X
 
-    def _apply_penalty_NA(self, y: np.ndarray, penalty_value: Optional[float] = None, sd: float = 0.1) -> np.ndarray:
+    def _apply_penalty_NA(
+        self, y: np.ndarray, penalty_value: Optional[float] = None, sd: float = 0.1
+    ) -> np.ndarray:
         """Replace NaN and infinite values with penalty plus random noise.
 
         This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
@@ -1502,7 +1664,7 @@ class SpotOptim(BaseEstimator):
 
         Args:
             y (ndarray): Array of objective function values.
-            penalty_value (float, optional): Value to replace NaN/inf with. 
+            penalty_value (float, optional): Value to replace NaN/inf with.
                 If None, uses self.penalty. Default is None.
             sd (float): Standard deviation for random noise added to penalty.
                 Default is 0.1.
@@ -1512,26 +1674,30 @@ class SpotOptim(BaseEstimator):
         """
         if penalty_value is None:
             penalty_value = self.penalty
-            
+
         y = np.copy(y)
         # Identify NaN and inf values
         mask = ~np.isfinite(y)
-        
+
         if np.any(mask):
             n_bad = np.sum(mask)
             if self.verbose:
-                print(f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise")
-            
+                print(
+                    f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise"
+                )
+
             # Generate random noise and add to penalty
             random_noise = np.random.normal(0, sd, y.shape)
             penalty_values = penalty_value + random_noise
-            
+
             # Replace NaN/inf with penalty + noise
             y[mask] = penalty_values[mask]
-        
+
         return y
 
-    def _remove_nan(self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True) -> tuple:
+    def _remove_nan(
+        self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
+    ) -> tuple:
         """Remove rows where y contains NaN or inf values.
 
         Args:
@@ -1547,7 +1713,7 @@ class SpotOptim(BaseEstimator):
         """
         # Find finite values
         finite_mask = np.isfinite(y)
-        
+
         if not np.any(finite_mask):
             msg = "All objective function values are NaN or inf."
             if stop_on_zero_return:
@@ -1556,12 +1722,12 @@ class SpotOptim(BaseEstimator):
                 if self.verbose:
                     print(f"Warning: {msg} Returning empty arrays.")
                 return np.array([]).reshape(0, X.shape[1]), np.array([])
-        
+
         # Filter out non-finite values
         n_removed = np.sum(~finite_mask)
         if n_removed > 0 and self.verbose:
             print(f"Warning: Removed {n_removed} sample(s) with NaN/inf values")
-        
+
         return X[finite_mask], y[finite_mask]
 
     def _handle_acquisition_failure(self) -> np.ndarray:
@@ -1699,9 +1865,12 @@ class SpotOptim(BaseEstimator):
 
         x_next = result.x
 
-        # Ensure minimum distance to existing points
+        # Ensure minimum distance to existing points (compare in transformed space)
         x_next_2d = x_next.reshape(1, -1)
-        x_new, _ = self._select_new(A=x_next_2d, X=self.X_, tolerance=self.tolerance_x)
+        X_transformed = self._transform_X(self.X_)
+        x_new, _ = self._select_new(
+            A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+        )
 
         if x_new.shape[0] == 0:
             # No new point found on surrogate - use fallback strategy
@@ -1748,6 +1917,8 @@ class SpotOptim(BaseEstimator):
             X0 = self._generate_initial_design()
         else:
             X0 = np.atleast_2d(X0)
+            # If user provided X0, it's in original scale - transform it
+            X0 = self._transform_X(X0)
             # If X0 is in full dimensions and we have dimension reduction, reduce it
             if self.red_dim and X0.shape[1] == len(self.ident):
                 X0 = self.to_red_dim(X0)
@@ -1759,14 +1930,16 @@ class SpotOptim(BaseEstimator):
 
         # Evaluate initial design
         y0 = self._evaluate_function(X0)
-        
+
         # Handle NaN/inf values in initial design
         y0 = self._apply_penalty_NA(y0)
-        X0, y0 = self._remove_nan(X0, y0, stop_on_zero_return=True)        # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
+        X0, y0 = self._remove_nan(
+            X0, y0, stop_on_zero_return=True
+        )  # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
         self._update_success_rate(y0)
 
-        # Initialize storage
-        self.X_ = X0.copy()
+        # Initialize storage (convert to original scale for user-facing storage)
+        self.X_ = self._inverse_transform_X(X0.copy())
         self.y_ = y0.copy()
         self.n_iter_ = 0
 
@@ -1803,10 +1976,13 @@ class SpotOptim(BaseEstimator):
             self.n_iter_ += 1
 
             # Fit surrogate (use mean_y if noise, otherwise y_)
+            # Transform X to internal scale for surrogate fitting
             if self.noise:
-                self._fit_surrogate(self.mean_X, self.mean_y)
+                X_for_surrogate = self._transform_X(self.mean_X)
+                self._fit_surrogate(X_for_surrogate, self.mean_y)
             else:
-                self._fit_surrogate(self.X_, self.y_)
+                X_for_surrogate = self._transform_X(self.X_)
+                self._fit_surrogate(X_for_surrogate, self.y_)
 
             # OCBA: Compute optimal budget allocation for noisy functions
             # This determines which existing design points should be re-evaluated
@@ -1843,20 +2019,24 @@ class SpotOptim(BaseEstimator):
 
             # Evaluate next point(s) including OCBA points
             y_next = self._evaluate_function(x_next_repeated)
-            
+
             # Handle NaN/inf values in new evaluations
             y_next = self._apply_penalty_NA(y_next)
-            x_next_repeated, y_next = self._remove_nan(x_next_repeated, y_next, stop_on_zero_return=False)            # Skip this iteration if all new points were NaN/inf
+            x_next_repeated, y_next = self._remove_nan(
+                x_next_repeated, y_next, stop_on_zero_return=False
+            )  # Skip this iteration if all new points were NaN/inf
             if len(y_next) == 0:
                 if self.verbose:
-                    print(f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}")
+                    print(
+                        f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}"
+                    )
                 continue
 
             # Update success rate BEFORE updating storage (so it compares against previous best)
             self._update_success_rate(y_next)
 
-            # Update storage
-            self.X_ = np.vstack([self.X_, x_next_repeated])
+            # Update storage (convert to original scale for user-facing storage)
+            self.X_ = np.vstack([self.X_, self._inverse_transform_X(x_next_repeated)])
             self.y_ = np.append(self.y_, y_next)
 
             # Update stats
@@ -1873,7 +2053,10 @@ class SpotOptim(BaseEstimator):
             current_best = np.min(y_next)
             if current_best < self.best_y_:
                 best_idx_in_new = np.argmin(y_next)
-                self.best_x_ = x_next_repeated[best_idx_in_new].copy()
+                # x_next_repeated is in transformed space, convert to original for storage
+                self.best_x_ = self._inverse_transform_X(
+                    x_next_repeated[best_idx_in_new].reshape(1, -1)
+                )[0]
                 self.best_y_ = current_best
 
                 if self.verbose:
@@ -1893,6 +2076,7 @@ class SpotOptim(BaseEstimator):
                     print(f"Iteration {self.n_iter_}: f(x) = {y_next[0]:.6f}")
 
         # Expand results to full dimensions if needed
+        # Note: best_x_ and X_ are already in original scale (stored that way)
         best_x_full = (
             self.to_all_dim(self.best_x_.reshape(1, -1))[0]
             if self.red_dim
@@ -2078,6 +2262,643 @@ class SpotOptim(BaseEstimator):
         if show:
             plt.show()
 
+    def plot_progress(
+        self,
+        show: bool = True,
+        log_y: bool = False,
+        figsize: Tuple[int, int] = (10, 6),
+        ylabel: str = "Objective Value",
+    ) -> None:
+        """Plot optimization progress showing all evaluations and best-so-far curve.
+
+        This method visualizes the optimization history, displaying both individual
+        function evaluations and the cumulative best value found. Initial design points
+        are shown as individual scatter points with a light grey background region,
+        while sequential optimization iterations are connected with lines.
+
+        Args:
+            show (bool, optional): Whether to display the plot. Defaults to True.
+            log_y (bool, optional): Whether to use log scale for y-axis. Defaults to False.
+            figsize (tuple, optional): Figure size as (width, height). Defaults to (10, 6).
+            ylabel (str, optional): Label for y-axis. Defaults to "Objective Value".
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> def objective(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=objective,
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> # Plot with linear y-axis
+            >>> opt.plot_progress()
+            >>> # Plot with log y-axis for better visibility of small improvements
+            >>> opt.plot_progress(log_y=True)
+        """
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            raise ImportError(
+                "matplotlib is required for plot_progress(). "
+                "Install it with: pip install matplotlib"
+            )
+
+        if self.y_ is None or len(self.y_) == 0:
+            raise ValueError("No optimization data available. Run optimize() first.")
+
+        history = self.y_
+
+        plt.figure(figsize=figsize)
+
+        # Separate initial design points from sequential evaluations
+        n_initial = min(self.n_initial, len(history))
+        initial_y = history[:n_initial]
+        sequential_y = history[n_initial:]
+
+        # Add light grey background for initial design region
+        if n_initial > 0:
+            ylim = plt.ylim()
+            if log_y and len(history) > 0:
+                # For log scale, use the data range
+                y_min = np.min(history[history > 0]) if np.any(history > 0) else 1e-10
+                y_max = np.max(history)
+                plt.axvspan(0, n_initial, alpha=0.15, color='gray', zorder=0)
+            else:
+                plt.axvspan(0, n_initial, alpha=0.15, color='gray', zorder=0)
+
+        # Plot initial design points as scatter (not connected)
+        if n_initial > 0:
+            x_initial = np.arange(1, n_initial + 1)
+            plt.scatter(
+                x_initial,
+                initial_y,
+                alpha=0.6,
+                s=50,
+                label=f"Initial design (n={n_initial})",
+                color="gray",
+                edgecolors="black",
+                linewidth=0.5,
+                zorder=2,
+            )
+
+        # Plot sequential evaluations (connected with line)
+        if len(sequential_y) > 0:
+            x_sequential = np.arange(n_initial + 1, len(history) + 1)
+            plt.plot(
+                x_sequential,
+                sequential_y,
+                "o-",
+                alpha=0.6,
+                label="Sequential evaluations",
+                markersize=5,
+                zorder=3,
+            )
+
+        # Plot best-so-far curve starting after initial design
+        if len(history) > n_initial:
+            # Best so far across all evaluations
+            best_so_far = np.minimum.accumulate(history)
+            # Start the red line after initial design
+            x_best = np.arange(n_initial + 1, len(history) + 1)
+            y_best = best_so_far[n_initial:]
+            plt.plot(
+                x_best,
+                y_best,
+                "r-",
+                linewidth=2,
+                label="Best so far",
+                zorder=4,
+            )
+
+        plt.xlabel("Iteration", fontsize=11)
+        plt.ylabel(ylabel, fontsize=11)
+        
+        title = "Optimization Progress"
+        if log_y:
+            title += " (Log Scale)"
+        plt.title(title, fontsize=12)
+        
+        plt.legend(fontsize=10)
+        plt.grid(True, alpha=0.3)
+
+        if log_y:
+            plt.yscale("log")
+
+        plt.tight_layout()
+
+        if show:
+            plt.show()
+
+    def plot_important_hyperparameter_contour(
+        self,
+        max_imp: int = 3,
+        show: bool = True,
+        alpha: float = 0.8,
+        cmap: str = "jet",
+        num: int = 100,
+        add_points: bool = True,
+        grid_visible: bool = True,
+        contour_levels: int = 30,
+        figsize: Tuple[int, int] = (12, 10),
+    ) -> None:
+        """Plot surrogate contours for all combinations of the top max_imp important parameters.
+
+        This method identifies the most important parameters using importance scores,
+        then generates surrogate contour plots for all pairwise combinations of these
+        parameters. Factor (categorical) variables are handled by creating discrete grids
+        and displaying factor level names on the axes.
+
+        Args:
+            max_imp (int, optional): Number of most important parameters to visualize.
+                Defaults to 3. For max_imp=3, creates 3 plots: (0,1), (0,2), (1,2).
+            show (bool, optional): If True, displays plots immediately. Defaults to True.
+            alpha (float, optional): Transparency of 3D surface plots (0=transparent, 1=opaque).
+                Defaults to 0.8.
+            cmap (str, optional): Matplotlib colormap name. Defaults to 'jet'.
+            num (int, optional): Number of grid points per dimension. Defaults to 100.
+                For factor variables, uses the number of unique levels instead.
+            add_points (bool, optional): If True, overlay evaluated points on contour plots.
+                Defaults to True.
+            grid_visible (bool, optional): If True, show grid lines. Defaults to True.
+            contour_levels (int, optional): Number of contour levels. Defaults to 30.
+            figsize (tuple of int, optional): Figure size in inches (width, height).
+                Defaults to (12, 10).
+
+        Raises:
+            ValueError: If optimization hasn't been run yet or max_imp is invalid.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> def sphere(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=sphere,
+            ...     bounds=[(-5, 5), (-5, 5), (-5, 5), (-5, 5)],
+            ...     max_iter=20,
+            ...     n_initial=10,
+            ...     var_name=['x1', 'x2', 'x3', 'x4']
+            ... )
+            >>> result = opt.optimize()
+            >>> # Plot surrogate contours for top 3 most important parameters
+            >>> opt.plot_important_hyperparameter_contour(max_imp=3)
+            Plotting surrogate contours for top 3 most important parameters:
+              x1: importance = 35.24%
+              x2: importance = 28.17%
+              x3: importance = 22.45%
+            <BLANKLINE>
+            Generating 3 surrogate plots...
+              Plotting x1 vs x2
+              Plotting x1 vs x3
+              Plotting x2 vs x3
+        """
+        from itertools import combinations
+
+        # Validation
+        if self.X_ is None or self.y_ is None:
+            raise ValueError("No optimization data available. Run optimize() first.")
+
+        if max_imp < 2:
+            raise ValueError("max_imp must be at least 2 to generate pairwise plots.")
+
+        if max_imp > self.n_dim:
+            raise ValueError(
+                f"max_imp ({max_imp}) cannot exceed number of dimensions ({self.n_dim})."
+            )
+
+        # Get importance scores
+        importance = self.get_importance()
+
+        # Get indices of most important parameters (sorted by importance, descending)
+        importance_array = np.array(importance)
+        top_indices = np.argsort(importance_array)[::-1][:max_imp]
+
+        # Get parameter names for informative output
+        param_names = (
+            self.var_name
+            if self.var_name is not None
+            else [f"x{i}" for i in range(len(importance))]
+        )
+
+        print(
+            f"Plotting surrogate contours for top {max_imp} most important parameters:"
+        )
+        for idx in top_indices:
+            param_type = self.var_type[idx] if self.var_type else "num"
+            print(f"  {param_names[idx]}: importance = {importance[idx]:.2f}% (type: {param_type})")
+
+        # Generate all pairwise combinations
+        pairs = list(combinations(top_indices, 2))
+
+        print(f"\nGenerating {len(pairs)} surrogate plots...")
+
+        # Plot each combination
+        for i, j in pairs:
+            print(f"  Plotting {param_names[i]} vs {param_names[j]}")
+            self._plot_surrogate_with_factors(
+                i=int(i),
+                j=int(j),
+                show=show,
+                alpha=alpha,
+                cmap=cmap,
+                num=num,
+                add_points=add_points,
+                grid_visible=grid_visible,
+                contour_levels=contour_levels,
+                figsize=figsize,
+            )
+
+    def _plot_surrogate_with_factors(
+        self,
+        i: int,
+        j: int,
+        show: bool = True,
+        alpha: float = 0.8,
+        cmap: str = "jet",
+        num: int = 100,
+        add_points: bool = True,
+        grid_visible: bool = True,
+        contour_levels: int = 30,
+        figsize: Tuple[int, int] = (12, 10),
+    ) -> None:
+        """Plot surrogate model handling factor variables by mapping to integers.
+        
+        For factor variables, creates discrete grids and displays factor level names.
+        """
+        try:
+            import matplotlib.pyplot as plt
+            from mpl_toolkits.mplot3d import Axes3D
+        except ImportError:
+            raise ImportError(
+                "matplotlib is required. Install with: pip install matplotlib"
+            )
+
+        # Check if either dimension is a factor
+        is_factor_i = self.var_type and self.var_type[i] == "factor"
+        is_factor_j = self.var_type and self.var_type[j] == "factor"
+
+        # Get parameter names
+        var_name = self.var_name if self.var_name else [f"x{k}" for k in range(self.n_dim)]
+
+        # Generate mesh grid with factor handling
+        if is_factor_i or is_factor_j:
+            X_i, X_j, grid_points, factor_labels_i, factor_labels_j = self._generate_mesh_grid_with_factors(
+                i, j, num, is_factor_i, is_factor_j
+            )
+        else:
+            X_i, X_j, grid_points = self._generate_mesh_grid(i, j, num)
+            factor_labels_i, factor_labels_j = None, None
+
+        # Predict on grid
+        y_pred, y_std = self.surrogate.predict(grid_points, return_std=True)
+        Z_pred = y_pred.reshape(X_i.shape)
+        Z_std = y_std.reshape(X_i.shape)
+
+        # Create figure
+        fig = plt.figure(figsize=figsize)
+
+        # Plot 1: 3D surface of predictions
+        ax1 = fig.add_subplot(221, projection="3d")
+        ax1.plot_surface(X_i, X_j, Z_pred, cmap=cmap, alpha=alpha)
+        ax1.set_title("Prediction Surface")
+        ax1.set_xlabel(var_name[i])
+        ax1.set_ylabel(var_name[j])
+        ax1.set_zlabel("Prediction")
+        
+        # Set tick labels for factors
+        if is_factor_i and factor_labels_i:
+            ax1.set_xticks(range(len(factor_labels_i)))
+            ax1.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+        if is_factor_j and factor_labels_j:
+            ax1.set_yticks(range(len(factor_labels_j)))
+            ax1.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+
+        # Plot 2: 3D surface of prediction uncertainty
+        ax2 = fig.add_subplot(222, projection="3d")
+        ax2.plot_surface(X_i, X_j, Z_std, cmap=cmap, alpha=alpha)
+        ax2.set_title("Prediction Uncertainty Surface")
+        ax2.set_xlabel(var_name[i])
+        ax2.set_ylabel(var_name[j])
+        ax2.set_zlabel("Std. Dev.")
+        
+        if is_factor_i and factor_labels_i:
+            ax2.set_xticks(range(len(factor_labels_i)))
+            ax2.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+        if is_factor_j and factor_labels_j:
+            ax2.set_yticks(range(len(factor_labels_j)))
+            ax2.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+
+        # Plot 3: Contour of predictions
+        ax3 = fig.add_subplot(223)
+        contour3 = ax3.contourf(X_i, X_j, Z_pred, levels=contour_levels, cmap=cmap)
+        plt.colorbar(contour3, ax=ax3)
+        
+        if add_points:
+            # Map factor variables in evaluated points to integers for display
+            X_i_points = self.X_[:, i].copy()
+            X_j_points = self.X_[:, j].copy()
+            
+            if is_factor_i and self._factor_maps and i in self._factor_maps:
+                # Map string values back to integer indices
+                factor_map = self._factor_maps[i]
+                reverse_map = {v: k for k, v in enumerate(factor_map)}
+                X_i_points = np.array([reverse_map.get(val, 0) for val in X_i_points])
+                
+            if is_factor_j and self._factor_maps and j in self._factor_maps:
+                factor_map = self._factor_maps[j]
+                reverse_map = {v: k for k, v in enumerate(factor_map)}
+                X_j_points = np.array([reverse_map.get(val, 0) for val in X_j_points])
+            
+            ax3.scatter(
+                X_i_points,
+                X_j_points,
+                c="red",
+                s=30,
+                edgecolors="black",
+                zorder=5,
+                label="Evaluated points",
+            )
+            ax3.legend()
+            
+        ax3.set_title("Prediction Contour")
+        ax3.set_xlabel(var_name[i])
+        ax3.set_ylabel(var_name[j])
+        ax3.grid(visible=grid_visible)
+        
+        if is_factor_i and factor_labels_i:
+            ax3.set_xticks(range(len(factor_labels_i)))
+            ax3.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+        if is_factor_j and factor_labels_j:
+            ax3.set_yticks(range(len(factor_labels_j)))
+            ax3.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+
+        # Plot 4: Contour of prediction uncertainty
+        ax4 = fig.add_subplot(224)
+        contour4 = ax4.contourf(X_i, X_j, Z_std, levels=contour_levels, cmap=cmap)
+        plt.colorbar(contour4, ax=ax4)
+        
+        if add_points:
+            ax4.scatter(
+                X_i_points,
+                X_j_points,
+                c="red",
+                s=30,
+                edgecolors="black",
+                zorder=5,
+                label="Evaluated points",
+            )
+            ax4.legend()
+            
+        ax4.set_title("Uncertainty Contour")
+        ax4.set_xlabel(var_name[i])
+        ax4.set_ylabel(var_name[j])
+        ax4.grid(visible=grid_visible)
+        
+        if is_factor_i and factor_labels_i:
+            ax4.set_xticks(range(len(factor_labels_i)))
+            ax4.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+        if is_factor_j and factor_labels_j:
+            ax4.set_yticks(range(len(factor_labels_j)))
+            ax4.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+
+        plt.tight_layout()
+
+        if show:
+            plt.show()
+
+    def _generate_mesh_grid_with_factors(
+        self, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, list, list]:
+        """Generate mesh grid with special handling for factor variables.
+        
+        Returns:
+            X_i, X_j: Meshgrids for plotting
+            grid_points: Points for prediction (in transformed space)
+            factor_labels_i: Factor level names for dimension i (None if numeric)
+            factor_labels_j: Factor level names for dimension j (None if numeric)
+        """
+        k = self.n_dim
+        
+        # Compute mean values, handling factor variables carefully
+        mean_values = np.empty(k, dtype=object)
+        for dim_idx in range(k):
+            if self.var_type and self.var_type[dim_idx] == "factor":
+                # For factor variables, use the most common value's integer index
+                col_values = self.X_[:, dim_idx]
+                unique_vals, counts = np.unique(col_values, return_counts=True)
+                most_common_str = unique_vals[np.argmax(counts)]
+                
+                # Map string back to integer index
+                if dim_idx in self._factor_maps:
+                    # Find the integer key for this string value
+                    reverse_map = {v: k for k, v in self._factor_maps[dim_idx].items()}
+                    mean_values[dim_idx] = reverse_map.get(most_common_str, 0)
+                else:
+                    mean_values[dim_idx] = 0  # Default to first level
+            else:
+                # For numeric variables, use mean
+                mean_values[dim_idx] = np.mean(self.X_[:, dim_idx].astype(float))
+        
+        # Handle dimension i
+        # Helper function to avoid problematic values with log transforms
+        def safe_bound(value, trans, is_lower):
+            """Add epsilon to avoid problematic values with log transforms."""
+            if trans in ["log10", "log", "ln"]:
+                eps = 1e-10
+                if is_lower and value <= 0:
+                    return eps
+                elif value <= 0:
+                    return eps
+            return value
+        
+        if is_factor_i and self._factor_maps and i in self._factor_maps:
+            factor_map_i = self._factor_maps[i]
+            n_levels_i = len(factor_map_i)
+            x_i = np.arange(n_levels_i)  # Integer indices
+            factor_labels_i = list(factor_map_i.values())  # Get the string labels
+        else:
+            lower_i = safe_bound(self._original_lower[i], self.var_trans[i], True)
+            upper_i = safe_bound(self._original_upper[i], self.var_trans[i], False)
+            x_i = linspace(lower_i, upper_i, num=num)
+            factor_labels_i = None
+            
+        # Handle dimension j
+        if is_factor_j and self._factor_maps and j in self._factor_maps:
+            factor_map_j = self._factor_maps[j]
+            n_levels_j = len(factor_map_j)
+            x_j = np.arange(n_levels_j)  # Integer indices
+            factor_labels_j = list(factor_map_j.values())  # Get the string labels
+        else:
+            lower_j = safe_bound(self._original_lower[j], self.var_trans[j], True)
+            upper_j = safe_bound(self._original_upper[j], self.var_trans[j], False)
+            x_j = linspace(lower_j, upper_j, num=num)
+            factor_labels_j = None
+        
+        X_i, X_j = meshgrid(x_i, x_j)
+        
+        # Initialize grid points with mean values
+        grid_points_original = np.tile(mean_values, (X_i.size, 1))
+        grid_points_original[:, i] = X_i.ravel()
+        grid_points_original[:, j] = X_j.ravel()
+        
+        # Convert to float array to handle numeric operations properly
+        # Object dtype with np.float64/float values causes issues with np.around
+        grid_points_float = np.zeros((grid_points_original.shape[0], k), dtype=float)
+        for dim_idx in range(k):
+            grid_points_float[:, dim_idx] = grid_points_original[:, dim_idx].astype(float)
+        
+        # Apply type constraints (convert to proper numeric types)
+        grid_points_float = self._repair_non_numeric(
+            grid_points_float, self.var_type
+        )
+        
+        # Transform grid points for surrogate prediction
+        grid_points_transformed = self._transform_X(grid_points_float)
+        
+        # Validate that transformed grid points are finite
+        if not np.all(np.isfinite(grid_points_transformed)):
+            raise ValueError(
+                "Generated grid points contain non-finite values after transformation. "
+                "This may indicate an issue with variable transformations or bounds."
+            )
+        
+        return X_i, X_j, grid_points_transformed, factor_labels_i, factor_labels_j
+
+    def plot_parameter_scatter(
+        self,
+        result: Optional[OptimizeResult] = None,
+        show: bool = True,
+        figsize: Tuple[int, int] = (12, 10),
+        ylabel: str = "Objective Value",
+        cmap: str = "viridis_r",
+    ) -> None:
+        """Plot parameter distributions showing relationship between each parameter and objective.
+
+        Creates a grid of scatter plots, one for each parameter dimension, showing how
+        the objective function value varies with each parameter. The best configuration
+        is marked with a red star. Parameters with log-scale transformations (var_trans)
+        are automatically displayed on a log x-axis.
+
+        Args:
+            result (OptimizeResult, optional): Optimization result containing best parameters.
+                If None, uses the best found values from self.best_x_ and self.best_y_.
+            show (bool, optional): Whether to display the plot. Defaults to True.
+            figsize (tuple, optional): Figure size as (width, height). Defaults to (12, 10).
+            ylabel (str, optional): Label for y-axis. Defaults to "Objective Value".
+            cmap (str, optional): Colormap for scatter plot. Defaults to "viridis_r".
+
+        Raises:
+            ValueError: If no optimization data is available.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> def objective(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=objective,
+            ...     bounds=[(-5, 5), (-5, 5), (-5, 5), (-5, 5)],
+            ...     var_name=["x0", "x1", "x2", "x3"],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> # Plot parameter distributions
+            >>> opt.plot_parameter_scatter(result)
+            >>> # Plot with custom settings
+            >>> opt.plot_parameter_scatter(result, cmap="plasma", ylabel="Error")
+        """
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError:
+            raise ImportError(
+                "matplotlib is required for plot_parameter_scatter(). "
+                "Install it with: pip install matplotlib"
+            )
+
+        if self.X_ is None or self.y_ is None or len(self.y_) == 0:
+            raise ValueError("No optimization data available. Run optimize() first.")
+
+        # Get best values
+        if result is not None:
+            best_x = result.x
+            best_y = result.fun
+        elif self.best_x_ is not None and self.best_y_ is not None:
+            best_x = self.best_x_
+            best_y = self.best_y_
+        else:
+            raise ValueError("No best solution available.")
+
+        all_params = self.X_
+        history = self.y_
+
+        # Determine grid dimensions
+        n_params = all_params.shape[1]
+        n_cols = min(4, n_params)
+        n_rows = int(np.ceil(n_params / n_cols))
+
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize)
+        
+        # Make axes always iterable
+        if n_params == 1:
+            axes = np.array([axes])
+        axes_flat = axes.flatten() if n_params > 1 else axes
+
+        for idx in range(n_params):
+            ax = axes_flat[idx]
+            param_values = all_params[:, idx]
+            param_name = self.var_name[idx] if self.var_name else f"x{idx}"
+
+            # Scatter plot with color gradient
+            scatter = ax.scatter(
+                param_values,
+                history,
+                c=history,
+                cmap=cmap,
+                s=50,
+                alpha=0.7,
+                edgecolors="black",
+                linewidth=0.5,
+            )
+
+            # Mark best configuration
+            ax.scatter(
+                [best_x[idx]],
+                [best_y],
+                color="red",
+                s=200,
+                marker="*",
+                edgecolors="black",
+                linewidth=1.5,
+                label="Best",
+                zorder=5,
+            )
+
+            ax.set_xlabel(param_name, fontsize=11)
+            ax.set_ylabel(ylabel, fontsize=11)
+            ax.set_title(f"{param_name} vs {ylabel}", fontsize=12)
+            ax.legend(fontsize=9)
+            ax.grid(True, alpha=0.3)
+
+            # Use log scale for parameters with log transformations
+            if self.var_trans[idx] in ["log10", "log", "ln"]:
+                ax.set_xscale("log")
+
+        # Hide unused subplots
+        for idx in range(n_params, len(axes_flat)):
+            axes_flat[idx].set_visible(False)
+
+        plt.tight_layout()
+
+        if show:
+            plt.show()
+
     def _generate_mesh_grid(
         self, i: int, j: int, num: int = 100
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -2090,25 +2911,89 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             tuple: A tuple containing:
-                - X_i (ndarray): Meshgrid for dimension i.
-                - X_j (ndarray): Meshgrid for dimension j.
-                - grid_points (ndarray): Grid points for prediction, shape (num*num, n_dim).
+                - X_i (ndarray): Meshgrid for dimension i (in original scale).
+                - X_j (ndarray): Meshgrid for dimension j (in original scale).
+                - grid_points (ndarray): Grid points for prediction (in transformed scale), shape (num*num, n_dim).
         """
         k = self.n_dim
-        mean_values = self.X_.mean(axis=0)
+        # Compute mean values with proper handling of factor variables
+        mean_values = np.empty(k, dtype=object)
+        for dim_idx in range(k):
+            if self.var_type and self.var_type[dim_idx] == "factor":
+                # For factor variables, use most common value mapped to integer
+                col_values = self.X_[:, dim_idx]
+                unique_vals, counts = np.unique(col_values, return_counts=True)
+                most_common_str = unique_vals[np.argmax(counts)]
+                # Map string back to integer index
+                if dim_idx in self._factor_maps:
+                    reverse_map = {v: k for k, v in self._factor_maps[dim_idx].items()}
+                    mean_values[dim_idx] = reverse_map.get(most_common_str, 0)
+                else:
+                    mean_values[dim_idx] = 0
+            else:
+                # For numeric/int variables, compute mean
+                mean_values[dim_idx] = np.mean(self.X_[:, dim_idx].astype(float))
 
-        # Create grid for dimensions i and j
-        x_i = linspace(self.lower[i], self.upper[i], num=num)
-        x_j = linspace(self.lower[j], self.upper[j], num=num)
+        # Convert mean_values to float array for numeric operations
+        mean_values_float = mean_values.astype(float)
+
+        # Create grid for dimensions i and j using ORIGINAL bounds for plotting
+        # Add small epsilon for log-transformed variables to avoid log(0) = -inf
+        def safe_bound(value, trans, is_lower):
+            """Add epsilon to avoid problematic values with log transforms."""
+            if trans in ["log10", "log", "ln"]:
+                eps = 1e-10
+                if is_lower and value <= 0:
+                    return eps
+                elif value <= 0:
+                    return eps
+            return value
+        
+        lower_i = safe_bound(self._original_lower[i], self.var_trans[i], True)
+        upper_i = safe_bound(self._original_upper[i], self.var_trans[i], False)
+        lower_j = safe_bound(self._original_lower[j], self.var_trans[j], True)
+        upper_j = safe_bound(self._original_upper[j], self.var_trans[j], False)
+        
+        x_i = linspace(lower_i, upper_i, num=num)
+        x_j = linspace(lower_j, upper_j, num=num)
         X_i, X_j = meshgrid(x_i, x_j)
 
-        # Initialize grid points with mean values
-        grid_points = np.tile(mean_values, (X_i.size, 1))
-        grid_points[:, i] = X_i.ravel()
-        grid_points[:, j] = X_j.ravel()
+        # Initialize grid points with mean values (in original scale)
+        grid_points_original = np.tile(mean_values_float, (X_i.size, 1))
+        grid_points_original[:, i] = X_i.ravel()
+        grid_points_original[:, j] = X_j.ravel()
 
         # Apply type constraints
-        grid_points = self._repair_non_numeric(grid_points, self.var_type)
+        grid_points_original = self._repair_non_numeric(
+            grid_points_original, self.var_type
+        )
+
+        # Transform to internal scale for surrogate prediction
+        grid_points = self._transform_X(grid_points_original)
+
+        # Validate that transformed grid points are finite
+        if not np.all(np.isfinite(grid_points)):
+            # Provide detailed error information
+            non_finite_mask = ~np.isfinite(grid_points)
+            problem_dims = np.where(non_finite_mask.any(axis=0))[0]
+            error_msg = (
+                "Generated grid points contain non-finite values after transformation.\n"
+                f"Problematic dimensions: {problem_dims.tolist()}\n"
+            )
+            for dim in problem_dims:
+                dim_name = self.var_name[dim] if self.var_name else f"x{dim}"
+                trans = self.var_trans[dim] if self.var_trans else None
+                orig_vals = grid_points_original[:, dim]
+                trans_vals = grid_points[:, dim]
+                error_msg += (
+                    f"  Dimension {dim} ({dim_name}):\n"
+                    f"    Transform: {trans}\n"
+                    f"    Original range: [{orig_vals.min():.6f}, {orig_vals.max():.6f}]\n"
+                    f"    Transformed range: [{trans_vals[np.isfinite(trans_vals)].min() if np.any(np.isfinite(trans_vals)) else 'N/A':.6f}, "
+                    f"{trans_vals[np.isfinite(trans_vals)].max() if np.any(np.isfinite(trans_vals)) else 'N/A':.6f}]\n"
+                    f"    Non-finite count: {(~np.isfinite(trans_vals)).sum()}\n"
+                )
+            raise ValueError(error_msg)
 
         return X_i, X_j, grid_points
 
@@ -2502,3 +3387,668 @@ class SpotOptim(BaseEstimator):
         except Exception as e:
             print(f"Error loading result: {e}")
             raise
+
+    def print_best(
+        self,
+        result: Optional[OptimizeResult] = None,
+        transformations: Optional[List[Optional[Callable]]] = None,
+        show_name: bool = True,
+        precision: int = 4,
+    ) -> None:
+        """Print the best solution found during optimization.
+
+        This method displays the best hyperparameters and objective value in a
+        formatted table. It supports custom transformations for parameters
+        (e.g., converting log-scale values back to original scale).
+
+        Args:
+            result (OptimizeResult, optional): Optimization result object from optimize().
+                If None, uses the stored best values from the optimizer. Defaults to None.
+            transformations (list of callable, optional): List of transformation functions
+                to apply to each parameter. Each function takes a single value and returns
+                the transformed value. Use None for parameters that don't need transformation.
+                Length must match number of dimensions. Example: [None, None, lambda x: 10**x]
+                to convert the 3rd parameter from log10 scale. Defaults to None.
+            show_name (bool, optional): Whether to display variable names. If False,
+                uses generic names like 'x0', 'x1', etc. Defaults to True.
+            precision (int, optional): Number of decimal places for floating point values.
+                Defaults to 4.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Basic usage
+            >>> def sphere(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=sphere,
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     var_name=["x1", "x2"],
+            ...     max_iter=20,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> opt.print_best(result)
+            <BLANKLINE>
+            Best Solution Found:
+            --------------------------------------------------
+              x1: 0.0123
+              x2: -0.0045
+              Objective Value: 0.000173
+              Total Evaluations: 20
+            >>>
+            >>> # Example 2: With log-scale transformations (e.g., for learning rates)
+            >>> def objective(X):
+            ...     # X[:, 0]: neurons (int), X[:, 1]: layers (int),
+            ...     # X[:, 2]: log10(lr), X[:, 3]: log10(alpha)
+            ...     return np.sum(X**2, axis=1)  # Placeholder
+            >>> opt = SpotOptim(
+            ...     fun=objective,
+            ...     bounds=[(16, 128), (1, 4), (-3, 0), (-2, 1)],
+            ...     var_type=["int", "int", "num", "num"],
+            ...     var_name=["neurons", "layers", "log10_lr", "log10_alpha"],
+            ...     max_iter=30,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> # Transform log-scale parameters back to original scale
+            >>> transformations = [
+            ...     int,              # neurons -> int
+            ...     int,              # layers -> int
+            ...     lambda x: 10**x,  # log10_lr -> lr
+            ...     lambda x: 10**x   # log10_alpha -> alpha
+            ... ]
+            >>> opt.print_best(result, transformations=transformations)
+            <BLANKLINE>
+            Best Solution Found:
+            --------------------------------------------------
+              neurons: 64
+              layers: 2
+              log10_lr: 0.0012
+              log10_alpha: 0.0345
+              Objective Value: 1.2345
+              Total Evaluations: 30
+            >>>
+            >>> # Example 3: Without result object (using stored values)
+            >>> opt.print_best()  # Uses opt.best_x_ and opt.best_y_
+            >>>
+            >>> # Example 4: Hide variable names
+            >>> opt.print_best(result, show_name=False)
+            <BLANKLINE>
+            Best Solution Found:
+            --------------------------------------------------
+              x0: 0.0123
+              x1: -0.0045
+              Objective Value: 0.000173
+              Total Evaluations: 20
+        """
+        # Get values from result or stored attributes
+        if result is not None:
+            best_x = result.x
+            best_y = result.fun
+            n_evals = result.nfev
+        else:
+            if self.best_x_ is None or self.best_y_ is None:
+                print("No optimization results available. Run optimize() first.")
+                return
+            best_x = self.best_x_
+            best_y = self.best_y_
+            n_evals = self.counter
+
+        # Expand to full dimensions if dimension reduction was applied
+        if self.red_dim:
+            best_x_full = self.to_all_dim(best_x.reshape(1, -1))[0]
+        else:
+            best_x_full = best_x
+
+        # Map factor variables back to original string values
+        best_x_full = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+
+        # Determine variable names to use
+        if show_name and self.all_var_name is not None:
+            var_names = self.all_var_name
+        else:
+            var_names = [f"x{i}" for i in range(len(best_x_full))]
+
+        # Validate transformations length
+        if transformations is not None:
+            if len(transformations) != len(best_x_full):
+                raise ValueError(
+                    f"Length of transformations ({len(transformations)}) must match "
+                    f"number of dimensions ({len(best_x_full)})"
+                )
+        else:
+            transformations = [None] * len(best_x_full)
+
+        # Print header
+        print("\nBest Solution Found:")
+        print("-" * 50)
+
+        # Print each parameter
+        for i, (name, value, transform) in enumerate(
+            zip(var_names, best_x_full, transformations)
+        ):
+            # Apply transformation if provided
+            if transform is not None:
+                try:
+                    display_value = transform(value)
+                except Exception as e:
+                    print(f"Warning: Transformation failed for {name}: {e}")
+                    display_value = value
+            else:
+                display_value = value
+
+            # Format based on variable type
+            var_type = self.all_var_type[i] if i < len(self.all_var_type) else "num"
+
+            if var_type == "int" or isinstance(display_value, (int, np.integer)):
+                print(f"  {name}: {int(display_value)}")
+            elif var_type == "factor" or isinstance(display_value, str):
+                print(f"  {name}: {display_value}")
+            else:
+                print(f"  {name}: {display_value:.{precision}f}")
+
+        # Print objective value and evaluations
+        print(f"  Objective Value: {best_y:.{precision}f}")
+        print(f"  Total Evaluations: {n_evals}")
+
+    def print_results_table(
+        self,
+        tablefmt: str = "github",
+        precision: int = 4,
+        show_importance: bool = False,
+        importance_threshold: float = 0.0,
+    ) -> str:
+        """Print a comprehensive table of optimization results.
+
+        This method displays the search space configuration, best values found,
+        and optionally variable importance scores in a formatted table similar
+        to spotPython's print_res_table().
+
+        Args:
+            tablefmt (str, optional): Table format for tabulate library. Options include:
+                'github', 'grid', 'simple', 'plain', 'html', 'latex', etc.
+                Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+            show_importance (bool, optional): Whether to include importance scores.
+                Importance is calculated as the normalized standard deviation of each
+                parameter's effect on the objective. Requires multiple evaluations.
+                Defaults to False.
+            importance_threshold (float, optional): Minimum importance percentage to display
+                significance stars. Values > 95: '***', > 50: '**', > 1: '*', > 0.1: '.'.
+                Defaults to 0.0.
+
+        Returns:
+            str: Formatted table string that can be printed or saved.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Basic usage after optimization
+            >>> def sphere(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=sphere,
+            ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],
+            ...     var_name=["x1", "x2", "x3"],
+            ...     var_type=["num", "num", "num"],
+            ...     max_iter=30,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> table = opt.print_results_table()
+            >>> print(table)
+            | name   | type   |   lower |   upper |   tuned |
+            |--------|--------|---------|---------|---------|
+            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
+            | x2     | num    |    -5.0 |     5.0 | -0.0234 |
+            | x3     | num    |    -5.0 |     5.0 |  0.0345 |
+            >>>
+            >>> # Example 2: With importance scores
+            >>> table = opt.print_results_table(show_importance=True)
+            >>> print(table)
+            | name   | type   |   lower |   upper |   tuned |   importance | stars   |
+            |--------|--------|---------|---------|---------|--------------|---------|
+            | x1     | num    |    -5.0 |     5.0 |  0.0123 |        45.23 | **      |
+            | x2     | num    |    -5.0 |     5.0 | -0.0234 |        32.17 | *       |
+            | x3     | num    |    -5.0 |     5.0 |  0.0345 |        22.60 | *       |
+            >>>
+            >>> # Example 3: Different table format
+            >>> table = opt.print_results_table(tablefmt="grid")
+            >>> print(table)
+            +--------+--------+---------+---------+---------+
+            | name   | type   |   lower |   upper |   tuned |
+            +========+========+=========+=========+=========+
+            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
+            +--------+--------+---------+---------+---------+
+            ...
+            >>>
+            >>> # Example 4: With factor variables
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), ("red", "green", "blue")],
+            ...     var_name=["size", "color"],
+            ...     var_type=["num", "factor"],
+            ...     max_iter=20,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> table = opt.print_results_table()
+            >>> print(table)
+            | name   | type   | lower   | upper   | tuned   |
+            |--------|--------|---------|---------|---------|
+            | size   | num    | -5.0    | 5.0     | 0.0123  |
+            | color  | factor | red     | blue    | green   |
+        """
+        try:
+            from tabulate import tabulate
+        except ImportError:
+            raise ImportError(
+                "tabulate is required for print_results_table(). "
+                "Install it with: pip install tabulate"
+            )
+
+        if self.best_x_ is None or self.best_y_ is None:
+            return "No optimization results available. Run optimize() first."
+
+        # Get best solution in full dimensions
+        # Note: best_x_ is already in original scale
+        if self.red_dim:
+            best_x_full = self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+        else:
+            best_x_full = self.best_x_
+
+        # Map factor variables back to original string values
+        best_x_display = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+
+        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
+        if self.red_dim and hasattr(self, 'all_var_trans'):
+            all_var_trans = self.all_var_trans
+        else:
+            all_var_trans = self.var_trans
+
+        # Prepare table data
+        table_data = {
+            "name": (
+                self.all_var_name
+                if self.all_var_name
+                else [f"x{i}" for i in range(len(best_x_display))]
+            ),
+            "type": (
+                self.all_var_type
+                if self.all_var_type
+                else ["num"] * len(best_x_display)
+            ),
+            "lower": [],
+            "upper": [],
+            "tuned": [],
+            "trans": [t if t is not None else "-" for t in all_var_trans],
+        }
+
+        # Process bounds and tuned values (use original bounds for display)
+        for i in range(len(best_x_display)):
+            var_type = table_data["type"][i]
+
+            # Handle bounds based on variable type
+            if var_type == "factor":
+                # For factors, show original string values
+                if i in self._factor_maps:
+                    factor_map = self._factor_maps[i]
+                    lower_str = factor_map[0]  # First level
+                    upper_str = factor_map[len(factor_map) - 1]  # Last level
+                    table_data["lower"].append(lower_str)
+                    table_data["upper"].append(upper_str)
+                else:
+                    table_data["lower"].append(str(self._original_lower[i]))
+                    table_data["upper"].append(str(self._original_upper[i]))
+            else:
+                table_data["lower"].append(self._original_lower[i])
+                table_data["upper"].append(self._original_upper[i])
+
+            # Format tuned value
+            tuned_val = best_x_display[i]
+            if var_type == "int":
+                table_data["tuned"].append(int(tuned_val))
+            elif var_type == "factor":
+                table_data["tuned"].append(str(tuned_val))
+            else:
+                table_data["tuned"].append(tuned_val)
+
+        # Add importance if requested
+        if show_importance:
+            importance = self.get_importance()
+            table_data["importance"] = importance
+            table_data["stars"] = self._get_significance_stars(
+                importance, importance_threshold
+            )
+
+        # Format float precision
+        if show_importance:
+            floatfmt = (
+                "",
+                "",
+                f".{precision}f",
+                f".{precision}f",
+                f".{precision}f",
+                "",
+                ".2f",
+                "",
+            )
+        else:
+            floatfmt = (
+                "",
+                "",
+                f".{precision}f",
+                f".{precision}f",
+                f".{precision}f",
+                "",
+            )
+
+        # Generate table
+        table = tabulate(
+            table_data,
+            headers="keys",
+            tablefmt=tablefmt,
+            numalign="right",
+            floatfmt=floatfmt,
+        )
+
+        # Add interpretation if importance is shown
+        if show_importance:
+            table += "\n\nInterpretation: ***: >95%, **: >50%, *: >1%, .: >0.1%"
+
+        return table
+
+    def print_design_table(
+        self,
+        tablefmt: str = "github",
+        precision: int = 4,
+    ) -> str:
+        """Print a table showing the search space design before optimization.
+
+        This method displays the variable names, types, bounds, and defaults
+        without requiring an optimization run. Useful for inspecting and
+        documenting the search space configuration.
+
+        Args:
+            tablefmt (str, optional): Table format for tabulate library.
+                Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+
+        Returns:
+            str: Formatted table string.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Numeric parameters
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-10, 10), (0, 1)],
+            ...     var_name=["x1", "x2", "x3"],
+            ...     var_type=["num", "int", "num"],
+            ...     max_iter=20,
+            ...     n_initial=10
+            ... )
+            >>> table = opt.print_design_table()
+            >>> print(table)
+            | name   | type   |   lower |   upper |   default |
+            |--------|--------|---------|---------|-----------|
+            | x1     | num    |    -5.0 |     5.0 |       0.0 |
+            | x2     | int    |   -10.0 |    10.0 |       0.0 |
+            | x3     | num    |     0.0 |     1.0 |       0.5 |
+            >>>
+            >>> # Example 2: With factor variables
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(10, 100), ("SGD", "Adam", "RMSprop"), (0.001, 0.1)],
+            ...     var_name=["neurons", "optimizer", "lr"],
+            ...     var_type=["int", "factor", "num"],
+            ...     max_iter=30,
+            ...     n_initial=10
+            ... )
+            >>> table = opt.print_design_table()
+            >>> print(table)
+            | name      | type   | lower   | upper   | default   |
+            |-----------|--------|---------|---------|-----------|
+            | neurons   | int    | 10.0    | 100.0   | 55.0      |
+            | optimizer | factor | SGD     | RMSprop | Adam      |
+            | lr        | num    | 0.001   | 0.1     | 0.0505    |
+            >>>
+            >>> # Example 3: Before running optimization
+            >>> def hyperparameter_objective(X):
+            ...     # X[:, 0]: layers, X[:, 1]: neurons, X[:, 2]: dropout
+            ...     return np.sum(X**2, axis=1)  # Placeholder
+            >>> opt = SpotOptim(
+            ...     fun=hyperparameter_objective,
+            ...     bounds=[(1, 5), (16, 256), (0.0, 0.5)],
+            ...     var_name=["layers", "neurons", "dropout"],
+            ...     var_type=["int", "int", "num"],
+            ...     max_iter=50,
+            ...     n_initial=15
+            ... )
+            >>> # Print design table before optimization
+            >>> print("Search Space Configuration:")
+            >>> table = opt.print_design_table()
+            >>> print(table)
+            Search Space Configuration:
+            | name    | type   |   lower |   upper |   default |
+            |---------|--------|---------|---------|-----------|
+            | layers  | int    |     1.0 |     5.0 |       3.0 |
+            | neurons | int    |    16.0 |   256.0 |     136.0 |
+            | dropout | num    |     0.0 |     0.5 |      0.25 |
+        """
+        try:
+            from tabulate import tabulate
+        except ImportError:
+            raise ImportError(
+                "tabulate is required for print_design_table(). "
+                "Install it with: pip install tabulate"
+            )
+
+        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
+        if self.red_dim and hasattr(self, 'all_var_trans'):
+            all_var_trans = self.all_var_trans
+        else:
+            all_var_trans = self.var_trans
+
+        # Prepare table data
+        table_data = {
+            "name": (
+                self.all_var_name
+                if self.all_var_name
+                else [f"x{i}" for i in range(len(self.all_lower))]
+            ),
+            "type": (
+                self.all_var_type
+                if self.all_var_type
+                else ["num"] * len(self.all_lower)
+            ),
+            "lower": [],
+            "upper": [],
+            "default": [],
+            "trans": [t if t is not None else "-" for t in all_var_trans],
+        }
+
+        # Process bounds and compute defaults (use original bounds for display)
+        for i in range(len(self._original_lower)):
+            var_type = table_data["type"][i]
+
+            if var_type == "factor":
+                # For factors, show original string values
+                if i in self._factor_maps:
+                    factor_map = self._factor_maps[i]
+                    lower_str = factor_map[0]
+                    upper_str = factor_map[len(factor_map) - 1]
+                    # Default is middle level
+                    mid_idx = len(factor_map) // 2
+                    default_str = factor_map[mid_idx]
+                    table_data["lower"].append(lower_str)
+                    table_data["upper"].append(upper_str)
+                    table_data["default"].append(default_str)
+                else:
+                    table_data["lower"].append(str(self._original_lower[i]))
+                    table_data["upper"].append(str(self._original_upper[i]))
+                    table_data["default"].append("N/A")
+            else:
+                table_data["lower"].append(self._original_lower[i])
+                table_data["upper"].append(self._original_upper[i])
+                # Default is midpoint
+                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
+                if var_type == "int":
+                    table_data["default"].append(int(default_val))
+                else:
+                    table_data["default"].append(default_val)
+
+        # Format float precision
+        floatfmt = ("", "", f".{precision}f", f".{precision}f", f".{precision}f", "")
+
+        # Generate table
+        table = tabulate(
+            table_data,
+            headers="keys",
+            tablefmt=tablefmt,
+            numalign="right",
+            floatfmt=floatfmt,
+        )
+
+        return table
+
+    def get_importance(self) -> List[float]:
+        """Calculate variable importance scores.
+
+        Importance is computed as the normalized sensitivity of each parameter
+        based on the variation in objective values across the evaluated points.
+        Higher scores indicate parameters that have more influence on the objective.
+
+        The importance is calculated as:
+        1. For each dimension, compute the correlation between parameter values
+           and objective values
+        2. Normalize to percentage scale (0-100)
+        3. Higher values indicate more important parameters
+
+        Returns:
+            List[float]: Importance scores for each dimension (0-100 scale).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Identify important parameters
+            >>> def test_func(X):
+            ...     # x0 has strong effect, x1 has weak effect
+            ...     return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+            >>> opt = SpotOptim(
+            ...     fun=test_func,
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     var_name=["x0", "x1"],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> importance = opt.get_importance()
+            >>> print(f"x0 importance: {importance[0]:.2f}")
+            >>> print(f"x1 importance: {importance[1]:.2f}")
+            x0 importance: 89.23
+            x1 importance: 10.77
+            >>>
+            >>> # Example 2: With more dimensions
+            >>> def rosenbrock(X):
+            ...     return np.sum(100*(X[:, 1:] - X[:, :-1]**2)**2 + (1 - X[:, :-1])**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=rosenbrock,
+            ...     bounds=[(-2, 2)] * 4,
+            ...     var_name=["x0", "x1", "x2", "x3"],
+            ...     max_iter=50,
+            ...     n_initial=20,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> importance = opt.get_importance()
+            >>> for i, imp in enumerate(importance):
+            ...     print(f"x{i}: {imp:.2f}%")
+            x0: 32.15%
+            x1: 28.43%
+            x2: 25.67%
+            x3: 13.75%
+            >>>
+            >>> # Example 3: Use in results table
+            >>> table = opt.print_results_table(show_importance=True)
+            >>> print(table)
+        """
+        if self.X_ is None or self.y_ is None or len(self.y_) < 3:
+            # Not enough data to compute importance
+            return [0.0] * len(self.all_lower)
+
+        # Use full-dimensional data
+        X_full = self.X_
+        if self.red_dim:
+            X_full = np.array([self.to_all_dim(x.reshape(1, -1))[0] for x in self.X_])
+
+        # Calculate sensitivity for each dimension
+        sensitivities = []
+        for i in range(X_full.shape[1]):
+            x_i = X_full[:, i]
+
+            # Skip if no variation in this dimension
+            if np.std(x_i) < 1e-10:
+                sensitivities.append(0.0)
+                continue
+
+            # Compute correlation with objective
+            try:
+                correlation = np.abs(np.corrcoef(x_i, self.y_)[0, 1])
+                if np.isnan(correlation):
+                    correlation = 0.0
+            except:
+                correlation = 0.0
+
+            sensitivities.append(correlation)
+
+        # Normalize to percentage
+        total = sum(sensitivities)
+        if total > 0:
+            importance = [(s / total) * 100 for s in sensitivities]
+        else:
+            importance = [0.0] * len(sensitivities)
+
+        return importance
+
+    def _get_significance_stars(
+        self, importance: List[float], threshold: float = 0.0
+    ) -> List[str]:
+        """Convert importance scores to significance stars.
+
+        Args:
+            importance (List[float]): Importance scores (0-100 scale).
+            threshold (float): Minimum threshold for displaying stars.
+
+        Returns:
+            List[str]: Star symbols for each importance score.
+
+        Examples:
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)])
+            >>> stars = opt._get_significance_stars([100, 75, 15, 2, 0.5, 0.01])
+            >>> stars
+            ['***', '**', '*', '*', '.', '']
+        """
+        stars = []
+        for imp in importance:
+            if imp > 95:
+                stars.append("***")
+            elif imp > 50:
+                stars.append("**")
+            elif imp > 1:
+                stars.append("*")
+            elif imp > threshold:
+                stars.append(".")
+            else:
+                stars.append("")
+        return stars

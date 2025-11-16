@@ -25,7 +25,7 @@ class LinearRegressor(nn.Module):
         lr (float, optional): Unified learning rate multiplier. This value is automatically
             scaled to optimizer-specific learning rates using the map_lr() function.
             A value of 1.0 corresponds to the optimizer's default learning rate.
-            For example, lr=1.0 gives 0.001 for Adam and 0.01 for SGD. Typical range: 
+            For example, lr=1.0 gives 0.001 for Adam and 0.01 for SGD. Typical range:
             [0.001, 100.0]. Defaults to 1.0.
 
 
@@ -205,7 +205,13 @@ class LinearRegressor(nn.Module):
     """
 
     def __init__(
-        self, input_dim, output_dim, l1=64, num_hidden_layers=0, activation="ReLU", lr=1.0
+        self,
+        input_dim,
+        output_dim,
+        l1=64,
+        num_hidden_layers=0,
+        activation="ReLU",
+        lr=1.0,
     ):
         super(LinearRegressor, self).__init__()
 
@@ -337,7 +343,7 @@ class LinearRegressor(nn.Module):
             >>> y_tensor = torch.FloatTensor(y)
             >>>
             >>> # Create model and optimizer with unified learning rate
-            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
+            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16,
             ...                         num_hidden_layers=1, lr=10.0)
             >>> optimizer = model.get_optimizer("Adam")  # Uses 10.0 * 0.001 = 0.01
             >>> criterion = nn.MSELoss()
@@ -380,7 +386,7 @@ class LinearRegressor(nn.Module):
             >>> dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
             >>>
             >>> # Create model and optimizer with unified learning rate
-            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
+            >>> model = LinearRegressor(input_dim=10, output_dim=1, l1=16,
             ...                         num_hidden_layers=1, lr=1.0)
             >>> optimizer = model.get_optimizer("SGD", momentum=0.9)  # Uses 1.0 * 0.01 = 0.01
             >>> criterion = nn.MSELoss()
@@ -404,11 +410,11 @@ class LinearRegressor(nn.Module):
             ...     for params in X:
             ...         lr_unified = 10 ** params[0]  # Log scale: [-2, 2]
             ...         optimizer_name = params[1]     # Factor: "Adam", "SGD", "RMSprop"
-            ...         
+            ...
             ...         # Create model with unified lr - automatically scaled per optimizer
             ...         model = LinearRegressor(input_dim=10, output_dim=1, lr=lr_unified)
             ...         optimizer = model.get_optimizer(optimizer_name)
-            ...         
+            ...
             ...         # Train and evaluate
             ...         # ... training code ...
             ...         results.append(test_loss)
@@ -428,11 +434,11 @@ class LinearRegressor(nn.Module):
             - DataLoader enables efficient mini-batch training and data shuffling
         """
         from spotoptim.utils.mapping import map_lr
-        
+
         # Use model's lr if not specified
         if lr is None:
             lr = self.lr
-        
+
         # Map unified learning rate to optimizer-specific learning rate
         try:
             lr_actual = map_lr(lr, optimizer_name)
@@ -445,7 +451,7 @@ class LinearRegressor(nn.Module):
                 )
             # Use unified lr directly if optimizer not in mapping
             lr_actual = lr
-        
+
         # Check if optimizer exists in torch.optim
         if hasattr(optim, optimizer_name):
             optimizer_class = getattr(optim, optimizer_name)
