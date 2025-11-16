@@ -1,4 +1,8 @@
-# Point Selection Implementation
+---
+title: Point Selection Implementation in SpotOptim
+sidebar_position: 5
+eval: true
+---
 
 ## Overview
 
@@ -46,7 +50,7 @@ While the implementation follows spotpython's design, there is a difference: `sp
 
 ## Example Usage
 
-```python
+```{python}
 from spotoptim import SpotOptim
 
 # Without point selection (default behavior)

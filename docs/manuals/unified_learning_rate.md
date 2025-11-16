@@ -1,4 +1,8 @@
-# Unified Learning Rate Interface
+---
+title: Unified Learning Rate Interface in SpotOptim
+sidebar_position: 5
+eval: true
+---
 
 This module provides a sophisticated unified learning rate interface for PyTorch optimizers through the `map_lr()` function and integration with `LinearRegressor`.
 
@@ -31,7 +35,7 @@ The `map_lr()` function solves this by providing a unified learning rate scale w
 
 ### Basic Usage with LinearRegressor
 
-```python
+```{python}
 from spotoptim.nn.linear_regressor import LinearRegressor
 
 # Create model with unified lr=1.0 (gives each optimizer its default)
@@ -49,7 +53,7 @@ optimizer_rmsprop = model.get_optimizer("RMSprop")
 
 ### Using Custom Unified Learning Rate
 
-```python
+```{python}
 # Using lr=0.5 scales all optimizers by 0.5
 model = LinearRegressor(input_dim=10, output_dim=1, lr=0.5)
 
@@ -59,7 +63,7 @@ optimizer_sgd = model.get_optimizer("SGD")       # Gets 0.5 * 0.01 = 0.005
 
 ### Direct Use of map_lr()
 
-```python
+```{python}
 from spotoptim.utils.mapping import map_lr
 
 # Map unified lr to optimizer-specific lr
@@ -74,7 +78,7 @@ lr_sgd = map_lr(2.0, "SGD")        # Returns 0.02
 
 ### Hyperparameter Optimization
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -139,7 +143,7 @@ Maps a unified learning rate to an optimizer-specific learning rate.
 - `float`: The optimizer-specific learning rate
 
 **Example:**
-```python
+```{python}
 lr = map_lr(1.0, "Adam")  # Returns 0.001 (Adam's default)
 lr = map_lr(0.5, "SGD")   # Returns 0.005 (0.5 * SGD's default)
 ```
@@ -183,7 +187,7 @@ The approach is based on spotPython's `optimizer_handler()` but improved:
 
 For hyperparameter optimization, use log-scale for unified lr:
 
-```python
+```{python}
 # Sample from log10 scale [-4, 0]
 log_lr = -2.5  # Sampled value
 lr_unified = 10 ** log_lr  # 0.00316

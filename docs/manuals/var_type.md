@@ -1,4 +1,8 @@
-# Variable Type (var_type) Implementation
+---
+title: Variable Type (var_type) Implementation in SpotOptim
+sidebar_position: 5
+eval: true
+---
 
 ## Overview
 
@@ -65,7 +69,7 @@ The `var_type` parameter is properly propagated throughout the optimization proc
 
 This method enforces variable type constraints:
 
-```python
+```{python}
 def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
     """Round non-continuous values to integers."""
     mask = np.isin(var_type, ["float"], invert=True)
@@ -82,7 +86,7 @@ def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
 
 ## 5. Example Usage
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -96,7 +100,7 @@ opt1 = SpotOptim(
 ```
 
 ### Example 2: Pure Integer Optimization
-```python
+```{python}
 def discrete_func(X):
     return np.sum(np.round(X)**2, axis=1)
 
@@ -116,7 +120,7 @@ result = opt.optimize()
 ```
 
 ### Example 3: Categorical (Factor) Variables
-```python
+```{python}
 def categorical_func(X):
     # Assume X[:, 0] represents 3 categories: 0, 1, 2
     # Category 0 is best
@@ -138,7 +142,7 @@ result = opt.optimize()
 ```
 
 ### Example 4: Mixed Variable Types
-```python
+```{python}
 def mixed_func(X):
     # X[:, 0]: continuous temperature
     # X[:, 1]: discrete number of iterations

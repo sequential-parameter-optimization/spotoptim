@@ -1,4 +1,8 @@
-# TensorBoard Logging in SpotOptim
+---
+title: TensorBoard Logging in SpotOptim
+sidebar_position: 5
+eval: true
+---
 
 SpotOptim supports TensorBoard logging for monitoring optimization progress in real-time.
 
@@ -6,7 +10,7 @@ SpotOptim supports TensorBoard logging for monitoring optimization progress in r
 
 ### 1. Enable TensorBoard Logging
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -39,7 +43,7 @@ Then open your browser to [http://localhost:6006](http://localhost:6006)
 
 You can automatically remove old TensorBoard logs before starting a new optimization:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=objective,
     bounds=[(-5, 5), (-5, 5)],
@@ -54,17 +58,17 @@ optimizer = SpotOptim(
 ### Use Cases
 
 1. **Clean Start** - Remove old logs and create new one:
-   ```python
+   ```{python}
    tensorboard_log=True, tensorboard_clean=True
    ```
 
 2. **Preserve History** - Keep old logs and add new one (default):
-   ```python
+   ```{python}
    tensorboard_log=True, tensorboard_clean=False
    ```
 
 3. **Just Clean** - Remove old logs without new logging:
-   ```python
+   ```{python}
    tensorboard_log=False, tensorboard_clean=True
    ```
 
@@ -72,7 +76,7 @@ optimizer = SpotOptim(
 
 Specify a custom path for TensorBoard logs:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=objective,
     bounds=[(-5, 5), (-5, 5)],
@@ -113,7 +117,7 @@ This allows you to explore the relationship between hyperparameters and objectiv
 
 ### Basic Usage
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=lambda X: np.sum(X**2, axis=1),
     bounds=[(-5, 5), (-5, 5)],
@@ -126,7 +130,7 @@ result = optimizer.optimize()
 
 ### Noisy Optimization
 
-```python
+```{python}
 def noisy_objective(X):
     base = np.sum(X**2, axis=1)
     noise = np.random.normal(0, 0.1, size=base.shape)
@@ -147,7 +151,7 @@ result = optimizer.optimize()
 
 ### With OCBA
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=noisy_objective,
     bounds=[(-5, 5), (-5, 5)],
@@ -164,7 +168,7 @@ result = optimizer.optimize()
 
 Run multiple optimizations with different settings:
 
-```python
+```{python}
 # Run 1: Standard
 opt1 = SpotOptim(..., tensorboard_path="runs/standard")
 opt1.optimize()
@@ -205,12 +209,12 @@ tensorboard --logdir=runs
 ## Tips
 
 1. **Organize Experiments**: Use descriptive tensorboard_path names:
-   ```python
+   ```{python}
    tensorboard_path=f"runs/exp_{date}_{config_name}"
    ```
 
 2. **Compare Algorithms**: Run multiple optimization strategies and compare:
-   ```python
+   ```{python}
    # Different acquisition functions
    for acq in ['ei', 'pi', 'y']:
        opt = SpotOptim(..., acquisition=acq, tensorboard_path=f"runs/acq_{acq}")

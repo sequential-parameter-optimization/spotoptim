@@ -1,4 +1,8 @@
-# Success Rate Tracking in SpotOptim
+---
+title: Success Rate Tracking in SpotOptim
+sidebar_position: 5
+eval: true
+---
 
 SpotOptim tracks the **success rate** of the optimization process, which measures how often the optimizer finds improvements over recent evaluations. This metric helps you understand whether the optimization is making progress or has stalled.
 
@@ -65,7 +69,7 @@ else:
 
 ## Second Example
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -94,7 +98,7 @@ print(f"Total evaluations: {optimizer.counter}")
 
 The success rate is stored in the `success_rate` attribute:
 
-```python
+```{python}
 optimizer = SpotOptim(fun=objective, bounds=bounds, max_iter=50)
 result = optimizer.optimize()
 
@@ -148,7 +152,7 @@ Success Rate: 8%
 
 When TensorBoard logging is enabled, success rate is automatically logged and can be visualized in real-time:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=objective,
     bounds=[(-5, 5), (-5, 5)],
@@ -173,7 +177,7 @@ In the TensorBoard interface, look for:
 
 ## Example: Monitoring Optimization Progress
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -212,7 +216,7 @@ else:
 
 ## Example: Comparing Multiple Runs
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -269,7 +273,7 @@ print(f"  Final success rate: {best['success_rate']:.2%}")
 
 For noisy functions (when `repeats_initial > 1` or `repeats_surrogate > 1`), the success rate tracks improvements in the **raw** y values, not the aggregated means:
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -309,7 +313,7 @@ print(f"Unique design points: {optimizer.mean_X.shape[0]}")
 
 The success rate is calculated over a window of 100 evaluations by default. This is controlled by the `window_size` attribute:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=objective,
     bounds=[(-5, 5), (-5, 5)],
@@ -331,7 +335,7 @@ print(f"Window size: {optimizer.window_size}")  # 100
 
 For expensive optimization runs, periodically check success rate:
 
-```python
+```{python}
 # Could be implemented with callbacks in future versions
 # For now, success rate is updated automatically and logged to TensorBoard
 ```
@@ -340,7 +344,7 @@ For expensive optimization runs, periodically check success rate:
 
 Always enable TensorBoard logging for visual monitoring:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=expensive_function,
     bounds=bounds,
@@ -354,7 +358,7 @@ optimizer = SpotOptim(
 
 Consider stopping when success rate drops very low:
 
-```python
+```{python}
 # Manual stopping check (conceptual)
 if optimizer.success_rate < 0.05 and optimizer.counter > 50:
     print("Success rate very low - optimization has likely converged")
@@ -364,7 +368,7 @@ if optimizer.success_rate < 0.05 and optimizer.counter > 50:
 
 Use success rate to compare optimization strategies:
 
-```python
+```{python}
 strategies = ["ei", "pi", "y"]  # Different acquisition functions
 for acq in strategies:
     opt = SpotOptim(fun=obj, bounds=bnds, acquisition=acq, max_iter=50)
@@ -378,7 +382,7 @@ for acq in strategies:
 
 A new evaluation `y_new` is considered a success if:
 
-```python
+```{python}
 y_new < best_y_so_far
 ```
 
@@ -388,7 +392,7 @@ where `best_y_so_far` is the minimum value found in all previous evaluations.
 
 The success rate is computed as:
 
-```python
+```{python}
 success_rate = (number of successes in last 100 evals) / (window size)
 ```
 

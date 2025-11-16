@@ -1,4 +1,9 @@
-# Kriging Surrogate Integration Summary
+---
+title: Kriging Surrogate Integration
+sidebar_position: 5
+eval: true
+---
+
 
 ## Overview
 
@@ -44,7 +49,7 @@ src/spotoptim/surrogate/
 
 The existing `surrogate` parameter already supports any scikit-learn compatible model:
 
-```python
+```{python}
 from spotoptim import SpotOptim, Kriging
 
 kriging = Kriging(seed=42)
@@ -66,7 +71,7 @@ Added Example  to `notebooks/demos.ipynb`
 ## Usage Examples
 
 ### Basic Usage
-```python
+```{python}
 from spotoptim import SpotOptim, Kriging
 
 kriging = Kriging(noise=1e-6, seed=42)
@@ -75,7 +80,7 @@ result = optimizer.optimize()
 ```
 
 ### Custom Parameters
-```python
+```{python}
 kriging = Kriging(
     noise=1e-4,
     min_theta=-2.0,
@@ -85,7 +90,7 @@ kriging = Kriging(
 ```
 
 ### Prediction with Uncertainty
-```python
+```{python}
 model = Kriging(seed=42)
 model.fit(X_train, y_train)
 y_pred, y_std = model.predict(X_test, return_std=True)
@@ -128,14 +133,14 @@ y_pred, y_std = model.predict(X_test, return_std=True)
 SpotOptim passes these to the surrogate via the standard interface:
 
 **During fit:**
-```python
+```{python}
 surrogate.fit(X, y)
 ```
 - `X`: Training points (n_initial or accumulated evaluations)
 - `y`: Function values
 
 **During predict:**
-```python
+```{python}
 mu = surrogate.predict(x)[0]  # For acquisition='y'
 mu, sigma = surrogate.predict(x, return_std=True)  # For acquisition='ei', 'pi'
 ```

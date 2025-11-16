@@ -1,4 +1,9 @@
-# Learning Rate Mapping for Unified Optimizer Interface
+---
+title: Learning Rate Mapping for Unified Optimizer Interface
+sidebar_position: 5
+eval: true
+---
+
 
 SpotOptim provides a sophisticated learning rate mapping system through the `map_lr()` function, enabling a unified interface for learning rates across different PyTorch optimizers. This solves the challenge that different optimizers operate on vastly different learning rate scales.
 
@@ -26,7 +31,7 @@ This makes it difficult to compare optimizer performance fairly or optimize lear
 
 ### Basic Usage
 
-```python
+```{python}
 from spotoptim.utils.mapping import map_lr
 
 # Get optimizer-specific learning rate from unified scale
@@ -42,7 +47,7 @@ print(f"  RMSprop: {lr_rmsprop}")
 
 ### Scaling Learning Rates
 
-```python
+```{python}
 from spotoptim.utils.mapping import map_lr
 
 # Scale all learning rates by the same factor
@@ -60,7 +65,7 @@ print(f"  RMSprop: {lr_rmsprop}")
 
 ### Integration with LinearRegressor
 
-```python
+```{python}
 from spotoptim.nn.linear_regressor import LinearRegressor
 
 # Create model with unified learning rate
@@ -104,7 +109,7 @@ Maps a unified learning rate to an optimizer-specific learning rate.
 
 **Example**:
 
-```python
+```{python}
 from spotoptim.utils.mapping import map_lr
 
 # Get default learning rates (unified lr = 1.0)
@@ -144,7 +149,7 @@ All major PyTorch optimizers are supported with their default learning rates:
 
 ### Comparing Different Optimizers
 
-```python
+```{python}
 import torch
 import torch.nn as nn
 from spotoptim.nn.linear_regressor import LinearRegressor
@@ -203,7 +208,7 @@ print(f"\nBest optimizer: {best_opt} with MSE = {results[best_opt]:.4f}")
 
 ### Hyperparameter Optimization with SpotOptim
 
-```python
+```{python}
 from spotoptim import SpotOptim
 from spotoptim.nn.linear_regressor import LinearRegressor
 from spotoptim.data import get_diabetes_dataloaders
@@ -299,7 +304,7 @@ print(f"Actual {result.x[1]} learning rate: {actual_lr:.6f}")
 
 ### Log-Scale Hyperparameter Search
 
-```python
+```{python}
 from spotoptim.utils.mapping import map_lr
 import numpy as np
 
@@ -340,7 +345,7 @@ log_lr     unified_lr   Adam         SGD          RMSprop
 
 ### Custom Learning Rate Schedules
 
-```python
+```{python}
 import torch
 import torch.nn as nn
 from spotoptim.nn.linear_regressor import LinearRegressor
@@ -369,7 +374,7 @@ for epoch in range(100):
 
 ### Direct Usage Without LinearRegressor
 
-```python
+```{python}
 import torch
 import torch.nn as nn
 from spotoptim.utils.mapping import map_lr
@@ -448,7 +453,7 @@ print(f"Actual {optimizer_name} lr: {actual_lr}")
 
 ### Common Patterns
 
-```python
+```{python}
 # Pattern 1: Quick optimizer comparison
 model = LinearRegressor(input_dim=10, output_dim=1, lr=1.0)
 for opt in ["Adam", "SGD", "RMSprop"]:
@@ -476,21 +481,21 @@ optimizer = torch.optim.Adam(params, lr=lr_actual)
 ### Issue: Training is unstable (loss explodes)
 
 **Solution**: Learning rate is too high. Try:
-```python
+```{python}
 model = LinearRegressor(input_dim=10, output_dim=1, lr=0.1)  # Reduce from 1.0
 ```
 
 ### Issue: Training is too slow (loss decreases very slowly)
 
 **Solution**: Learning rate is too low. Try:
-```python
+```{python}
 model = LinearRegressor(input_dim=10, output_dim=1, lr=5.0)  # Increase from 1.0
 ```
 
 ### Issue: Different results across optimizer runs
 
 **Solution**: Set random seed for reproducibility:
-```python
+```{python}
 import torch
 torch.manual_seed(42)
 ```
@@ -498,7 +503,7 @@ torch.manual_seed(42)
 ### Issue: Want to use raw learning rate without mapping
 
 **Solution**: Use `use_default_scale=False`:
-```python
+```{python}
 from spotoptim.utils.mapping import map_lr
 lr = map_lr(0.001, "Adam", use_default_scale=False)  # Returns 0.001 directly
 ```
@@ -506,7 +511,7 @@ lr = map_lr(0.001, "Adam", use_default_scale=False)  # Returns 0.001 directly
 ### Issue: Optimizer not supported
 
 **Solution**: Check supported optimizers:
-```python
+```{python}
 from spotoptim.utils.mapping import OPTIMIZER_DEFAULT_LR
 print("Supported optimizers:", list(OPTIMIZER_DEFAULT_LR.keys()))
 ```
@@ -554,7 +559,7 @@ spotPython uses `lr = lr_mult * default_lr` in `optimizer_handler()`. Our implem
 
 All values verified against [PyTorch documentation](https://pytorch.org/docs/stable/optim.html):
 
-```python
+```{python}
 OPTIMIZER_DEFAULT_LR = {
     "Adadelta": 1.0,
     "Adagrad": 0.01,
@@ -576,7 +581,7 @@ OPTIMIZER_DEFAULT_LR = {
 
 ### Complete Example: Optimizer Comparison Study
 
-```python
+```{python}
 """
 Complete example: Compare optimizers with unified learning rate interface.
 """

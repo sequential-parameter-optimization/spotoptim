@@ -1,6 +1,8 @@
-# TensorBoard Log Cleaning Feature
-
-## Summary
+---
+title: TensorBoard Log Cleaning Feature in SpotOptim
+sidebar_position: 5
+eval: true
+---
 
 Automatic cleaning of old TensorBoard log directories with the `tensorboard_clean` parameter.
 
@@ -8,7 +10,7 @@ Automatic cleaning of old TensorBoard log directories with the `tensorboard_clea
 
 ### Basic Usage
 
-```python
+```{python}
 from spotoptim import SpotOptim
 
 # Remove old logs and create new log directory
@@ -36,7 +38,7 @@ result = optimizer.optimize()
 
 ### Cleaning Method
 
-```python
+```{python}
 def _clean_tensorboard_logs(self) -> None:
     """Clean old TensorBoard log directories from the runs folder."""
     if self.tensorboard_clean:

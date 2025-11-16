@@ -1,4 +1,9 @@
-# Surrogate Model Visualization
+---
+title: Surrogate Model Visualization
+sidebar_position: 5
+eval: true
+---
+
 
 This document describes the `plot_surrogate()` method added to the `SpotOptim` class, which provides visualization capabilities similar to the `plotkd()` function in the spotpython package.
 
@@ -17,7 +22,7 @@ The `plot_surrogate()` method creates a comprehensive 4-panel visualization of t
 
 ### Basic Usage
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -35,7 +40,7 @@ optimizer.plot_surrogate(i=0, j=1, show=True)
 
 ### With Custom Parameters
 
-```python
+```{python}
 optimizer.plot_surrogate(
     i=0,                          # First dimension to plot
     j=1,                          # Second dimension to plot
@@ -55,7 +60,7 @@ optimizer.plot_surrogate(
 
 For problems with more than 2 dimensions, `plot_surrogate()` creates a 2D slice by fixing all other dimensions at their mean values:
 
-```python
+```{python}
 # 4D optimization problem
 def sphere_4d(X):
     return np.sum(X**2, axis=1)
@@ -136,7 +141,7 @@ The visualization consists of 4 panels:
 
 ### Example 1: 2D Rosenbrock Function
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -163,7 +168,7 @@ optimizer.plot_surrogate(
 
 ### Example 2: Using Kriging Surrogate
 
-```python
+```{python}
 from spotoptim import SpotOptim, Kriging
 
 def sphere(X):
@@ -183,7 +188,7 @@ optimizer.plot_surrogate(var_name=['x1', 'x2'])
 
 ### Example 3: Comparing Different Dimension Pairs
 
-```python
+```{python}
 # 3D problem - visualize all dimension pairs
 def sphere_3d(X):
     return np.sum(X**2, axis=1)
@@ -240,7 +245,7 @@ The `plot_surrogate()` method is inspired by spotpython's `plotkd()` function bu
 
 The method validates inputs and provides clear error messages:
 
-```python
+```{python}
 # Before optimization runs
 optimizer.plot_surrogate()  # ValueError: No optimization data available
 

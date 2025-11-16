@@ -1,5 +1,8 @@
-# Factor Variables for Categorical Hyperparameters
-
+---
+title: Factor Variables for Categorical Hyperparameters
+sidebar_position: 5
+eval: true
+---
 
 SpotOptim supports factor variables for optimizing categorical hyperparameters, such as activation functions, optimizers, or any discrete string-based choices. Factor variables are automatically converted between string values (external interface) and integers (internal optimization), making categorical optimization seamless.
 
@@ -28,7 +31,7 @@ Factor variables allow you to specify categorical choices as tuples of strings i
 ### Basic Factor Variable Usage
 
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -67,7 +70,7 @@ print(f"Best score: {result.fun:.4f}")
 
 ### Neural Network Activation Function Optimization
 
-```python
+```{python}
 import torch
 import torch.nn as nn
 from spotoptim import SpotOptim
@@ -137,7 +140,7 @@ print(f"Best test MSE: {result.fun:.4f}")
 
 ### Combining Factor, Integer, and Continuous Variables
 
-```python
+```{python}
 import numpy as np
 import torch
 import torch.nn as nn
@@ -227,7 +230,7 @@ print(f"Best test MSE: {result.fun:.4f}")
 
 ### Optimizing Both Activation and Optimizer
 
-```python
+```{python}
 from spotoptim import SpotOptim
 from spotoptim.data import get_diabetes_dataloaders
 from spotoptim.nn.linear_regressor import LinearRegressor
@@ -303,7 +306,7 @@ print(f"Best learning rate: {10**result.x[2]:.6f}")
 
 Factor variables work with any string values, not just activation functions:
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -369,7 +372,7 @@ print(f"  Score: {result.fun:.4f}")
 
 ### Viewing All Evaluated Configurations
 
-```python
+```{python}
 import torch
 import torch.nn as nn
 from spotoptim import SpotOptim
@@ -462,20 +465,20 @@ for idx in sorted_indices:
 SpotOptim handles factor variables through automatic conversion:
 
 1. **Initialization**: String tuples in bounds are detected
-   ```python
+   ```{python}
    bounds = [("ReLU", "Sigmoid", "Tanh")]
    # Internally mapped to: {0: "ReLU", 1: "Sigmoid", 2: "Tanh"}
    # Bounds become: [(0, 2)]
    ```
 
 2. **Sampling**: Initial design samples from `[0, n_levels-1]` and rounds to integers
-   ```python
+   ```{python}
    # Samples might be: [0.3, 1.8, 2.1]
    # After rounding: [0, 2, 2]
    ```
 
 3. **Evaluation**: Before calling objective function, integers → strings
-   ```python
+   ```{python}
    # [0, 2, 2] → ["ReLU", "Tanh", "Tanh"]
    # Objective function receives strings
    ```
@@ -483,7 +486,7 @@ SpotOptim handles factor variables through automatic conversion:
 4. **Optimization**: Surrogate model works with integers `[0, n_levels-1]`
 
 5. **Results**: Final results mapped back to strings
-   ```python
+   ```{python}
    result.x[0]  # Returns "ReLU", not 0
    result.X     # All rows contain strings for factor variables
    ```
@@ -492,7 +495,7 @@ SpotOptim handles factor variables through automatic conversion:
 
 If you don't specify `var_type`, SpotOptim automatically detects factor variables:
 
-```python
+```{python}
 # Example 1: Explicit var_type (recommended)
 # This shows the syntax - replace my_function with your actual function
 
@@ -537,7 +540,7 @@ print(f"Best lr: {10**result.x[0]:.6f}, Best activation: {result.x[1]}")
 
 ## Complete Example: Full Workflow
 
-```python
+```{python}
 """
 Complete example: Neural network hyperparameter optimization with factor variables.
 """
@@ -732,19 +735,19 @@ if __name__ == "__main__":
 
 ✅ **Use descriptive string values**
 
-```python
+```{python}
 bounds=[("xavier_uniform", "kaiming_normal", "orthogonal")]
 ```
 
 ✅ **Explicitly specify var_type for clarity**
 
-```python
+```{python}
 var_type=["num", "int", "factor"]
 ```
 
 ✅ **Access results as strings**
 
-```python
+```{python}
 # Example: Accessing factor variable results as strings
 # (This assumes you've run an optimization with activation as a factor variable)
 
@@ -784,7 +787,7 @@ print(f"Best activation: {best_activation} (type: {type(best_activation).__name_
 
 ✅ **Mix factor variables with numeric/integer variables**
 
-```python
+```{python}
 bounds=[(-4, -2), (16, 128), ("ReLU", "Tanh")]
 var_type=["num", "int", "factor"]
 ```
@@ -793,7 +796,7 @@ var_type=["num", "int", "factor"]
 
 ❌ **Don't use integers in factor bounds**
 
-```python
+```{python}
 # Wrong: Use strings, not integers
 bounds=[(0, 1, 2)]  # Wrong!
 bounds=[("ReLU", "Sigmoid", "Tanh")]  # Correct!
@@ -801,7 +804,7 @@ bounds=[("ReLU", "Sigmoid", "Tanh")]  # Correct!
 
 ❌ **Don't expect integers in objective function**
 
-```python
+```{python}
 def objective(X):
     activation = X[0][2]
     # activation is a string, not an integer!
@@ -811,14 +814,14 @@ def objective(X):
 
 ❌ **Don't manually convert factor variables**
 
-```python
+```{python}
 # SpotOptim handles conversion automatically
 # Don't do manual mapping in your objective function
 ```
 
 ❌ **Don't use empty tuples**
 
-```python
+```{python}
 # Wrong: Empty tuple
 bounds=[()]
 

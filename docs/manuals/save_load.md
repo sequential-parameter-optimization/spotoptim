@@ -1,4 +1,8 @@
-# Save and Load in SpotOptim
+---
+title: Save and Load in SpotOptim
+sidebar_position: 5
+eval: true
+---
 
 SpotOptim provides comprehensive save and load functionality for serializing optimization configurations and results. This enables distributed workflows where experiments are defined locally, executed remotely, and analyzed back on the local machine.
 
@@ -28,7 +32,7 @@ SpotOptim distinguishes between two types of saved data:
 
 ### Basic Save and Load
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -65,7 +69,7 @@ The save/load functionality enables a powerful workflow for distributed optimiza
 
 ### Step 1: Define Experiment Locally
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -87,7 +91,7 @@ print("Experiment saved. Transfer remote_job_001_exp.pkl to remote machine.")
 
 ### Step 2: Execute on Remote Machine
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -117,7 +121,7 @@ print("Results saved. Transfer remote_job_001_res.pkl back to local machine.")
 
 ### Step 3: Analyze Results Locally
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import matplotlib.pyplot as plt
 
@@ -152,7 +156,7 @@ print(f"All objective values shape: {optimizer.y_.shape}")
 
 ### Custom Filenames and Paths
 
-```python
+```{python}
 import os
 from spotoptim import SpotOptim
 import numpy as np
@@ -185,7 +189,7 @@ optimizer.save_experiment(
 
 ### Overwrite Protection
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -211,7 +215,7 @@ print("File overwritten successfully")
 
 ### Loading and Continuing Optimization
 
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -244,7 +248,7 @@ print(f"After continuation: {result2.nfev} evaluations, best={result2.fun:.6f}")
 
 Save and load preserves noise statistics for reproducible analysis:
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -286,7 +290,7 @@ if loaded_opt.mean_y is not None:
 
 Save and load preserves variable type information:
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -328,7 +332,7 @@ print(loaded_opt.X_[:5, 1])  # Should be integers
 
 After loading an experiment, you **must** re-attach the objective function:
 
-```python
+```{python}
 # Load experiment
 optimizer = SpotOptim.load_experiment("experiment_exp.pkl")
 
@@ -343,7 +347,7 @@ result = optimizer.optimize()
 
 Organize your experiments with descriptive prefixes:
 
-```python
+```{python}
 # Good practice: descriptive prefixes
 optimizer.save_experiment(prefix="sphere_d10_seed42")
 optimizer.save_experiment(prefix="rosenbrock_n100_lhs")
@@ -356,7 +360,7 @@ optimizer.save_result(prefix="result")     # Hard to track
 
 ### 3. Save Experiments Before Remote Execution
 
-```python
+```{python}
 # Define locally
 optimizer = SpotOptim(bounds=bounds, max_iter=500, seed=42)
 optimizer.save_experiment(prefix="remote_job")
@@ -369,7 +373,7 @@ optimizer.save_experiment(prefix="remote_job")
 
 ### 4. Version Your Experiments
 
-```python
+```{python}
 import datetime
 
 # Add timestamp to prefix
@@ -382,7 +386,7 @@ optimizer.save_experiment(prefix=prefix)
 
 ### 5. Handle File Paths Robustly
 
-```python
+```{python}
 import os
 
 # Create directory structure
@@ -406,7 +410,7 @@ Here's a complete example demonstrating the entire workflow:
 
 ### Local Machine (Setup)
 
-```python
+```{python}
 # setup_experiment.py
 import numpy as np
 from spotoptim import SpotOptim
@@ -443,7 +447,7 @@ print("\nAll experiments created. Transfer 'experiments' folder to remote machin
 
 ### Remote Machine (Execution)
 
-```python
+```{python}
 # run_experiments.py
 import numpy as np
 from spotoptim import SpotOptim
@@ -488,7 +492,7 @@ print("\nAll experiments completed. Transfer results back to local machine.")
 
 ### Local Machine (Analysis)
 
-```python
+```{python}
 # analyze_results.py
 import numpy as np
 from spotoptim import SpotOptim
@@ -570,7 +574,7 @@ Some components cannot be pickled and are automatically excluded:
 
 Files are saved using pickle's highest protocol:
 
-```python
+```{python}
 with open(filename, "wb") as handle:
     pickle.dump(optimizer_state, handle, protocol=pickle.HIGHEST_PROTOCOL)
 ```
@@ -583,7 +587,7 @@ with open(filename, "wb") as handle:
 
 **Solution**: Always re-attach the function after loading:
 
-```python
+```{python}
 opt = SpotOptim.load_experiment("exp.pkl")
 opt.fun = your_objective_function  # Add this line
 result = opt.optimize()
@@ -595,7 +599,7 @@ result = opt.optimize()
 
 **Solution**: Check file path and ensure file exists:
 
-```python
+```{python}
 import os
 
 filename = "experiment_exp.pkl"
@@ -611,7 +615,7 @@ else:
 
 **Solution**: Either use a different prefix or enable overwriting:
 
-```python
+```{python}
 # Option 1: Use different prefix
 optimizer.save_result(prefix="my_result_v2")
 
@@ -625,7 +629,7 @@ optimizer.save_result(prefix="my_result", overwrite=True)
 
 **Solution**: Ensure you're using the same seed and function definition:
 
-```python
+```{python}
 # When saving
 optimizer = SpotOptim(..., seed=42)  # Use fixed seed
 

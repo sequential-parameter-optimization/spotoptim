@@ -1,4 +1,9 @@
-# Multi-Objective Optimization Support in SpotOptim
+---
+title: Multi-Objective Optimization Support in SpotOptim
+sidebar_position: 5
+eval: true
+---
+
 
 ## Overview
 
@@ -34,7 +39,7 @@ calls `_mo2so()` to convert multi-objective to single-objective. It also stores 
 
 ### Example 1: Default Behavior (Use First Objective)
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -61,7 +66,7 @@ print(f"MO values stored: {optimizer.y_mo.shape}")  # (30, 2)
 
 ### Example 2: Weighted Sum Scalarization
 
-```python
+```{python}
 def weighted_sum(y_mo):
     """Equal weighting of objectives."""
     return 0.5 * y_mo[:, 0] + 0.5 * y_mo[:, 1]
@@ -81,7 +86,7 @@ print(f"Compromise solution: {result.x}")  # Near [1, 1]
 
 ### Example 3: Min-Max Scalarization
 
-```python
+```{python}
 def min_max(y_mo):
     """Minimize the maximum objective."""
     return np.max(y_mo, axis=1)
@@ -101,7 +106,7 @@ result = optimizer.optimize()
 
 ### Example 4: Three or More Objectives
 
-```python
+```{python}
 def three_objectives(X):
     """Three different norms."""
     obj1 = np.sum(X**2, axis=1)           # L2 norm
@@ -127,7 +132,7 @@ result = optimizer.optimize()
 
 ### Example 5: With Noise Handling
 
-```python
+```{python}
 def noisy_bi_objective(X):
     """Noisy multi-objective function."""
     noise1 = np.random.normal(0, 0.05, X.shape[0])
@@ -154,14 +159,14 @@ result = optimizer.optimize()
 ## Common Scalarization Strategies
 
 ### 1. Weighted Sum
-```python
+```{python}
 def weighted_sum(y_mo, weights=[0.5, 0.5]):
     return sum(w * y_mo[:, i] for i, w in enumerate(weights))
 ```
 **Use when:** Objectives have similar scales and you want linear trade-offs
 
 ### 2. Weighted Sum with Normalization
-```python
+```{python}
 def normalized_weighted_sum(y_mo, weights=[0.5, 0.5]):
     # Normalize each objective to [0, 1]
     y_norm = (y_mo - y_mo.min(axis=0)) / (y_mo.max(axis=0) - y_mo.min(axis=0) + 1e-10)
@@ -170,14 +175,14 @@ def normalized_weighted_sum(y_mo, weights=[0.5, 0.5]):
 **Use when:** Objectives have very different scales
 
 ### 3. Min-Max (Chebyshev)
-```python
+```{python}
 def min_max(y_mo):
     return np.max(y_mo, axis=1)
 ```
 **Use when:** You want balanced performance across all objectives
 
 ### 4. Target Achievement
-```python
+```{python}
 def target_achievement(y_mo, targets=[0.0, 0.0]):
     # Minimize deviation from targets
     return np.sum((y_mo - targets)**2, axis=1)
@@ -185,7 +190,7 @@ def target_achievement(y_mo, targets=[0.0, 0.0]):
 **Use when:** You have specific target values for each objective
 
 ### 5. Product
-```python
+```{python}
 def product(y_mo):
     return np.prod(y_mo + 1e-10, axis=1)  # Add small value to avoid zero
 ```

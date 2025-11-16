@@ -1,4 +1,9 @@
-# Acquisition Failure Handling in SpotOptim
+---
+title: Acquisition Failure Handling in SpotOptim
+sidebar_position: 5
+eval: true
+---
+
 
 SpotOptim provides sophisticated fallback strategies for handling acquisition function failures during optimization. This ensures robust optimization even when the surrogate model struggles to suggest new points.
 
@@ -23,7 +28,8 @@ This strategy uses Latin Hypercube Sampling (LHS) to generate a new space-fillin
 - Default choice for most problems
 
 **Example**:
-```python
+
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -55,7 +61,7 @@ This strategy finds a point that **maximizes the minimum distance** to all exist
 - When the search space has been heavily sampled in some regions
 
 **Example**:
-```python
+```{python}
 from spotoptim import SpotOptim
 import numpy as np
 
@@ -98,7 +104,7 @@ The acquisition failure handling is integrated into the optimization process:
 
 ## Complete Example: Comparing Strategies
 
-```python
+```{python}
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -176,7 +182,7 @@ else:
 
 The `tolerance_x` parameter controls when the fallback strategy is triggered. A larger tolerance means points need to be farther apart, triggering the fallback more often:
 
-```python
+```{python}
 # Strict tolerance (smaller value) - fewer fallbacks
 optimizer_strict = SpotOptim(
     fun=objective,
@@ -200,7 +206,7 @@ optimizer_relaxed = SpotOptim(
 
 The random strategy (default) is sufficient for most optimization problems:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=objective,
     bounds=bounds,
@@ -212,7 +218,7 @@ optimizer = SpotOptim(
 
 When you have a large budget and want maximum exploration:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=expensive_objective,
     bounds=bounds,
@@ -225,7 +231,7 @@ optimizer = SpotOptim(
 
 Enable verbose mode to see when fallbacks are triggered:
 
-```python
+```{python}
 optimizer = SpotOptim(
     fun=objective,
     bounds=bounds,
@@ -238,7 +244,7 @@ optimizer = SpotOptim(
 
 For problems with small search spaces, use smaller tolerance:
 
-```python
+```{python}
 # Small search space
 optimizer_small = SpotOptim(
     fun=objective,

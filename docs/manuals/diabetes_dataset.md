@@ -1,4 +1,9 @@
-# Diabetes Dataset Utilities
+---
+title: Diabetes Dataset Utilities
+sidebar_position: 5
+eval: true
+---
+
 
 SpotOptim provides convenient utilities for working with the sklearn diabetes dataset, including PyTorch `Dataset` and `DataLoader` implementations. These utilities simplify data loading, preprocessing, and model training for regression tasks.
 
@@ -17,7 +22,7 @@ The diabetes dataset contains 10 baseline variables (age, sex, body mass index, 
 
 ### Basic Usage
 
-```python
+```{python}
 from spotoptim.data import get_diabetes_dataloaders
 
 # Load data with default settings
@@ -32,7 +37,7 @@ for batch_X, batch_y in train_loader:
 
 ### Training a Model
 
-```python
+```{python}
 import torch
 import torch.nn as nn
 from spotoptim.data import get_diabetes_dataloaders
@@ -103,7 +108,7 @@ print(f"Test MSE: {avg_test_loss:.4f}")
 Loads the sklearn diabetes dataset and returns configured PyTorch DataLoaders.
 
 **Signature:**
-```python
+```{python}
 get_diabetes_dataloaders(
     test_size=0.2,
     batch_size=32,
@@ -136,7 +141,7 @@ get_diabetes_dataloaders(
 - `scaler` (StandardScaler or None): Fitted scaler if `scale_features=True`, else None
 
 **Example:**
-```python
+```{python}
 from spotoptim.data import get_diabetes_dataloaders
 
 # Custom configuration
@@ -158,7 +163,7 @@ print(f"Scaler mean: {scaler.mean_[:3]}")  # First 3 features
 PyTorch Dataset implementation for the diabetes dataset.
 
 **Signature:**
-```python
+```{python}
 DiabetesDataset(X, y, transform=None, target_transform=None)
 ```
 
@@ -183,7 +188,7 @@ DiabetesDataset(X, y, transform=None, target_transform=None)
 
 ### Manual Dataset Creation
 
-```python
+```{python}
 from spotoptim.data import DiabetesDataset
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
@@ -227,7 +232,7 @@ print(f"Sample target: {target.shape}")      # (1,)
 
 ### Custom Transforms
 
-```python
+```{python}
 from spotoptim.data import DiabetesDataset
 from sklearn.datasets import load_diabetes
 import torch
@@ -258,7 +263,7 @@ features, target = dataset[0]
 
 ### Different Train/Test Splits
 
-```python
+```{python}
 from spotoptim.data import get_diabetes_dataloaders
 
 # 70/30 split
@@ -280,7 +285,7 @@ print(f"Test samples: {len(test_loader.dataset)}")       # ~44
 
 ### Without Feature Scaling
 
-```python
+```{python}
 from spotoptim.data import get_diabetes_dataloaders
 
 # Load without scaling (useful for tree-based models)
@@ -298,7 +303,7 @@ for batch_X, batch_y in train_loader:
 
 ### Larger Batch Sizes
 
-```python
+```{python}
 from spotoptim.data import get_diabetes_dataloaders
 
 # Larger batches for faster training (if memory allows)
@@ -316,7 +321,7 @@ print(f"Batches per epoch: {len(train_loader)}")  # More batches
 
 ### GPU Training with Pin Memory
 
-```python
+```{python}
 import torch
 from spotoptim.data import get_diabetes_dataloaders
 
@@ -343,7 +348,7 @@ for batch_X, batch_y in train_loader:
 
 Here's a complete example showing data loading, model training, and evaluation:
 
-```python
+```{python}
 import torch
 import torch.nn as nn
 from spotoptim.data import get_diabetes_dataloaders
@@ -440,7 +445,7 @@ if __name__ == "__main__":
 
 Use the diabetes dataset for hyperparameter optimization with SpotOptim:
 
-```python
+```{python}
 import numpy as np
 import torch
 import torch.nn as nn
@@ -535,7 +540,7 @@ print(f"  Best MSE: {result.fun:.4f}")
 
 ### 1. Always Use Feature Scaling
 
-```python
+```{python}
 # Good: Features are standardized
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
     scale_features=True
@@ -546,7 +551,7 @@ Neural networks typically perform better with normalized inputs.
 
 ### 2. Set Random Seeds for Reproducibility
 
-```python
+```{python}
 # Reproducible train/test splits
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
     random_state=42
@@ -559,7 +564,7 @@ torch.manual_seed(42)
 
 ### 3. Don't Shuffle Test Data
 
-```python
+```{python}
 # Good: Test data in consistent order
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
     shuffle_train=True,   # Shuffle training data
@@ -571,7 +576,7 @@ This ensures consistent evaluation metrics across runs.
 
 ### 4. Choose Appropriate Batch Size
 
-```python
+```{python}
 # Small dataset (442 samples) - moderate batch size works well
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
     batch_size=32  # Good balance for this dataset
@@ -583,7 +588,7 @@ Too small: Noisy gradients, slower training
 
 ### 5. Save the Scaler for Production
 
-```python
+```{python}
 import pickle
 from spotoptim.data import get_diabetes_dataloaders
 
@@ -609,7 +614,7 @@ new_data_scaled = scaler.transform(new_data)
 
 **Solution**: Reduce batch size or disable pin_memory
 
-```python
+```{python}
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
     batch_size=16,      # Smaller batches
     pin_memory=False    # Disable if not using GPU
@@ -622,7 +627,7 @@ train_loader, test_loader, scaler = get_diabetes_dataloaders(
 
 **Solution**: Ensure feature scaling is enabled
 
-```python
+```{python}
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
     scale_features=True  # Must be True for neural networks
 )
@@ -632,7 +637,7 @@ train_loader, test_loader, scaler = get_diabetes_dataloaders(
 
 **Solution**: Set all random seeds
 
-```python
+```{python}
 import torch
 import numpy as np
 
@@ -650,7 +655,7 @@ train_loader, test_loader, scaler = get_diabetes_dataloaders(
 
 **Solution**: Use multiple workers (if not on Windows)
 
-```python
+```{python}
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
     num_workers=4,      # Use 4 subprocesses
     pin_memory=True     # Enable for GPU
