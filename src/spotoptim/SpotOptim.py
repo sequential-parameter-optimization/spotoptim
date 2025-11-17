@@ -2776,6 +2776,8 @@ class SpotOptim(BaseEstimator):
         figsize: Tuple[int, int] = (12, 10),
         ylabel: str = "Objective Value",
         cmap: str = "viridis_r",
+        show_correlation: bool = False,
+        log_y: bool = False,
     ) -> None:
         """Plot parameter distributions showing relationship between each parameter and objective.
 
@@ -2784,6 +2786,10 @@ class SpotOptim(BaseEstimator):
         is marked with a red star. Parameters with log-scale transformations (var_trans)
         are automatically displayed on a log x-axis.
 
+        Optionally displays Spearman correlation coefficients in plot titles for
+        sensitivity analysis. For factor (categorical) variables, correlation is not
+        computed and they are displayed with discrete positions on the x-axis.
+
         Args:
             result (OptimizeResult, optional): Optimization result containing best parameters.
                 If None, uses the best found values from self.best_x_ and self.best_y_.
@@ -2791,6 +2797,10 @@ class SpotOptim(BaseEstimator):
             figsize (tuple, optional): Figure size as (width, height). Defaults to (12, 10).
             ylabel (str, optional): Label for y-axis. Defaults to "Objective Value".
             cmap (str, optional): Colormap for scatter plot. Defaults to "viridis_r".
+            show_correlation (bool, optional): Whether to compute and display Spearman
+                correlation coefficients in plot titles. Requires scipy. Defaults to False.
+            log_y (bool, optional): Whether to use logarithmic scale for y-axis.
+                Defaults to False.
 
         Raises:
             ValueError: If no optimization data is available.
@@ -2821,6 +2831,16 @@ class SpotOptim(BaseEstimator):
                 "matplotlib is required for plot_parameter_scatter(). "
                 "Install it with: pip install matplotlib"
             )
+
+        # Import scipy if correlation is requested
+        if show_correlation:
+            try:
+                from scipy.stats import spearmanr
+            except ImportError:
+                raise ImportError(
+                    "scipy is required for show_correlation=True. "
+                    "Install it with: pip install scipy"
+                )
 
         if self.X_ is None or self.y_ is None or len(self.y_) == 0:
             raise ValueError("No optimization data available. Run optimize() first.")
@@ -2854,41 +2874,124 @@ class SpotOptim(BaseEstimator):
             ax = axes_flat[idx]
             param_values = all_params[:, idx]
             param_name = self.var_name[idx] if self.var_name else f"x{idx}"
+            var_type = self.var_type[idx] if self.var_type else "num"
+            var_trans = self.var_trans[idx] if self.var_trans else None
 
-            # Scatter plot with color gradient
-            scatter = ax.scatter(
-                param_values,
-                history,
-                c=history,
-                cmap=cmap,
-                s=50,
-                alpha=0.7,
-                edgecolors="black",
-                linewidth=0.5,
-            )
+            # Check if this is a factor variable
+            is_factor = var_type == "factor"
 
-            # Mark best configuration
-            ax.scatter(
-                [best_x[idx]],
-                [best_y],
-                color="red",
-                s=200,
-                marker="*",
-                edgecolors="black",
-                linewidth=1.5,
-                label="Best",
-                zorder=5,
-            )
+            # Compute correlation if requested
+            corr, p_value = np.nan, np.nan
+            if show_correlation and not is_factor:
+                try:
+                    if var_trans in ["log10", "log", "ln"]:
+                        # For log-transformed parameters, correlate in log-space
+                        param_values_numeric = param_values.astype(float)
+                        valid_mask = (param_values_numeric > 0) & (history > 0)
+                        if valid_mask.sum() >= 3:
+                            corr, p_value = spearmanr(
+                                np.log10(param_values_numeric[valid_mask]),
+                                np.log10(history[valid_mask])
+                            )
+                    else:
+                        # Direct correlation for non-transformed parameters
+                        param_values_numeric = param_values.astype(float)
+                        corr, p_value = spearmanr(param_values_numeric, history)
+                except (ValueError, TypeError):
+                    pass  # Keep corr as nan
 
+            # Handle factor variables differently
+            if is_factor:
+                # Map factor levels to integer positions
+                unique_vals = np.unique(param_values)
+                positions = {val: i for i, val in enumerate(unique_vals)}
+                numeric_vals = np.array([positions[val] for val in param_values])
+
+                # Scatter plot with discrete x positions
+                scatter = ax.scatter(
+                    numeric_vals,
+                    history,
+                    c=history,
+                    cmap=cmap,
+                    s=50,
+                    alpha=0.7,
+                    edgecolors="black",
+                    linewidth=0.5,
+                )
+
+                # Mark best configuration
+                best_val = best_x[idx]
+                if best_val not in positions:
+                    positions[best_val] = len(positions)
+                    unique_vals = np.append(unique_vals, best_val)
+                
+                best_pos = positions[best_val]
+                ax.scatter(
+                    [best_pos],
+                    [best_y],
+                    color="red",
+                    s=200,
+                    marker="*",
+                    edgecolors="black",
+                    linewidth=1.5,
+                    label="Best",
+                    zorder=5,
+                )
+
+                # Set categorical x-axis labels
+                ax.set_xticks(range(len(unique_vals)))
+                ax.set_xticklabels(unique_vals, rotation=45, ha='right')
+            else:
+                # Standard scatter plot for numeric variables
+                scatter = ax.scatter(
+                    param_values,
+                    history,
+                    c=history,
+                    cmap=cmap,
+                    s=50,
+                    alpha=0.7,
+                    edgecolors="black",
+                    linewidth=0.5,
+                )
+
+                # Mark best configuration
+                ax.scatter(
+                    [best_x[idx]],
+                    [best_y],
+                    color="red",
+                    s=200,
+                    marker="*",
+                    edgecolors="black",
+                    linewidth=1.5,
+                    label="Best",
+                    zorder=5,
+                )
+
+                # Use log scale for parameters with log transformations
+                if var_trans in ["log10", "log", "ln"]:
+                    ax.set_xscale("log")
+
+            # Set labels
             ax.set_xlabel(param_name, fontsize=11)
             ax.set_ylabel(ylabel, fontsize=11)
-            ax.set_title(f"{param_name} vs {ylabel}", fontsize=12)
+            
+            # Set title with optional correlation
+            if show_correlation and not np.isnan(corr):
+                ax.set_title(
+                    f"{param_name}\nCorr: {corr:.3f} (p={p_value:.3f})",
+                    fontsize=11
+                )
+            elif show_correlation and is_factor:
+                ax.set_title(f"{param_name}\n(categorical)", fontsize=11)
+            else:
+                ax.set_title(f"{param_name} vs {ylabel}", fontsize=12)
+            
             ax.legend(fontsize=9)
             ax.grid(True, alpha=0.3)
 
-            # Use log scale for parameters with log transformations
-            if self.var_trans[idx] in ["log10", "log", "ln"]:
-                ax.set_xscale("log")
+            # Use log scale for y-axis if requested
+            if log_y:
+                ax.set_yscale("log")
 
         # Hide unused subplots
         for idx in range(n_params, len(axes_flat)):
@@ -3552,6 +3655,133 @@ class SpotOptim(BaseEstimator):
         # Print objective value and evaluations
         print(f"  Objective Value: {best_y:.{precision}f}")
         print(f"  Total Evaluations: {n_evals}")
+
+    def sensitivity_spearman(self) -> None:
+        """Compute and print Spearman correlation between parameters and objective values.
+
+        This method analyzes the sensitivity of the objective function to each
+        hyperparameter by computing Spearman rank correlations. For categorical
+        (factor) variables, correlation is not computed as they require visual
+        inspection instead.
+
+        The method automatically handles different parameter types:
+        - Integer/float parameters: Direct correlation with objective values
+        - Log-transformed parameters (log10, log, ln): Correlation in log-space
+        - Factor (categorical) parameters: Skipped with informative message
+
+        Significance levels:
+        - ***: p < 0.001 (highly significant)
+        - **: p < 0.01 (significant)
+        - *: p < 0.05 (marginally significant)
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> import numpy as np
+            >>>
+            >>> # After running optimization
+            >>> opt = SpotOptim(...)
+            >>> result = opt.optimize()
+            >>> opt.sensitivity_spearman()
+            Sensitivity Analysis (Spearman Correlation):
+            --------------------------------------------------
+              l1 (neurons)        : +0.005 (p=0.959)
+              num_layers          : -0.192 (p=0.056)
+              activation          : (categorical variable, use visual inspection)
+              lr_unified          : -0.040 (p=0.689)
+              alpha               : -0.233 (p=0.020) *
+
+        Note:
+            Requires scipy to be installed. If not available, raises ImportError.
+            Only meaningful after optimize() has been called with sufficient evaluations.
+        """
+        try:
+            from scipy.stats import spearmanr
+        except ImportError:
+            raise ImportError(
+                "scipy is required for sensitivity_spearman(). "
+                "Install it with: pip install scipy"
+            )
+
+        if self.X_ is None or self.y_ is None:
+            raise ValueError(
+                "No optimization data available. Run optimize() first."
+            )
+
+        # Get optimization history and parameters
+        history = self.y_
+        all_params = self.X_
+
+        # Get parameter names
+        param_names = self.var_name if self.var_name else [
+            f"x{i}" for i in range(self.n_dim)
+        ]
+
+        print("\nSensitivity Analysis (Spearman Correlation):")
+        print("-" * 50)
+
+        for param_idx in range(self.n_dim):
+            name = param_names[param_idx]
+            param_values = all_params[:, param_idx]
+
+            # Check if it's a factor variable
+            var_type = self.var_type[param_idx] if self.var_type else "num"
+
+            if var_type == "factor":
+                # For categorical variables, skip correlation
+                print(
+                    f"  {name:20s}: (categorical variable, use visual inspection)"
+                )
+                continue
+
+            # Check if parameter has log transformation
+            var_trans = (
+                self.var_trans[param_idx] if self.var_trans else None
+            )
+
+            # Compute correlation based on transformation
+            if var_trans in ["log10", "log", "ln"]:
+                # For log-transformed parameters, use log-space correlation
+                try:
+                    param_values_numeric = param_values.astype(float)
+                    # Filter out non-positive values
+                    valid_mask = (param_values_numeric > 0) & (history > 0)
+                    if valid_mask.sum() < 3:
+                        print(
+                            f"  {name:20s}: (insufficient valid data for log correlation)"
+                        )
+                        continue
+
+                    corr, p_value = spearmanr(
+                        np.log10(param_values_numeric[valid_mask]),
+                        np.log10(history[valid_mask]),
+                    )
+                except (ValueError, TypeError):
+                    print(
+                        f"  {name:20s}: (error computing log correlation)"
+                    )
+                    continue
+            else:
+                # For integer/float parameters, direct correlation
+                try:
+                    param_values_numeric = param_values.astype(float)
+                    corr, p_value = spearmanr(param_values_numeric, history)
+                except (ValueError, TypeError):
+                    print(f"  {name:20s}: (error computing correlation)")
+                    continue
+
+            # Determine significance level
+            if p_value < 0.001:
+                significance = " ***"
+            elif p_value < 0.01:
+                significance = " **"
+            elif p_value < 0.05:
+                significance = " *"
+            else:
+                significance = ""
+
+            print(
+                f"  {name:20s}: {corr:+.3f} (p={p_value:.3f}){significance}"
+            )
 
     def print_results_table(
         self,
