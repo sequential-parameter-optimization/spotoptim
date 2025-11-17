@@ -1665,26 +1665,64 @@ class SpotOptim(BaseEstimator):
         Args:
             y (ndarray): Array of objective function values.
             penalty_value (float, optional): Value to replace NaN/inf with.
-                If None, uses self.penalty. Default is None.
+                If None, computes penalty as: max(finite_y) + 3 * std(finite_y).
+                If all values are NaN/inf or only one finite value exists, falls back
+                to self.penalty. Default is None.
             sd (float): Standard deviation for random noise added to penalty.
                 Default is 0.1.
 
         Returns:
             ndarray: Array with NaN/inf replaced by penalty_value + random noise.
-        """
-        if penalty_value is None:
-            penalty_value = self.penalty
 
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> y = np.array([1.0, 2.0, np.nan, 5.0, np.inf])
+            >>> y_clean = opt._apply_penalty_NA(y)
+            >>> np.all(np.isfinite(y_clean))
+            True
+            >>> # NaN/inf replaced with worst value + 3*std + noise
+            >>> y_clean[2] > 5.0  # Should be larger than max finite value
+            True
+        """
         y = np.copy(y)
         # Identify NaN and inf values
         mask = ~np.isfinite(y)
 
         if np.any(mask):
             n_bad = np.sum(mask)
-            if self.verbose:
-                print(
-                    f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise"
-                )
+            
+            # Compute penalty_value if not provided
+            if penalty_value is None:
+                # Get finite values for statistics
+                finite_values = y[~mask]
+                
+                # If we have at least 2 finite values, compute adaptive penalty
+                if len(finite_values) >= 2:
+                    max_y = np.max(finite_values)
+                    std_y = np.std(finite_values, ddof=1)
+                    penalty_value = max_y + 3.0 * std_y
+                    
+                    if self.verbose:
+                        print(
+                            f"Warning: Found {n_bad} NaN/inf value(s), replacing with "
+                            f"adaptive penalty (max + 3*std = {penalty_value:.4f})"
+                        )
+                else:
+                    # Fallback to self.penalty if insufficient finite values
+                    penalty_value = self.penalty
+                    
+                    if self.verbose:
+                        print(
+                            f"Warning: Found {n_bad} NaN/inf value(s), insufficient finite values "
+                            f"for adaptive penalty. Using self.penalty = {penalty_value}"
+                        )
+            else:
+                if self.verbose:
+                    print(
+                        f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise"
+                    )
 
             # Generate random noise and add to penalty
             random_noise = np.random.normal(0, sd, y.shape)
