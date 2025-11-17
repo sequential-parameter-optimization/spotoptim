@@ -27,7 +27,25 @@ class SpotOptim(BaseEstimator):
             For example, max_iter=30 with n_initial=10 will perform 10 initial evaluations plus
             20 sequential optimization iterations. Defaults to 20.
         n_initial (int, optional): Number of initial design points. Defaults to 10.
-        surrogate (object, optional): Surrogate model. Defaults to Gaussian Process with Matern kernel.
+        surrogate (object, optional): Surrogate model with scikit-learn interface (fit/predict methods).
+            If None, uses a Gaussian Process Regressor with Matern kernel. Default configuration::
+
+                from sklearn.gaussian_process import GaussianProcessRegressor
+                from sklearn.gaussian_process.kernels import Matern, ConstantKernel
+                
+                kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(1e-3, 1e3)) * Matern(
+                    length_scale=1.0, length_scale_bounds=(1e-2, 1e2), nu=2.5
+                )
+                surrogate = GaussianProcessRegressor(
+                    kernel=kernel,
+                    n_restarts_optimizer=10,
+                    normalize_y=True,
+                    random_state=self.seed,
+                )
+
+            Alternative surrogates can be provided, including SpotOptim's Kriging model,
+            Random Forests, or any scikit-learn compatible regressor. See Examples section.
+            Defaults to None (uses default Gaussian Process configuration).
         acquisition (str, optional): Acquisition function ('ei', 'y', 'pi'). Defaults to 'ei'.
         var_type (list of str, optional): Variable types for each dimension. Supported types:
             - 'float': Python floats, continuous optimization (no rounding)
@@ -89,6 +107,10 @@ class SpotOptim(BaseEstimator):
             a small random noise (sampled from N(0, 0.1)) to avoid identical penalty values.
             This allows optimization to continue despite occasional function evaluation failures.
             Defaults to None.
+        x0 (array-like, optional): Starting point for optimization, shape (n_features,).
+            If provided, this point will be evaluated first and included in the initial design.
+            The point should be within the bounds and will be validated before use.
+            Defaults to None (no starting point, uses only LHS design).
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -193,6 +215,94 @@ class SpotOptim(BaseEstimator):
         >>> result = optimizer_tb.optimize()
         >>> # View logs in browser: tensorboard --logdir=runs/my_optimization
         >>> print("Logs saved to:", optimizer_tb.tensorboard_path)
+        >>>
+        >>> # Example 6: Using SpotOptim's Kriging surrogate
+        >>> from spotoptim.surrogate import Kriging
+        >>> kriging_model = Kriging(
+        ...     noise=1e-10,           # Regularization parameter
+        ...     kernel='gauss',         # Gaussian/RBF kernel
+        ...     min_theta=-3.0,         # Min log10(theta) bound
+        ...     max_theta=2.0,          # Max log10(theta) bound
+        ...     seed=42
+        ... )
+        >>> optimizer_kriging = SpotOptim(
+        ...     fun=objective,
+        ...     bounds=[(-5, 5), (-5, 5)],
+        ...     surrogate=kriging_model,
+        ...     max_iter=30,
+        ...     n_initial=10,
+        ...     seed=42,
+        ...     verbose=True
+        ... )
+        >>> result = optimizer_kriging.optimize()
+        >>> print("Best solution found:", result.x)
+        >>> print("Best value:", result.fun)
+        >>>
+        >>> # Example 7: Using sklearn Gaussian Process with custom kernel
+        >>> from sklearn.gaussian_process import GaussianProcessRegressor
+        >>> from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
+        >>> # Custom kernel: constant * RBF + white noise
+        >>> custom_kernel = ConstantKernel(1.0, (1e-2, 1e2)) * RBF(
+        ...     length_scale=1.0, length_scale_bounds=(1e-1, 10.0)
+        ... ) + WhiteKernel(noise_level=1e-5, noise_level_bounds=(1e-10, 1e-1))
+        >>> gp_custom = GaussianProcessRegressor(
+        ...     kernel=custom_kernel,
+        ...     n_restarts_optimizer=15,
+        ...     normalize_y=True,
+        ...     random_state=42
+        ... )
+        >>> optimizer_custom_gp = SpotOptim(
+        ...     fun=objective,
+        ...     bounds=[(-5, 5), (-5, 5)],
+        ...     surrogate=gp_custom,
+        ...     max_iter=30,
+        ...     n_initial=10,
+        ...     seed=42
+        ... )
+        >>> result = optimizer_custom_gp.optimize()
+        >>>
+        >>> # Example 8: Using Random Forest as surrogate
+        >>> from sklearn.ensemble import RandomForestRegressor
+        >>> rf_model = RandomForestRegressor(
+        ...     n_estimators=100,
+        ...     max_depth=10,
+        ...     random_state=42
+        ... )
+        >>> optimizer_rf = SpotOptim(
+        ...     fun=objective,
+        ...     bounds=[(-5, 5), (-5, 5)],
+        ...     surrogate=rf_model,
+        ...     max_iter=30,
+        ...     n_initial=10,
+        ...     seed=42
+        ... )
+        >>> result = optimizer_rf.optimize()
+        >>> # Note: Random Forests don't provide uncertainty estimates,
+        >>> # so Expected Improvement (EI) may be less effective.
+        >>> # Consider using acquisition='y' for pure exploitation.
+        >>>
+        >>> # Example 9: Comparing different kernels for Gaussian Process
+        >>> from sklearn.gaussian_process.kernels import Matern, RationalQuadratic
+        >>> # Matern kernel with nu=1.5 (once differentiable)
+        >>> kernel_matern15 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=1.5)
+        >>> gp_matern15 = GaussianProcessRegressor(kernel=kernel_matern15, normalize_y=True)
+        >>> 
+        >>> # Matern kernel with nu=2.5 (twice differentiable, DEFAULT)
+        >>> kernel_matern25 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=2.5)
+        >>> gp_matern25 = GaussianProcessRegressor(kernel=kernel_matern25, normalize_y=True)
+        >>> 
+        >>> # RBF kernel (infinitely differentiable, smooth)
+        >>> kernel_rbf = ConstantKernel(1.0) * RBF(length_scale=1.0)
+        >>> gp_rbf = GaussianProcessRegressor(kernel=kernel_rbf, normalize_y=True)
+        >>> 
+        >>> # Rational Quadratic kernel (mixture of RBF kernels)
+        >>> kernel_rq = ConstantKernel(1.0) * RationalQuadratic(length_scale=1.0, alpha=1.0)
+        >>> gp_rq = GaussianProcessRegressor(kernel=kernel_rq, normalize_y=True)
+        >>> 
+        >>> # Use any of these as surrogate
+        >>> optimizer_rbf = SpotOptim(fun=objective, bounds=[(-5, 5), (-5, 5)], 
+        ...                           surrogate=gp_rbf, max_iter=30, n_initial=10)
+        >>> result = optimizer_rbf.optimize()
     """
 
     def __init__(
@@ -222,6 +332,7 @@ class SpotOptim(BaseEstimator):
         selection_method: str = "distant",
         acquisition_failure_strategy: str = "random",
         penalty: Optional[float] = None,
+        x0: Optional[np.ndarray] = None,
     ):
 
         warnings.filterwarnings(warnings_filter)
@@ -264,6 +375,7 @@ class SpotOptim(BaseEstimator):
         self.selection_method = selection_method
         self.acquisition_failure_strategy = acquisition_failure_strategy
         self.penalty = penalty
+        self.x0 = x0
 
         # Determine if noise handling is active
         self.noise = (repeats_initial > 1) or (repeats_surrogate > 1)
@@ -315,9 +427,13 @@ class SpotOptim(BaseEstimator):
         # Dimension reduction: backup original bounds and identify fixed dimensions
         self._setup_dimension_reduction()
 
+        # Validate and process starting point if provided
+        if self.x0 is not None:
+            self.x0 = self._validate_x0(self.x0)
+
         # Initialize surrogate if not provided
         if self.surrogate is None:
-            kernel = ConstantKernel(1.0, (1e-3, 1e3)) * Matern(
+            kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(1e-3, 1e3)) * Matern(
                 length_scale=1.0, length_scale_bounds=(1e-2, 1e2), nu=2.5
             )
             self.surrogate = GaussianProcessRegressor(
@@ -574,6 +690,96 @@ class SpotOptim(BaseEstimator):
 
             # Recreate LHS sampler with reduced dimensions
             self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+
+    def _validate_x0(self, x0: np.ndarray) -> np.ndarray:
+        """Validate and process starting point x0.
+
+        This method checks that x0:
+        - Is a numpy array
+        - Has the correct number of dimensions
+        - Has values within bounds (in original scale)
+        - Is properly transformed to internal scale
+
+        Args:
+            x0 (array-like): Starting point in original scale
+
+        Returns:
+            ndarray: Validated and transformed x0 in internal scale, shape (n_features,)
+
+        Raises:
+            ValueError: If x0 is invalid
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     x0=np.array([1.0, 2.0])
+            ... )
+            >>> # x0 is validated during initialization
+        """
+        # Convert to numpy array
+        x0 = np.asarray(x0)
+
+        # Check if x0 is 1D or can be flattened to 1D
+        if x0.ndim == 0:
+            raise ValueError(
+                f"x0 must be a 1D array-like, got scalar value. "
+                f"Expected shape: ({len(self.all_lower)},)"
+            )
+        elif x0.ndim > 2:
+            raise ValueError(
+                f"x0 must be a 1D array-like, got {x0.ndim}D array. "
+                f"Expected shape: ({len(self.all_lower)},)"
+            )
+        elif x0.ndim == 2:
+            if x0.shape[0] != 1:
+                raise ValueError(
+                    f"x0 must be a single point (1D array), got shape {x0.shape}. "
+                    f"Expected shape: ({len(self.all_lower)},) or (1, {len(self.all_lower)})"
+                )
+            x0 = x0.ravel()
+
+        # Check number of dimensions (compare with original full dimensions before reduction)
+        expected_dim = len(self.all_lower)
+        if len(x0) != expected_dim:
+            raise ValueError(
+                f"x0 has {len(x0)} dimensions, but expected {expected_dim} dimensions. "
+                f"Bounds specify {expected_dim} parameters: {self.all_var_name}"
+            )
+
+        # Check bounds (in original scale, before transformations)
+        # Use _original_lower/_original_upper which are before transformations
+        for i, (val, low, high, name) in enumerate(zip(x0, self._original_lower, self._original_upper, self.all_var_name)):
+            # For fixed dimensions, check if x0 matches the fixed value
+            if self.red_dim and self.ident[i]:
+                if not np.isclose(val, low, atol=self.eps):
+                    raise ValueError(
+                        f"x0[{i}] ({name}) = {val} is a fixed dimension and must equal {low}. "
+                        f"Dimension {i} has bounds ({low}, {high}) indicating a fixed value."
+                    )
+            else:
+                # For non-fixed dimensions, check bounds
+                if not (low <= val <= high):
+                    raise ValueError(
+                        f"x0[{i}] ({name}) = {val} is outside bounds [{low}, {high}]. "
+                        f"All values must be within their respective bounds."
+                    )
+
+        # Apply transformations to x0 (from original to internal scale)
+        x0_transformed = self._transform_X(x0.reshape(1, -1)).ravel()
+
+        # If dimension reduction is active, reduce x0 to non-fixed dimensions
+        if self.red_dim:
+            x0_transformed = x0_transformed[~self.ident]
+
+        if self.verbose:
+            print(f"Starting point x0 validated and processed successfully.")
+            print(f"  Original scale: {x0}")
+            print(f"  Internal scale: {x0_transformed}")
+
+        return x0_transformed
 
     def to_all_dim(self, X_red: np.ndarray) -> np.ndarray:
         """Expand reduced-dimensional points to full-dimensional representation.
@@ -1591,6 +1797,19 @@ class SpotOptim(BaseEstimator):
             tuple: A tuple containing:
                 - ndarray: Array with unknown (new) values.
                 - ndarray: Array with True if value is new, otherwise False.
+                
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> A = np.array([[1, 2], [3, 4], [5, 6]])
+            >>> X = np.array([[3, 4], [7, 8]])
+            >>> new_A, is_new = opt._select_new(A, X)
+            >>> print("New A:", new_A)
+            New A: [[1 2]
+             [5 6]]
+            >>> print("Is new:", is_new)
+            Is new: [ True False  True]
         """
         B = np.abs(A[:, None] - X)
         ind = np.any(np.all(B <= tolerance, axis=2), axis=1)
@@ -1849,6 +2068,26 @@ class SpotOptim(BaseEstimator):
 
         return self._repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
 
+    def _predict_with_uncertainty(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Predict with uncertainty estimates, handling surrogates without return_std.
+        
+        Args:
+            X: Input points, shape (n_samples, n_features)
+            
+        Returns:
+            Tuple of (predictions, std_deviations). If surrogate doesn't support
+            return_std, returns predictions with zeros for std.
+        """
+        try:
+            # Try to get uncertainty estimates
+            y_pred, y_std = self.surrogate.predict(X, return_std=True)
+            return y_pred, y_std
+        except (TypeError, AttributeError):
+            # Surrogate doesn't support return_std (e.g., Random Forest, XGBoost)
+            y_pred = self.surrogate.predict(X)
+            y_std = np.zeros_like(y_pred)
+            return y_pred, y_std
+
     def _acquisition_function(self, x: np.ndarray) -> float:
         """Compute acquisition function value.
 
@@ -1866,7 +2105,7 @@ class SpotOptim(BaseEstimator):
 
         elif self.acquisition == "ei":
             # Expected Improvement
-            mu, sigma = self.surrogate.predict(x, return_std=True)
+            mu, sigma = self._predict_with_uncertainty(x)
             mu = mu[0]
             sigma = sigma[0]
 
@@ -1884,7 +2123,7 @@ class SpotOptim(BaseEstimator):
 
         elif self.acquisition == "pi":
             # Probability of Improvement
-            mu, sigma = self.surrogate.predict(x, return_std=True)
+            mu, sigma = self._predict_with_uncertainty(x)
             mu = mu[0]
             sigma = sigma[0]
 
@@ -1998,6 +2237,15 @@ class SpotOptim(BaseEstimator):
         # Generate or use provided initial design
         if X0 is None:
             X0 = self._generate_initial_design()
+            
+            # If starting point x0 was provided, include it in initial design
+            if self.x0 is not None:
+                # x0 is already validated and in internal scale
+                x0_point = self.x0.reshape(1, -1)
+                # Add x0 as the first point in the initial design
+                X0 = np.vstack([x0_point, X0[:-1]])  # Keep total n_initial points
+                if self.verbose:
+                    print(f"Including starting point x0 in initial design as first evaluation.")
         else:
             X0 = np.atleast_2d(X0)
             # If user provided X0, it's in original scale - transform it
@@ -2343,7 +2591,7 @@ class SpotOptim(BaseEstimator):
         X_i, X_j, grid_points = self._generate_mesh_grid(i, j, num)
 
         # Predict on grid
-        y_pred, y_std = self.surrogate.predict(grid_points, return_std=True)
+        y_pred, y_std = self._predict_with_uncertainty(grid_points)
         Z_pred = y_pred.reshape(X_i.shape)
         Z_std = y_std.reshape(X_i.shape)
 
@@ -2706,7 +2954,7 @@ class SpotOptim(BaseEstimator):
             factor_labels_i, factor_labels_j = None, None
 
         # Predict on grid
-        y_pred, y_std = self.surrogate.predict(grid_points, return_std=True)
+        y_pred, y_std = self._predict_with_uncertainty(grid_points)
         Z_pred = y_pred.reshape(X_i.shape)
         Z_std = y_std.reshape(X_i.shape)
 
