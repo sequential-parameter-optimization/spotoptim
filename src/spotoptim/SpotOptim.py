@@ -14,7 +14,6 @@ from datetime import datetime
 import os
 import shutil
 import pickle
-import copy
 
 
 class SpotOptim(BaseEstimator):
@@ -32,7 +31,7 @@ class SpotOptim(BaseEstimator):
 
                 from sklearn.gaussian_process import GaussianProcessRegressor
                 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
-                
+
                 kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(1e-3, 1e3)) * Matern(
                     length_scale=1.0, length_scale_bounds=(1e-2, 1e2), nu=2.5
                 )
@@ -286,21 +285,21 @@ class SpotOptim(BaseEstimator):
         >>> # Matern kernel with nu=1.5 (once differentiable)
         >>> kernel_matern15 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=1.5)
         >>> gp_matern15 = GaussianProcessRegressor(kernel=kernel_matern15, normalize_y=True)
-        >>> 
+        >>>
         >>> # Matern kernel with nu=2.5 (twice differentiable, DEFAULT)
         >>> kernel_matern25 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=2.5)
         >>> gp_matern25 = GaussianProcessRegressor(kernel=kernel_matern25, normalize_y=True)
-        >>> 
+        >>>
         >>> # RBF kernel (infinitely differentiable, smooth)
         >>> kernel_rbf = ConstantKernel(1.0) * RBF(length_scale=1.0)
         >>> gp_rbf = GaussianProcessRegressor(kernel=kernel_rbf, normalize_y=True)
-        >>> 
+        >>>
         >>> # Rational Quadratic kernel (mixture of RBF kernels)
         >>> kernel_rq = ConstantKernel(1.0) * RationalQuadratic(length_scale=1.0, alpha=1.0)
         >>> gp_rq = GaussianProcessRegressor(kernel=kernel_rq, normalize_y=True)
-        >>> 
+        >>>
         >>> # Use any of these as surrogate
-        >>> optimizer_rbf = SpotOptim(fun=objective, bounds=[(-5, 5), (-5, 5)], 
+        >>> optimizer_rbf = SpotOptim(fun=objective, bounds=[(-5, 5), (-5, 5)],
         ...                           surrogate=gp_rbf, max_iter=30, n_initial=10)
         >>> result = optimizer_rbf.optimize()
     """
@@ -433,9 +432,9 @@ class SpotOptim(BaseEstimator):
 
         # Initialize surrogate if not provided
         if self.surrogate is None:
-            kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(1e-3, 1e3)) * Matern(
-                length_scale=1.0, length_scale_bounds=(1e-2, 1e2), nu=2.5
-            )
+            kernel = ConstantKernel(
+                constant_value=1.0, constant_value_bounds=(1e-3, 1e3)
+            ) * Matern(length_scale=1.0, length_scale_bounds=(1e-2, 1e2), nu=2.5)
             self.surrogate = GaussianProcessRegressor(
                 kernel=kernel,
                 n_restarts_optimizer=10,
@@ -484,6 +483,16 @@ class SpotOptim(BaseEstimator):
         integer mappings and replaces bounds with (0, n_levels-1).
 
         Stores mappings in self._factor_maps: {dim_idx: {int_val: str_val}}
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[('red', 'green', 'blue'), (0, 10)])
+            >>> spot._process_factor_bounds()
+            Factor variable at dimension 0:
+              Levels: ['red', 'green', 'blue']
+              Mapped to integers: 0 to 2
+            >>> print(spot.bounds)
+            [(0, 2), (0, 10)]
         """
         processed_bounds = []
 
@@ -532,10 +541,25 @@ class SpotOptim(BaseEstimator):
 
         Args:
             x: Value to transform
-            trans: Transformation name ('log10', 'log', 'sqrt', 'exp', 'square', etc.)
+            trans: Transformation name. Can be one of 'id', 'log10', 'log', 'ln', 'sqrt',
+                   'exp', 'square', 'cube', 'inv', 'reciprocal', or None.
 
         Returns:
             Transformed value
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
+            >>> spot._transform_value(10, 'log10')
+            1.0
+            >>> spot._transform_value(100, 'log')
+            4.605170185988092
+            >>> spot._transform_value(4, 'sqrt')
+            2.0
+            >>> spot._transform_value(2, 'exp')
+            7.38905609893065
+            >>> spot._transform_value(3, 'square')
+            9
         """
         if trans is None or trans == "id":
             return x
@@ -561,10 +585,21 @@ class SpotOptim(BaseEstimator):
 
         Args:
             x: Transformed value
-            trans: Transformation name
+            trans: Transformation name. Can be one of 'id', 'log10', 'log', 'ln', 'sqrt',
+                   'exp', 'square', 'cube', 'inv', 'reciprocal', or None.
 
         Returns:
             Original value
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
+            >>> spot._inverse_transform_value(1.0, 'log10')
+            10.0
+            >>> spot._inverse_transform_value(4.605170185988092, 'log')
+            100.0
+            >>> spot._inverse_transform_value(2.0, 'sqrt')
+            4.0
         """
         if trans is None or trans == "id":
             return x
@@ -593,6 +628,16 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             Array in transformed (internal) scale
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> import numpy as np
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
+            >>> X_orig = np.array([[1], [10], [100]])
+            >>> spot._transform_X(X_orig)
+            array([[0.        ],
+                   [1.        ],
+                   [2.        ]])
         """
         X_transformed = X.copy()
         for i, trans in enumerate(self.var_trans):
@@ -610,6 +655,16 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             Array in original scale
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> import numpy as np
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
+            >>> X_trans = np.array([[0], [1], [2]])
+            >>> spot._inverse_transform_X(X_trans)
+            array([[  1.],
+                   [ 10.],
+                   [100.]])
         """
         X_original = X.copy()
         for i, trans in enumerate(self.var_trans):
@@ -620,12 +675,22 @@ class SpotOptim(BaseEstimator):
         return X_original
 
     def _transform_bounds(self) -> None:
-        """Transform bounds from original to internal scale."""
+        """Transform bounds from original to internal scale.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (0.1, 100)])
+            >>> spot.var_trans = ['log10', 'sqrt']
+            >>> spot._transform_bounds()
+            >>> print(spot.bounds)
+            [(0.0, 1.0), (0.31622776601683794, 10.0)]
+
+        """
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
                 lower_t = self._transform_value(self.lower[i], trans)
                 upper_t = self._transform_value(self.upper[i], trans)
-                
+
                 # Handle reversed bounds (e.g., reciprocal transformation)
                 if lower_t > upper_t:
                     self.lower[i], self.upper[i] = upper_t, lower_t
@@ -644,6 +709,25 @@ class SpotOptim(BaseEstimator):
         - Boolean mask of fixed dimensions in `ident`
         - Reduced bounds, types, and names for optimization
         - `red_dim` flag indicating if reduction occurred
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (5, 5), (0, 1)])
+            >>> spot._setup_dimension_reduction()
+            >>> print("Original lower bounds:", spot.all_lower)
+            Original lower bounds: [ 1  5  0]
+            >>> print("Original upper bounds:", spot.all_upper)
+            Original upper bounds: [10  5  1]
+            >>> print("Fixed dimensions mask:", spot.ident)
+            Fixed dimensions mask: [False  True False]
+            >>> print("Reduced lower bounds:", spot.lower)
+            Reduced lower bounds: [1 0]
+            >>> print("Reduced upper bounds:", spot.upper)
+            Reduced upper bounds: [10  1]
+            >>> print("Reduced variable names:", spot.var_name)
+            Reduced variable names: ['x0', 'x2']
+            >>> print("Is dimension reduction active?", spot.red_dim)
+            Is dimension reduction active? True
         """
         # Backup original values
         self.all_lower = self.lower.copy()
@@ -677,7 +761,7 @@ class SpotOptim(BaseEstimator):
                 for vname, fixed in zip(self.all_var_name, self.ident)
                 if not fixed
             ]
-            
+
             # Reduce transformations
             self.var_trans = [
                 vtrans
@@ -751,7 +835,9 @@ class SpotOptim(BaseEstimator):
 
         # Check bounds (in original scale, before transformations)
         # Use _original_lower/_original_upper which are before transformations
-        for i, (val, low, high, name) in enumerate(zip(x0, self._original_lower, self._original_upper, self.all_var_name)):
+        for i, (val, low, high, name) in enumerate(
+            zip(x0, self._original_lower, self._original_upper, self.all_var_name)
+        ):
             # For fixed dimensions, check if x0 matches the fixed value
             if self.red_dim and self.ident[i]:
                 if not np.isclose(val, low, atol=self.eps):
@@ -775,7 +861,7 @@ class SpotOptim(BaseEstimator):
             x0_transformed = x0_transformed[~self.ident]
 
         if self.verbose:
-            print(f"Starting point x0 validated and processed successfully.")
+            print("Starting point x0 validated and processed successfully.")
             print(f"  Original scale: {x0}")
             print(f"  Internal scale: {x0_transformed}")
 
@@ -1205,7 +1291,9 @@ class SpotOptim(BaseEstimator):
             # Log best X coordinates (by mean) using var_name if available
             for i in range(self.n_dim):
                 param_name = self.var_name[i] if self.var_name else f"x{i}"
-                self.tb_writer.add_scalar(f"X_mean_best/{param_name}", self.min_mean_X[i], step)
+                self.tb_writer.add_scalar(
+                    f"X_mean_best/{param_name}", self.min_mean_X[i], step
+                )
 
         self.tb_writer.flush()
 
@@ -1495,6 +1583,7 @@ class SpotOptim(BaseEstimator):
         verbose: bool = False,
     ) -> np.ndarray:
         """Calculate OCBA allocation and repeat input array X.
+        Used in the optimize() method to generate new design points based on OCBA.
 
         Args:
             X (ndarray): Input array to be repeated, shape (n_designs, n_features).
@@ -1524,6 +1613,7 @@ class SpotOptim(BaseEstimator):
 
     def _evaluate_function(self, X: np.ndarray) -> np.ndarray:
         """Evaluate objective function at points X.
+        Used in the optimize() method to evaluate the objective function.
 
         If dimension reduction is active, expands X to full dimensions before evaluation.
         Supports both single-objective and multi-objective functions. For multi-objective
@@ -1595,6 +1685,7 @@ class SpotOptim(BaseEstimator):
 
     def _generate_initial_design(self) -> np.ndarray:
         """Generate initial space-filling design using Latin Hypercube Sampling.
+        Used in the optimize() method to create the initial set of design points.
 
         Returns:
             ndarray: Initial design points, shape (n_initial, n_features).
@@ -1758,6 +1849,7 @@ class SpotOptim(BaseEstimator):
 
     def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data.
+        Used in optimize() to fit the surrogate model.
 
         If the number of points exceeds `self.max_surrogate_points`,
         a subset of points is selected using the selection dispatcher.
@@ -1765,6 +1857,19 @@ class SpotOptim(BaseEstimator):
         Args:
             X (ndarray): Design points, shape (n_samples, n_features).
             y (ndarray): Function values at X, shape (n_samples,).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 max_surrogate_points=10)
+            >>> X = np.random.rand(50, 2)
+            >>> y = np.random.rand(50)
+            >>> opt._fit_surrogate(X, y)
+            # Show the fitted surrogate model
+            >>> print(opt.surrogate)
+
         """
         X_fit = X
         y_fit = y
@@ -1787,6 +1892,7 @@ class SpotOptim(BaseEstimator):
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Select rows from A that are not in X.
+        Used in _suggest_next_point() to avoid duplicate evaluations.
 
         Args:
             A (ndarray): Array with new values.
@@ -1797,7 +1903,7 @@ class SpotOptim(BaseEstimator):
             tuple: A tuple containing:
                 - ndarray: Array with unknown (new) values.
                 - ndarray: Array with True if value is new, otherwise False.
-                
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -1826,6 +1932,22 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             ndarray: Array with factor values as strings where applicable, shape (n_samples, n_features).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     var_type=['float', 'factor'],
+            ...     var_level=[None, ['red', 'green', 'blue']]
+            ... )
+            >>> X_internal = np.array([[1.0, 0], [2.0, 1], [3.0, 2]])
+            >>> X_mapped = opt._map_to_factor_values(X_internal)
+            >>> print(X_mapped)
+            [[1.0 'red']
+             [2.0 'green']
+             [3.0 'blue']]
         """
         if not self._factor_maps:
             # No factor variables
@@ -1839,11 +1961,11 @@ class SpotOptim(BaseEstimator):
         for dim_idx, mapping in self._factor_maps.items():
             # Check if already mapped (strings) or needs mapping (numeric)
             col_values = X[:, dim_idx]
-            
+
             # If already strings, keep them
             if isinstance(col_values[0], str):
                 continue
-                
+
             # Round to nearest integer and map to string
             int_values = np.round(col_values).astype(int)
             # Clip to valid range
@@ -1868,6 +1990,19 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             ndarray: X array with non-continuous values rounded to integers.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 var_type=['int', 'float'])
+            >>> X = np.array([[1.2, 2.5], [3.7, 4.1], [5.9, 6.8]])
+            >>> X_repaired = opt._repair_non_numeric(X, opt.var_type)
+            >>> print(X_repaired)
+            [[1. 2.5]
+             [4. 4.1]
+             [6. 6.8]]
         """
         # Don't round float or num types (continuous values)
         mask = np.isin(var_type, ["float", "num"], invert=True)
@@ -1875,9 +2010,14 @@ class SpotOptim(BaseEstimator):
         return X
 
     def _apply_penalty_NA(
-        self, y: np.ndarray, y_history: Optional[np.ndarray] = None, penalty_value: Optional[float] = None, sd: float = 0.1
+        self,
+        y: np.ndarray,
+        y_history: Optional[np.ndarray] = None,
+        penalty_value: Optional[float] = None,
+        sd: float = 0.1,
     ) -> np.ndarray:
         """Replace NaN and infinite values with penalty plus random noise.
+        Used in the optimize() method after function evaluations.
 
         This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
         replacing NaN/inf values with a penalty value plus random noise to avoid
@@ -1916,7 +2056,7 @@ class SpotOptim(BaseEstimator):
 
         if np.any(mask):
             n_bad = np.sum(mask)
-            
+
             # Compute penalty_value if not provided
             if penalty_value is None:
                 # Get finite values from history for statistics
@@ -1924,15 +2064,15 @@ class SpotOptim(BaseEstimator):
                 if y_history is not None:
                     finite_values = y_history[np.isfinite(y_history)]
                 else:
-                # Use current y values
+                    # Use current y values
                     finite_values = y[~mask]
-                
+
                 # If we have at least 2 finite values, compute adaptive penalty
                 if len(finite_values) >= 2:
                     max_y = np.max(finite_values)
                     std_y = np.std(finite_values, ddof=1)
                     penalty_value = max_y + 3.0 * std_y
-                    
+
                     if self.verbose:
                         print(
                             f"Warning: Found {n_bad} NaN/inf value(s), replacing with "
@@ -1948,7 +2088,7 @@ class SpotOptim(BaseEstimator):
                     else:
                         # All values are NaN/inf, use a large default
                         penalty_value = 1e10
-                    
+
                     if self.verbose:
                         print(
                             f"Warning: Found {n_bad} NaN/inf value(s), insufficient finite values "
@@ -1973,6 +2113,7 @@ class SpotOptim(BaseEstimator):
         self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
     ) -> tuple:
         """Remove rows where y contains NaN or inf values.
+        Used in the optimize() method after function evaluations.
 
         Args:
             X (ndarray): Design matrix, shape (n_samples, n_features).
@@ -1984,6 +2125,18 @@ class SpotOptim(BaseEstimator):
 
         Raises:
             ValueError: If all values are NaN/inf and stop_on_zero_return is True.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> X = np.array([[1, 2], [3, 4], [5, 6]])
+            >>> y = np.array([1.0, np.nan, np.inf])
+            >>> X_clean, y_clean = opt._remove_nan(X, y, stop_on_zero_return=False)
+            >>> print("Clean X:", X_clean)
+            Clean X: [[1 2]]
+            >>> print("Clean y:", y_clean)
+            Clean y: [1.]
         """
         # Find finite values
         finite_mask = np.isfinite(y)
@@ -2006,6 +2159,7 @@ class SpotOptim(BaseEstimator):
 
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
+        Used in the _suggest_next_point() method.
 
         This method is called when no new design points can be suggested
         by the surrogate model (e.g., when the proposed point is too close
@@ -2029,6 +2183,8 @@ class SpotOptim(BaseEstimator):
             >>> x_fallback = opt._handle_acquisition_failure()
             >>> x_fallback.shape
             (2,)
+            >>> print(x_fallback)
+            [some new point within bounds]
         """
         if self.acquisition_failure_strategy == "mm":
             # Morris-Mitchell phi minimizing point
@@ -2070,13 +2226,33 @@ class SpotOptim(BaseEstimator):
 
     def _predict_with_uncertainty(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Predict with uncertainty estimates, handling surrogates without return_std.
-        
+        Used in the _acquisition_function() method and in the plot_surrogate() method.
+
         Args:
             X: Input points, shape (n_samples, n_features)
-            
+
         Returns:
             Tuple of (predictions, std_deviations). If surrogate doesn't support
             return_std, returns predictions with zeros for std.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor()
+            ... )
+            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> y_train = np.array([0, 2, 8])
+            >>> opt._fit_surrogate(X_train, y_train)
+            >>> X_test = np.array([[1.5, 1.5], [3.0, 3.0]])
+            >>> preds, stds = opt._predict_with_uncertainty(X_test)
+            >>> print("Predictions:", preds)
+            Predictions: [4.5 9. ]
+            >>> print("Standard deviations:", stds)
+            Standard deviations: [some values or zeros depending on surrogate]
         """
         try:
             # Try to get uncertainty estimates
@@ -2090,12 +2266,31 @@ class SpotOptim(BaseEstimator):
 
     def _acquisition_function(self, x: np.ndarray) -> float:
         """Compute acquisition function value.
+        Used in the _suggest_next_point() method.
 
         Args:
             x (ndarray): Point to evaluate, shape (n_features,).
 
         Returns:
             float: Acquisition function value (to be minimized).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor(),
+            ...     acquisition='ei'
+            ... )
+            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> y_train = np.array([0, 2, 8])
+            >>> opt._fit_surrogate(X_train, y_train)
+            >>> x_eval = np.array([1.5, 1.5])
+            >>> acq_value = opt._acquisition_function(x_eval)
+            >>> print("Acquisition function value:", acq_value)
+            Acquisition function value: [some float value]
         """
         x = x.reshape(1, -1)
 
@@ -2143,6 +2338,7 @@ class SpotOptim(BaseEstimator):
 
     def _suggest_next_point(self) -> np.ndarray:
         """Suggest next point to evaluate using acquisition function optimization.
+        Used in the optimize() method.
 
         If the acquisition function optimization fails to find a sufficiently distant
         point, falls back to the strategy specified by acquisition_failure_strategy.
@@ -2151,10 +2347,27 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             ndarray: Next point to evaluate, shape (n_features,).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor(),
+            ...     acquisition='ei'
+            ... )
+            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> y_train = np.array([0, 2, 8])
+            >>> opt._fit_surrogate(X_train, y_train)
+            >>> x_next = opt._suggest_next_point()
+            >>> print("Next point to evaluate:", x_next)
+            Next point to evaluate: [some point within bounds]
         """
         # Try multiple times to find a unique point (after rounding)
         max_attempts = 10
-        
+
         for attempt in range(max_attempts):
             if attempt == 0:
                 # First attempt: use acquisition function
@@ -2200,6 +2413,159 @@ class SpotOptim(BaseEstimator):
             )
         return x_next_rounded
 
+    def _set_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
+        """Generate or process initial design points.
+
+        Handles three scenarios:
+        1. X0 is None: Generate space-filling design using LHS
+        2. X0 is None but x0 is provided: Generate LHS and include x0 as first point
+        3. X0 is provided: Transform and prepare user-provided initial design
+
+        Args:
+            X0 (ndarray, optional): User-provided initial design points in original scale,
+                shape (n_initial, n_features). If None, generates space-filling design.
+                Defaults to None.
+
+        Returns:
+            ndarray: Initial design points in internal (transformed and reduced) scale,
+                shape (n_initial, n_features_reduced).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10
+            ... )
+            >>> # Generate default LHS design
+            >>> X0 = opt._set_initial_design()
+            >>> X0.shape
+            (10, 2)
+            >>>
+            >>> # Provide custom initial design
+            >>> X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> X0_processed = opt._set_initial_design(X0_custom)
+            >>> X0_processed.shape
+            (3, 2)
+        """
+        # Generate or use provided initial design
+        if X0 is None:
+            X0 = self._generate_initial_design()
+
+            # If starting point x0 was provided, include it in initial design
+            if self.x0 is not None:
+                # x0 is already validated and in internal scale
+                x0_point = self.x0.reshape(1, -1)
+                # Add x0 as the first point in the initial design
+                X0 = np.vstack([x0_point, X0[:-1]])  # Keep total n_initial points
+                if self.verbose:
+                    print(
+                        "Including starting point x0 in initial design as first evaluation."
+                    )
+        else:
+            X0 = np.atleast_2d(X0)
+            # If user provided X0, it's in original scale - transform it
+            X0 = self._transform_X(X0)
+            # If X0 is in full dimensions and we have dimension reduction, reduce it
+            if self.red_dim and X0.shape[1] == len(self.ident):
+                X0 = self.to_red_dim(X0)
+            X0 = self._repair_non_numeric(X0, self.var_type)
+
+        return X0
+
+    def _curate_initial_design(self, X0: np.ndarray) -> np.ndarray:
+        """Remove duplicates and ensure sufficient unique points in initial design.
+
+        This method handles deduplication that can occur after rounding integer/factor
+        variables. If duplicates are found, it generates additional points to reach
+        the target n_initial unique points. Also handles repeating points when
+        repeats_initial > 1.
+
+        Args:
+            X0 (ndarray): Initial design points in internal scale,
+                shape (n_samples, n_features).
+
+        Returns:
+            ndarray: Curated initial design with duplicates removed and repeated
+                if necessary, shape (n_unique * repeats_initial, n_features).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10,
+            ...     var_type=['int', 'int']  # Integer variables may cause duplicates
+            ... )
+            >>> X0 = opt._set_initial_design()
+            >>> X0_curated = opt._curate_initial_design(X0)
+            >>> X0_curated.shape[0] == 10  # Should have n_initial unique points
+            True
+            >>>
+            >>> # With repeats
+            >>> opt_repeat = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     repeats_initial=3
+            ... )
+            >>> X0 = opt_repeat._set_initial_design()
+            >>> X0_curated = opt_repeat._curate_initial_design(X0)
+            >>> X0_curated.shape[0] == 15  # 5 unique points * 3 repeats
+            True
+        """
+        # Remove duplicates from initial design (can occur after rounding integers/factors)
+        # Keep only unique rows based on rounded values
+        X0_unique, unique_indices = np.unique(X0, axis=0, return_index=True)
+        if len(X0_unique) < len(X0):
+            n_duplicates = len(X0) - len(X0_unique)
+            if self.verbose:
+                print(
+                    f"Removed {n_duplicates} duplicate(s) from initial design after rounding"
+                )
+
+            # Generate additional points to reach n_initial unique points
+            if len(X0_unique) < self.n_initial:
+                n_additional = self.n_initial - len(X0_unique)
+                if self.verbose:
+                    print(
+                        f"Generating {n_additional} additional point(s) to reach n_initial={self.n_initial}"
+                    )
+
+                # Generate extra points and deduplicate again
+                max_gen_attempts = 10
+                for gen_attempt in range(max_gen_attempts):
+                    X_extra_unit = self.lhs_sampler.random(
+                        n=n_additional * 2
+                    )  # Generate extras
+                    X_extra = self.lower + X_extra_unit * (self.upper - self.lower)
+                    X_extra = self._repair_non_numeric(X_extra, self.var_type)
+
+                    # Combine and get unique
+                    X_combined = np.vstack([X0_unique, X_extra])
+                    X_combined_unique = np.unique(X_combined, axis=0)
+
+                    if len(X_combined_unique) >= self.n_initial:
+                        X0 = X_combined_unique[: self.n_initial]
+                        break
+                else:
+                    # If still not enough unique points, just use what we have
+                    X0 = X_combined_unique
+                    if self.verbose:
+                        print(
+                            f"Warning: Could only generate {len(X0)} unique initial points (target was {self.n_initial})"
+                        )
+            else:
+                X0 = X0_unique
+
+        # Repeat initial design points if repeats_initial > 1
+        if self.repeats_initial > 1:
+            X0 = np.repeat(X0, self.repeats_initial, axis=0)
+
+        return X0
+
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
         """Run the optimization process.
 
@@ -2223,83 +2589,26 @@ class SpotOptim(BaseEstimator):
                 - y: all function values
 
         Examples:
-            >>> # Example 1: Budget-based termination
-            >>> opt = SpotOptim(fun=objective, bounds=bounds, max_iter=30, n_initial=10)
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     max_iter=20,
+            ...     verbose=True
+            ... )
             >>> result = opt.optimize()
-            >>> # Will perform 10 initial + 20 sequential iterations = 30 total evaluations
-            >>>
-            >>> # Example 2: Time-based termination
-            >>> opt = SpotOptim(fun=expensive_objective, bounds=bounds,
-            ...                 max_iter=1000, max_time=5.0)  # 5 minutes max
-            >>> result = opt.optimize()
-            >>> # Will stop after 5 minutes OR 1000 evaluations, whichever comes first
+            >>> print("Best point:", result.x)
+            Best point: [some point close to [0, 0]]
+            >>> print("Best value:", result.fun)
+            Best value: [some value close to 0]
         """
-        # Generate or use provided initial design
-        if X0 is None:
-            X0 = self._generate_initial_design()
-            
-            # If starting point x0 was provided, include it in initial design
-            if self.x0 is not None:
-                # x0 is already validated and in internal scale
-                x0_point = self.x0.reshape(1, -1)
-                # Add x0 as the first point in the initial design
-                X0 = np.vstack([x0_point, X0[:-1]])  # Keep total n_initial points
-                if self.verbose:
-                    print(f"Including starting point x0 in initial design as first evaluation.")
-        else:
-            X0 = np.atleast_2d(X0)
-            # If user provided X0, it's in original scale - transform it
-            X0 = self._transform_X(X0)
-            # If X0 is in full dimensions and we have dimension reduction, reduce it
-            if self.red_dim and X0.shape[1] == len(self.ident):
-                X0 = self.to_red_dim(X0)
-            X0 = self._repair_non_numeric(X0, self.var_type)
+        # Set initial design (generate or process user-provided points)
+        X0 = self._set_initial_design(X0)
 
-        # Remove duplicates from initial design (can occur after rounding integers/factors)
-        # Keep only unique rows based on rounded values
-        X0_unique, unique_indices = np.unique(X0, axis=0, return_index=True)
-        if len(X0_unique) < len(X0):
-            n_duplicates = len(X0) - len(X0_unique)
-            if self.verbose:
-                print(
-                    f"Removed {n_duplicates} duplicate(s) from initial design after rounding"
-                )
-            
-            # Generate additional points to reach n_initial unique points
-            if len(X0_unique) < self.n_initial:
-                n_additional = self.n_initial - len(X0_unique)
-                if self.verbose:
-                    print(
-                        f"Generating {n_additional} additional point(s) to reach n_initial={self.n_initial}"
-                    )
-                
-                # Generate extra points and deduplicate again
-                max_gen_attempts = 10
-                for gen_attempt in range(max_gen_attempts):
-                    X_extra_unit = self.lhs_sampler.random(n=n_additional * 2)  # Generate extras
-                    X_extra = self.lower + X_extra_unit * (self.upper - self.lower)
-                    X_extra = self._repair_non_numeric(X_extra, self.var_type)
-                    
-                    # Combine and get unique
-                    X_combined = np.vstack([X0_unique, X_extra])
-                    X_combined_unique = np.unique(X_combined, axis=0)
-                    
-                    if len(X_combined_unique) >= self.n_initial:
-                        X0 = X_combined_unique[: self.n_initial]
-                        break
-                else:
-                    # If still not enough unique points, just use what we have
-                    X0 = X_combined_unique
-                    if self.verbose:
-                        print(
-                            f"Warning: Could only generate {len(X0)} unique initial points (target was {self.n_initial})"
-                        )
-            else:
-                X0 = X0_unique
-
-        # Repeat initial design points if repeats_initial > 1
-        if self.repeats_initial > 1:
-            X0 = np.repeat(X0, self.repeats_initial, axis=0)
+        # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
+        X0 = self._curate_initial_design(X0)
 
         # Evaluate initial design
         y0 = self._evaluate_function(X0)
@@ -2307,7 +2616,7 @@ class SpotOptim(BaseEstimator):
         # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
         finite_mask = np.isfinite(y0)
         n_non_finite = np.sum(~finite_mask)
-        
+
         if n_non_finite > 0:
             if self.verbose:
                 print(
@@ -2316,9 +2625,12 @@ class SpotOptim(BaseEstimator):
                 )
             X0 = X0[finite_mask]
             y0 = y0[finite_mask]
-        
+
         # Check if we have enough points to continue
-        min_points_required = 3 if self.n_dim > 1 else 2
+        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
+        min_points_typical = 3 if self.n_dim > 1 else 2
+        min_points_required = min(min_points_typical, self.n_initial)
+
         if len(y0) < min_points_required:
             error_msg = (
                 f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
@@ -2326,7 +2638,7 @@ class SpotOptim(BaseEstimator):
                 f"points to fit surrogate model. Please check your objective function or increase n_initial."
             )
             raise ValueError(error_msg)
-        
+
         if len(y0) < self.n_initial and self.verbose:
             print(
                 f"Note: Initial design size ({len(y0)}) is smaller than requested "
@@ -2390,7 +2702,7 @@ class SpotOptim(BaseEstimator):
                 if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
                     if self.verbose:
                         print(
-                            f"Warning: OCBA skipped (need >2 points with variance > 0)"
+                            "Warning: OCBA skipped (need >2 points with variance > 0)"
                         )
                 elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
                     # Get OCBA allocation
@@ -2721,14 +3033,7 @@ class SpotOptim(BaseEstimator):
 
         # Add light grey background for initial design region
         if n_initial > 0:
-            ylim = plt.ylim()
-            if log_y and len(history) > 0:
-                # For log scale, use the data range
-                y_min = np.min(history[history > 0]) if np.any(history > 0) else 1e-10
-                y_max = np.max(history)
-                plt.axvspan(0, n_initial, alpha=0.15, color='gray', zorder=0)
-            else:
-                plt.axvspan(0, n_initial, alpha=0.15, color='gray', zorder=0)
+            plt.axvspan(0, n_initial, alpha=0.15, color="gray", zorder=0)
 
         # Plot initial design points as scatter (not connected)
         if n_initial > 0:
@@ -2776,12 +3081,12 @@ class SpotOptim(BaseEstimator):
 
         plt.xlabel("Iteration", fontsize=11)
         plt.ylabel(ylabel, fontsize=11)
-        
+
         title = "Optimization Progress"
         if log_y:
             title += " (Log Scale)"
         plt.title(title, fontsize=12)
-        
+
         plt.legend(fontsize=10)
         plt.grid(True, alpha=0.3)
 
@@ -2889,7 +3194,9 @@ class SpotOptim(BaseEstimator):
         )
         for idx in top_indices:
             param_type = self.var_type[idx] if self.var_type else "num"
-            print(f"  {param_names[idx]}: importance = {importance[idx]:.2f}% (type: {param_type})")
+            print(
+                f"  {param_names[idx]}: importance = {importance[idx]:.2f}% (type: {param_type})"
+            )
 
         # Generate all pairwise combinations
         pairs = list(combinations(top_indices, 2))
@@ -2926,12 +3233,46 @@ class SpotOptim(BaseEstimator):
         figsize: Tuple[int, int] = (12, 10),
     ) -> None:
         """Plot surrogate model handling factor variables by mapping to integers.
-        
+
         For factor variables, creates discrete grids and displays factor level names.
+
+        Args:
+            i (int): Index of the first dimension to plot.
+            j (int): Index of the second dimension to plot.
+            show (bool, optional): If True, displays the plot immediately. Defaults to True.
+            alpha (float, optional): Transparency of the 3D surface plots (0=transparent, 1=opaque).
+                Defaults to 0.8.
+            cmap (str, optional): Matplotlib colormap name. Defaults to 'jet'.
+            num (int, optional): Number of grid points per dimension for mesh grid. Defaults to 100.
+            add_points (bool, optional): If True, overlay evaluated points on contour plots.
+                Defaults to True.
+            grid_visible (bool, optional): If True, show grid lines on contour plots. Defaults to True.
+            contour_levels (int, optional): Number of contour levels. Defaults to 30.
+            figsize (tuple of int, optional): Figure size in inches (width, height). Defaults to (12, 10).
+
+        Raises:
+            ImportError: If matplotlib is not installed.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> def objective(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=objective,
+            ...     bounds=[(-5, 5), (-5, 5), (0, 2)],
+            ...     var_type=['num', 'num', 'factor'],
+            ...     var_name=['x1', 'x2', 'category'],
+            ...     max_iter=20,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> # Plot surrogate with factor handling for dimensions 0 and 2
+            >>> opt._plot_surrogate_with_factors(i=0, j=2)
         """
         try:
             import matplotlib.pyplot as plt
-            from mpl_toolkits.mplot3d import Axes3D
         except ImportError:
             raise ImportError(
                 "matplotlib is required. Install with: pip install matplotlib"
@@ -2942,12 +3283,16 @@ class SpotOptim(BaseEstimator):
         is_factor_j = self.var_type and self.var_type[j] == "factor"
 
         # Get parameter names
-        var_name = self.var_name if self.var_name else [f"x{k}" for k in range(self.n_dim)]
+        var_name = (
+            self.var_name if self.var_name else [f"x{k}" for k in range(self.n_dim)]
+        )
 
         # Generate mesh grid with factor handling
         if is_factor_i or is_factor_j:
-            X_i, X_j, grid_points, factor_labels_i, factor_labels_j = self._generate_mesh_grid_with_factors(
-                i, j, num, is_factor_i, is_factor_j
+            X_i, X_j, grid_points, factor_labels_i, factor_labels_j = (
+                self._generate_mesh_grid_with_factors(
+                    i, j, num, is_factor_i, is_factor_j
+                )
             )
         else:
             X_i, X_j, grid_points = self._generate_mesh_grid(i, j, num)
@@ -2968,14 +3313,14 @@ class SpotOptim(BaseEstimator):
         ax1.set_xlabel(var_name[i])
         ax1.set_ylabel(var_name[j])
         ax1.set_zlabel("Prediction")
-        
+
         # Set tick labels for factors
         if is_factor_i and factor_labels_i:
             ax1.set_xticks(range(len(factor_labels_i)))
-            ax1.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+            ax1.set_xticklabels(factor_labels_i, rotation=45, ha="right")
         if is_factor_j and factor_labels_j:
             ax1.set_yticks(range(len(factor_labels_j)))
-            ax1.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+            ax1.set_yticklabels(factor_labels_j, rotation=45, ha="right")
 
         # Plot 2: 3D surface of prediction uncertainty
         ax2 = fig.add_subplot(222, projection="3d")
@@ -2984,35 +3329,35 @@ class SpotOptim(BaseEstimator):
         ax2.set_xlabel(var_name[i])
         ax2.set_ylabel(var_name[j])
         ax2.set_zlabel("Std. Dev.")
-        
+
         if is_factor_i and factor_labels_i:
             ax2.set_xticks(range(len(factor_labels_i)))
-            ax2.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+            ax2.set_xticklabels(factor_labels_i, rotation=45, ha="right")
         if is_factor_j and factor_labels_j:
             ax2.set_yticks(range(len(factor_labels_j)))
-            ax2.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+            ax2.set_yticklabels(factor_labels_j, rotation=45, ha="right")
 
         # Plot 3: Contour of predictions
         ax3 = fig.add_subplot(223)
         contour3 = ax3.contourf(X_i, X_j, Z_pred, levels=contour_levels, cmap=cmap)
         plt.colorbar(contour3, ax=ax3)
-        
+
         if add_points:
             # Map factor variables in evaluated points to integers for display
             X_i_points = self.X_[:, i].copy()
             X_j_points = self.X_[:, j].copy()
-            
+
             if is_factor_i and self._factor_maps and i in self._factor_maps:
                 # Map string values back to integer indices
                 factor_map = self._factor_maps[i]
                 reverse_map = {v: k for k, v in enumerate(factor_map)}
                 X_i_points = np.array([reverse_map.get(val, 0) for val in X_i_points])
-                
+
             if is_factor_j and self._factor_maps and j in self._factor_maps:
                 factor_map = self._factor_maps[j]
                 reverse_map = {v: k for k, v in enumerate(factor_map)}
                 X_j_points = np.array([reverse_map.get(val, 0) for val in X_j_points])
-            
+
             ax3.scatter(
                 X_i_points,
                 X_j_points,
@@ -3023,24 +3368,24 @@ class SpotOptim(BaseEstimator):
                 label="Evaluated points",
             )
             ax3.legend()
-            
+
         ax3.set_title("Prediction Contour")
         ax3.set_xlabel(var_name[i])
         ax3.set_ylabel(var_name[j])
         ax3.grid(visible=grid_visible)
-        
+
         if is_factor_i and factor_labels_i:
             ax3.set_xticks(range(len(factor_labels_i)))
-            ax3.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+            ax3.set_xticklabels(factor_labels_i, rotation=45, ha="right")
         if is_factor_j and factor_labels_j:
             ax3.set_yticks(range(len(factor_labels_j)))
-            ax3.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+            ax3.set_yticklabels(factor_labels_j, rotation=45, ha="right")
 
         # Plot 4: Contour of prediction uncertainty
         ax4 = fig.add_subplot(224)
         contour4 = ax4.contourf(X_i, X_j, Z_std, levels=contour_levels, cmap=cmap)
         plt.colorbar(contour4, ax=ax4)
-        
+
         if add_points:
             ax4.scatter(
                 X_i_points,
@@ -3052,18 +3397,18 @@ class SpotOptim(BaseEstimator):
                 label="Evaluated points",
             )
             ax4.legend()
-            
+
         ax4.set_title("Uncertainty Contour")
         ax4.set_xlabel(var_name[i])
         ax4.set_ylabel(var_name[j])
         ax4.grid(visible=grid_visible)
-        
+
         if is_factor_i and factor_labels_i:
             ax4.set_xticks(range(len(factor_labels_i)))
-            ax4.set_xticklabels(factor_labels_i, rotation=45, ha='right')
+            ax4.set_xticklabels(factor_labels_i, rotation=45, ha="right")
         if is_factor_j and factor_labels_j:
             ax4.set_yticks(range(len(factor_labels_j)))
-            ax4.set_yticklabels(factor_labels_j, rotation=45, ha='right')
+            ax4.set_yticklabels(factor_labels_j, rotation=45, ha="right")
 
         plt.tight_layout()
 
@@ -3074,15 +3419,38 @@ class SpotOptim(BaseEstimator):
         self, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, list, list]:
         """Generate mesh grid with special handling for factor variables.
-        
+
         Returns:
             X_i, X_j: Meshgrids for plotting
             grid_points: Points for prediction (in transformed space)
             factor_labels_i: Factor level names for dimension i (None if numeric)
             factor_labels_j: Factor level names for dimension j (None if numeric)
+
+        Raises:
+            ValueError: If generated grid points contain non-finite values after transformation.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> def objective(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=objective,
+            ...     bounds=[(-5, 5), (-5, 5), (0, 2)],
+            ...     var_type=['num', 'num', 'factor'],
+            ...     var_name=['x1', 'x2', 'category'],
+            ...     max_iter=20,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> # Generate mesh grid with factor handling for dimensions 0 and 2
+            >>> X_i, X_j, grid_points, factor_labels_i, factor_labels_j = (
+            ...     opt._generate_mesh_grid_with_factors(0, 2, num=10, is_factor_i=False, is_factor_j=True)
+            ... )
         """
         k = self.n_dim
-        
+
         # Compute mean values, handling factor variables carefully
         mean_values = np.empty(k, dtype=object)
         for dim_idx in range(k):
@@ -3091,7 +3459,7 @@ class SpotOptim(BaseEstimator):
                 col_values = self.X_[:, dim_idx]
                 unique_vals, counts = np.unique(col_values, return_counts=True)
                 most_common_str = unique_vals[np.argmax(counts)]
-                
+
                 # Map string back to integer index
                 if dim_idx in self._factor_maps:
                     # Find the integer key for this string value
@@ -3102,7 +3470,7 @@ class SpotOptim(BaseEstimator):
             else:
                 # For numeric variables, use mean
                 mean_values[dim_idx] = np.mean(self.X_[:, dim_idx].astype(float))
-        
+
         # Handle dimension i
         # Helper function to avoid problematic values with log transforms
         def safe_bound(value, trans, is_lower):
@@ -3114,7 +3482,7 @@ class SpotOptim(BaseEstimator):
                 elif value <= 0:
                     return eps
             return value
-        
+
         if is_factor_i and self._factor_maps and i in self._factor_maps:
             factor_map_i = self._factor_maps[i]
             n_levels_i = len(factor_map_i)
@@ -3125,7 +3493,7 @@ class SpotOptim(BaseEstimator):
             upper_i = safe_bound(self._original_upper[i], self.var_trans[i], False)
             x_i = linspace(lower_i, upper_i, num=num)
             factor_labels_i = None
-            
+
         # Handle dimension j
         if is_factor_j and self._factor_maps and j in self._factor_maps:
             factor_map_j = self._factor_maps[j]
@@ -3137,35 +3505,35 @@ class SpotOptim(BaseEstimator):
             upper_j = safe_bound(self._original_upper[j], self.var_trans[j], False)
             x_j = linspace(lower_j, upper_j, num=num)
             factor_labels_j = None
-        
+
         X_i, X_j = meshgrid(x_i, x_j)
-        
+
         # Initialize grid points with mean values
         grid_points_original = np.tile(mean_values, (X_i.size, 1))
         grid_points_original[:, i] = X_i.ravel()
         grid_points_original[:, j] = X_j.ravel()
-        
+
         # Convert to float array to handle numeric operations properly
         # Object dtype with np.float64/float values causes issues with np.around
         grid_points_float = np.zeros((grid_points_original.shape[0], k), dtype=float)
         for dim_idx in range(k):
-            grid_points_float[:, dim_idx] = grid_points_original[:, dim_idx].astype(float)
-        
+            grid_points_float[:, dim_idx] = grid_points_original[:, dim_idx].astype(
+                float
+            )
+
         # Apply type constraints (convert to proper numeric types)
-        grid_points_float = self._repair_non_numeric(
-            grid_points_float, self.var_type
-        )
-        
+        grid_points_float = self._repair_non_numeric(grid_points_float, self.var_type)
+
         # Transform grid points for surrogate prediction
         grid_points_transformed = self._transform_X(grid_points_float)
-        
+
         # Validate that transformed grid points are finite
         if not np.all(np.isfinite(grid_points_transformed)):
             raise ValueError(
                 "Generated grid points contain non-finite values after transformation. "
                 "This may indicate an issue with variable transformations or bounds."
             )
-        
+
         return X_i, X_j, grid_points_transformed, factor_labels_i, factor_labels_j
 
     def plot_parameter_scatter(
@@ -3263,7 +3631,7 @@ class SpotOptim(BaseEstimator):
         n_rows = int(np.ceil(n_params / n_cols))
 
         fig, axes = plt.subplots(n_rows, n_cols, figsize=figsize)
-        
+
         # Make axes always iterable
         if n_params == 1:
             axes = np.array([axes])
@@ -3290,7 +3658,7 @@ class SpotOptim(BaseEstimator):
                         if valid_mask.sum() >= 3:
                             corr, p_value = spearmanr(
                                 np.log10(param_values_numeric[valid_mask]),
-                                np.log10(history[valid_mask])
+                                np.log10(history[valid_mask]),
                             )
                     else:
                         # Direct correlation for non-transformed parameters
@@ -3307,7 +3675,7 @@ class SpotOptim(BaseEstimator):
                 numeric_vals = np.array([positions[val] for val in param_values])
 
                 # Scatter plot with discrete x positions
-                scatter = ax.scatter(
+                ax.scatter(
                     numeric_vals,
                     history,
                     c=history,
@@ -3323,7 +3691,7 @@ class SpotOptim(BaseEstimator):
                 if best_val not in positions:
                     positions[best_val] = len(positions)
                     unique_vals = np.append(unique_vals, best_val)
-                
+
                 best_pos = positions[best_val]
                 ax.scatter(
                     [best_pos],
@@ -3339,10 +3707,10 @@ class SpotOptim(BaseEstimator):
 
                 # Set categorical x-axis labels
                 ax.set_xticks(range(len(unique_vals)))
-                ax.set_xticklabels(unique_vals, rotation=45, ha='right')
+                ax.set_xticklabels(unique_vals, rotation=45, ha="right")
             else:
                 # Standard scatter plot for numeric variables
-                scatter = ax.scatter(
+                ax.scatter(
                     param_values,
                     history,
                     c=history,
@@ -3373,18 +3741,17 @@ class SpotOptim(BaseEstimator):
             # Set labels
             ax.set_xlabel(param_name, fontsize=11)
             ax.set_ylabel(ylabel, fontsize=11)
-            
+
             # Set title with optional correlation
             if show_correlation and not np.isnan(corr):
                 ax.set_title(
-                    f"{param_name}\nCorr: {corr:.3f} (p={p_value:.3f})",
-                    fontsize=11
+                    f"{param_name}\nCorr: {corr:.3f} (p={p_value:.3f})", fontsize=11
                 )
             elif show_correlation and is_factor:
                 ax.set_title(f"{param_name}\n(categorical)", fontsize=11)
             else:
                 ax.set_title(f"{param_name} vs {ylabel}", fontsize=12)
-            
+
             ax.legend(fontsize=9)
             ax.grid(True, alpha=0.3)
 
@@ -3416,6 +3783,25 @@ class SpotOptim(BaseEstimator):
                 - X_i (ndarray): Meshgrid for dimension i (in original scale).
                 - X_j (ndarray): Meshgrid for dimension j (in original scale).
                 - grid_points (ndarray): Grid points for prediction (in transformed scale), shape (num*num, n_dim).
+
+        Raises:
+            ValueError: If generated grid points contain non-finite values after transformation.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> def objective(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=objective,
+            ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],
+            ...     max_iter=20,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> # Generate mesh grid for dimensions 0 and 1
+            >>> X_i, X_j, grid_points = opt._generate_mesh_grid(i=0, j=1, num=50)
         """
         k = self.n_dim
         # Compute mean values with proper handling of factor variables
@@ -3450,12 +3836,12 @@ class SpotOptim(BaseEstimator):
                 elif value <= 0:
                     return eps
             return value
-        
+
         lower_i = safe_bound(self._original_lower[i], self.var_trans[i], True)
         upper_i = safe_bound(self._original_upper[i], self.var_trans[i], False)
         lower_j = safe_bound(self._original_lower[j], self.var_trans[j], True)
         upper_j = safe_bound(self._original_upper[j], self.var_trans[j], False)
-        
+
         x_i = linspace(lower_i, upper_i, num=num)
         x_j = linspace(lower_j, upper_j, num=num)
         X_i, X_j = meshgrid(x_i, x_j)
@@ -3507,6 +3893,13 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             str: Filename with '_exp.pkl' suffix.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            >>> exp_filename = opt._get_experiment_filename(prefix="my_experiment")
+            >>> print(exp_filename)
+            my_experiment_exp.pkl
         """
         if prefix is None:
             return "experiment_exp.pkl"
@@ -3520,13 +3913,29 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             str: Filename with '_res.pkl' suffix.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            >>> res_filename = opt._get_result_filename(prefix="my_experiment")
+            >>> print(res_filename)
+            my_experiment_res.pkl
         """
         if prefix is None:
             return "result_res.pkl"
         return f"{prefix}_res.pkl"
 
     def _close_and_del_tensorboard_writer(self) -> None:
-        """Close and delete TensorBoard writer to prepare for pickling."""
+        """Close and delete TensorBoard writer to prepare for pickling.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            >>> # Assume tb_writer is initialized
+            >>> opt.tb_writer = SomeTensorBoardWriter()
+            >>> # Close and delete tb_writer before pickling
+            >>> opt._close_and_del_tensorboard_writer()
+        """
         if hasattr(self, "tb_writer") and self.tb_writer is not None:
             try:
                 self.tb_writer.flush()
@@ -3552,6 +3961,21 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             SpotOptim: A copy of the optimizer with unpickleable components removed.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Define optimizer
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> # Create pickle-safe copy excluding all unpickleables
+            >>> opt_safe = opt._get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
+
         """
         # Always exclude fun and tb_writer (can't reliably pickle lambda/local functions)
         # Determine which additional attributes to exclude
@@ -3773,6 +4197,17 @@ class SpotOptim(BaseEstimator):
 
         This method recreates the surrogate model and LHS sampler that were
         excluded when saving an experiment or result.
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Load experiment
+            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            >>> # Reinitialize components
+            >>> opt._reinitialize_components()
         """
         # Reinitialize LHS sampler if needed
         if not hasattr(self, "lhs_sampler") or self.lhs_sampler is None:
@@ -4102,18 +4537,16 @@ class SpotOptim(BaseEstimator):
             )
 
         if self.X_ is None or self.y_ is None:
-            raise ValueError(
-                "No optimization data available. Run optimize() first."
-            )
+            raise ValueError("No optimization data available. Run optimize() first.")
 
         # Get optimization history and parameters
         history = self.y_
         all_params = self.X_
 
         # Get parameter names
-        param_names = self.var_name if self.var_name else [
-            f"x{i}" for i in range(self.n_dim)
-        ]
+        param_names = (
+            self.var_name if self.var_name else [f"x{i}" for i in range(self.n_dim)]
+        )
 
         print("\nSensitivity Analysis (Spearman Correlation):")
         print("-" * 50)
@@ -4127,15 +4560,11 @@ class SpotOptim(BaseEstimator):
 
             if var_type == "factor":
                 # For categorical variables, skip correlation
-                print(
-                    f"  {name:20s}: (categorical variable, use visual inspection)"
-                )
+                print(f"  {name:20s}: (categorical variable, use visual inspection)")
                 continue
 
             # Check if parameter has log transformation
-            var_trans = (
-                self.var_trans[param_idx] if self.var_trans else None
-            )
+            var_trans = self.var_trans[param_idx] if self.var_trans else None
 
             # Compute correlation based on transformation
             if var_trans in ["log10", "log", "ln"]:
@@ -4155,9 +4584,7 @@ class SpotOptim(BaseEstimator):
                         np.log10(history[valid_mask]),
                     )
                 except (ValueError, TypeError):
-                    print(
-                        f"  {name:20s}: (error computing log correlation)"
-                    )
+                    print(f"  {name:20s}: (error computing log correlation)")
                     continue
             else:
                 # For integer/float parameters, direct correlation
@@ -4178,9 +4605,7 @@ class SpotOptim(BaseEstimator):
             else:
                 significance = ""
 
-            print(
-                f"  {name:20s}: {corr:+.3f} (p={p_value:.3f}){significance}"
-            )
+            print(f"  {name:20s}: {corr:+.3f} (p={p_value:.3f}){significance}")
 
     def print_results_table(
         self,
@@ -4294,7 +4719,7 @@ class SpotOptim(BaseEstimator):
         best_x_display = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
 
         # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
-        if self.red_dim and hasattr(self, 'all_var_trans'):
+        if self.red_dim and hasattr(self, "all_var_trans"):
             all_var_trans = self.all_var_trans
         else:
             all_var_trans = self.var_trans
@@ -4481,7 +4906,7 @@ class SpotOptim(BaseEstimator):
             )
 
         # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
-        if self.red_dim and hasattr(self, 'all_var_trans'):
+        if self.red_dim and hasattr(self, "all_var_trans"):
             all_var_trans = self.all_var_trans
         else:
             all_var_trans = self.var_trans
@@ -4635,7 +5060,7 @@ class SpotOptim(BaseEstimator):
                 correlation = np.abs(np.corrcoef(x_i, self.y_)[0, 1])
                 if np.isnan(correlation):
                     correlation = 0.0
-            except:
+            except Exception:
                 correlation = 0.0
 
             sensitivities.append(correlation)

@@ -1,5 +1,4 @@
 # generate a pytorch linear regression model for supervised learning
-import torch
 import torch.nn as nn
 import torch.optim as optim
 
@@ -442,7 +441,7 @@ class LinearRegressor(nn.Module):
         # Map unified learning rate to optimizer-specific learning rate
         try:
             lr_actual = map_lr(lr, optimizer_name)
-        except ValueError as e:
+        except ValueError:
             # If optimizer not in map_lr, try to use it directly with torch.optim
             if not hasattr(optim, optimizer_name):
                 raise ValueError(

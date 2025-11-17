@@ -6,7 +6,7 @@ for use with the SpotOptim optimizer.
 """
 
 import numpy as np
-from typing import Optional, Tuple, List
+from typing import Optional
 from numpy.linalg import LinAlgError, cholesky, solve
 from scipy.optimize import differential_evolution
 from sklearn.base import BaseEstimator, RegressorMixin
@@ -213,7 +213,7 @@ class Kriging(BaseEstimator, RegressorMixin):
         if y.ndim != 1:
             raise ValueError(f"y must be 1-dimensional, got shape {y.shape}")
         if X.shape[0] != y.shape[0]:
-            raise ValueError(f"X and y must have same number of samples")
+            raise ValueError("X and y must have same number of samples")
 
         self.X_ = X
         self.y_ = y
