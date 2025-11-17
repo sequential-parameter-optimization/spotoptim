@@ -2566,6 +2566,482 @@ class SpotOptim(BaseEstimator):
 
         return X0
 
+    def _handle_NA_initial_design(
+        self, X0: np.ndarray, y0: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, int]:
+        """Remove NaN/inf values from initial design evaluations.
+
+        This method filters out design points that returned NaN or inf values
+        during initial evaluation. Unlike the sequential optimization phase where
+        penalties are applied, initial design points with invalid values are
+        simply removed.
+
+        Args:
+            X0 (ndarray): Initial design points in internal scale,
+                shape (n_samples, n_features).
+            y0 (ndarray): Function values at X0, shape (n_samples,).
+
+        Returns:
+            Tuple[ndarray, ndarray, int]: Filtered (X0, y0) with only finite values
+                and the original count before filtering. X0 has shape (n_valid, n_features),
+                y0 has shape (n_valid,), and the int is the original size.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10
+            ... )
+            >>> X0 = np.array([[1, 2], [3, 4], [5, 6]])
+            >>> y0 = np.array([5.0, np.nan, np.inf])
+            >>> X0_clean, y0_clean, n_eval = opt._handle_NA_initial_design(X0, y0)
+            >>> X0_clean.shape
+            (1, 2)
+            >>> y0_clean
+            array([5.])
+            >>> n_eval
+            3
+            >>>
+            >>> # All valid values - no filtering
+            >>> X0 = np.array([[1, 2], [3, 4]])
+            >>> y0 = np.array([5.0, 25.0])
+            >>> X0_clean, y0_clean, n_eval = opt._handle_NA_initial_design(X0, y0)
+            >>> X0_clean.shape
+            (2, 2)
+            >>> n_eval
+            2
+        """
+        # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
+        finite_mask = np.isfinite(y0)
+        n_non_finite = np.sum(~finite_mask)
+
+        if n_non_finite > 0:
+            if self.verbose:
+                print(
+                    f"Warning: {n_non_finite} initial design point(s) returned NaN/inf "
+                    f"and will be ignored (reduced from {len(y0)} to {np.sum(finite_mask)} points)"
+                )
+            X0 = X0[finite_mask]
+            y0 = y0[finite_mask]
+
+        return X0, y0, len(finite_mask)
+
+    def _check_size_initial_design(
+        self, y0: np.ndarray, n_evaluated: int
+    ) -> None:
+        """Validate that initial design has sufficient points for surrogate fitting.
+
+        Checks if the number of valid initial design points meets the minimum
+        requirement for fitting a surrogate model. The minimum required is the
+        smaller of: (a) typical minimum for surrogate fitting (3 for multi-dimensional,
+        2 for 1D), or (b) what the user requested (n_initial).
+
+        Args:
+            y0 (ndarray): Function values at initial design points (after filtering),
+                shape (n_valid,).
+            n_evaluated (int): Original number of points evaluated before filtering.
+
+        Raises:
+            ValueError: If the number of valid points is less than the minimum required.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10
+            ... )
+            >>> # Sufficient points - no error
+            >>> y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+            >>> opt._check_size_initial_design(y0, n_evaluated=10)
+            >>>
+            >>> # Insufficient points - raises ValueError
+            >>> y0_small = np.array([1.0])
+            >>> try:
+            ...     opt._check_size_initial_design(y0_small, n_evaluated=10)
+            ... except ValueError as e:
+            ...     print(f"Error: {e}")
+            Error: Insufficient valid initial design points: only 1 finite value(s) out of 10 evaluated...
+            >>>
+            >>> # With verbose output
+            >>> opt_verbose = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10,
+            ...     verbose=True
+            ... )
+            >>> y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
+            >>> opt_verbose._check_size_initial_design(y0_reduced, n_evaluated=10)
+            Note: Initial design size (3) is smaller than requested (10) due to NaN/inf values
+        """
+        # Check if we have enough points to continue
+        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
+        min_points_typical = 3 if self.n_dim > 1 else 2
+        min_points_required = min(min_points_typical, self.n_initial)
+
+        if len(y0) < min_points_required:
+            error_msg = (
+                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
+                f"out of {n_evaluated} evaluated. Need at least {min_points_required} "
+                f"points to fit surrogate model. Please check your objective function or increase n_initial."
+            )
+            raise ValueError(error_msg)
+
+        if len(y0) < self.n_initial and self.verbose:
+            print(
+                f"Note: Initial design size ({len(y0)}) is smaller than requested "
+                f"({self.n_initial}) due to NaN/inf values"
+            )
+
+    def _get_best_xy_initial_design(self) -> None:
+        """Determine and store the best point from initial design.
+
+        Finds the best (minimum) function value in the initial design,
+        stores the corresponding point and value in instance attributes,
+        and optionally prints the results if verbose mode is enabled.
+
+        For noisy functions, also reports the mean best value.
+
+        Note:
+            This method assumes self.X_ and self.y_ have been initialized
+            with the initial design evaluations.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     verbose=True
+            ... )
+            >>> # Simulate initial design (normally done in optimize())
+            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
+            >>> opt._get_best_xy_initial_design()
+            Initial best: f(x) = 0.000000
+            >>> print(f"Best x: {opt.best_x_}")
+            Best x: [0 0]
+            >>> print(f"Best y: {opt.best_y_}")
+            Best y: 0.0
+            >>>
+            >>> # With noisy function
+            >>> opt_noise = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     noise=True,
+            ...     verbose=True
+            ... )
+            >>> opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt_noise.y_ = np.array([5.0, 0.0, 5.0])
+            >>> opt_noise.min_mean_y = 0.5  # Simulated mean best
+            >>> opt_noise._get_best_xy_initial_design()
+            Initial best: f(x) = 0.000000, mean best: f(x) = 0.500000
+        """
+        # Initial best
+        best_idx = np.argmin(self.y_)
+        self.best_x_ = self.X_[best_idx].copy()
+        self.best_y_ = self.y_[best_idx]
+
+        if self.verbose:
+            if self.noise:
+                print(
+                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
+                )
+            else:
+                print(f"Initial best: f(x) = {self.best_y_:.6f}")
+
+    def _apply_ocba(self) -> Optional[np.ndarray]:
+        """Apply Optimal Computing Budget Allocation for noisy functions.
+
+        Determines which existing design points should be re-evaluated based on
+        OCBA algorithm. This method computes optimal budget allocation to improve
+        the quality of the estimated best design.
+
+        Returns:
+            Optional[ndarray]: Array of design points to re-evaluate, shape (n_re_eval, n_features).
+                Returns None if OCBA conditions are not met or OCBA is disabled.
+
+        Note:
+            OCBA is only applied when:
+            - self.noise is True
+            - self.ocba_delta > 0
+            - All variances are > 0
+            - At least 3 design points exist
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0]),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     noise=True,
+            ...     ocba_delta=5,
+            ...     verbose=True
+            ... )
+            >>> # Simulate optimization state (normally done in optimize())
+            >>> opt.mean_X = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt.mean_y = np.array([5.0, 0.1, 5.0])
+            >>> opt.var_y = np.array([0.1, 0.05, 0.15])
+            >>> X_ocba = opt._apply_ocba()
+              OCBA: Adding 5 re-evaluation(s)
+            >>> X_ocba.shape[0] == 5
+            True
+            >>>
+            >>> # OCBA skipped - insufficient points
+            >>> opt2 = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     noise=True,
+            ...     ocba_delta=5,
+            ...     verbose=True
+            ... )
+            >>> opt2.mean_X = np.array([[1, 2], [0, 0]])
+            >>> opt2.mean_y = np.array([5.0, 0.1])
+            >>> opt2.var_y = np.array([0.1, 0.05])
+            >>> X_ocba = opt2._apply_ocba()
+            Warning: OCBA skipped (need >2 points with variance > 0)
+            >>> X_ocba is None
+            True
+        """
+        # OCBA: Compute optimal budget allocation for noisy functions
+        # This determines which existing design points should be re-evaluated
+        X_ocba = None
+        if self.noise and self.ocba_delta > 0:
+            # Check conditions for OCBA (need variance > 0 and at least 3 points)
+            if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
+                if self.verbose:
+                    print(
+                        "Warning: OCBA skipped (need >2 points with variance > 0)"
+                    )
+            elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
+                # Get OCBA allocation
+                X_ocba = self._get_ocba_X(
+                    self.mean_X, self.mean_y, self.var_y, self.ocba_delta
+                )
+                if self.verbose and X_ocba is not None:
+                    print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")
+
+        return X_ocba
+
+    def _handle_NA_new_points(
+        self, x_next: np.ndarray, y_next: np.ndarray
+    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+        """Handle NaN/inf values in new evaluation points.
+
+        Applies penalties to NaN/inf values and removes any remaining invalid points.
+        If all evaluations are invalid, returns None for both arrays to signal that
+        the iteration should be skipped.
+
+        Args:
+            x_next (ndarray): Design points that were evaluated, shape (n_eval, n_features).
+            y_next (ndarray): Function values at x_next, shape (n_eval,).
+
+        Returns:
+            Tuple[Optional[ndarray], Optional[ndarray]]: Tuple of (x_clean, y_clean).
+                Both are None if all evaluations were NaN/inf (iteration should be skipped).
+                Otherwise returns filtered arrays with only finite values.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     verbose=True
+            ... )
+            >>> # Simulate optimization state
+            >>> opt.y_ = np.array([1.0, 2.0, 3.0])  # Historical values
+            >>> opt.n_iter_ = 1
+            >>>
+            >>> # Case 1: Some valid values
+            >>> x_next = np.array([[1, 2], [3, 4], [5, 6]])
+            >>> y_next = np.array([5.0, np.nan, 10.0])
+            >>> x_clean, y_clean = opt._handle_NA_new_points(x_next, y_next)
+            >>> x_clean.shape
+            (2, 2)
+            >>> y_clean.shape
+            (2,)
+            >>>
+            >>> # Case 2: All NaN/inf - should skip iteration
+            >>> x_all_bad = np.array([[1, 2], [3, 4]])
+            >>> y_all_bad = np.array([np.nan, np.inf])
+            >>> x_clean, y_clean = opt._handle_NA_new_points(x_all_bad, y_all_bad)
+            Warning: All new evaluations were NaN/inf, skipping iteration 1
+            >>> x_clean is None
+            True
+            >>> y_clean is None
+            True
+        """
+        # Handle NaN/inf values in new evaluations
+        # Use historical y values (self.y_) for computing penalty statistics
+        y_next = self._apply_penalty_NA(y_next, y_history=self.y_)
+        x_next_repeated, y_next = self._remove_nan(
+            x_next, y_next, stop_on_zero_return=False
+        )
+
+        # Skip this iteration if all new points were NaN/inf
+        if len(y_next) == 0:
+            if self.verbose:
+                print(
+                    f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}"
+                )
+            return None, None
+
+        return x_next_repeated, y_next
+
+    def _update_best_main_loop(
+        self, x_next_repeated: np.ndarray, y_next: np.ndarray
+    ) -> None:
+        """Update best solution found during main optimization loop.
+
+        Checks if any new evaluations improve upon the current best solution.
+        If improvement is found, updates best_x_ and best_y_ attributes and
+        prints progress if verbose mode is enabled.
+
+        Args:
+            x_next_repeated (ndarray): Design points that were evaluated in transformed space,
+                shape (n_eval, n_features).
+            y_next (ndarray): Function values at x_next_repeated, shape (n_eval,).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     verbose=True
+            ... )
+            >>> # Simulate optimization state
+            >>> opt.n_iter_ = 1
+            >>> opt.best_x_ = np.array([1.0, 1.0])
+            >>> opt.best_y_ = 2.0
+            >>>
+            >>> # Case 1: New best found
+            >>> x_new = np.array([[0.1, 0.1], [0.5, 0.5]])
+            >>> y_new = np.array([0.02, 0.5])
+            >>> opt._update_best_main_loop(x_new, y_new)
+            Iteration 1: New best f(x) = 0.020000
+            >>> opt.best_y_
+            0.02
+            >>>
+            >>> # Case 2: No improvement
+            >>> opt.n_iter_ = 2
+            >>> x_no_improve = np.array([[1.5, 1.5]])
+            >>> y_no_improve = np.array([4.5])
+            >>> opt._update_best_main_loop(x_no_improve, y_no_improve)
+            Iteration 2: f(x) = 4.500000
+            >>>
+            >>> # Case 3: With noisy function
+            >>> opt_noise = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     noise=True,
+            ...     verbose=True
+            ... )
+            >>> opt_noise.n_iter_ = 1
+            >>> opt_noise.best_y_ = 2.0
+            >>> opt_noise.min_mean_y = 1.5
+            >>> y_noise = np.array([0.5])
+            >>> x_noise = np.array([[0.5, 0.5]])
+            >>> opt_noise._update_best_main_loop(x_noise, y_noise)
+            Iteration 1: New best f(x) = 0.500000, mean best: f(x) = 1.500000
+        """
+        # Update best
+        current_best = np.min(y_next)
+        if current_best < self.best_y_:
+            best_idx_in_new = np.argmin(y_next)
+            # x_next_repeated is in transformed space, convert to original for storage
+            self.best_x_ = self._inverse_transform_X(
+                x_next_repeated[best_idx_in_new].reshape(1, -1)
+            )[0]
+            self.best_y_ = current_best
+
+            if self.verbose:
+                if self.noise:
+                    print(
+                        f"Iteration {self.n_iter_}: New best f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
+                    )
+                else:
+                    print(
+                        f"Iteration {self.n_iter_}: New best f(x) = {self.best_y_:.6f}"
+                    )
+        elif self.verbose:
+            if self.noise:
+                mean_y_new = np.mean(y_next)
+                print(f"Iteration {self.n_iter_}: mean f(x) = {mean_y_new:.6f}")
+            else:
+                print(f"Iteration {self.n_iter_}: f(x) = {y_next[0]:.6f}")
+
+    def _determine_termination(
+        self, timeout_start: float
+    ) -> str:
+        """Determine termination reason for optimization.
+
+        Checks the termination conditions and returns an appropriate message
+        indicating why the optimization stopped. Three possible termination
+        conditions are checked in order of priority:
+        1. Maximum number of evaluations reached
+        2. Maximum time limit exceeded
+        3. Successful completion (neither limit reached)
+
+        Args:
+            timeout_start (float): Start time of optimization (from time.time()).
+
+        Returns:
+            str: Message describing the termination reason.
+
+        Examples:
+            >>> import numpy as np
+            >>> import time
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=20,
+            ...     max_time=10.0
+            ... )
+            >>> # Case 1: Maximum evaluations reached
+            >>> opt.y_ = np.zeros(20)  # Simulate 20 evaluations
+            >>> start_time = time.time()
+            >>> msg = opt._determine_termination(start_time)
+            >>> print(msg)
+            Optimization terminated: maximum evaluations (20) reached
+            >>>
+            >>> # Case 2: Time limit exceeded
+            >>> opt.y_ = np.zeros(10)  # Only 10 evaluations
+            >>> start_time = time.time() - 700  # Simulate 11.67 minutes elapsed
+            >>> msg = opt._determine_termination(start_time)
+            >>> print(msg)
+            Optimization terminated: time limit (10.00 min) reached
+            >>>
+            >>> # Case 3: Successful completion
+            >>> opt.y_ = np.zeros(10)  # Under max_iter
+            >>> start_time = time.time()  # Just started
+            >>> msg = opt._determine_termination(start_time)
+            >>> print(msg)
+            Optimization finished successfully
+        """
+        # Determine termination reason
+        elapsed_time = time.time() - timeout_start
+        if len(self.y_) >= self.max_iter:
+            message = f"Optimization terminated: maximum evaluations ({self.max_iter}) reached"
+        elif elapsed_time >= self.max_time * 60:
+            message = (
+                f"Optimization terminated: time limit ({self.max_time:.2f} min) reached"
+            )
+        else:
+            message = "Optimization finished successfully"
+
+        return message
+
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
         """Run the optimization process.
 
@@ -2613,37 +3089,11 @@ class SpotOptim(BaseEstimator):
         # Evaluate initial design
         y0 = self._evaluate_function(X0)
 
-        # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
-        finite_mask = np.isfinite(y0)
-        n_non_finite = np.sum(~finite_mask)
+        # Handle NaN/inf values in initial design (remove invalid points)
+        X0, y0, n_evaluated = self._handle_NA_initial_design(X0, y0)
 
-        if n_non_finite > 0:
-            if self.verbose:
-                print(
-                    f"Warning: {n_non_finite} initial design point(s) returned NaN/inf "
-                    f"and will be ignored (reduced from {len(y0)} to {np.sum(finite_mask)} points)"
-                )
-            X0 = X0[finite_mask]
-            y0 = y0[finite_mask]
-
-        # Check if we have enough points to continue
-        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
-        min_points_typical = 3 if self.n_dim > 1 else 2
-        min_points_required = min(min_points_typical, self.n_initial)
-
-        if len(y0) < min_points_required:
-            error_msg = (
-                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
-                f"out of {len(finite_mask)} evaluated. Need at least {min_points_required} "
-                f"points to fit surrogate model. Please check your objective function or increase n_initial."
-            )
-            raise ValueError(error_msg)
-
-        if len(y0) < self.n_initial and self.verbose:
-            print(
-                f"Note: Initial design size ({len(y0)}) is smaller than requested "
-                f"({self.n_initial}) due to NaN/inf values"
-            )
+        # Check if we have enough valid points to continue
+        self._check_size_initial_design(y0, n_evaluated)
 
         # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
         self._update_success_rate(y0)
@@ -2662,18 +3112,8 @@ class SpotOptim(BaseEstimator):
                 self._write_tensorboard_hparams(self.X_[i], self.y_[i])
             self._write_tensorboard_scalars()
 
-        # Initial best
-        best_idx = np.argmin(self.y_)
-        self.best_x_ = self.X_[best_idx].copy()
-        self.best_y_ = self.y_[best_idx]
-
-        if self.verbose:
-            if self.noise:
-                print(
-                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
-                )
-            else:
-                print(f"Initial best: f(x) = {self.best_y_:.6f}")
+        # Determine and report initial best
+        self._get_best_xy_initial_design()
 
         # Start timer for max_time check
         timeout_start = time.time()
@@ -2694,23 +3134,8 @@ class SpotOptim(BaseEstimator):
                 X_for_surrogate = self._transform_X(self.X_)
                 self._fit_surrogate(X_for_surrogate, self.y_)
 
-            # OCBA: Compute optimal budget allocation for noisy functions
-            # This determines which existing design points should be re-evaluated
-            X_ocba = None
-            if self.noise and self.ocba_delta > 0:
-                # Check conditions for OCBA (need variance > 0 and at least 3 points)
-                if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
-                    if self.verbose:
-                        print(
-                            "Warning: OCBA skipped (need >2 points with variance > 0)"
-                        )
-                elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
-                    # Get OCBA allocation
-                    X_ocba = self._get_ocba_X(
-                        self.mean_X, self.mean_y, self.var_y, self.ocba_delta
-                    )
-                    if self.verbose and X_ocba is not None:
-                        print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")
+            # Apply OCBA for noisy functions
+            X_ocba = self._apply_ocba()
 
             # Suggest next point
             x_next = self._suggest_next_point()
@@ -2731,17 +3156,9 @@ class SpotOptim(BaseEstimator):
             y_next = self._evaluate_function(x_next_repeated)
 
             # Handle NaN/inf values in new evaluations
-            # Use historical y values (self.y_) for computing penalty statistics
-            y_next = self._apply_penalty_NA(y_next, y_history=self.y_)
-            x_next_repeated, y_next = self._remove_nan(
-                x_next_repeated, y_next, stop_on_zero_return=False
-            )  # Skip this iteration if all new points were NaN/inf
-            if len(y_next) == 0:
-                if self.verbose:
-                    print(
-                        f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}"
-                    )
-                continue
+            x_next_repeated, y_next = self._handle_NA_new_points(x_next_repeated, y_next)
+            if x_next_repeated is None:
+                continue  # Skip iteration if all evaluations were invalid
 
             # Update success rate BEFORE updating storage (so it compares against previous best)
             self._update_success_rate(y_next)
@@ -2760,31 +3177,8 @@ class SpotOptim(BaseEstimator):
                     self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
                 self._write_tensorboard_scalars()
 
-            # Update best
-            current_best = np.min(y_next)
-            if current_best < self.best_y_:
-                best_idx_in_new = np.argmin(y_next)
-                # x_next_repeated is in transformed space, convert to original for storage
-                self.best_x_ = self._inverse_transform_X(
-                    x_next_repeated[best_idx_in_new].reshape(1, -1)
-                )[0]
-                self.best_y_ = current_best
-
-                if self.verbose:
-                    if self.noise:
-                        print(
-                            f"Iteration {self.n_iter_}: New best f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
-                        )
-                    else:
-                        print(
-                            f"Iteration {self.n_iter_}: New best f(x) = {self.best_y_:.6f}"
-                        )
-            elif self.verbose:
-                if self.noise:
-                    mean_y_new = np.mean(y_next)
-                    print(f"Iteration {self.n_iter_}: mean f(x) = {mean_y_new:.6f}")
-                else:
-                    print(f"Iteration {self.n_iter_}: f(x) = {y_next[0]:.6f}")
+            # Update best solution
+            self._update_best_main_loop(x_next_repeated, y_next)
 
         # Expand results to full dimensions if needed
         # Note: best_x_ and X_ are already in original scale (stored that way)
@@ -2796,15 +3190,7 @@ class SpotOptim(BaseEstimator):
         X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
 
         # Determine termination reason
-        elapsed_time = time.time() - timeout_start
-        if len(self.y_) >= self.max_iter:
-            message = f"Optimization terminated: maximum evaluations ({self.max_iter}) reached"
-        elif elapsed_time >= self.max_time * 60:
-            message = (
-                f"Optimization terminated: time limit ({self.max_time:.2f} min) reached"
-            )
-        else:
-            message = "Optimization finished successfully"
+        message = self._determine_termination(timeout_start)
 
         # Close TensorBoard writer
         self._close_tensorboard_writer()
