@@ -3269,7 +3269,7 @@ wheels = [
 
 [[package]]
 name = "spotoptim"
-version = "0.0.29"
+version = "0.0.32"
 source = { editable = "." }
 dependencies = [
     { name = "jupyter" },

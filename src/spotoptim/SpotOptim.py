@@ -980,9 +980,10 @@ class SpotOptim(BaseEstimator):
             )
             # Log success rate
             self.tb_writer.add_scalar("success_rate", self.success_rate, step)
-            # Log best X coordinates
+            # Log best X coordinates using var_name if available
             for i in range(self.n_dim):
-                self.tb_writer.add_scalar(f"X_best/x{i}", self.min_X[i], step)
+                param_name = self.var_name[i] if self.var_name else f"x{i}"
+                self.tb_writer.add_scalar(f"X_best/{param_name}", self.min_X[i], step)
         else:
             # Noisy optimization
             self.tb_writer.add_scalars(
@@ -995,9 +996,10 @@ class SpotOptim(BaseEstimator):
             # Log success rate
             self.tb_writer.add_scalar("success_rate", self.success_rate, step)
 
-            # Log best X coordinates (by mean)
+            # Log best X coordinates (by mean) using var_name if available
             for i in range(self.n_dim):
-                self.tb_writer.add_scalar(f"X_mean_best/x{i}", self.min_mean_X[i], step)
+                param_name = self.var_name[i] if self.var_name else f"x{i}"
+                self.tb_writer.add_scalar(f"X_mean_best/{param_name}", self.min_mean_X[i], step)
 
         self.tb_writer.flush()
 
@@ -1654,7 +1656,7 @@ class SpotOptim(BaseEstimator):
         return X
 
     def _apply_penalty_NA(
-        self, y: np.ndarray, penalty_value: Optional[float] = None, sd: float = 0.1
+        self, y: np.ndarray, y_history: Optional[np.ndarray] = None, penalty_value: Optional[float] = None, sd: float = 0.1
     ) -> np.ndarray:
         """Replace NaN and infinite values with penalty plus random noise.
 
@@ -1663,9 +1665,11 @@ class SpotOptim(BaseEstimator):
         identical penalty values.
 
         Args:
-            y (ndarray): Array of objective function values.
+            y (ndarray): Array of objective function values to be repaired.
+            y_history (ndarray, optional): Historical objective function values used for
+                computing penalty statistics. If None, uses y itself. Default is None.
             penalty_value (float, optional): Value to replace NaN/inf with.
-                If None, computes penalty as: max(finite_y) + 3 * std(finite_y).
+                If None, computes penalty as: max(finite_y_history) + 3 * std(finite_y_history).
                 If all values are NaN/inf or only one finite value exists, falls back
                 to self.penalty. Default is None.
             sd (float): Standard deviation for random noise added to penalty.
@@ -1678,16 +1682,17 @@ class SpotOptim(BaseEstimator):
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
             >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> y = np.array([1.0, 2.0, np.nan, 5.0, np.inf])
-            >>> y_clean = opt._apply_penalty_NA(y)
+            >>> y_hist = np.array([1.0, 2.0, 3.0, 5.0])
+            >>> y_new = np.array([4.0, np.nan, np.inf])
+            >>> y_clean = opt._apply_penalty_NA(y_new, y_history=y_hist)
             >>> np.all(np.isfinite(y_clean))
             True
-            >>> # NaN/inf replaced with worst value + 3*std + noise
-            >>> y_clean[2] > 5.0  # Should be larger than max finite value
+            >>> # NaN/inf replaced with worst value from history + 3*std + noise
+            >>> y_clean[1] > 5.0  # Should be larger than max finite value in history
             True
         """
         y = np.copy(y)
-        # Identify NaN and inf values
+        # Identify NaN and inf values in y
         mask = ~np.isfinite(y)
 
         if np.any(mask):
@@ -1695,8 +1700,13 @@ class SpotOptim(BaseEstimator):
             
             # Compute penalty_value if not provided
             if penalty_value is None:
-                # Get finite values for statistics
-                finite_values = y[~mask]
+                # Get finite values from history for statistics
+                # Use y_history if provided, otherwise fall back to y itself
+                if y_history is not None:
+                    finite_values = y_history[np.isfinite(y_history)]
+                else:
+                # Use current y values
+                    finite_values = y[~mask]
                 
                 # If we have at least 2 finite values, compute adaptive penalty
                 if len(finite_values) >= 2:
@@ -2046,11 +2056,36 @@ class SpotOptim(BaseEstimator):
         # Evaluate initial design
         y0 = self._evaluate_function(X0)
 
-        # Handle NaN/inf values in initial design
-        y0 = self._apply_penalty_NA(y0)
-        X0, y0 = self._remove_nan(
-            X0, y0, stop_on_zero_return=True
-        )  # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
+        # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
+        finite_mask = np.isfinite(y0)
+        n_non_finite = np.sum(~finite_mask)
+        
+        if n_non_finite > 0:
+            if self.verbose:
+                print(
+                    f"Warning: {n_non_finite} initial design point(s) returned NaN/inf "
+                    f"and will be ignored (reduced from {len(y0)} to {np.sum(finite_mask)} points)"
+                )
+            X0 = X0[finite_mask]
+            y0 = y0[finite_mask]
+        
+        # Check if we have enough points to continue
+        min_points_required = 3 if self.n_dim > 1 else 2
+        if len(y0) < min_points_required:
+            error_msg = (
+                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
+                f"out of {len(finite_mask)} evaluated. Need at least {min_points_required} "
+                f"points to fit surrogate model. Please check your objective function or increase n_initial."
+            )
+            raise ValueError(error_msg)
+        
+        if len(y0) < self.n_initial and self.verbose:
+            print(
+                f"Note: Initial design size ({len(y0)}) is smaller than requested "
+                f"({self.n_initial}) due to NaN/inf values"
+            )
+
+        # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
         self._update_success_rate(y0)
 
         # Initialize storage (convert to original scale for user-facing storage)
@@ -2136,7 +2171,8 @@ class SpotOptim(BaseEstimator):
             y_next = self._evaluate_function(x_next_repeated)
 
             # Handle NaN/inf values in new evaluations
-            y_next = self._apply_penalty_NA(y_next)
+            # Use historical y values (self.y_) for computing penalty statistics
+            y_next = self._apply_penalty_NA(y_next, y_history=self.y_)
             x_next_repeated, y_next = self._remove_nan(
                 x_next_repeated, y_next, stop_on_zero_return=False
             )  # Skip this iteration if all new points were NaN/inf
