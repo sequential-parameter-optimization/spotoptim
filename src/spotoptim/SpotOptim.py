@@ -1711,12 +1711,19 @@ class SpotOptim(BaseEstimator):
                         )
                 else:
                     # Fallback to self.penalty if insufficient finite values
-                    penalty_value = self.penalty
+                    if self.penalty is not None:
+                        penalty_value = self.penalty
+                    elif len(finite_values) == 1:
+                        # Use the single finite value + a large constant
+                        penalty_value = finite_values[0] + 1000.0
+                    else:
+                        # All values are NaN/inf, use a large default
+                        penalty_value = 1e10
                     
                     if self.verbose:
                         print(
                             f"Warning: Found {n_bad} NaN/inf value(s), insufficient finite values "
-                            f"for adaptive penalty. Using self.penalty = {penalty_value}"
+                            f"for adaptive penalty. Using penalty_value = {penalty_value}"
                         )
             else:
                 if self.verbose:
@@ -1890,31 +1897,59 @@ class SpotOptim(BaseEstimator):
 
         If the acquisition function optimization fails to find a sufficiently distant
         point, falls back to the strategy specified by acquisition_failure_strategy.
+        For integer/factor variables, applies rounding before checking distance to
+        avoid duplicate evaluations.
 
         Returns:
             ndarray: Next point to evaluate, shape (n_features,).
         """
-        result = differential_evolution(
-            func=self._acquisition_function,
-            bounds=self.bounds,
-            seed=self.seed,
-            maxiter=1000,
-        )
+        # Try multiple times to find a unique point (after rounding)
+        max_attempts = 10
+        
+        for attempt in range(max_attempts):
+            if attempt == 0:
+                # First attempt: use acquisition function
+                result = differential_evolution(
+                    func=self._acquisition_function,
+                    bounds=self.bounds,
+                    seed=self.seed,
+                    maxiter=1000,
+                )
+                x_next = result.x
+            else:
+                # Subsequent attempts: use fallback strategy
+                if self.verbose:
+                    print(
+                        f"  Attempt {attempt + 1}/{max_attempts}: Previous point was duplicate after rounding, trying fallback"
+                    )
+                x_next = self._handle_acquisition_failure()
 
-        x_next = result.x
+            # Apply rounding BEFORE checking tolerance
+            # This is critical for integer/factor variables where rounding can cause
+            # duplicate points (e.g., [12.3, 2.7] and [12.4, 2.8] both round to [12, 3])
+            x_next_rounded = self._repair_non_numeric(
+                x_next.reshape(1, -1), self.var_type
+            )[0]
 
-        # Ensure minimum distance to existing points (compare in transformed space)
-        x_next_2d = x_next.reshape(1, -1)
-        X_transformed = self._transform_X(self.X_)
-        x_new, _ = self._select_new(
-            A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
-        )
+            # Ensure minimum distance to existing points (compare in transformed space, after rounding)
+            x_next_2d = x_next_rounded.reshape(1, -1)
+            X_transformed = self._transform_X(self.X_)
+            x_new, _ = self._select_new(
+                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+            )
 
-        if x_new.shape[0] == 0:
-            # No new point found on surrogate - use fallback strategy
-            return self._handle_acquisition_failure()
+            if x_new.shape[0] > 0:
+                # Found a unique point!
+                return x_next_rounded
 
-        return self._repair_non_numeric(x_next.reshape(1, -1), self.var_type)[0]
+        # If we get here, we failed to find a unique point after max_attempts
+        # Return the last attempt anyway (this allows optimization to continue even if stuck)
+        if self.verbose:
+            print(
+                f"Warning: Could not find unique point after {max_attempts} attempts. "
+                "Returning last candidate (may be duplicate)."
+            )
+        return x_next_rounded
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
         """Run the optimization process.
@@ -1961,6 +1996,48 @@ class SpotOptim(BaseEstimator):
             if self.red_dim and X0.shape[1] == len(self.ident):
                 X0 = self.to_red_dim(X0)
             X0 = self._repair_non_numeric(X0, self.var_type)
+
+        # Remove duplicates from initial design (can occur after rounding integers/factors)
+        # Keep only unique rows based on rounded values
+        X0_unique, unique_indices = np.unique(X0, axis=0, return_index=True)
+        if len(X0_unique) < len(X0):
+            n_duplicates = len(X0) - len(X0_unique)
+            if self.verbose:
+                print(
+                    f"Removed {n_duplicates} duplicate(s) from initial design after rounding"
+                )
+            
+            # Generate additional points to reach n_initial unique points
+            if len(X0_unique) < self.n_initial:
+                n_additional = self.n_initial - len(X0_unique)
+                if self.verbose:
+                    print(
+                        f"Generating {n_additional} additional point(s) to reach n_initial={self.n_initial}"
+                    )
+                
+                # Generate extra points and deduplicate again
+                max_gen_attempts = 10
+                for gen_attempt in range(max_gen_attempts):
+                    X_extra_unit = self.lhs_sampler.random(n=n_additional * 2)  # Generate extras
+                    X_extra = self.lower + X_extra_unit * (self.upper - self.lower)
+                    X_extra = self._repair_non_numeric(X_extra, self.var_type)
+                    
+                    # Combine and get unique
+                    X_combined = np.vstack([X0_unique, X_extra])
+                    X_combined_unique = np.unique(X_combined, axis=0)
+                    
+                    if len(X_combined_unique) >= self.n_initial:
+                        X0 = X_combined_unique[: self.n_initial]
+                        break
+                else:
+                    # If still not enough unique points, just use what we have
+                    X0 = X_combined_unique
+                    if self.verbose:
+                        print(
+                            f"Warning: Could only generate {len(X0)} unique initial points (target was {self.n_initial})"
+                        )
+            else:
+                X0 = X0_unique
 
         # Repeat initial design points if repeats_initial > 1
         if self.repeats_initial > 1:

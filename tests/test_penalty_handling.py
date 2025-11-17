@@ -552,7 +552,7 @@ class TestApplyPenaltyNAVerboseOutput:
 
         captured = capsys.readouterr()
         assert "insufficient finite values" in captured.out.lower()
-        assert "self.penalty" in captured.out.lower()
+        assert "penalty_value = 500.0" in captured.out.lower()
 
     def test_verbose_output_with_custom_penalty(self, capsys):
         """Test that verbose mode prints correct message for custom penalty."""
