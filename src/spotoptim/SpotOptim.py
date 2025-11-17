@@ -88,7 +88,7 @@ class SpotOptim(BaseEstimator):
             When the objective function returns NaN or inf, these values are replaced with penalty plus
             a small random noise (sampled from N(0, 0.1)) to avoid identical penalty values.
             This allows optimization to continue despite occasional function evaluation failures.
-            Defaults to np.inf.
+            Defaults to None.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -221,7 +221,7 @@ class SpotOptim(BaseEstimator):
         max_surrogate_points: Optional[int] = None,
         selection_method: str = "distant",
         acquisition_failure_strategy: str = "random",
-        penalty: float = np.inf,
+        penalty: Optional[float] = None,
     ):
 
         warnings.filterwarnings(warnings_filter)
