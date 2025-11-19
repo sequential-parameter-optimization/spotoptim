@@ -1,0 +1,467 @@
+---
+title: "Physics-Informed Neural Networks (PINNs) Demo 1"
+subtitle: "Solving ODEs with SpotOptim's LinearRegressor"
+format:
+  html:
+    code-fold: false
+    toc: true
+    number-sections: true
+jupyter: python3
+---
+
+# Overview
+
+This tutorial demonstrates how to use Physics-Informed Neural Networks (PINNs) to solve ordinary differential equations (ODEs) using SpotOptim's `LinearRegressor` class. We'll solve a first-order ODE with an initial condition, combining data-driven learning with physics constraints.
+
+## The Differential Equation
+
+We want to solve the following ODE:
+
+$$
+\frac{dy}{dt} + 0.1 y - \sin\left(\frac{\pi t}{2}\right) = 0
+$$
+
+with initial condition:
+
+$$
+y(0) = 0
+$$
+
+# Setup
+
+First, let's import the necessary libraries:
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.nn as nn
+from typing import Tuple
+from spotoptim.nn.linear_regressor import LinearRegressor
+
+# Set random seed for reproducibility
+torch.manual_seed(123)
+```
+
+# The Neural Network
+
+We'll use SpotOptim's `LinearRegressor` class to create a neural network with:
+
+- 1 input (time t)
+- 1 output (solution y)
+- 32 neurons per hidden layer
+- 3 hidden layers
+- Tanh activation function
+
+```{python}
+model = LinearRegressor(
+    input_dim=1,
+    output_dim=1,
+    l1=32,
+    num_hidden_layers=3,
+    activation="Tanh",
+    lr=1.0
+)
+
+# Get optimizer with custom learning rate
+optimizer = model.get_optimizer("Adam", lr=3.0)  # 3.0 * 0.001 = 0.003
+
+print(f"Model architecture:")
+print(model)
+```
+
+# Generate Training Data
+
+We'll generate exact solution data using a numerical solver (RK2 method):
+
+```{python}
+def oscillator(
+    n_steps: int = 3000,
+    t_min: float = 0.0,
+    t_max: float = 30.0,
+    y0: float = 0.0,
+    alpha: float = 0.1,
+    omega: float = np.pi / 2
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Solve ODE: dy/dt + alpha*y - sin(omega*t) = 0
+    using RK2 (midpoint method).
+    
+    Args:
+        n_steps: Number of time steps
+        t_min: Start time
+        t_max: End time
+        y0: Initial condition y(t_min)
+        alpha: Damping coefficient
+        omega: Forcing frequency
+    
+    Returns:
+        Tuple of (time points, solution values) as torch tensors
+    """
+    t_step = (t_max - t_min) / n_steps
+    t_points = np.arange(t_min, t_min + n_steps * t_step, t_step)[:n_steps]
+    
+    y = [y0]
+    
+    for t_current_step_end in t_points[1:]:
+        t_midpoint = t_current_step_end - t_step / 2.0
+        y_prev = y[-1]
+        
+        # Stage 1: intermediate value
+        slope_at_t_mid = -alpha * y_prev + np.sin(omega * t_midpoint)
+        y_intermediate = y_prev + (t_step / 2.0) * slope_at_t_mid
+        
+        # Stage 2: final value
+        slope_at_t_end = -alpha * y_intermediate + np.sin(omega * t_current_step_end)
+        y_next = y_prev + t_step * slope_at_t_end
+        y.append(y_next)
+    
+    t_tensor = torch.tensor(t_points, dtype=torch.float32).view(-1, 1)
+    y_tensor = torch.tensor(y, dtype=torch.float32).view(-1, 1)
+    
+    return t_tensor, y_tensor
+```
+
+Generate the exact solution and sample training data points:
+
+```{python}
+# Generate exact solution (3000 points)
+x, y = oscillator()
+
+# Sample training data (every 119th point, giving ~25 points)
+x_data = x[0:3000:119]
+y_data = y[0:3000:119]
+
+print(f"Exact solution points: {len(x)}")
+print(f"Training data points: {len(x_data)}")
+```
+
+Visualize the exact solution and training data:
+
+```{python}
+plt.figure(figsize=(10, 6))
+plt.plot(x.numpy(), y.numpy(), 'b-', linewidth=2, label="Exact solution y(t)")
+plt.scatter(x_data.numpy(), y_data.numpy(), color="tab:orange", 
+            s=50, label="Training data", zorder=5)
+plt.xlabel("Time t", fontsize=12)
+plt.ylabel("Solution y(t)", fontsize=12)
+plt.title("ODE Solution and Training Data", fontsize=14)
+plt.legend(fontsize=11)
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+# Collocation Points
+
+Create collocation points where we'll enforce the physics (ODE) constraints:
+
+```{python}
+# 50 evenly spaced points in [0, 30]
+x_physics = torch.linspace(0, 30, 50).view(-1, 1).requires_grad_(True)
+
+print(f"Collocation points: {len(x_physics)}")
+print(f"Range: [{x_physics.min().item():.2f}, {x_physics.max().item():.2f}]")
+```
+
+# PINN Training
+
+Now we'll train the neural network using two loss components:
+
+1. **Data Loss (Loss1)**: Ensures the network fits the training data
+2. **Physics Loss (Loss2)**: Ensures the network satisfies the ODE
+
+## Loss Components Explained
+
+### Neural Network Prediction on Data Points
+
+The network predicts values at the training data points:
+
+```python
+yh = model(x_data)
+```
+
+### Data Loss (Loss1)
+
+Mean squared error between predictions and actual data:
+
+```python
+loss1 = torch.mean((yh - y_data)**2)
+```
+
+### Neural Network Prediction on Collocation Points
+
+The network predicts values at the physics enforcement points:
+
+```python
+yhp = model(x_physics)
+```
+
+### Computing Derivatives for the ODE
+
+We compute dy/dt using automatic differentiation:
+
+```python
+dyhp_dxphysics = torch.autograd.grad(
+    yhp, x_physics, 
+    torch.ones_like(yhp), 
+    create_graph=True
+)[0]
+```
+
+### Physics Loss (Loss2)
+
+The ODE residual at collocation points:
+
+$$
+\text{residual} = \frac{dy}{dt} + 0.1 y - \sin\left(\frac{\pi t}{2}\right)
+$$
+
+```python
+physics = dyhp_dxphysics + 0.1 * yhp - torch.sin(np.pi * x_physics / 2)
+loss2 = torch.mean(physics**2)
+```
+
+### Total Loss
+
+Combined loss with weighting factor α:
+
+```python
+loss = loss1 + alpha * loss2
+```
+
+## Training Loop
+
+```{python}
+loss_history_pinn = []
+loss2_history_pinn = []
+plot_data_points_pinn = []
+
+alpha = 6e-2  # Weight for physics loss
+n_epochs = 48000
+
+print("Training Physics-Informed Neural Network...")
+print(f"Total epochs: {n_epochs}")
+print(f"Physics loss weight (alpha): {alpha}")
+
+for i in range(n_epochs):
+    optimizer.zero_grad()
+    
+    # Data Loss: Fit the training data
+    yh = model(x_data)
+    loss1 = torch.mean((yh - y_data)**2)
+    
+    # Physics Loss: Satisfy the ODE at collocation points
+    yhp = model(x_physics)
+    dyhp_dxphysics = torch.autograd.grad(
+        yhp, x_physics, 
+        torch.ones_like(yhp), 
+        create_graph=True
+    )[0]
+    physics = dyhp_dxphysics + 0.1 * yhp - torch.sin(np.pi * x_physics / 2)
+    loss2 = torch.mean(physics**2)
+    
+    # Total Loss
+    loss = loss1 + alpha * loss2
+    loss.backward()
+    optimizer.step()
+    
+    # Store history every 100 steps
+    if (i + 1) % 100 == 0:
+        loss_history_pinn.append(loss.detach())
+        loss2_history_pinn.append(loss2.detach())
+    
+    # Store snapshots for visualization every 10000 steps
+    if (i + 1) % 10000 == 0:
+        current_yh_full = model(x).detach()
+        plot_data_points_pinn.append({
+            'yh': current_yh_full, 
+            'step': i + 1
+        })
+        print(f"Epoch {i+1}/{n_epochs}: Total Loss = {loss.item():.6f}, "
+              f"Physics Loss = {loss2.item():.6f}")
+
+print("Training completed!")
+```
+
+# Results Visualization
+
+## Training Progress
+
+```{python}
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+# Plot total loss
+ax1.plot(loss_history_pinn, 'b-', linewidth=1.5)
+ax1.set_xlabel('Iteration (×100)', fontsize=11)
+ax1.set_ylabel('Total Loss', fontsize=11)
+ax1.set_title('Training Progress: Total Loss', fontsize=12)
+ax1.grid(True, alpha=0.3)
+ax1.set_yscale('log')
+
+# Plot physics loss
+ax2.plot(loss2_history_pinn, 'r-', linewidth=1.5)
+ax2.set_xlabel('Iteration (×100)', fontsize=11)
+ax2.set_ylabel('Physics Loss', fontsize=11)
+ax2.set_title('Training Progress: Physics Loss (ODE Residual)', fontsize=12)
+ax2.grid(True, alpha=0.3)
+ax2.set_yscale('log')
+
+plt.tight_layout()
+plt.show()
+```
+
+## Solution Evolution During Training
+
+Visualize how the neural network solution evolves during training:
+
+```{python}
+xp_plot = x_physics.detach()
+
+for plot_info in plot_data_points_pinn:
+    plt.figure(figsize=(10, 6))
+    
+    # Plot exact solution
+    plt.plot(x.numpy(), y.numpy(), 'b-', linewidth=2, 
+             label='Exact solution', alpha=0.7)
+    
+    # Plot training data
+    plt.scatter(x_data.numpy(), y_data.numpy(), color='tab:orange', 
+                s=50, label='Training data', zorder=5)
+    
+    # Plot neural network prediction
+    plt.plot(x.numpy(), plot_info['yh'].numpy(), 'r--', linewidth=2,
+             label='PINN prediction', alpha=0.8)
+    
+    # Plot collocation points
+    plt.scatter(xp_plot.numpy(), 
+                model(xp_plot).detach().numpy(),
+                color='green', marker='x', s=30, 
+                label='Collocation points', alpha=0.6, zorder=4)
+    
+    plt.xlabel('Time t', fontsize=12)
+    plt.ylabel('Solution y(t)', fontsize=12)
+    plt.title(f'PINN Solution at Epoch {plot_info["step"]}', fontsize=14)
+    plt.legend(fontsize=11)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
+```
+
+## Final Solution Comparison
+
+```{python}
+# Final prediction
+model.eval()
+with torch.no_grad():
+    y_final = model(x)
+
+plt.figure(figsize=(12, 7))
+
+# Plot exact solution
+plt.plot(x.numpy(), y.numpy(), 'b-', linewidth=2.5, 
+         label='Exact solution', alpha=0.8)
+
+# Plot PINN prediction
+plt.plot(x.numpy(), y_final.numpy(), 'r--', linewidth=2, 
+         label='PINN prediction', alpha=0.8)
+
+# Plot training data
+plt.scatter(x_data.numpy(), y_data.numpy(), color='tab:orange', 
+            s=80, label='Training data', zorder=5, edgecolors='black', linewidth=0.5)
+
+# Plot collocation points
+plt.scatter(x_physics.detach().numpy(), 
+            model(x_physics).detach().numpy(),
+            color='green', marker='x', s=50, 
+            label='Collocation points', alpha=0.7, zorder=4)
+
+plt.xlabel('Time t', fontsize=13)
+plt.ylabel('Solution y(t)', fontsize=13)
+plt.title('Final PINN Solution vs Exact Solution', fontsize=15, fontweight='bold')
+plt.legend(fontsize=12, loc='best')
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+```
+
+## Error Analysis
+
+```{python}
+# Compute absolute error
+error = torch.abs(y_final - y)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x.numpy(), error.numpy(), 'r-', linewidth=2)
+plt.xlabel('Time t', fontsize=12)
+plt.ylabel('Absolute Error |y_exact - y_PINN|', fontsize=12)
+plt.title('PINN Approximation Error', fontsize=14)
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print("\nError Statistics:")
+print(f"Maximum absolute error: {error.max().item():.6f}")
+print(f"Mean absolute error: {error.mean().item():.6f}")
+print(f"Root mean squared error: {torch.sqrt(torch.mean(error**2)).item():.6f}")
+```
+
+# Summary
+
+This tutorial demonstrated how to use SpotOptim's `LinearRegressor` class to implement a Physics-Informed Neural Network (PINN) for solving ordinary differential equations. Key takeaways:
+
+1. **Network Architecture**: Used a 3-layer neural network with 32 neurons per layer and Tanh activation
+2. **Dual Loss Function**: Combined data fitting loss with physics constraint loss
+3. **Automatic Differentiation**: Leveraged PyTorch's autograd to compute derivatives for the ODE
+4. **Collocation Method**: Enforced the ODE at specific points in the domain
+5. **Training Strategy**: Balanced data-driven and physics-informed learning with weight α
+
+The PINN successfully learned to approximate the ODE solution using only sparse training data (~25 points) by incorporating the underlying physics through the differential equation constraint.
+
+## Key Advantages of PINNs
+
+- **Data Efficiency**: Can learn with very few data points
+- **Physics Consistency**: Solutions automatically satisfy the governing equations
+- **Generalization**: Better extrapolation beyond training data
+- **Flexibility**: Can handle complex geometries and boundary conditions
+
+## Using SpotOptim for Hyperparameter Optimization
+
+The `LinearRegressor` class integrates seamlessly with SpotOptim for hyperparameter tuning:
+
+```python
+from spotoptim import SpotOptim
+
+def train_pinn(X):
+    """Objective function for hyperparameter optimization."""
+    results = []
+    for params in X:
+        l1 = int(params[0])           # Hidden layer size
+        num_layers = int(params[1])   # Number of layers
+        lr_unified = 10 ** params[2]  # Learning rate (log scale)
+        
+        # Create model
+        model = LinearRegressor(
+            input_dim=1, output_dim=1,
+            l1=l1, num_hidden_layers=num_layers,
+            activation="Tanh", lr=lr_unified
+        )
+        
+        # Train PINN and compute validation error
+        # ... training code ...
+        
+        results.append(validation_error)
+    return np.array(results)
+
+# Optimize hyperparameters
+optimizer = SpotOptim(
+    fun=train_pinn,
+    bounds=[(16, 128), (1, 5), (-4, 0)],
+    var_type=["int", "int", "num"],
+    var_name=["layer_size", "num_layers", "log_lr"],
+    max_iter=50
+)
+result = optimizer.optimize()
+```
+
+This approach allows you to systematically find the best network architecture and learning rate for your specific PINN problem.
