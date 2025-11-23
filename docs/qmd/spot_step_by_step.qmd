@@ -145,6 +145,29 @@ print(X0[:3])
 4. Apply dimension reduction if configured
 5. Round integer/factor variables
 
+```{python}
+# print initial design in original scale and in internal scale
+X0_original = opt._inverse_transform_X(X0)
+print(f"\nFirst 3 points (original scale):")
+print(X0_original[:3])
+print(f"\nFirst 3 points (internal scale):")
+print(X0[:3])
+```
+
+```{python}
+# plot initial design in original scale
+import matplotlib.pyplot as plt
+plt.figure(figsize=(6, 6))
+plt.scatter(X0_original[:, 0], X0_original[:, 1], c='blue', label='Initial Design Points')
+plt.xlabel("X1")
+plt.ylabel("X2")
+plt.title("Initial Design Points (Original Scale)")
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+
+
 ## Phase 3: Initial Design Curation
 
 ### Method: `_curate_initial_design()`
@@ -331,6 +354,40 @@ print(f"Current gap: {opt.best_y_ - 0:.6f}")
 3. Store corresponding point as `best_x_`
 4. Print progress if verbose
 
+```{python}
+# generate a contour plot with contour lines of the Rosenbrock function and mark the best point
+# show all evaluated points as well
+import numpy as np
+import matplotlib.pyplot as plt
+
+def rosenbrock_2d(x, y):
+    """Helper function for contour plotting."""
+    return (1 - x)**2 + 100 * (y - x**2)**2
+
+# Create a grid of points
+x = np.linspace(-2, 2, 400)
+y = np.linspace(-2, 2, 400)
+X, Y = np.meshgrid(x, y)
+Z = rosenbrock_2d(X, Y)
+
+plt.figure(figsize=(8, 6))
+# Contour plot
+contour = plt.contour(X, Y, Z, levels=np.logspace(-0.5, 3.5, 20), cmap='viridis')
+plt.clabel(contour, inline=True, fontsize=8)
+# Plot evaluated points
+plt.scatter(opt.X_[:, 0], opt.X_[:, 1], c='blue', label='Evaluated Points', alpha=0.6)
+# Mark best point
+plt.scatter(opt.best_x_[0], opt.best_x_[1], c='red', s=100, label='Best Point', edgecolors='black')
+plt.xlabel('X1')
+plt.ylabel('X2')
+plt.title('Rosenbrock Function Contours with Evaluated Points')
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+
+
+
 # Sequential Optimization Loop
 
 After initialization, the main optimization loop begins. Each iteration follows these steps:
@@ -366,6 +423,7 @@ print(f"\nSurrogate can now predict at new locations with uncertainty estimates"
 4. Surrogate learns the function landscape and uncertainty
 
 **Surrogate Model Selection:**
+
 - Default: Gaussian Process with Matérn kernel
 - Provides: Mean prediction μ(x) and uncertainty σ(x)
 - Can be replaced with Random Forest, Kriging, etc.
@@ -477,6 +535,7 @@ print(f"  σ(x_next) = {sigma_next[0]:.4f}")
 6. Return suggested point
 
 **Fallback Strategies** (if acquisition optimization fails):
+
 - `'best'`: Re-evaluate current best point
 - `'mean'`: Select point with best predicted mean
 - `'random'`: Random point in search space
@@ -542,6 +601,7 @@ else:
 4. **Continue** if any valid evaluations exist
 
 **Why penalties in sequential phase?**
+
 - Preserves optimization history
 - Allows surrogate to learn "bad" regions
 - Random noise prevents identical penalties
@@ -604,6 +664,7 @@ else:
 **Loop Termination Conditions:**
 
 The optimization continues until:
+
 1. `len(y_) >= max_iter` (reached evaluation budget), OR
 2. `elapsed_time >= max_time` (reached time limit)
 
@@ -650,13 +711,16 @@ When dealing with noisy objective functions, SpotOptim can evaluate each point m
 ## Configuration for Noisy Functions
 
 ```{python}
+NOISE_STD = 10.0
 print("\n" + "="*70)
 print("NOISY FUNCTION OPTIMIZATION")
 print("="*70)
+print(f"\nConfiguration for noisy optimization with noise std = {NOISE_STD}:")
+
 
 # Wrapper to add noise
 def rosenbrock_noisy_wrapper(X):
-    return rosenbrock_noisy(X, noise_std=0.5)
+    return rosenbrock_noisy(X, noise_std=NOISE_STD)
 
 opt_noisy = SpotOptim(
     fun=rosenbrock_noisy_wrapper,
@@ -1002,7 +1066,7 @@ print(f"  Evaluations: {result_failures.nfev}/{opt_failures.max_iter}")
 print(f"  Iterations: {result_failures.nit}")
 ```
 
-# Performance Comparison
+# Performance Comparison on Noisy Functions
 
 Let's compare standard, noisy, and noisy+OCBA optimization:
 
@@ -1016,11 +1080,11 @@ opt_std = SpotOptim(
     fun=rosenbrock_noisy_wrapper,
     bounds=[(-2, 2), (-2, 2)],
     n_initial=8,
-    max_iter=25,
+    max_iter=50,
     repeats_initial=1,
     repeats_surrogate=1,
     verbose=False,
-    seed=100
+    seed=10
 )
 result_std = opt_std.optimize()
 
@@ -1029,12 +1093,12 @@ opt_rep = SpotOptim(
     fun=rosenbrock_noisy_wrapper,
     bounds=[(-2, 2), (-2, 2)],
     n_initial=8,
-    max_iter=25,
+    max_iter=50,
     repeats_initial=2,
     repeats_surrogate=1,
     ocba_delta=0,
     verbose=False,
-    seed=100
+    seed=10
 )
 result_rep = opt_rep.optimize()
 
@@ -1043,28 +1107,61 @@ opt_ocba_comp = SpotOptim(
     fun=rosenbrock_noisy_wrapper,
     bounds=[(-2, 2), (-2, 2)],
     n_initial=8,
-    max_iter=25,
-    repeats_initial=2,
+    max_iter=50,
+    repeats_initial=1,
     repeats_surrogate=1,
-    ocba_delta=2,
+    ocba_delta=1,
     verbose=False,
-    seed=100
+    seed=10
 )
 result_ocba_comp = opt_ocba_comp.optimize()
 
-print("\nComparison on noisy Rosenbrock (σ=0.5):")
-print(f"{'Method':<30} {'Best Value':<15} {'Evaluations':<15}")
-print(f"{'-'*60}")
-print(f"{'Standard (no repeats)':<30} {result_std.fun:<15.6f} {result_std.nfev:<15}")
-print(f"{'With repeats (no OCBA)':<30} {result_rep.fun:<15.6f} {result_rep.nfev:<15}")
-print(f"{'With repeats + OCBA':<30} {result_ocba_comp.fun:<15.6f} {result_ocba_comp.nfev:<15}")
-print(f"{'-'*60}")
-print(f"{'True optimum':<30} {'0.0':<15}")
+# Evaluate the found optima with the TRUE (noise-free) Rosenbrock function
+# to get the actual quality of the solutions
+print(f"\n" + "="*70)
+print("TRUE FUNCTION VALUE EVALUATION")
+print("="*70)
+print("\nRe-evaluating found optima with noise-free Rosenbrock function:")
+print("-" * 70)
+
+# Evaluate each solution with the TRUE function (no noise)
+true_val_std = rosenbrock(result_std.x.reshape(1, -1))[0]
+true_val_rep = rosenbrock(result_rep.x.reshape(1, -1))[0]
+true_val_ocba = rosenbrock(result_ocba_comp.x.reshape(1, -1))[0]
+
+print(f"\nStandard (no repeats):")
+print(f"  Found x: {result_std.x}")
+print(f"  Noisy value (from optimization): {result_std.fun:.6f}")
+print(f"  TRUE value (noise-free): {true_val_std:.6f}")
+
+print(f"\nWith repeats (no OCBA):")
+print(f"  Found x: {result_rep.x}")
+print(f"  Noisy value (from optimization): {result_rep.fun:.6f}")
+print(f"  TRUE value (noise-free): {true_val_rep:.6f}")
+
+print(f"\nWith repeats + OCBA:")
+print(f"  Found x: {result_ocba_comp.x}")
+print(f"  Noisy value (from optimization): {result_ocba_comp.fun:.6f}")
+print(f"  TRUE value (noise-free): {true_val_ocba:.6f}")
+
+print(f"\n" + "="*70)
+print("PERFORMANCE COMPARISON SUMMARY")
+print("="*70)
+print(f"\nComparison on noisy Rosenbrock (σ={NOISE_STD}):")
+print(f"{'Method':<30} {'Noisy Value':<15} {'TRUE Value':<15} {'Evaluations':<15}")
+print(f"{'-'*75}")
+print(f"{'Standard (no repeats)':<30} {result_std.fun:<15.6f} {true_val_std:<15.6f} {result_std.nfev:<15}")
+print(f"{'With repeats (no OCBA)':<30} {result_rep.fun:<15.6f} {true_val_rep:<15.6f} {result_rep.nfev:<15}")
+print(f"{'With repeats + OCBA':<30} {result_ocba_comp.fun:<15.6f} {true_val_ocba:<15.6f} {result_ocba_comp.nfev:<15}")
+print(f"{'-'*75}")
+print(f"{'True optimum':<30} {'0.0':<15} {'0.0':<15}")
 
 print("\nKey observations:")
-print("  • Repeats help average out noise")
+print("  • Noisy values (from optimization) are misleading due to noise")
+print("  • TRUE values show actual solution quality")
+print("  • Repeats help find better solutions despite noise")
 print("  • OCBA focuses evaluations on distinguishing best solutions")
-print("  • More evaluations but better final result")
+print("  • More evaluations generally lead to better TRUE performance")
 ```
 
 # Summary
