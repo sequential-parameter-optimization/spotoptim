@@ -45,7 +45,7 @@ class SpotOptim(BaseEstimator):
             Alternative surrogates can be provided, including SpotOptim's Kriging model,
             Random Forests, or any scikit-learn compatible regressor. See Examples section.
             Defaults to None (uses default Gaussian Process configuration).
-        acquisition (str, optional): Acquisition function ('ei', 'y', 'pi'). Defaults to 'ei'.
+        acquisition (str, optional): Acquisition function ('ei', 'y', 'pi'). Defaults to 'y'.
         var_type (list of str, optional): Variable types for each dimension. Supported types:
             - 'float': Python floats, continuous optimization (no rounding)
             - 'int': Python int, float values will be rounded to integers
@@ -311,7 +311,7 @@ class SpotOptim(BaseEstimator):
         max_iter: int = 20,
         n_initial: int = 10,
         surrogate: Optional[object] = None,
-        acquisition: str = "ei",
+        acquisition: str = "y",
         var_type: Optional[list] = None,
         var_name: Optional[list] = None,
         var_trans: Optional[list] = None,
@@ -1022,6 +1022,46 @@ class SpotOptim(BaseEstimator):
             y_var[i] = np.var(group_y, ddof=0)
 
         return X_agg, y_mean, y_var
+
+    def init_stats(self, X0: np.ndarray, y0: np.ndarray) -> None:
+        """Initialize storage and statistics for optimization.
+
+        Sets up the initial data structures needed for optimization tracking:
+        - X_: Evaluated design points (in original scale)
+        - y_: Function values at evaluated points
+        - n_iter_: Iteration counter
+
+        Then updates statistics by calling update_stats().
+
+        Args:
+            X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).
+            y0 (ndarray): Function values at X0, shape (n_samples,).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 n_initial=5)
+            >>> X0 = np.array([[1, 2], [3, 4], [0, 1]])
+            >>> y0 = np.array([5.0, 25.0, 1.0])
+            >>> opt.init_stats(X0, y0)
+            >>> opt.X_.shape
+            (3, 2)
+            >>> opt.y_.shape
+            (3,)
+            >>> opt.n_iter_
+            0
+            >>> opt.counter
+            3
+        """
+        # Initialize storage (convert to original scale for user-facing storage)
+        self.X_ = self._inverse_transform_X(X0.copy())
+        self.y_ = y0.copy()
+        self.n_iter_ = 0
+
+        # Update stats after initial design
+        self.update_stats()
 
     def update_stats(self) -> None:
         """Update optimization statistics.
@@ -2628,9 +2668,7 @@ class SpotOptim(BaseEstimator):
 
         return X0, y0, len(finite_mask)
 
-    def _check_size_initial_design(
-        self, y0: np.ndarray, n_evaluated: int
-    ) -> None:
+    def _check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
         """Validate that initial design has sufficient points for surrogate fitting.
 
         Checks if the number of valid initial design points meets the minimum
@@ -2816,9 +2854,7 @@ class SpotOptim(BaseEstimator):
             # Check conditions for OCBA (need variance > 0 and at least 3 points)
             if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
                 if self.verbose:
-                    print(
-                        "Warning: OCBA skipped (need >2 points with variance > 0)"
-                    )
+                    print("Warning: OCBA skipped (need >2 points with variance > 0)")
             elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
                 # Get OCBA allocation
                 X_ocba = self._get_ocba_X(
@@ -2980,9 +3016,7 @@ class SpotOptim(BaseEstimator):
             else:
                 print(f"Iteration {self.n_iter_}: f(x) = {y_next[0]:.6f}")
 
-    def _determine_termination(
-        self, timeout_start: float
-    ) -> str:
+    def _determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.
 
         Checks the termination conditions and returns an appropriate message
@@ -3098,13 +3132,8 @@ class SpotOptim(BaseEstimator):
         # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
         self._update_success_rate(y0)
 
-        # Initialize storage (convert to original scale for user-facing storage)
-        self.X_ = self._inverse_transform_X(X0.copy())
-        self.y_ = y0.copy()
-        self.n_iter_ = 0
-
-        # Update stats after initial design
-        self.update_stats()
+        # Initialize storage and statistics
+        self.init_stats(X0, y0)
 
         # Log initial design to TensorBoard
         if self.tb_writer is not None:
@@ -3156,7 +3185,9 @@ class SpotOptim(BaseEstimator):
             y_next = self._evaluate_function(x_next_repeated)
 
             # Handle NaN/inf values in new evaluations
-            x_next_repeated, y_next = self._handle_NA_new_points(x_next_repeated, y_next)
+            x_next_repeated, y_next = self._handle_NA_new_points(
+                x_next_repeated, y_next
+            )
             if x_next_repeated is None:
                 continue  # Skip iteration if all evaluations were invalid
 

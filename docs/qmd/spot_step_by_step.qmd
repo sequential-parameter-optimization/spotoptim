@@ -29,21 +29,12 @@ Let's start by defining our test functions, including variants with noise and oc
 ```{python}
 import numpy as np
 from spotoptim import SpotOptim
+from spotoptim.function import rosenbrock
 import warnings
 warnings.filterwarnings('ignore')
 
 # Set random seed for reproducibility
 np.random.seed(42)
-
-# Standard 2D Rosenbrock function
-def rosenbrock(X):
-    """
-    2D Rosenbrock function: f(x,y) = (1-x)^2 + 100*(y-x^2)^2
-    Global minimum: f(1,1) = 0
-    """
-    X = np.atleast_2d(X)
-    x, y = X[:, 0], X[:, 1]
-    return (1 - x)**2 + 100 * (y - x**2)**2
 
 # Noisy Rosenbrock function
 def rosenbrock_noisy(X, noise_std=0.1):
@@ -71,7 +62,7 @@ def rosenbrock_with_failures(X, failure_prob=0.15):
     return values
 
 print("✓ Test functions defined")
-print(f"  - rosenbrock: Standard 2D Rosenbrock")
+print(f"  - rosenbrock: Standard 2D Rosenbrock (imported from spotoptim.function)")
 print(f"  - rosenbrock_noisy: With Gaussian noise (σ=0.1)")
 print(f"  - rosenbrock_with_failures: Random 15% failure rate")
 ```
@@ -91,7 +82,6 @@ opt = SpotOptim(
     bounds=[(-2, 2), (-2, 2)],
     n_initial=10,
     max_iter=30,
-    acquisition='ei',
     verbose=True,
     seed=42
 )
@@ -103,7 +93,7 @@ print(f"Objective function: rosenbrock")
 print(f"Search space: [-2, 2] × [-2, 2]")
 print(f"Initial design size: {opt.n_initial}")
 print(f"Maximum iterations: {opt.max_iter}")
-print(f"Acquisition function: {opt.acquisition} (Expected Improvement)")
+print(f"Acquisition function: {opt.acquisition}")
 print(f"Surrogate model: {type(opt.surrogate).__name__}")
 ```
 
@@ -120,22 +110,7 @@ print(f"Surrogate model: {type(opt.surrogate).__name__}")
 ### Method: `_set_initial_design()`
 
 This method generates or processes the initial sample points.
-
-```{python}
-print("\n" + "="*70)
-print("PHASE 2: INITIAL DESIGN GENERATION")
-print("="*70)
-print("\nMethod: _set_initial_design()")
-print("-" * 70)
-
-# Manually call to demonstrate (normally done inside optimize())
-X0 = opt._set_initial_design(X0=None)
-
-print(f"Generated {len(X0)} initial design points using Latin Hypercube Sampling")
-print(f"Design shape: {X0.shape}")
-print(f"\nFirst 3 points (internal scale):")
-print(X0[:3])
-```
+It is manually called here for demonstration (normally done inside `optimize()`).
 
 **What happens in `_set_initial_design()`:**
 
@@ -146,7 +121,18 @@ print(X0[:3])
 5. Round integer/factor variables
 
 ```{python}
-# print initial design in original scale and in internal scale
+X0 = opt._set_initial_design(X0=None)
+
+print(f"Generated {len(X0)} initial design points using Latin Hypercube Sampling")
+print(f"Design shape: {X0.shape}")
+print(f"\nFirst 3 points (internal scale):")
+print(X0[:3])
+```
+
+* Print initial design in original scale and in internal scale:
+
+```{python}
+
 X0_original = opt._inverse_transform_X(X0)
 print(f"\nFirst 3 points (original scale):")
 print(X0_original[:3])
@@ -154,8 +140,9 @@ print(f"\nFirst 3 points (internal scale):")
 print(X0[:3])
 ```
 
+* Plot initial design in original scale:
+
 ```{python}
-# plot initial design in original scale
 import matplotlib.pyplot as plt
 plt.figure(figsize=(6, 6))
 plt.scatter(X0_original[:, 0], X0_original[:, 1], c='blue', label='Initial Design Points')
@@ -174,51 +161,26 @@ plt.show()
 
 This method ensures we have sufficient unique points and handles repeats.
 
-```{python}
-print("\n" + "="*70)
-print("PHASE 3: INITIAL DESIGN CURATION")
-print("="*70)
-print("\nMethod: _curate_initial_design()")
-print("-" * 70)
-
-X0_curated = opt._curate_initial_design(X0)
-
-print(f"Curated design shape: {X0_curated.shape}")
-print(f"Unique points: {len(np.unique(X0_curated, axis=0))}")
-print(f"Total points (with repeats): {len(X0_curated)}")
-```
-
 **What happens in `_curate_initial_design()`:**
 
 1. Remove duplicate points (can occur after rounding integers)
 2. Generate additional points if duplicates reduced count below `n_initial`
 3. Repeat each point `repeats_initial` times if > 1 (for noisy functions)
 
+```{python}
+X0_curated = opt._curate_initial_design(X0)
+print(f"Curated design shape: {X0_curated.shape}")
+print(f"Unique points: {len(np.unique(X0_curated, axis=0))}")
+print(f"Total points (with repeats): {len(X0_curated)}")
+```
+
+
 ## Phase 4: Initial Design Evaluation
 
 ### Method: `_evaluate_function()`
 
 Evaluates the objective function at all initial design points.
-
-```{python}
-print("\n" + "="*70)
-print("PHASE 4: INITIAL DESIGN EVALUATION")
-print("="*70)
-print("\nMethod: _evaluate_function()")
-print("-" * 70)
-
-# Convert to original scale for evaluation
-X0_original = opt._inverse_transform_X(X0_curated)
-y0 = opt._evaluate_function(X0_curated)
-
-print(f"Evaluated {len(y0)} points")
-print(f"Function values shape: {y0.shape}")
-print(f"\nFirst 5 function values:")
-print(y0[:5])
-print(f"\nBest initial value: {np.min(y0):.6f}")
-print(f"Worst initial value: {np.max(y0):.6f}")
-print(f"Mean initial value: {np.mean(y0):.6f}")
-```
+The points are converted back to the original scale for evaluation.
 
 **What happens in `_evaluate_function()`:**
 
@@ -227,19 +189,37 @@ print(f"Mean initial value: {np.mean(y0):.6f}")
 3. Convert multi-objective to single-objective if needed
 4. Return array of function values
 
+```{python}
+X0_original = opt._inverse_transform_X(X0_curated)
+y0 = opt._evaluate_function(X0_curated)
+
+print(f"Evaluated {len(y0)} points")
+print(f"Function values shape: {y0.shape}")
+print(f"First 5 points with function values:")
+for i in range(min(5, len(y0))):
+    print(f"  Point {i+1}: {X0_original[i]} → f(x)={y0[i]:.6f}")
+print(f"\nBest initial value: {np.min(y0):.6f}")
+print(f"Worst initial value: {np.max(y0):.6f}")
+print(f"Mean initial value: {np.mean(y0):.6f}")
+```
+
+
+
 ## Phase 5: Handling Failed Evaluations
 
 ### Method: `_handle_NA_initial_design()`
 
 Removes points that returned NaN or inf values.
+In contrasts to later phases, no penalties are applied here; invalid points of the initial design are simply removed.
+
+**What happens in `_handle_NA_initial_design()`:**
+
+1. Identify NaN/inf values in function evaluations
+2. Remove corresponding design points
+3. Return cleaned arrays and original count
+4. Note: No penalties applied in initial design - invalid points simply removed
 
 ```{python}
-print("\n" + "="*70)
-print("PHASE 5: HANDLING FAILED EVALUATIONS (INITIAL DESIGN)")
-print("="*70)
-print("\nMethod: _handle_NA_initial_design()")
-print("-" * 70)
-
 n_before = len(y0)
 X0_clean, y0_clean, n_evaluated = opt._handle_NA_initial_design(X0_curated, y0)
 
@@ -249,26 +229,25 @@ print(f"Removed: {n_before - len(y0_clean)} NaN/inf values")
 print(f"\nAll remaining values finite: {np.all(np.isfinite(y0_clean))}")
 ```
 
-**What happens in `_handle_NA_initial_design()`:**
 
-1. Identify NaN/inf values in function evaluations
-2. Remove corresponding design points
-3. Return cleaned arrays and original count
-4. Note: No penalties applied in initial design - invalid points simply removed
 
 ## Phase 6: Validation Check
 
 ### Method: `_check_size_initial_design()`
 
 Ensures we have enough valid points to continue.
+The minimum required is the smaller of:
+
+* typical minimum for surrogate fitting (3 for multi-dimensional, 2 for 1D), or 
+* what the user requested (n_initial).
+
+**What happens in `_check_size_initial_design()`:**
+
+1. Check if at least 1 valid point exists
+2. Raise error if all initial evaluations failed
+3. Print warnings if many points were invalid
 
 ```{python}
-print("\n" + "="*70)
-print("PHASE 6: VALIDATION CHECK")
-print("="*70)
-print("\nMethod: _check_size_initial_design()")
-print("-" * 70)
-
 try:
     opt._check_size_initial_design(y0_clean, n_evaluated)
     print(f"✓ Validation passed: {len(y0_clean)} valid points available")
@@ -278,32 +257,25 @@ except ValueError as e:
     print(f"✗ Validation failed: {e}")
 ```
 
-**What happens in `_check_size_initial_design()`:**
 
-1. Check if at least 1 valid point exists
-2. Raise error if all initial evaluations failed
-3. Print warnings if many points were invalid
 
-## Phase 7: Storage Initialization
+## Phase 7: Storage and Statistics Initialization
 
-### Method: Internal storage setup
+### Method:  `init_stats()`
 
 Store evaluated points and initialize tracking variables.
 
+**What happens during storage initialization:**
+
+1. `init_stats()`: Initialize statistics tracking variables. It calls `update_stats()`, which computes mean/variance if noise handling is active.
+3. `mean_X`, `mean_y`, `var_y`: Track statistics for noisy functions
+
+
+* Initialize storage and statistics (as done in `optimize()`)
+
 ```{python}
-print("\n" + "="*70)
-print("PHASE 7: STORAGE INITIALIZATION")
-print("="*70)
-print("\nInternal storage setup")
-print("-" * 70)
-
-# Initialize storage (as done in optimize())
-opt.X_ = opt._inverse_transform_X(X0_clean.copy())
-opt.y_ = y0_clean.copy()
-opt.n_iter_ = 0
-
-# Update statistics
-opt.update_stats()
+# Initialize storage and statistics using the new init_stats() method
+opt.init_stats(X0_clean, y0_clean)
 
 print(f"X_ (evaluated points): shape {opt.X_.shape}")
 print(f"y_ (function values): shape {opt.y_.shape}")
@@ -317,35 +289,13 @@ else:
     print(f"  - No noise tracking (repeats=1)")
 ```
 
-**What happens during storage initialization:**
 
-1. `X_`: Store all evaluated points (in original scale)
-2. `y_`: Store all function values
-3. `n_iter_`: Initialize iteration counter
-4. `update_stats()`: Compute mean/variance if noise handling active
-5. `mean_X`, `mean_y`, `var_y`: Track statistics for noisy functions
 
 ## Phase 8: Initial Best Point
 
 ### Method: `_get_best_xy_initial_design()`
 
 Identify and report the best point from initial design.
-
-```{python}
-print("\n" + "="*70)
-print("PHASE 8: IDENTIFY INITIAL BEST")
-print("="*70)
-print("\nMethod: _get_best_xy_initial_design()")
-print("-" * 70)
-
-opt._get_best_xy_initial_design()
-
-print(f"Best point found: {opt.best_x_}")
-print(f"Best value found: {opt.best_y_:.6f}")
-print(f"\nOptimum location: [1, 1]")
-print(f"Optimum value: 0")
-print(f"Current gap: {opt.best_y_ - 0:.6f}")
-```
 
 **What happens in `_get_best_xy_initial_design()`:**
 
@@ -355,26 +305,33 @@ print(f"Current gap: {opt.best_y_ - 0:.6f}")
 4. Print progress if verbose
 
 ```{python}
-# generate a contour plot with contour lines of the Rosenbrock function and mark the best point
-# show all evaluated points as well
-import numpy as np
-import matplotlib.pyplot as plt
+opt._get_best_xy_initial_design()
 
-def rosenbrock_2d(x, y):
-    """Helper function for contour plotting."""
-    return (1 - x)**2 + 100 * (y - x**2)**2
+print(f"Best point found: {opt.best_x_}")
+print(f"Best value found: {opt.best_y_:.6f}")
+print(f"\nOptimum location: [1, 1]")
+print(f"Optimum value: 0")
+print(f"Current gap: {opt.best_y_ - 0:.6f}")
+```
 
-# Create a grid of points
+
+## Illustration of the Initial Design Phase Results
+
+* Generate a contour plot with contour lines of the Rosenbrock function and mark the best point. Show all evaluated points as well:
+
+```{python}
+# Create a grid of points for contour plotting
 x = np.linspace(-2, 2, 400)
 y = np.linspace(-2, 2, 400)
 X, Y = np.meshgrid(x, y)
-Z = rosenbrock_2d(X, Y)
-
+grid_points = np.column_stack([X.ravel(), Y.ravel()])
+Z = rosenbrock(grid_points).reshape(X.shape)
 plt.figure(figsize=(8, 6))
 # Contour plot
 contour = plt.contour(X, Y, Z, levels=np.logspace(-0.5, 3.5, 20), cmap='viridis')
 plt.clabel(contour, inline=True, fontsize=8)
-# Plot evaluated points
+
+# Plot evaluated points from the initial design phase:
 plt.scatter(opt.X_[:, 0], opt.X_[:, 1], c='blue', label='Evaluated Points', alpha=0.6)
 # Mark best point
 plt.scatter(opt.best_x_[0], opt.best_x_[1], c='red', s=100, label='Best Point', edgecolors='black')
@@ -398,23 +355,6 @@ After initialization, the main optimization loop begins. Each iteration follows 
 
 Fit a surrogate model (Gaussian Process) to current data.
 
-```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 1: SURROGATE FITTING")
-print("="*70)
-print("\nMethod: _fit_surrogate()")
-print("-" * 70)
-
-# Transform data for surrogate (internal scale)
-X_for_surrogate = opt._transform_X(opt.X_)
-opt._fit_surrogate(X_for_surrogate, opt.y_)
-
-print(f"Surrogate fitted with {len(opt.y_)} points")
-print(f"Surrogate type: {type(opt.surrogate).__name__}")
-print(f"Kernel: {opt.surrogate.kernel_}")
-print(f"\nSurrogate can now predict at new locations with uncertainty estimates")
-```
-
 **What happens in `_fit_surrogate()`:**
 
 1. Transform X to internal scale
@@ -422,11 +362,27 @@ print(f"\nSurrogate can now predict at new locations with uncertainty estimates"
 3. Fit surrogate model using `surrogate.fit(X, y)`
 4. Surrogate learns the function landscape and uncertainty
 
+```{python}
+X_for_surrogate = opt._transform_X(opt.X_)
+opt._fit_surrogate(X_for_surrogate, opt.y_)
+
+print(f"Surrogate fitted with {len(opt.y_)} points")
+print(f"Surrogate type: {type(opt.surrogate).__name__}")
+print(f"Kernel: {opt.surrogate.kernel_}")
+```
+
 **Surrogate Model Selection:**
 
 - Default: Gaussian Process with Matérn kernel
 - Provides: Mean prediction μ(x) and uncertainty σ(x)
 - Can be replaced with Random Forest, Kriging, etc.
+
+* The fitted surrogate can be plotted with the following code:
+
+```{python}
+opt.plot_surrogate()
+```
+
 
 ## Step 2: Predict with Uncertainty
 
@@ -434,14 +390,17 @@ print(f"\nSurrogate can now predict at new locations with uncertainty estimates"
 
 Make predictions at new locations with uncertainty estimates.
 
-```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 2: PREDICTION")
-print("="*70)
-print("\nMethod: _predict_with_uncertainty()")
-print("-" * 70)
 
-# Test prediction at a few points
+**What happens in `_predict_with_uncertainty()`:**
+
+1. Call `surrogate.predict(X, return_std=True)`
+2. Returns mean μ(x) and standard deviation σ(x)
+3. Used by acquisition function to balance exploitation (low μ) and exploration (high σ)
+
+
+Here we test prediction at a few points:
+
+```{python}
 X_test = np.array([[0.5, 0.5], [1.0, 1.0], [-0.5, 0.5]])
 mu, sigma = opt._predict_with_uncertainty(X_test)
 
@@ -449,15 +408,9 @@ print(f"Test points: {X_test.shape}")
 print(f"\nPredictions (μ ± σ):")
 for i, (x, m, s) in enumerate(zip(X_test, mu, sigma)):
     print(f"  x={x} → μ={m:.4f}, σ={s:.4f}")
-    
-print(f"\nNote: Uncertainty (σ) is low near sampled points, high in unexplored regions")
 ```
 
-**What happens in `_predict_with_uncertainty()`:**
 
-1. Call `surrogate.predict(X, return_std=True)`
-2. Returns mean μ(x) and standard deviation σ(x)
-3. Used by acquisition function to balance exploitation (low μ) and exploration (high σ)
 
 ## Step 3: Acquisition Function Evaluation
 
@@ -466,12 +419,6 @@ print(f"\nNote: Uncertainty (σ) is low near sampled points, high in unexplored 
 Compute acquisition function value to guide search.
 
 ```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 3: ACQUISITION FUNCTION")
-print("="*70)
-print("\nMethod: _acquisition_function()")
-print("-" * 70)
-
 # Evaluate acquisition at test points
 print(f"Acquisition type: {opt.acquisition} (Expected Improvement)")
 print(f"\nAcquisition values at test points:")
