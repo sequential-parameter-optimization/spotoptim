@@ -437,11 +437,12 @@ opt.plot_surrogate()
 3. Update the surrogate model with the selected points.
 
 ```{python}
-if opt.ocba_delta > 0:
-    selected_indices = opt._apply_ocba()
-    print(f"OCBA selected {len(selected_indices)} points for re-evaluation")
+X_ocba = opt._apply_ocba()
+if X_ocba is not None:
+    print(f"OCBA selected {X_ocba.shape[0]} points for re-evaluation")
+    print(f"OCBA points shape: {X_ocba.shape}")
 else:
-    print("OCBA not applied (ocba_delta=0)")
+    print("OCBA not applied (noise=False or ocba_delta=0)")
 ```
 
 ## Step: Predict with Uncertainty
@@ -550,17 +551,20 @@ $$
 
 ### Method: `_update_repeats_infill_points()`
 
-Update the number of repeats for infill points based on new evaluations.
+Repeat the infill point for noisy function evaluation if `repeats_surrogate > 1`.
 
 **What happens in `_update_repeats_infill_points()`:**
 
-1. Identify infill points (points with high uncertainty)
-2. Update their repeat counts based on new evaluations
-3. Return updated repeat counts
+1. Takes the suggested next point (`x_next`)
+2. If `repeats_surrogate > 1`: Creates multiple copies for repeated evaluation
+3. Otherwise: Returns point as 2D array (shape: 1 × n_features)
+4. Returns array ready for function evaluation
 
 ```{python}
-repeats_updated = opt._update_repeats_infill_points()
-print(f"Updated repeats for infill points: {repeats_updated}")
+x_next_repeated = opt._update_repeats_infill_points(x_next)
+print(f"Shape before repeating: {x_next.shape}")
+print(f"Shape after repeating: {x_next_repeated.shape}")
+print(f"Number of evaluations planned: {x_next_repeated.shape[0]}")
 ```
 
 ## Append OCBA Points to Infill Points
@@ -651,14 +655,36 @@ opt._update_storage(x_next_repeated, y_next)
 
 ## Update Statistics
 
-Update statistics like means and variances for noisy evaluations.
+Update statistics after new evaluations.
 
-### What happens in `_update_stats()`:***
+### What happens in `_update_stats()`:
+
+**Always updated:**
+
+- `min_y`: Best (minimum) function value
+- `min_X`: Design point with best value
+- `counter`: Total number of evaluations
+
+**For noisy functions only (if `noise=True`):**
+
+- `mean_X`: Unique design points
+- `mean_y`: Mean values per design point
+- `var_y`: Variance per design point
+
 ```{python}
-opt.update_stats()
-print(f"  mean_X shape: {opt.mean_X.shape} (unique points)")
-print(f"  mean_y shape: {opt.mean_y.shape} (mean values)")
-print(f"  var_y shape: {opt.var_y.shape} (variances)")
+opt._update_stats()
+print(f"Basic statistics:")
+print(f"  min_y: {opt.min_y:.6f}")
+print(f"  min_X: {opt.min_X}")
+print(f"  counter: {opt.counter}")
+
+if opt.noise:
+    print(f"\nNoise statistics:")
+    print(f"  mean_X shape: {opt.mean_X.shape}")
+    print(f"  mean_y shape: {opt.mean_y.shape}")
+    print(f"  var_y shape: {opt.var_y.shape}")
+else:
+    print(f"\nNoise handling: disabled (deterministic function)")
 ```
 
 
@@ -989,30 +1015,38 @@ print(f"  Actual penalty = {penalty_base:.2f} + noise")
 3. `_evaluate_function()` - Evaluate objective function
 4. `_handle_NA_initial_design()` - Remove NaN/inf from initial design
 5. `_check_size_initial_design()` - Validate sufficient points
-6. `_update_success_rate()` - Track success rate (optional)
-7. `update_stats()` - Compute mean/variance for noisy functions
-8. `_get_best_xy_initial_design()` - Identify initial best
+6. `_init_storage()` - Initialize storage (X_, y_, n_iter_)
+7. `_update_stats()` - Compute mean/variance for noisy functions
+8. `_init_tensorboard()` - Log initial design to TensorBoard (if enabled)
+9. `_get_best_xy_initial_design()` - Identify initial best
 
 ### Sequential Optimization Loop (each iteration)
-9. `_transform_X()` - Transform to internal scale
-10. `_fit_surrogate()` - Fit Gaussian Process to data
+10. `_fit_scheduler()` - Select data and fit surrogate based on noise handling
+    - Internally calls `_transform_X()` - Transform to internal scale
+    - Internally calls `_fit_surrogate()` - Fit Gaussian Process to data
 11. `_apply_ocba()` - OCBA allocation (if enabled)
 12. `_suggest_next_point()` - Optimize acquisition function
     - Internally calls `_acquisition_function()`
     - Internally calls `_predict_with_uncertainty()`
-13. `_evaluate_function()` - Evaluate at suggested point
-14. `_handle_NA_new_points()` - Handle failures with penalties
+13. `_update_repeats_infill_points()` - Repeat suggested point for noisy functions
+14. `_evaluate_function()` - Evaluate at suggested point(s)
+15. `_handle_NA_new_points()` - Handle failures with penalties
     - Internally calls `_apply_penalty_NA()`
     - Internally calls `_remove_nan()`
-15. `_update_success_rate()` - Update success tracking
-16. `_inverse_transform_X()` - Convert back to original scale
-17. `update_stats()` - Update mean/variance statistics
-18. `_update_best_main_loop()` - Update best solution
+16. `_update_success_rate()` - Update success tracking
+17. `_update_storage()` - Append new evaluations to storage
+    - Internally calls `_inverse_transform_X()` - Convert back to original scale
+18. `_update_stats()` - Update mean/variance statistics
+19. `_write_tensorboard_hparams()` - Log hyperparameters (if enabled)
+20. `_write_tensorboard_scalars()` - Log scalar metrics (if enabled)
+21. `_update_best_main_loop()` - Update best solution
 
 ### Finalization
-19. `_determine_termination()` - Determine termination reason
-20. `_close_tensorboard_writer()` - Close logging (if enabled)
-21. Return `OptimizeResult` object
+22. `to_all_dim()` - Expand to full dimensions (if dimensionality reduction used)
+23. `_determine_termination()` - Determine termination reason
+24. `_close_tensorboard_writer()` - Close logging (if enabled)
+25. `_map_to_factor_values()` - Convert factors back to strings
+26. Return `OptimizeResult` object
 
 ## Helper Methods Used
 
@@ -1020,8 +1054,7 @@ print(f"  Actual penalty = {penalty_base:.2f} + noise")
 - `_repair_non_numeric()` - Round integer/factor variables
 - `_select_new()` - Check for duplicate points
 - `_handle_acquisition_failure()` - Fallback strategies
-- `_map_to_factor_values()` - Convert factors back to strings
-- `to_all_dim()` / `to_red_dim()` - Dimension handling
+- `to_red_dim()` - Dimension reduction (if enabled)
 - `_selection_dispatcher()` - Subset selection for large datasets
 
 # Termination Conditions
@@ -1170,8 +1203,14 @@ INITIALIZATION PHASE
   ├─► _check_size_initial_design()
   │     └─► Validate sufficient points
   │
-  ├─► update_stats()
+  ├─► _init_storage()
+  │     └─► Initialize X_, y_, n_iter_
+  │
+  ├─► _update_stats()
   │     └─► Compute mean/variance (if noise)
+  │
+  ├─► _init_tensorboard() [if enabled]
+  │     └─► Log initial design to TensorBoard
   │
   └─► _get_best_xy_initial_design()
         └─► Identify initial best
@@ -1179,8 +1218,9 @@ INITIALIZATION PHASE
 
 SEQUENTIAL OPTIMIZATION LOOP (until max_iter or max_time)
   │
-  ├─► _fit_surrogate()
-  │     └─► Fit GP to current data
+  ├─► _fit_scheduler()
+  │     ├─► _transform_X() - Transform to internal scale
+  │     └─► _fit_surrogate() - Fit GP to current data
   │
   ├─► _apply_ocba() [if enabled]
   │     └─► Allocate additional evaluations
@@ -1190,15 +1230,30 @@ SEQUENTIAL OPTIMIZATION LOOP (until max_iter or max_time)
   │     │     └─► _predict_with_uncertainty()
   │     └─► Optimize to find next point
   │
+  ├─► _update_repeats_infill_points()
+  │     └─► Repeat point if repeats_surrogate > 1
+  │
   ├─► _evaluate_function()
-  │     └─► Evaluate at suggested point
+  │     └─► Evaluate at suggested point(s)
   │
   ├─► _handle_NA_new_points()
   │     ├─► _apply_penalty_NA()
   │     └─► _remove_nan()
   │
-  ├─► update_stats()
+  ├─► _update_success_rate()
+  │     └─► Track evaluation success
+  │
+  ├─► _update_storage()
+  │     └─► Append new evaluations (with scale conversion)
+  │
+  ├─► _update_stats()
   │     └─► Update mean/variance
+  │
+  ├─► _write_tensorboard_hparams() [if enabled]
+  │     └─► Log hyperparameters
+  │
+  ├─► _write_tensorboard_scalars() [if enabled]
+  │     └─► Log scalar metrics
   │
   └─► _update_best_main_loop()
         └─► Update best if improved
@@ -1206,8 +1261,17 @@ SEQUENTIAL OPTIMIZATION LOOP (until max_iter or max_time)
 
 FINALIZATION
   │
+  ├─► to_all_dim() [if dimensionality reduction used]
+  │     └─► Expand to full dimensions
+  │
   ├─► _determine_termination()
   │     └─► Set termination message
+  │
+  ├─► _close_tensorboard_writer() [if enabled]
+  │     └─► Close TensorBoard logging
+  │
+  ├─► _map_to_factor_values() [if factors used]
+  │     └─► Convert factors back to strings
   │
   └─► Return OptimizeResult
 ```

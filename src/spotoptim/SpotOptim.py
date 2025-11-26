@@ -453,7 +453,7 @@ class SpotOptim(BaseEstimator):
         self.best_y_ = None
         self.n_iter_ = 0
 
-        # Noise handling attributes (initialized in update_stats if noise=True)
+        # Noise handling attributes (initialized in _update_stats if noise=True)
         self.mean_X = None
         self.mean_y = None
         self.var_y = None
@@ -1031,7 +1031,7 @@ class SpotOptim(BaseEstimator):
         - y_: Function values at evaluated points
         - n_iter_: Iteration counter
 
-        Then updates statistics by calling update_stats().
+        Then updates statistics by calling _update_stats().
 
         Args:
             X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).
@@ -1092,7 +1092,7 @@ class SpotOptim(BaseEstimator):
         self.X_ = np.vstack([self.X_, self._inverse_transform_X(X_new)])
         self.y_ = np.append(self.y_, y_new)
 
-    def update_stats(self) -> None:
+    def _update_stats(self) -> None:
         """Update optimization statistics.
 
         Updates:
@@ -1120,7 +1120,7 @@ class SpotOptim(BaseEstimator):
             ...                 max_iter=10, n_initial=5)
             >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
             >>> opt.y_ = np.array([5.0, 25.0, 1.0])
-            >>> opt.update_stats()
+            >>> opt._update_stats()
             >>> opt.min_y
             1.0
             >>> opt.min_X
@@ -1134,7 +1134,7 @@ class SpotOptim(BaseEstimator):
             ...                       repeats_initial=2)
             >>> opt_noise.X_ = np.array([[1, 2], [1, 2], [3, 4]])
             >>> opt_noise.y_ = np.array([4.0, 6.0, 25.0])
-            >>> opt_noise.update_stats()
+            >>> opt_noise._update_stats()
             >>> opt_noise.min_y
             4.0
             >>> opt_noise.mean_y
@@ -3293,7 +3293,7 @@ class SpotOptim(BaseEstimator):
         self._init_storage(X0, y0)
 
         # Update stats after initial design
-        self.update_stats()
+        self._update_stats()
 
         # Log initial design to TensorBoard
         self._init_tensorboard()
@@ -3342,7 +3342,7 @@ class SpotOptim(BaseEstimator):
             self._update_storage(x_next_repeated, y_next)
 
             # Update stats
-            self.update_stats()
+            self._update_stats()
 
             # Log to TensorBoard
             if self.tb_writer is not None:
