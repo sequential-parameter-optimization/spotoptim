@@ -71,7 +71,7 @@ print(f"  - rosenbrock_with_failures: Random 15% failure rate")
 
 Let's trace through a complete optimization run to understand each step.
 
-## Phase 1: Initialization and Setup
+## Phase: Initialization and Setup
 
 When you create a `SpotOptim` instance, several initialization steps occur:
 
@@ -105,7 +105,7 @@ print(f"Surrogate model: {type(opt.surrogate).__name__}")
 - `surrogate`: Gaussian Process with Matérn kernel (default)
 - `acquisition`: Acquisition function type ('ei', 'pi', or 'y')
 
-## Phase 2: Initial Design Generation
+## Phase: Initial Design Generation
 
 ### Method: `_set_initial_design()`
 
@@ -132,7 +132,6 @@ print(X0[:3])
 * Print initial design in original scale and in internal scale:
 
 ```{python}
-
 X0_original = opt._inverse_transform_X(X0)
 print(f"\nFirst 3 points (original scale):")
 print(X0_original[:3])
@@ -207,7 +206,7 @@ print(f"Mean initial value: {np.mean(y0):.6f}")
 
 ## Phase 5: Handling Failed Evaluations
 
-### Method: `_handle_NA_initial_design()`
+### Method: `_handle_NA_initial_design(X0,y0)`
 
 Removes points that returned NaN or inf values.
 In contrasts to later phases, no penalties are applied here; invalid points of the initial design are simply removed.
@@ -233,7 +232,7 @@ print(f"\nAll remaining values finite: {np.all(np.isfinite(y0_clean))}")
 
 ## Phase 6: Validation Check
 
-### Method: `_check_size_initial_design()`
+### Method: `_check_size_initial_design(y0, n_evaluated)`
 
 Ensures we have enough valid points to continue.
 The minimum required is the smaller of:
@@ -258,28 +257,42 @@ except ValueError as e:
 ```
 
 
+## Phase 7: Storage Initialization
 
-## Phase 7: Storage and Statistics Initialization
-
-### Method:  `init_stats()`
+### Method:  `_init_storage()`
 
 Store evaluated points and initialize tracking variables.
 
 **What happens during storage initialization:**
 
-1. `init_stats()`: Initialize statistics tracking variables. It calls `update_stats()`, which computes mean/variance if noise handling is active.
-3. `mean_X`, `mean_y`, `var_y`: Track statistics for noisy functions
+1. `_init_storage()`: Initialize statistics tracking variables. 
 
 
-* Initialize storage and statistics (as done in `optimize()`)
+* Initialize storage (as done in `optimize()`)
 
 ```{python}
-# Initialize storage and statistics using the new init_stats() method
-opt.init_stats(X0_clean, y0_clean)
+# Initialize storage and statistics using the new _init_storage() method
+opt._init_storage(X0_clean, y0_clean)
 
 print(f"X_ (evaluated points): shape {opt.X_.shape}")
 print(f"y_ (function values): shape {opt.y_.shape}")
 print(f"n_iter_ (iterations): {opt.n_iter_}")
+```
+
+## Phase: Statistics Update
+
+### Method: `_update_stats()`
+
+Update statistics like means and variances for noisy evaluations.
+
+*** What happens in `_update_stats()`:***
+
+1. If `noise` is set (i.e., `repeats_initial` > 1):
+    - Compute mean and variance of function values for each unique point
+    - Store in `mean_X`, `mean_y`, and `var_y`
+
+
+```{python}
 print(f"\nStatistics updated:")
 if opt.noise:
     print(f"  - mean_X: {opt.mean_X.shape}")
@@ -290,8 +303,15 @@ else:
 ```
 
 
+## Phase: Log initial Design to TensorBoard
 
-## Phase 8: Initial Best Point
+### Method: `_log_initial_design_tensorboard()`
+
+This method logs the initial design points and their evaluations to TensorBoard for visualization.
+
+
+
+## Phase: Initial Best Point
 
 ### Method: `_get_best_xy_initial_design()`
 
@@ -317,7 +337,7 @@ print(f"Current gap: {opt.best_y_ - 0:.6f}")
 
 ## Illustration of the Initial Design Phase Results
 
-* Generate a contour plot with contour lines of the Rosenbrock function and mark the best point. Show all evaluated points as well:
+To visualize the results, we generate a contour plot with contour lines of the objective function and mark the best point. The other evaluated points are shown as well:
 
 ```{python}
 # Create a grid of points for contour plotting
@@ -337,7 +357,7 @@ plt.scatter(opt.X_[:, 0], opt.X_[:, 1], c='blue', label='Evaluated Points', alph
 plt.scatter(opt.best_x_[0], opt.best_x_[1], c='red', s=100, label='Best Point', edgecolors='black')
 plt.xlabel('X1')
 plt.ylabel('X2')
-plt.title('Rosenbrock Function Contours with Evaluated Points')
+plt.title('Objective Function Contours with Evaluated Points')
 plt.legend()
 plt.grid(True)
 plt.show()
@@ -349,7 +369,22 @@ plt.show()
 
 After initialization, the main optimization loop begins. Each iteration follows these steps:
 
-## Step 1: Surrogate Model Fitting
+## Step: Surrogate Model Fitting
+
+### Method: `_fit_scheduler()`
+
+Fit surrogate model using appropriate data based on noise handling.
+
+*** What happens in `_fit_scheduler()`:***
+
+First, the method transforms the input data `X` to the internal scale used by the optimizer. Then, it decides which data to use for fitting the surrogate model based on whether noise handling is enabled:
+
+1. If `noise` is set (i.e., `repeats_surrogate` > 1):
+    - Fit surrogate using mean points (`mean_X`, `mean_y`)
+2. Else:
+    - Fit surrogate using all evaluated points (`X_`, `y_`)
+
+`_fit_scheduler()` then calls `_fit_surrogate()` with the selected data.
 
 ### Method: `_fit_surrogate()`
 
@@ -357,10 +392,9 @@ Fit a surrogate model (Gaussian Process) to current data.
 
 **What happens in `_fit_surrogate()`:**
 
-1. Transform X to internal scale
-2. If `max_surrogate_points` set and exceeded: Select subset of points
-3. Fit surrogate model using `surrogate.fit(X, y)`
-4. Surrogate learns the function landscape and uncertainty
+1. If `max_surrogate_points` set and exceeded: Select subset of points using the `_selection_dispatcher()` method.
+2. Fit surrogate model using `surrogate.fit(X, y)`
+3. Surrogate learns the function landscape and uncertainty
 
 ```{python}
 X_for_surrogate = opt._transform_X(opt.X_)
@@ -371,10 +405,19 @@ print(f"Surrogate type: {type(opt.surrogate).__name__}")
 print(f"Kernel: {opt.surrogate.kernel_}")
 ```
 
+### Method: `_selection_dispatcher()`
+
+**What happens in `_selection_dispatcher()`:**
+
+1. If `max_surrogate_points` is set and exceeded:
+   - Select a subset of points from `X_` and `y_` for fitting the surrogate model.
+   - Strategies may include random sampling, clustering, or other heuristics to reduce the dataset size while preserving important information.
+
+
 **Surrogate Model Selection:**
 
 - Default: Gaussian Process with Matérn kernel
-- Provides: Mean prediction μ(x) and uncertainty σ(x)
+- Provides: Mean prediction $\mu(x)$ and uncertainty $\sigma(x)$
 - Can be replaced with Random Forest, Kriging, etc.
 
 * The fitted surrogate can be plotted with the following code:
@@ -383,8 +426,25 @@ print(f"Kernel: {opt.surrogate.kernel_}")
 opt.plot_surrogate()
 ```
 
+### Step: Apply OCBA
 
-## Step 2: Predict with Uncertainty
+### Method: `_apply_ocba()`
+
+**What happens in `_apply_ocba()`:**
+
+1. Compute the optimality criteria for each point in the design space.
+2. Select the most promising points based on the criteria.
+3. Update the surrogate model with the selected points.
+
+```{python}
+if opt.ocba_delta > 0:
+    selected_indices = opt._apply_ocba()
+    print(f"OCBA selected {len(selected_indices)} points for re-evaluation")
+else:
+    print("OCBA not applied (ocba_delta=0)")
+```
+
+## Step: Predict with Uncertainty
 
 ### Method: `_predict_with_uncertainty()`
 
@@ -410,67 +470,11 @@ for i, (x, m, s) in enumerate(zip(X_test, mu, sigma)):
     print(f"  x={x} → μ={m:.4f}, σ={s:.4f}")
 ```
 
-
-
-## Step 3: Acquisition Function Evaluation
-
-### Method: `_acquisition_function()`
-
-Compute acquisition function value to guide search.
-
-```{python}
-# Evaluate acquisition at test points
-print(f"Acquisition type: {opt.acquisition} (Expected Improvement)")
-print(f"\nAcquisition values at test points:")
-
-for x in X_test:
-    acq_val = opt._acquisition_function(x)
-    print(f"  x={x} → acq={acq_val:.6f}")
-
-print(f"\nAcquisition function balances:")
-print(f"  - Exploitation: Low predicted mean μ(x)")
-print(f"  - Exploration: High uncertainty σ(x)")
-```
-
-**Acquisition Functions Available:**
-
-1. **Expected Improvement (EI)** - Default, best balance
-   $$\text{EI}(x) = (f^* - \mu(x))\Phi(Z) + \sigma(x)\phi(Z)$$
-   where $Z = \frac{f^* - \mu(x)}{\sigma(x)}$
-
-2. **Probability of Improvement (PI)** - More exploitative
-   $$\text{PI}(x) = \Phi\left(\frac{f^* - \mu(x)}{\sigma(x)}\right)$$
-
-3. **Mean ('y')** - Pure exploitation
-   $$\text{acq}(x) = \mu(x)$$
-
-## Step 4: Next Point Suggestion
+## Step: Next Point Suggestion
 
 ### Method: `_suggest_next_point()`
 
 Optimize acquisition function to find next evaluation point.
-
-```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 4: SUGGEST NEXT POINT")
-print("="*70)
-print("\nMethod: _suggest_next_point()")
-print("-" * 70)
-
-x_next = opt._suggest_next_point()
-
-print(f"Next point suggested: {x_next}")
-print(f"\nThis point maximizes Expected Improvement:")
-print(f"  - Promising low predicted value")
-print(f"  - OR high uncertainty (unexplored region)")
-print(f"  - OR both!")
-
-# Predict at suggested point
-mu_next, sigma_next = opt._predict_with_uncertainty(x_next.reshape(1, -1))
-print(f"\nPrediction at suggested point:")
-print(f"  μ(x_next) = {mu_next[0]:.4f}")
-print(f"  σ(x_next) = {sigma_next[0]:.4f}")
-```
 
 **What happens in `_suggest_next_point()`:**
 
@@ -481,63 +485,113 @@ print(f"  σ(x_next) = {sigma_next[0]:.4f}")
 5. If duplicate or too close: Use fallback strategy
 6. Return suggested point
 
+```{python}
+x_next = opt._suggest_next_point()
+print(f"Next point suggested: {x_next}")
+```
+Predict at suggested point:
+```{python}
+mu_next, sigma_next = opt._predict_with_uncertainty(x_next.reshape(1, -1))
+print(f"\nPrediction at suggested point:")
+print(f"  μ(x_next) = {mu_next[0]:.4f}")
+print(f"  σ(x_next) = {sigma_next[0]:.4f}")
+```
+
 **Fallback Strategies** (if acquisition optimization fails):
 
 - `'best'`: Re-evaluate current best point
 - `'mean'`: Select point with best predicted mean
 - `'random'`: Random point in search space
 
-## Step 5: Evaluation of New Point
+
+## Step: Acquisition Function Evaluation
+
+### Method: `_acquisition_function()`
+
+Compute acquisition function value to guide search.
+The acquisition function is used as an objective function by the optimizer on the surrogate, e.g., differential evolution. It determines where to sample next.
+
+```{python}
+# Evaluate acquisition at test points
+print(f"Acquisition type: {opt.acquisition} (Expected Improvement)")
+print(f"\nAcquisition values at test points:")
+
+for x in X_test:
+    acq_val = opt._acquisition_function(x)
+    print(f"  x={x} → acq={acq_val:.6f}")
+```
+
+Acquisition function can be used to balance:
+
+* exploitation, i.e., low predicted mean $\mu(x)$ and
+* exploration, i.e., high uncertainty $\sigma(x)$
+
+
+**Acquisition Functions Available:**
+
+1. **Expected Improvement (EI)** - Default, best balance
+$$
+\text{EI}(x) = (f^* - \mu(x))\Phi(Z) + \sigma(x)\phi(Z)
+$$
+where $Z = \frac{f^* - \mu(x)}{\sigma(x)}$
+
+2. **Probability of Improvement (PI)** - More exploitative
+$$
+\text{PI}(x) = \Phi\left(\frac{f^* - \mu(x)}{\sigma(x)}\right)
+$$
+
+3. **Mean ('y')** - Pure exploitation
+$$
+\text{acq}(x) = \mu(x)
+$$
+
+
+## Step: Update Repeats for Infill Points
+
+### Method: `_update_repeats_infill_points()`
+
+Update the number of repeats for infill points based on new evaluations.
+
+**What happens in `_update_repeats_infill_points()`:**
+
+1. Identify infill points (points with high uncertainty)
+2. Update their repeat counts based on new evaluations
+3. Return updated repeat counts
+
+```{python}
+repeats_updated = opt._update_repeats_infill_points()
+print(f"Updated repeats for infill points: {repeats_updated}")
+```
+
+## Append OCBA Points to Infill Points
+
+Combines OCBA selected points with the next suggested point for evaluation.
+
+```{python}
+if X_ocba is not None:
+    x_next_repeated = np.append(X_ocba, x_next_repeated, axis=0)
+```
+
+## Step: Evaluation of New Points
 
 ### Method: `_evaluate_function()` (again)
 
-Evaluate the objective function at the suggested point.
+Evaluate the objective function at the suggested points.
 
 ```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 5: EVALUATE NEW POINT")
-print("="*70)
-print("\nMethod: _evaluate_function()")
-print("-" * 70)
-
-# Evaluate suggested point
 x_next_2d = x_next.reshape(1, -1)
 y_next = opt._evaluate_function(x_next_2d)
 
 print(f"Evaluated point: {x_next}")
 print(f"Function value: {y_next[0]:.6f}")
 print(f"Current best: {opt.best_y_:.6f}")
-
-if y_next[0] < opt.best_y_:
-    improvement = opt.best_y_ - y_next[0]
-    print(f"\n🎉 Improvement found! Δf = {improvement:.6f}")
-else:
-    print(f"\nNo improvement, but gained information about the landscape")
 ```
 
-## Step 6: Handle Failed Evaluations (Sequential)
+## Step: Handle Failed Evaluations (Sequential)
 
 ### Method: `_handle_NA_new_points()`
 
 Handle NaN/inf values in new evaluations with penalty approach.
-
-```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 6: HANDLE FAILURES")
-print("="*70)
-print("\nMethod: _handle_NA_new_points()")
-print("-" * 70)
-
-# This would normally process y_next
-# For demonstration, we skip as y_next is valid
-x_clean, y_clean = opt._handle_NA_new_points(x_next_2d, y_next)
-
-if x_clean is not None:
-    print(f"✓ Valid evaluations: {len(y_clean)}")
-    print(f"  All values finite: {np.all(np.isfinite(y_clean))}")
-else:
-    print(f"✗ All evaluations failed - iteration would be skipped")
-```
 
 **What happens in `_handle_NA_new_points()`:**
 
@@ -547,53 +601,74 @@ else:
 3. **Return None** if all evaluations failed → skip iteration
 4. **Continue** if any valid evaluations exist
 
+```{python}
+x_clean, y_clean = opt._handle_NA_new_points(x_next_2d, y_next)
+
+if x_clean is not None:
+    print(f"✓ Valid evaluations: {len(y_clean)}")
+    print(f"  All values finite: {np.all(np.isfinite(y_clean))}")
+else:
+    print(f"✗ All evaluations failed - iteration would be skipped")
+```
+
+
 **Why penalties in sequential phase?**
 
 - Preserves optimization history
 - Allows surrogate to learn "bad" regions
 - Random noise prevents identical penalties
 
-## Step 7: Update Storage and Statistics
+
+
+## Step: Update Success Rate
+
+### Method: `_update_success_rate(y0)`
+
+Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
+
+**What happens in `_update_success_rate()`:**
+
+1. Calculate success rate as ratio of valid evaluations to total evaluated
+
+```{python}
+
+opt._update_success_rate(y0_clean)
+print(f"\nSuccess rate updated: {opt.success_rate:.2%} (valid evaluations / total evaluations)")
+```
+
+
+
+## Step: Update Storage
 
 ### Internal updates
 
-Add new evaluations to storage and update statistics.
+Add new evaluations to storage.
 
 ```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 7: UPDATE STORAGE")
-print("="*70)
-print("\nStorage updates")
-print("-" * 70)
-
-# Update storage (as done in optimize())
-n_before_update = len(opt.y_)
-opt.X_ = np.vstack([opt.X_, opt._inverse_transform_X(x_clean)])
-opt.y_ = np.append(opt.y_, y_clean)
-opt.n_iter_ += 1
-
-# Update stats
-opt.update_stats()
-
-print(f"Points before: {n_before_update}")
-print(f"Points after: {len(opt.y_)}")
-print(f"Points added: {len(y_clean)}")
-print(f"Iteration: {opt.n_iter_}")
+opt._update_storage(x_next_repeated, y_next)
 ```
 
-## Step 8: Update Best Solution
+
+## Update Statistics
+
+Update statistics like means and variances for noisy evaluations.
+
+### What happens in `_update_stats()`:***
+```{python}
+opt.update_stats()
+print(f"  mean_X shape: {opt.mean_X.shape} (unique points)")
+print(f"  mean_y shape: {opt.mean_y.shape} (mean values)")
+print(f"  var_y shape: {opt.var_y.shape} (variances)")
+```
+
+
+## Step: Update Best Solution
 
 ### Method: `_update_best_main_loop()`
 
 Update the best solution if improvement found.
 
 ```{python}
-print("\n" + "="*70)
-print("SEQUENTIAL OPTIMIZATION - STEP 8: UPDATE BEST")
-print("="*70)
-print("\nMethod: _update_best_main_loop()")
-print("-" * 70)
-
 best_before = opt.best_y_
 opt._update_best_main_loop(x_clean, y_clean)
 
@@ -620,10 +695,6 @@ The optimization continues until:
 Now let's run a complete optimization to see all steps in action:
 
 ```{python}
-print("\n" + "="*70)
-print("COMPLETE OPTIMIZATION EXAMPLE")
-print("="*70)
-
 # Create fresh optimizer
 opt_complete = SpotOptim(
     fun=rosenbrock,
@@ -693,10 +764,6 @@ print(f"  noise: {opt_noisy.noise}")
 With `repeats_initial > 1`:
 
 ```{python}
-print("\n" + "="*70)
-print("NOISY OPTIMIZATION - INITIAL DESIGN")
-print("="*70)
-
 result_noisy = opt_noisy.optimize()
 
 print(f"\nInitial design with repeats:")
@@ -731,12 +798,6 @@ print(f"  Std dev: {np.sqrt(opt_noisy.var_y[idx]):.4f}")
 ### Update Statistics Method
 
 ```{python}
-print("\n" + "="*70)
-print("STATISTICS UPDATE")
-print("="*70)
-print("\nMethod: update_stats()")
-print("-" * 70)
-
 print(f"After optimization:")
 print(f"  Total evaluations: {len(opt_noisy.y_)}")
 print(f"  Unique points: {len(opt_noisy.mean_X)}")
@@ -782,12 +843,6 @@ print(f"  Benefit: Better distinguish between similar solutions")
 ### Method: `_apply_ocba()`
 
 ```{python}
-print("\n" + "="*70)
-print("OCBA METHOD")
-print("="*70)
-print("\nMethod: _apply_ocba()")
-print("-" * 70)
-
 result_ocba = opt_ocba.optimize()
 
 print(f"\nOCBA applied during optimization")
@@ -824,10 +879,6 @@ SpotOptim robustly handles functions that occasionally fail (return NaN/inf).
 ## Example with Failures
 
 ```{python}
-print("\n" + "="*70)
-print("HANDLING FUNCTION EVALUATION FAILURES")
-print("="*70)
-
 opt_failures = SpotOptim(
     fun=rosenbrock_with_failures,
     bounds=[(-2, 2), (-2, 2)],
@@ -858,12 +909,6 @@ print(f"  Note: Failed evaluations handled transparently")
 ### Method: `_handle_NA_initial_design()`
 
 ```{python}
-print("\n" + "="*70)
-print("FAILURE HANDLING - INITIAL DESIGN")
-print("="*70)
-print("\nMethod: _handle_NA_initial_design()")
-print("-" * 70)
-
 print("Initial design failure handling:")
 print("  1. Identify NaN/inf values")
 print("  2. Remove invalid points entirely")
@@ -882,12 +927,6 @@ print("  - Surrogate trained on good data only")
 ### Method: `_handle_NA_new_points()`
 
 ```{python}
-print("\n" + "="*70)
-print("FAILURE HANDLING - SEQUENTIAL PHASE")
-print("="*70)
-print("\nMethod: _handle_NA_new_points()")
-print("-" * 70)
-
 print("Sequential phase failure handling:")
 print("  1. Apply penalty to NaN/inf values")
 print("     - Penalty = max(history) + 3×std(history)")
@@ -910,12 +949,6 @@ print("  ✓ More robust convergence")
 Let's demonstrate penalty calculation:
 
 ```{python}
-print("\n" + "="*70)
-print("PENALTY CALCULATION DEMONSTRATION")
-print("="*70)
-print("\nMethod: _apply_penalty_NA()")
-print("-" * 70)
-
 # Simulate historical values
 y_history_sim = np.array([10.0, 15.0, 8.0, 12.0, 20.0, 9.0])
 y_new_sim = np.array([7.0, np.nan, 11.0, np.inf])

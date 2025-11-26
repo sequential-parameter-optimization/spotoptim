@@ -119,7 +119,7 @@ class SpotOptim(BaseEstimator):
             None for single-objective problems.
         best_x_ (ndarray): Best point found, shape (n_features,).
         best_y_ (float): Best function value found.
-        n_iter_ (int): Number of iterations performed.
+        n_iter_ (int): Number of iterations performed. This is not the same as counter. Provided for compatibility with scipy.optimize routines.
         counter (int): Total number of function evaluations.
         success_rate (float): Rolling success rate over the last window_size evaluations.
             A success is counted when a new evaluation improves upon the best value found so far.
@@ -1023,8 +1023,8 @@ class SpotOptim(BaseEstimator):
 
         return X_agg, y_mean, y_var
 
-    def init_stats(self, X0: np.ndarray, y0: np.ndarray) -> None:
-        """Initialize storage and statistics for optimization.
+    def _init_storage(self, X0: np.ndarray, y0: np.ndarray) -> None:
+        """Initialize storage for optimization.
 
         Sets up the initial data structures needed for optimization tracking:
         - X_: Evaluated design points (in original scale)
@@ -1045,7 +1045,7 @@ class SpotOptim(BaseEstimator):
             ...                 n_initial=5)
             >>> X0 = np.array([[1, 2], [3, 4], [0, 1]])
             >>> y0 = np.array([5.0, 25.0, 1.0])
-            >>> opt.init_stats(X0, y0)
+            >>> opt._init_storage(X0, y0)
             >>> opt.X_.shape
             (3, 2)
             >>> opt.y_.shape
@@ -1060,8 +1060,37 @@ class SpotOptim(BaseEstimator):
         self.y_ = y0.copy()
         self.n_iter_ = 0
 
-        # Update stats after initial design
-        self.update_stats()
+    def _update_storage(self, X_new: np.ndarray, y_new: np.ndarray) -> None:
+        """Update storage with new evaluation points.
+
+        Appends new design points and their function values to the storage arrays.
+        Points are converted from internal scale to original scale before storage.
+
+        Args:
+            X_new (ndarray): New design points in internal scale, shape (n_new, n_features).
+            y_new (ndarray): Function values at X_new, shape (n_new,).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 n_initial=5)
+            >>> # Initialize with some data
+            >>> opt.X_ = np.array([[1, 2], [3, 4]])
+            >>> opt.y_ = np.array([5.0, 25.0])
+            >>> # Add new points
+            >>> X_new = np.array([[0, 1], [2, 3]])
+            >>> y_new = np.array([1.0, 13.0])
+            >>> opt._update_storage(X_new, y_new)
+            >>> opt.X_.shape
+            (4, 2)
+            >>> opt.y_.shape
+            (4,)
+        """
+        # Update storage (convert to original scale for user-facing storage)
+        self.X_ = np.vstack([self.X_, self._inverse_transform_X(X_new)])
+        self.y_ = np.append(self.y_, y_new)
 
     def update_stats(self) -> None:
         """Update optimization statistics.
@@ -1364,6 +1393,34 @@ class SpotOptim(BaseEstimator):
                     f"TensorBoard writer closed. View logs with: tensorboard --logdir={self.tensorboard_path}"
                 )
             del self.tb_writer
+
+    def _init_tensorboard(self) -> None:
+        """Log initial design to TensorBoard.
+
+        Logs all initial design points (hyperparameters and function values)
+        and scalar metrics to TensorBoard. Only executes if TensorBoard logging
+        is enabled (tb_writer is not None).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     tensorboard_log=True,
+            ...     verbose=False
+            ... )
+            >>> # Simulate initial design (normally done in optimize())
+            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
+            >>> opt._init_tensorboard()
+            >>> # TensorBoard logs created for all initial points
+        """
+        if self.tb_writer is not None:
+            for i in range(len(self.y_)):
+                self._write_tensorboard_hparams(self.X_[i], self.y_[i])
+            self._write_tensorboard_scalars()
 
     def _get_shape(self, y: np.ndarray) -> Tuple[int, Optional[int]]:
         """Get the shape of the objective function output.
@@ -1928,6 +1985,56 @@ class SpotOptim(BaseEstimator):
 
         self.surrogate.fit(X_fit, y_fit)
 
+    def _fit_scheduler(self) -> None:
+        """Fit surrogate model using appropriate data based on noise handling.
+
+        This method selects the appropriate training data for surrogate fitting:
+        - For noisy functions (noise=True): Uses mean_X and mean_y (aggregated values)
+        - For deterministic functions: Uses X_ and y_ (all evaluated points)
+
+        The data is transformed to internal scale before fitting the surrogate.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> # Deterministic function
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor(),
+            ...     n_initial=5
+            ... )
+            >>> # Simulate optimization state
+            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
+            >>> opt._fit_scheduler()
+            >>> # Surrogate fitted with X_ and y_
+            >>>
+            >>> # Noisy function
+            >>> opt_noise = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor(),
+            ...     n_initial=5,
+            ...     repeats_initial=3  # Activates noise handling
+            ... )
+            >>> # Simulate noisy optimization state
+            >>> opt_noise.noise = True
+            >>> opt_noise.mean_X = np.array([[1, 2], [0, 0]])
+            >>> opt_noise.mean_y = np.array([5.0, 0.0])
+            >>> opt_noise._fit_scheduler()
+            >>> # Surrogate fitted with mean_X and mean_y
+        """
+        # Fit surrogate (use mean_y if noise, otherwise y_)
+        # Transform X to internal scale for surrogate fitting
+        if self.noise:
+            X_for_surrogate = self._transform_X(self.mean_X)
+            self._fit_surrogate(X_for_surrogate, self.mean_y)
+        else:
+            X_for_surrogate = self._transform_X(self.X_)
+            self._fit_surrogate(X_for_surrogate, self.y_)
+
     def _select_new(
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
     ) -> Tuple[np.ndarray, np.ndarray]:
@@ -2452,6 +2559,56 @@ class SpotOptim(BaseEstimator):
                 "Returning last candidate (may be duplicate)."
             )
         return x_next_rounded
+
+    def _update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
+        """Repeat infill point for noisy function evaluation.
+
+        For noisy objective functions (repeats_surrogate > 1), creates multiple
+        copies of the suggested point for repeated evaluation. Otherwise, returns
+        the point in 2D array format.
+
+        Args:
+            x_next (ndarray): Next point to evaluate, shape (n_features,).
+
+        Returns:
+            ndarray: Points to evaluate, shape (repeats_surrogate, n_features)
+                or (1, n_features) if repeats_surrogate == 1.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Without repeats
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     repeats_surrogate=1
+            ... )
+            >>> x_next = np.array([1.0, 2.0])
+            >>> x_repeated = opt._update_repeats_infill_points(x_next)
+            >>> x_repeated.shape
+            (1, 2)
+            >>>
+            >>> # With repeats for noisy function
+            >>> opt_noisy = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     repeats_surrogate=3
+            ... )
+            >>> x_next = np.array([1.0, 2.0])
+            >>> x_repeated = opt_noisy._update_repeats_infill_points(x_next)
+            >>> x_repeated.shape
+            (3, 2)
+            >>> # All three copies should be identical
+            >>> np.all(x_repeated[0] == x_repeated[1])
+            True
+        """
+        if self.repeats_surrogate > 1:
+            x_next_repeated = np.repeat(
+                x_next.reshape(1, -1), self.repeats_surrogate, axis=0
+            )
+        else:
+            x_next_repeated = x_next.reshape(1, -1)
+        return x_next_repeated
 
     def _set_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
         """Generate or process initial design points.
@@ -3114,6 +3271,9 @@ class SpotOptim(BaseEstimator):
             >>> print("Best value:", result.fun)
             Best value: [some value close to 0]
         """
+        # Start timer for max_time check
+        timeout_start = time.time()
+
         # Set initial design (generate or process user-provided points)
         X0 = self._set_initial_design(X0)
 
@@ -3129,39 +3289,28 @@ class SpotOptim(BaseEstimator):
         # Check if we have enough valid points to continue
         self._check_size_initial_design(y0, n_evaluated)
 
-        # Update success rate BEFORE updating storage (initial design - all should be successes since starting from scratch)
-        self._update_success_rate(y0)
-
         # Initialize storage and statistics
-        self.init_stats(X0, y0)
+        self._init_storage(X0, y0)
+
+        # Update stats after initial design
+        self.update_stats()
 
         # Log initial design to TensorBoard
-        if self.tb_writer is not None:
-            for i in range(len(self.y_)):
-                self._write_tensorboard_hparams(self.X_[i], self.y_[i])
-            self._write_tensorboard_scalars()
+        self._init_tensorboard()
 
         # Determine and report initial best
         self._get_best_xy_initial_design()
-
-        # Start timer for max_time check
-        timeout_start = time.time()
 
         # Main optimization loop
         # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
         while (len(self.y_) < self.max_iter) and (
             time.time() < timeout_start + self.max_time * 60
         ):
+            # Increment iteration counter. This is not the same as number of function evaluations.
             self.n_iter_ += 1
 
             # Fit surrogate (use mean_y if noise, otherwise y_)
-            # Transform X to internal scale for surrogate fitting
-            if self.noise:
-                X_for_surrogate = self._transform_X(self.mean_X)
-                self._fit_surrogate(X_for_surrogate, self.mean_y)
-            else:
-                X_for_surrogate = self._transform_X(self.X_)
-                self._fit_surrogate(X_for_surrogate, self.y_)
+            self._fit_scheduler()
 
             # Apply OCBA for noisy functions
             X_ocba = self._apply_ocba()
@@ -3170,12 +3319,7 @@ class SpotOptim(BaseEstimator):
             x_next = self._suggest_next_point()
 
             # Repeat next point if repeats_surrogate > 1
-            if self.repeats_surrogate > 1:
-                x_next_repeated = np.repeat(
-                    x_next.reshape(1, -1), self.repeats_surrogate, axis=0
-                )
-            else:
-                x_next_repeated = x_next.reshape(1, -1)
+            x_next_repeated = self._update_repeats_infill_points(x_next)
 
             # Append OCBA points to new design points (if applicable)
             if X_ocba is not None:
@@ -3194,9 +3338,8 @@ class SpotOptim(BaseEstimator):
             # Update success rate BEFORE updating storage (so it compares against previous best)
             self._update_success_rate(y_next)
 
-            # Update storage (convert to original scale for user-facing storage)
-            self.X_ = np.vstack([self.X_, self._inverse_transform_X(x_next_repeated)])
-            self.y_ = np.append(self.y_, y_next)
+            # Update storage
+            self._update_storage(x_next_repeated, y_next)
 
             # Update stats
             self.update_stats()
