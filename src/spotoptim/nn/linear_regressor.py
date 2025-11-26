@@ -1,4 +1,5 @@
 # generate a pytorch linear regression model for supervised learning
+import torch
 import torch.nn as nn
 import torch.optim as optim
 
@@ -253,7 +254,7 @@ class LinearRegressor(nn.Module):
 
         self.network = nn.Sequential(*layers)
 
-    def forward(self, x):
+    def forward(self, x) -> "torch.Tensor":
         """Forward pass through the network.
 
         Args:
@@ -271,7 +272,9 @@ class LinearRegressor(nn.Module):
         """
         return self.network(x)
 
-    def get_optimizer(self, optimizer_name="Adam", lr=None, **kwargs):
+    def get_optimizer(
+        self, optimizer_name: str = "Adam", lr: float = None, **kwargs
+    ) -> "optim.Optimizer":
         """Get a PyTorch optimizer configured for this model.
 
         Convenience method to instantiate optimizers using string names instead of
@@ -295,7 +298,7 @@ class LinearRegressor(nn.Module):
                 weight_decay for AdamW, alpha for RMSprop).
 
         Returns:
-            torch.optim.Optimizer: Configured optimizer instance ready for training.
+            optim.Optimizer: Configured optimizer instance ready for training.
 
         Raises:
             ValueError: If the specified optimizer name is not found in torch.optim or

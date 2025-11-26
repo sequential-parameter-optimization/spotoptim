@@ -1,317 +1,568 @@
 """
-Simplified Kriging surrogate model for SpotOptim.
+Kriging (Gaussian Process) surrogate model for SpotOptim.
 
-This is a streamlined version adapted from spotpython.surrogate.kriging
-for use with the SpotOptim optimizer.
+Adapted from spotpython.surrogate.kriging_basic for compatibility with SpotOptim.
+This implementation follows Forrester et al. (2008) "Engineering Design via Surrogate Modelling".
 """
 
 import numpy as np
-from typing import Optional
-from numpy.linalg import LinAlgError, cholesky, solve
+from numpy.linalg import LinAlgError, cond
+from typing import Dict, Tuple, List, Optional
 from scipy.optimize import differential_evolution
 from sklearn.base import BaseEstimator, RegressorMixin
+from scipy.spatial.distance import cdist, pdist, squareform
 
 
 class Kriging(BaseEstimator, RegressorMixin):
-    """A simplified Kriging (Gaussian Process) surrogate model for SpotOptim.
+    """
+    A scikit-learn compatible Kriging model class for regression tasks.
 
-    This class provides a scikit-learn compatible interface with fit() and predict()
-    methods, making it suitable for use as a surrogate in SpotOptim.
+    This class provides Ordinary Kriging with support for:
+    - Mixed variable types (continuous, integer, factor)
+    - Gaussian/RBF correlation function
+    - Three fitting methods: interpolation, regression, and reinterpolation
+    - Isotropic or anisotropic length scales
+
+    Compatible with SpotOptim's variable type conventions:
+    - 'float' or 'num': continuous numeric variables
+    - 'int': integer variables
+    - 'factor': categorical/unordered variables
 
     Args:
-        noise (float, optional): Regularization parameter (nugget effect). If None, uses sqrt(eps).
+        noise (float, optional): Small regularization term for numerical stability (nugget effect).
+            If None, defaults to sqrt(machine epsilon). Only used for "interpolation" method.
+            For "regression" and "reinterpolation", this is replaced by the Lambda parameter.
             Defaults to None.
-        kernel (str, optional): Kernel type. Currently only 'gauss' (Gaussian/RBF) is supported.
-            Defaults to 'gauss'.
-        n_theta (int, optional): Number of theta parameters. If None, uses k (number of dimensions).
+        penalty (float, optional): Large negative log-likelihood assigned if correlation matrix
+            is not positive-definite. Defaults to 1e4.
+        method (str, optional): Fitting method. Options:
+            - "interpolation": Pure interpolation with small nugget
+            - "regression": Regression with optimized Lambda (nugget)
+            - "reinterpolation": Regression with Lambda removed in variance calculation
+            Defaults to "regression".
+        var_type (List[str], optional): Variable types for each dimension.
+            SpotOptim uses: 'float'/'num' (continuous), 'int' (integer), 'factor' (categorical).
+            Defaults to ["num"].
+        name (str, optional): Name of the Kriging instance. Defaults to "Kriging".
+        seed (int, optional): Random seed for reproducibility. Defaults to 124.
+        model_fun_evals (int, optional): Maximum function evaluations for hyperparameter
+            optimization. Defaults to 100.
+        n_theta (int, optional): Number of theta parameters. If None, set during fit.
             Defaults to None.
-        min_theta (float, optional): Minimum log10(theta) bound for optimization. Defaults to -3.0.
-        max_theta (float, optional): Maximum log10(theta) bound for optimization. Defaults to 2.0.
-        seed (int, optional): Random seed for reproducibility. Defaults to None.
+        min_theta (float, optional): Minimum log10(theta) bound. Defaults to -3.0.
+        max_theta (float, optional): Maximum log10(theta) bound. Defaults to 2.0.
+        theta_init_zero (bool, optional): Initialize theta to zero. Defaults to False.
+        p_val (float, optional): Power parameter for correlation (fixed at 2.0 for Gaussian).
+            Defaults to 2.0.
+        n_p (int, optional): Number of p parameters (currently not optimized). Defaults to 1.
+        optim_p (bool, optional): Optimize p parameters (currently not supported). Defaults to False.
+        min_Lambda (float, optional): Minimum log10(Lambda) bound. Defaults to -9.0.
+        max_Lambda (float, optional): Maximum log10(Lambda) bound. Defaults to 0.0.
+        metric_factorial (str, optional): Distance metric for factor variables.
+            Defaults to "canberra".
+        isotropic (bool, optional): Use single theta for all dimensions. Defaults to False.
+        theta (np.ndarray, optional): Initial theta values (log10 scale). Defaults to None.
 
     Attributes:
         X_ (ndarray): Training data, shape (n_samples, n_features).
         y_ (ndarray): Training targets, shape (n_samples,).
-        theta_ (ndarray): Optimized theta parameters (log10 scale).
-        mu_ (float): Mean of the Kriging predictor.
-        sigma2_ (float): Variance of the Kriging predictor.
+        theta_ (ndarray): Optimized log10(theta) parameters.
+        Lambda_ (float or None): Optimized log10(Lambda) for regression methods.
+        mu_ (float): Mean of Kriging predictor.
+        sigma2_ (float): Variance of Kriging predictor.
+        U_ (ndarray): Cholesky factor of correlation matrix.
+        Psi_ (ndarray): Correlation matrix.
+        negLnLike (float): Negative log-likelihood value.
 
     Examples:
+        Basic usage with SpotOptim:
+
         >>> import numpy as np
+        >>> from spotoptim import SpotOptim
         >>> from spotoptim.surrogate import Kriging
-        >>> X = np.array([[0.0], [0.5], [1.0]])
-        >>> y = np.array([0.0, 0.25, 1.0])
-        >>> model = Kriging()
-        >>> model.fit(X, y)
-        >>> predictions = model.predict(np.array([[0.25], [0.75]]))
+        >>>
+        >>> # Define objective
+        >>> def objective(X):
+        ...     return np.sum(X**2, axis=1)
+        >>>
+        >>> # Create Kriging surrogate
+        >>> kriging = Kriging(
+        ...     noise=1e-10,
+        ...     method='regression',
+        ...     min_theta=-3.0,
+        ...     max_theta=2.0,
+        ...     seed=42
+        ... )
+        >>>
+        >>> # Use with SpotOptim
+        >>> opt = SpotOptim(
+        ...     fun=objective,
+        ...     bounds=[(-5, 5), (-5, 5)],
+        ...     surrogate=kriging,
+        ...     max_iter=30,
+        ...     n_initial=10,
+        ...     seed=42
+        ... )
+        >>> result = opt.optimize()
+
+        Direct usage (scikit-learn compatible):
+
+        >>> from spotoptim.surrogate import Kriging
+        >>> import numpy as np
+        >>>
+        >>> # Training data
+        >>> X_train = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+        >>> y_train = np.array([0.1, 0.2, 0.3])
+        >>>
+        >>> # Fit model
+        >>> model = Kriging(method='regression', seed=42)
+        >>> model.fit(X_train, y_train)
+        >>>
+        >>> # Predict
+        >>> X_test = np.array([[0.25, 0.25], [0.75, 0.75]])
+        >>> y_pred = model.predict(X_test)
+        >>>
+        >>> # Predict with uncertainty
+        >>> y_pred, std = model.predict(X_test, return_std=True)
     """
 
     def __init__(
         self,
         noise: Optional[float] = None,
-        kernel: str = "gauss",
+        penalty: float = 1e4,
+        method: str = "regression",
+        var_type: Optional[List[str]] = None,
+        name: str = "Kriging",
+        seed: int = 124,
+        model_fun_evals: Optional[int] = None,
         n_theta: Optional[int] = None,
         min_theta: float = -3.0,
         max_theta: float = 2.0,
-        seed: Optional[int] = None,
+        theta_init_zero: bool = False,
+        p_val: float = 2.0,
+        n_p: int = 1,
+        optim_p: bool = False,
+        min_Lambda: float = -9.0,
+        max_Lambda: float = 0.0,
+        metric_factorial: str = "canberra",
+        isotropic: bool = False,
+        theta: Optional[np.ndarray] = None,
+        **kwargs,
     ):
-        self.noise = noise
-        self.kernel = kernel
-        self.n_theta = n_theta
+        if noise is None:
+            self.noise = self._get_eps()
+        else:
+            if noise <= 0:
+                raise ValueError("noise must be positive")
+            self.noise = noise
+
+        self.penalty = penalty
+        self.var_type = var_type if var_type is not None else ["num"]
+        self.name = name
+        self.seed = seed
+        self.metric_factorial = metric_factorial
         self.min_theta = min_theta
         self.max_theta = max_theta
-        self.seed = seed
+        self.min_Lambda = min_Lambda
+        self.max_Lambda = max_Lambda
+        self.n_theta = n_theta
+        self.isotropic = isotropic
+        self.p_val = p_val
+        self.n_p = n_p
+        self.optim_p = optim_p
+        self.theta_init_zero = theta_init_zero
+        self.theta = theta
+        self.model_fun_evals = model_fun_evals if model_fun_evals is not None else 100
+
+        if method not in ["interpolation", "regression", "reinterpolation"]:
+            raise ValueError(
+                "method must be 'interpolation', 'regression', or 'reinterpolation'"
+            )
+        self.method = method
 
         # Fitted attributes
         self.X_ = None
         self.y_ = None
+        self.n = None
+        self.k = None
         self.theta_ = None
+        self.Lambda_ = None
         self.mu_ = None
         self.sigma2_ = None
-        self.U_ = None  # Cholesky factor
-        self.Rinv_one_ = None
-        self.Rinv_r_ = None
+        self.U_ = None
+        self.Psi_ = None
+        self.negLnLike = None
+        self.inf_Psi = False
+        self.cnd_Psi = None
 
-    def _get_noise(self) -> float:
-        """Get the noise/regularization parameter.
+    def _get_eps(self) -> float:
+        """Get square root of machine epsilon."""
+        return np.sqrt(np.finfo(float).eps)
 
-        Returns:
-            float: Noise/regularization value.
+    def _set_variable_types(self) -> None:
+        """Set variable type masks for different variable types.
+
+        Creates boolean masks for:
+        - num_mask: 'float' or 'num' variables
+        - int_mask: 'int' variables
+        - factor_mask: 'factor' variables
+        - ordered_mask: 'float', 'num', or 'int' variables (ordered/numeric)
         """
-        if self.noise is None:
-            return np.sqrt(np.finfo(float).eps)
-        return self.noise
+        # Ensure var_type has appropriate length
+        if len(self.var_type) < self.k:
+            self.var_type = ["num"] * self.k
 
-    def _correlation(self, D: np.ndarray) -> np.ndarray:
-        """Compute correlation from distance matrix using Gaussian kernel.
+        var_type_array = np.array(self.var_type)
+        # SpotOptim uses 'float' and 'num' interchangeably for continuous variables
+        self.num_mask = np.isin(var_type_array, ["num", "float"])
+        self.int_mask = var_type_array == "int"
+        self.factor_mask = var_type_array == "factor"
+        # Ordered variables: numeric (float/num) and integer
+        self.ordered_mask = np.isin(var_type_array, ["int", "num", "float"])
 
-        Args:
-            D (ndarray): Squared distance matrix.
-
-        Returns:
-            ndarray: Correlation matrix.
-        """
-        if self.kernel == "gauss":
-            return np.exp(-D)
+    def _set_theta(self) -> None:
+        """Set number of theta parameters based on isotropic flag."""
+        if self.isotropic:
+            self.n_theta = 1
         else:
-            raise ValueError(f"Unsupported kernel: {self.kernel}")
+            self.n_theta = self.k
 
-    def _build_correlation_matrix(self, X: np.ndarray, theta: np.ndarray) -> np.ndarray:
-        """Build correlation matrix R for training data.
+    def _get_theta10_from_logtheta(self) -> np.ndarray:
+        """Convert log10(theta) to linear scale and expand if isotropic."""
+        theta10 = np.power(10.0, self.theta_)
+        if self.n_theta == 1:
+            theta10 = theta10 * np.ones(self.k)
+        return theta10
 
-        Args:
-            X (ndarray): Input data, shape (n, k).
-            theta (ndarray): Theta parameters (10^theta used as weights), shape (k,).
-
-        Returns:
-            ndarray: Correlation matrix with noise on diagonal, shape (n, n).
-        """
-        n = X.shape[0]
-        theta10 = 10.0**theta
-
-        # Compute weighted squared distances
-        R = np.zeros((n, n))
-        for i in range(n):
-            for j in range(i + 1, n):
-                diff = X[i] - X[j]
-                dist = np.sum(theta10 * diff**2)
-                R[i, j] = dist
-                R[j, i] = dist
-
-        # Apply correlation function
-        R = self._correlation(R)
-
-        # Add noise to diagonal
-        noise_val = self._get_noise()
-        np.fill_diagonal(R, 1.0 + noise_val)
-
-        return R
-
-    def _build_correlation_vector(
-        self, x: np.ndarray, X: np.ndarray, theta: np.ndarray
-    ) -> np.ndarray:
-        """Build correlation vector between new point x and training data X.
-
-        Args:
-            x (ndarray): New point, shape (k,).
-            X (ndarray): Training data, shape (n, k).
-            theta (ndarray): Theta parameters, shape (k,).
-
-        Returns:
-            ndarray: Correlation vector, shape (n,).
-        """
-        theta10 = 10.0**theta
-        diff = X - x.reshape(1, -1)
-        D = np.sum(theta10 * diff**2, axis=1)
-        return self._correlation(D)
-
-    def _neg_log_likelihood(self, log_theta: np.ndarray) -> float:
-        """Compute negative concentrated log-likelihood.
-
-        Args:
-            log_theta (ndarray): Log10(theta) parameters.
-
-        Returns:
-            float: Negative log-likelihood (to be minimized).
-        """
-        try:
-            n = self.X_.shape[0]
-            y = self.y_.flatten()
-            one = np.ones(n)
-
-            # Build correlation matrix
-            R = self._build_correlation_matrix(self.X_, log_theta)
-
-            # Cholesky decomposition
-            try:
-                U = cholesky(R)
-            except LinAlgError:
-                return 1e10  # Penalty for ill-conditioned matrix
-
-            # Solve for mean and variance
-            Uy = solve(U, y)
-            Uone = solve(U, one)
-
-            Rinv_y = solve(U.T, Uy)
-            Rinv_one = solve(U.T, Uone)
-
-            mu = (one @ Rinv_y) / (one @ Rinv_one)
-            r = y - one * mu
-
-            Ur = solve(U, r)
-            Rinv_r = solve(U.T, Ur)
-
-            sigma2 = (r @ Rinv_r) / n
-
-            if sigma2 <= 0:
-                return 1e10
-
-            # Concentrated log-likelihood
-            log_det_R = 2.0 * np.sum(np.log(np.abs(np.diag(U))))
-            neg_log_like = (n / 2.0) * np.log(sigma2) + 0.5 * log_det_R
-
-            return neg_log_like
-
-        except (LinAlgError, ValueError):
-            return 1e10
+    def _reshape_X(self, X: np.ndarray) -> np.ndarray:
+        """Ensure X has shape (n_samples, n_features)."""
+        X = np.asarray(X)
+        if X.ndim == 1:
+            X = X.reshape(-1, self.k)
+        else:
+            if X.shape[1] != self.k:
+                if X.shape[0] == self.k:
+                    X = X.T
+                elif self.k == 1:
+                    X = X.reshape(-1, 1)
+                else:
+                    raise ValueError(f"X has shape {X.shape}, expected (*, {self.k})")
+        return X
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "Kriging":
         """Fit the Kriging model to training data.
 
+        Optimizes hyperparameters (theta, Lambda) by maximizing the concentrated
+        log-likelihood using differential evolution.
+
         Args:
-            X (ndarray): Training input data, shape (n_samples, n_features).
-            y (ndarray): Training target values, shape (n_samples,).
+            X (np.ndarray): Training inputs, shape (n_samples, n_features).
+            y (np.ndarray): Training targets, shape (n_samples,).
 
         Returns:
-            Kriging: Fitted estimator (self).
+            Kriging: Fitted model instance (self).
         """
-        X = np.atleast_2d(X)
+        X = np.asarray(X)
         y = np.asarray(y).flatten()
-
-        if X.ndim != 2:
-            raise ValueError(f"X must be 2-dimensional, got shape {X.shape}")
-        if y.ndim != 1:
-            raise ValueError(f"y must be 1-dimensional, got shape {y.shape}")
-        if X.shape[0] != y.shape[0]:
-            raise ValueError("X and y must have same number of samples")
-
         self.X_ = X
         self.y_ = y
-        n, k = X.shape
+        self.n, self.k = self.X_.shape
 
-        # Set number of theta parameters
+        self._set_variable_types()
+
         if self.n_theta is None:
-            self.n_theta = k
+            self._set_theta()
 
-        # Optimize theta via maximum likelihood
+        # Store data bounds
+        self.min_X = np.min(self.X_, axis=0)
+        self.max_X = np.max(self.X_, axis=0)
+
+        # Setup bounds for optimization
         bounds = [(self.min_theta, self.max_theta)] * self.n_theta
 
+        if self.method in ["regression", "reinterpolation"]:
+            bounds += [(self.min_Lambda, self.max_Lambda)]
+
+        if self.optim_p:
+            bounds += [(1.0, 2.0)] * self.n_p
+
+        # Optimize hyperparameters
         result = differential_evolution(
-            func=self._neg_log_likelihood,
+            func=self._objective,
             bounds=bounds,
             seed=self.seed,
-            maxiter=100,
-            atol=1e-6,
-            tol=0.01,
+            maxiter=self.model_fun_evals,
         )
 
-        self.theta_ = result.x
+        params = result.x
+        self.theta_ = params[: self.n_theta]
 
-        # Compute final model parameters
-        one = np.ones(n)
-        R = self._build_correlation_matrix(X, self.theta_)
+        if self.method in ["regression", "reinterpolation"]:
+            self.Lambda_ = params[self.n_theta : self.n_theta + 1][0]
+        else:
+            self.Lambda_ = None
 
-        try:
-            self.U_ = cholesky(R)
-        except LinAlgError:
-            # Add more regularization if needed
-            R = self._build_correlation_matrix(X, self.theta_)
-            R += np.eye(n) * 1e-8
-            self.U_ = cholesky(R)
-
-        Uy = solve(self.U_, y)
-        Uone = solve(self.U_, one)
-
-        Rinv_y = solve(self.U_.T, Uy)
-        Rinv_one = solve(self.U_.T, Uone)
-
-        self.mu_ = float((one @ Rinv_y) / (one @ Rinv_one))
-
-        r = y - one * self.mu_
-        Ur = solve(self.U_, r)
-        Rinv_r = solve(self.U_.T, Ur)
-
-        self.sigma2_ = float((r @ Rinv_r) / n)
-
-        # Store for prediction
-        self.Rinv_one_ = Rinv_one
-        self.Rinv_r_ = Rinv_r
+        # Store final likelihood and matrices
+        self.negLnLike, self.Psi_, self.U_ = self._likelihood(params)
 
         return self
 
+    def _objective(self, params: np.ndarray) -> float:
+        """Objective function for hyperparameter optimization."""
+        negLnLike, _, _ = self._likelihood(params)
+        return negLnLike
+
     def predict(self, X: np.ndarray, return_std: bool = False) -> np.ndarray:
-        """Predict using the Kriging model.
+        """Predict at new points.
 
         Args:
-            X (ndarray): Points to predict at, shape (n_samples, n_features).
-            return_std (bool, optional): If True, return standard deviations as well.
-                Defaults to False.
+            X (np.ndarray): Test points, shape (n_samples, n_features).
+            return_std (bool, optional): Return standard deviations. Defaults to False.
 
         Returns:
-            ndarray or tuple: If return_std is False, returns predicted values (n_samples,).
-                If return_std is True, returns tuple of (predictions, std_devs) both shape (n_samples,).
+            np.ndarray: Predictions, shape (n_samples,).
+            tuple: (predictions, std_devs) if return_std=True.
         """
-        X = np.atleast_2d(X)
-
-        if X.ndim == 1:
-            X = X.reshape(1, -1)
-
-        if X.shape[1] != self.X_.shape[1]:
-            raise ValueError(
-                f"X has {X.shape[1]} features, expected {self.X_.shape[1]}"
-            )
-
-        n_pred = X.shape[0]
-        predictions = np.zeros(n_pred)
+        X = self._reshape_X(X)
 
         if return_std:
-            std_devs = np.zeros(n_pred)
+            predictions, stds = zip(*[self._predict_single(x) for x in X])
+            return np.array(predictions), np.array(stds)
+        else:
+            predictions = [self._predict_single(x)[0] for x in X]
+            return np.array(predictions)
 
-        for i, x in enumerate(X):
-            # Build correlation vector
-            psi = self._build_correlation_vector(x, self.X_, self.theta_)
+    def _build_correlation_matrix(self) -> np.ndarray:
+        """Build correlation matrix from training data.
 
-            # Predict mean
-            predictions[i] = self.mu_ + psi @ self.Rinv_r_
+        Returns:
+            np.ndarray: Upper triangle of correlation matrix.
+        """
+        try:
+            n = self.n
+            theta10 = self._get_theta10_from_logtheta()
 
-            if return_std:
-                # Predict variance
-                Upsi = solve(self.U_, psi)
-                psi_Rinv_psi = psi @ solve(self.U_.T, Upsi)
+            Psi = np.zeros((n, n), dtype=np.float64)
 
-                variance = self.sigma2_ * (1.0 + self._get_noise() - psi_Rinv_psi)
-                std_devs[i] = np.sqrt(max(0.0, variance))
+            # Ordered/numeric variables: weighted squared Euclidean distance
+            if self.ordered_mask.any():
+                X_ordered = self.X_[:, self.ordered_mask]
+                D_ordered = squareform(
+                    pdist(X_ordered, metric="sqeuclidean", w=theta10[self.ordered_mask])
+                )
+                Psi += D_ordered
 
-        if return_std:
-            return predictions, std_devs
-        return predictions
+            # Factor variables: categorical distance
+            if self.factor_mask.any():
+                X_factor = self.X_[:, self.factor_mask]
+                D_factor = squareform(
+                    pdist(
+                        X_factor,
+                        metric=self.metric_factorial,
+                        w=theta10[self.factor_mask],
+                    )
+                )
+                Psi += D_factor
+
+            # Gaussian correlation: R = exp(-D)
+            Psi = np.exp(-Psi)
+
+            self.inf_Psi = np.isinf(Psi).any()
+            self.cnd_Psi = cond(Psi)
+
+            return np.triu(Psi, k=1)
+
+        except LinAlgError as err:
+            print(f"Building Psi failed: {err}")
+            raise
+
+    def _likelihood(self, params: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
+        """Compute negative concentrated log-likelihood.
+
+        Args:
+            params (np.ndarray): Hyperparameters [log10(theta), log10(Lambda)].
+
+        Returns:
+            tuple: (negLnLike, Psi, U) where U is Cholesky factor.
+        """
+        # Extract parameters
+        self.theta_ = params[: self.n_theta]
+
+        if self.method in ["regression", "reinterpolation"]:
+            lambda_log = params[self.n_theta : self.n_theta + 1][0]
+            lambda_ = 10.0**lambda_log
+        else:
+            lambda_ = self.noise
+
+        n = self.n
+        one = np.ones(n)
+
+        # Build correlation matrix
+        Psi_upper = self._build_correlation_matrix()
+        Psi = Psi_upper + Psi_upper.T + np.eye(n) * (1.0 + lambda_)
+
+        # Cholesky factorization
+        try:
+            U = np.linalg.cholesky(Psi)
+        except LinAlgError:
+            return self.penalty, Psi, None
+
+        # log|R|
+        LnDetPsi = 2.0 * np.sum(np.log(np.abs(np.diag(U))))
+
+        # Solve for mu and sigma^2
+        y = self.y_
+        temp_y = np.linalg.solve(U, y)
+        temp_one = np.linalg.solve(U, one)
+        vy = np.linalg.solve(U.T, temp_y)
+        vone = np.linalg.solve(U.T, temp_one)
+
+        mu = (one @ vy) / (one @ vone)
+        resid = y - one * mu
+        tresid = np.linalg.solve(U, resid)
+        tresid = np.linalg.solve(U.T, tresid)
+        SigmaSqr = (resid @ tresid) / n
+
+        # Concentrated negative log-likelihood
+        negLnLike = (n / 2.0) * np.log(SigmaSqr) + 0.5 * LnDetPsi
+
+        return negLnLike, Psi, U
+
+    def _build_psi_vector(self, x: np.ndarray) -> np.ndarray:
+        """Build correlation vector between x and training points.
+
+        Args:
+            x (np.ndarray): Single test point, shape (n_features,).
+
+        Returns:
+            np.ndarray: Correlation vector, shape (n_samples,).
+        """
+        n = self.n
+        theta10 = self._get_theta10_from_logtheta()
+        D = np.zeros(n)
+
+        # Ordered distance
+        if self.ordered_mask.any():
+            X_ordered = self.X_[:, self.ordered_mask]
+            x_ordered = x[self.ordered_mask]
+            D += cdist(
+                x_ordered.reshape(1, -1),
+                X_ordered,
+                metric="sqeuclidean",
+                w=theta10[self.ordered_mask],
+            ).ravel()
+
+        # Factor distance
+        if self.factor_mask.any():
+            X_factor = self.X_[:, self.factor_mask]
+            x_factor = x[self.factor_mask]
+            D += cdist(
+                x_factor.reshape(1, -1),
+                X_factor,
+                metric=self.metric_factorial,
+                w=theta10[self.factor_mask],
+            ).ravel()
+
+        return np.exp(-D)
+
+    def _predict_single(self, x: np.ndarray) -> Tuple[float, float]:
+        """Predict at a single point.
+
+        Args:
+            x (np.ndarray): Test point, shape (n_features,).
+
+        Returns:
+            tuple: (prediction, std_dev).
+        """
+        if self.method in ["regression", "reinterpolation"]:
+            lambda_ = 10.0**self.Lambda_
+        else:
+            lambda_ = self.noise
+
+        U = self.U_
+        n = self.n
+        y = self.y_
+        one = np.ones(n)
+
+        # Compute mu
+        y_tilde = np.linalg.solve(U, y)
+        y_tilde = np.linalg.solve(U.T, y_tilde)
+        one_tilde = np.linalg.solve(U, one)
+        one_tilde = np.linalg.solve(U.T, one_tilde)
+        mu = (one @ y_tilde) / (one @ one_tilde)
+
+        # Residual
+        resid = y - one * mu
+        resid_tilde = np.linalg.solve(U, resid)
+        resid_tilde = np.linalg.solve(U.T, resid_tilde)
+
+        # Correlation vector
+        psi = self._build_psi_vector(x)
+
+        # Prediction
+        f = mu + psi @ resid_tilde
+
+        # Variance
+        if self.method in ["interpolation", "regression"]:
+            SigmaSqr = (resid @ resid_tilde) / n
+            psi_tilde = np.linalg.solve(U, psi)
+            psi_tilde = np.linalg.solve(U.T, psi_tilde)
+            SSqr = SigmaSqr * (1.0 + lambda_ - psi @ psi_tilde)
+        else:  # reinterpolation
+            Psi_adjusted = self.Psi_ - np.eye(n) * lambda_ + np.eye(n) * self.noise
+            SigmaSqr = (
+                resid
+                @ np.linalg.solve(U.T, np.linalg.solve(U, Psi_adjusted @ resid_tilde))
+            ) / n
+            Uint = np.linalg.cholesky(Psi_adjusted)
+            psi_tilde = np.linalg.solve(Uint, psi)
+            psi_tilde = np.linalg.solve(Uint.T, psi_tilde)
+            SSqr = SigmaSqr * (1.0 - psi @ psi_tilde)
+
+        s = np.sqrt(np.abs(SSqr))
+
+        return float(f), float(s)
+
+    def get_params(self, deep: bool = True) -> Dict:
+        """Get parameters for this estimator (scikit-learn compatibility).
+
+        Args:
+            deep (bool): Ignored, for compatibility.
+
+        Returns:
+            dict: Parameter names mapped to their values.
+        """
+        return {
+            "noise": self.noise,
+            "penalty": self.penalty,
+            "method": self.method,
+            "var_type": self.var_type,
+            "name": self.name,
+            "seed": self.seed,
+            "model_fun_evals": self.model_fun_evals,
+            "n_theta": self.n_theta,
+            "min_theta": self.min_theta,
+            "max_theta": self.max_theta,
+            "theta_init_zero": self.theta_init_zero,
+            "p_val": self.p_val,
+            "n_p": self.n_p,
+            "optim_p": self.optim_p,
+            "min_Lambda": self.min_Lambda,
+            "max_Lambda": self.max_Lambda,
+            "metric_factorial": self.metric_factorial,
+            "isotropic": self.isotropic,
+            "theta": self.theta,
+        }
+
+    def set_params(self, **params) -> "Kriging":
+        """Set parameters (scikit-learn compatibility).
+
+        Args:
+            **params: Parameter names and values.
+
+        Returns:
+            Kriging: Self.
+        """
+        for key, value in params.items():
+            setattr(self, key, value)
+        return self

@@ -26,7 +26,7 @@ def rosenbrock(X):
             Can be a 1D array for a single point or 2D array for multiple points.
 
     Returns:
-        ndarray: Function values at the input points with shape (n_samples,).
+        np.ndarray: Function values at the input points with shape (n_samples,).
 
     Raises:
         ValueError: If X has fewer than 2 dimensions.

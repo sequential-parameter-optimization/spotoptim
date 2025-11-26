@@ -1,17 +1,17 @@
-"""Tests for Kriging surrogate model."""
+"""Tests for SimpleKriging surrogate model."""
 
 import pytest
 import numpy as np
-from spotoptim.surrogate import Kriging
+from spotoptim.surrogate import SimpleKriging
 from spotoptim import SpotOptim
 
 
 class TestKriging:
-    """Test suite for Kriging surrogate model."""
+    """Test suite for SimpleKriging surrogate model."""
 
     def test_kriging_initialization(self):
-        """Test Kriging initialization."""
-        model = Kriging()
+        """Test SimpleKriging initialization."""
+        model = SimpleKriging()
         assert model.kernel == "gauss"
         assert model.n_theta is None
         assert model.min_theta == -3.0
@@ -22,7 +22,7 @@ class TestKriging:
         X = np.array([[0.0], [0.5], [1.0]])
         y = np.array([0.0, 0.25, 1.0])
 
-        model = Kriging(seed=42)
+        model = SimpleKriging(seed=42)
         model.fit(X, y)
 
         # Check fitted attributes
@@ -44,7 +44,7 @@ class TestKriging:
         X = np.array([[0.0], [0.5], [1.0]])
         y = np.array([0.0, 0.25, 1.0])
 
-        model = Kriging(seed=42)
+        model = SimpleKriging(seed=42)
         model.fit(X, y)
 
         X_test = np.array([[0.25], [0.75]])
@@ -57,11 +57,11 @@ class TestKriging:
         assert np.all(np.isfinite(y_std))
 
     def test_kriging_2d(self):
-        """Test Kriging on 2D problem."""
+        """Test SimpleKriging on 2D problem."""
         X = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0], [0.5, 0.0], [0.0, 0.5]])
         y = np.sum(X**2, axis=1)
 
-        model = Kriging(seed=42)
+        model = SimpleKriging(seed=42)
         model.fit(X, y)
 
         X_test = np.array([[0.25, 0.25], [0.75, 0.75]])
@@ -71,7 +71,7 @@ class TestKriging:
         assert np.all(np.isfinite(y_pred))
 
     def test_spotoptim_with_kriging(self):
-        """Test SpotOptim with Kriging surrogate."""
+        """Test SpotOptim with SimpleKriging surrogate."""
 
         def sphere(X):
             X = np.atleast_2d(X)
@@ -79,10 +79,10 @@ class TestKriging:
 
         bounds = [(-5, 5), (-5, 5)]
 
-        # Create Kriging surrogate
-        kriging = Kriging(seed=42)
+        # Create SimpleKriging surrogate
+        kriging = SimpleKriging(seed=42)
 
-        # Create optimizer with Kriging surrogate
+        # Create optimizer with SimpleKriging surrogate
         optimizer = SpotOptim(
             fun=sphere,
             bounds=bounds,
@@ -105,7 +105,7 @@ class TestKriging:
         assert result.fun < 5.0  # Reasonable result
 
     def test_spotoptim_kriging_vs_gp(self):
-        """Compare SpotOptim with Kriging vs default GP."""
+        """Compare SpotOptim with SimpleKriging vs default GP."""
 
         def rosenbrock(X):
             X = np.atleast_2d(X)
@@ -115,8 +115,8 @@ class TestKriging:
 
         bounds = [(-2, 2), (-2, 2)]
 
-        # With Kriging
-        kriging = Kriging(seed=42)
+        # With SimpleKriging
+        kriging = SimpleKriging(seed=42)
         optimizer_kriging = SpotOptim(
             fun=rosenbrock,
             bounds=bounds,
@@ -148,11 +148,11 @@ class TestKriging:
         assert result_gp.fun < 100.0
 
     def test_kriging_custom_parameters(self):
-        """Test Kriging with custom parameters."""
+        """Test SimpleKriging with custom parameters."""
         X = np.array([[0.0], [0.5], [1.0]])
         y = np.array([0.0, 0.25, 1.0])
 
-        model = Kriging(noise=1e-4, min_theta=-2.0, max_theta=3.0, seed=123)
+        model = SimpleKriging(noise=1e-4, min_theta=-2.0, max_theta=3.0, seed=123)
         model.fit(X, y)
 
         X_test = np.array([[0.25]])
@@ -165,7 +165,7 @@ class TestKriging:
         X = np.array([[0.0], [0.5], [1.0]])
         y = np.array([0.0, 0.25, 1.0])
 
-        model = Kriging(seed=42)
+        model = SimpleKriging(seed=42)
         model.fit(X, y)
 
         # Wrong number of features
@@ -177,11 +177,11 @@ class TestKriging:
         X = np.array([[0.0], [0.5], [1.0]])
         y = np.array([0.0, 0.25, 1.0])
 
-        model1 = Kriging(seed=42)
+        model1 = SimpleKriging(seed=42)
         model1.fit(X, y)
         pred1 = model1.predict(np.array([[0.25]]))
 
-        model2 = Kriging(seed=42)
+        model2 = SimpleKriging(seed=42)
         model2.fit(X, y)
         pred2 = model2.predict(np.array([[0.25]]))
 
