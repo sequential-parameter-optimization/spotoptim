@@ -1,0 +1,1202 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="spotoptim - Sequential Parameter Optimization Toolbox in Python">
+      
+      
+      
+        <link rel="canonical" href="https://github.com/sequential-parameter-optimization/spotoptim/manuals/success_rate/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Success Rate Tracking in SpotOptim - spotoptim</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="grey" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#what-is-success-rate" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="spotoptim" class="md-header__button md-logo" aria-label="spotoptim" data-md-component="logo">
+      
+  <img src="../../images/spotlogo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            spotoptim
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Success Rate Tracking in SpotOptim
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="grey" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sequential-parameter-optimization/spotoptim/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="spotoptim" class="md-nav__button md-logo" aria-label="spotoptim" data-md-component="logo">
+      
+  <img src="../../images/spotlogo.png" alt="logo">
+
+    </a>
+    spotoptim
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sequential-parameter-optimization/spotoptim/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    
+  
+  
+  
+    <a href="../../reference/spotoptim/SpotOptim/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code Reference
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+  
+
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sequential-parameter-optimization-cookbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-success-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Success Rate?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#second-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Second Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#accessing-success-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Accessing Success Rate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpreting-success-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpreting Success Rate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interpreting Success Rate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-success-rate-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High Success Rate (&gt; 0.5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medium-success-rate-02-05" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medium Success Rate (0.2 - 0.5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-success-rate-02" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low Success Rate (&lt; 0.2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tensorboard-visualization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TensorBoard Visualization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-monitoring-optimization-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Monitoring Optimization Progress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-comparing-multiple-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Comparing Multiple Runs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#success-rate-with-noisy-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Success Rate with Noisy Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-custom-window-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced: Custom Window Size
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-monitor-during-long-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Monitor During Long Runs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-combine-with-tensorboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Combine with TensorBoard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-use-as-stopping-criterion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Use as Stopping Criterion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-compare-different-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Compare Different Strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technical Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-success-is-counted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Success is Counted
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rolling-window-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rolling Window Calculation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-frequency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Frequency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Success Rate Tracking in SpotOptim</h1>
+
+<p>SpotOptim tracks the <strong>success rate</strong> of the optimization process, which measures how often the optimizer finds improvements over recent evaluations. This metric helps you understand whether the optimization is making progress or has stalled.</p>
+<h2 id="what-is-success-rate">What is Success Rate?<a class="headerlink" href="#what-is-success-rate" title="Permanent link">&para;</a></h2>
+<p>The success rate is a <strong>rolling metric</strong> that tracks the percentage of recent evaluations that improved upon the best value found so far. It&rsquo;s calculated over a sliding window of the last 100 evaluations.</p>
+<p><strong>Key Points:</strong>
+- A &ldquo;success&rdquo; occurs when a new evaluation finds a value <strong>better (smaller)</strong> than the best found so far
+- The rate is computed over the last <strong>100 evaluations</strong> (window size)
+- Values range from <strong>0.0</strong> (no recent improvements) to <strong>1.0</strong> (all recent evaluations improved)
+- Helps identify when optimization is stalling and may need adjustment</p>
+<h2 id="first-example">First Example<a class="headerlink" href="#first-example" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Start <code>TensorBoard</code> to visualize success rate in real-time:</li>
+</ul>
+<pre><code class="language-bash">tensorboard --logdir=runs
+</code></pre>
+<p>The execute the following code:</p>
+<pre><code>import numpy as np
+from spotoptim import SpotOptim
+
+def rosenbrock(X):
+    &quot;&quot;&quot;Rosenbrock function - challenging optimization problem&quot;&quot;&quot;
+    x = X[:, 0]
+    y = X[:, 1]
+    return (1 - x)**2 + 100 * (y - x**2)**2
+
+# Run optimization with periodic success rate checks
+optimizer = SpotOptim(
+    fun=rosenbrock,
+    bounds=[(-2, 2), (-2, 2)],
+    max_iter=200,
+    n_initial=20,
+    tensorboard_log=True,
+    tensorboard_clean=True,
+    seed=42
+)
+
+result = optimizer.optimize()
+
+# Analyze final success rate
+print(f&quot;\nOptimization Results:&quot;)
+print(f&quot;Best value: {result.fun:.6f}&quot;)
+print(f&quot;Total evaluations: {optimizer.counter}&quot;)
+print(f&quot;Final success rate: {optimizer.success_rate:.2%}&quot;)
+
+# Interpret the result
+if optimizer.success_rate &gt; 0.5:
+    print(&quot;→ High success rate: Optimization is still making good progress&quot;)
+elif optimizer.success_rate &gt; 0.2:
+    print(&quot;→ Medium success rate: Approaching convergence&quot;)
+else:
+    print(&quot;→ Low success rate: Optimization has likely converged&quot;)
+</code></pre>
+<h2 id="second-example">Second Example<a class="headerlink" href="#second-example" title="Permanent link">&para;</a></h2>
+<pre><code>from spotoptim import SpotOptim
+import numpy as np
+
+def sphere(X):
+    &quot;&quot;&quot;Simple sphere function: f(x) = sum(x^2)&quot;&quot;&quot;
+    return np.sum(X**2, axis=1)
+
+# Create optimizer
+optimizer = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5), (-5, 5)],
+    max_iter=100,
+    n_initial=20,
+    verbose=True
+)
+
+# Run optimization
+result = optimizer.optimize()
+
+# Check success rate
+print(f&quot;Final success rate: {optimizer.success_rate:.2%}&quot;)
+print(f&quot;Total evaluations: {optimizer.counter}&quot;)
+</code></pre>
+<h2 id="accessing-success-rate">Accessing Success Rate<a class="headerlink" href="#accessing-success-rate" title="Permanent link">&para;</a></h2>
+<p>The success rate is stored in the <code>success_rate</code> attribute:</p>
+<pre><code>optimizer = SpotOptim(fun=objective, bounds=bounds, max_iter=50)
+result = optimizer.optimize()
+
+# Access success rate
+current_rate = optimizer.success_rate
+print(f&quot;Success rate: {current_rate:.2%}&quot;)
+
+# Also available via getter method
+rate = optimizer._get_success_rate()
+</code></pre>
+<h2 id="interpreting-success-rate">Interpreting Success Rate<a class="headerlink" href="#interpreting-success-rate" title="Permanent link">&para;</a></h2>
+<h3 id="high-success-rate-05">High Success Rate (&gt; 0.5)<a class="headerlink" href="#high-success-rate-05" title="Permanent link">&para;</a></h3>
+<pre><code>Success Rate: 75%
+</code></pre>
+<p><strong>Interpretation:</strong> The optimizer is finding improvements frequently. This typically indicates:
+- The optimization is in an exploratory phase
+- The surrogate model is effectively guiding the search
+- There&rsquo;s still room for improvement in the search space</p>
+<p><strong>Action:</strong> Continue optimization - progress is good!</p>
+<h3 id="medium-success-rate-02-05">Medium Success Rate (0.2 - 0.5)<a class="headerlink" href="#medium-success-rate-02-05" title="Permanent link">&para;</a></h3>
+<pre><code>Success Rate: 35%
+</code></pre>
+<p><strong>Interpretation:</strong> The optimizer occasionally finds improvements. This suggests:
+- The search is becoming more refined
+- The optimizer is balancing exploration and exploitation
+- Approaching a local or global optimum</p>
+<p><strong>Action:</strong> Monitor progress and consider stopping criteria.</p>
+<h3 id="low-success-rate-02">Low Success Rate (&lt; 0.2)<a class="headerlink" href="#low-success-rate-02" title="Permanent link">&para;</a></h3>
+<pre><code>Success Rate: 8%
+</code></pre>
+<p><strong>Interpretation:</strong> Few recent evaluations improve the best value. This may indicate:
+- The optimization has converged to a (local) optimum
+- The search is stuck in a plateau region
+- The budget may be exhausted in terms of meaningful progress</p>
+<p><strong>Action:</strong> Consider stopping optimization or adjusting parameters.</p>
+<h2 id="tensorboard-visualization">TensorBoard Visualization<a class="headerlink" href="#tensorboard-visualization" title="Permanent link">&para;</a></h2>
+<p>When TensorBoard logging is enabled, success rate is automatically logged and can be visualized in real-time:</p>
+<pre><code>optimizer = SpotOptim(
+    fun=objective,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=100,
+    n_initial=20,
+    tensorboard_log=True,  # Enable logging
+    verbose=True
+)
+
+result = optimizer.optimize()
+</code></pre>
+<p><strong>View in TensorBoard:</strong></p>
+<pre><code class="language-bash">tensorboard --logdir=runs
+</code></pre>
+<p>In the TensorBoard interface, look for:
+- <strong>SCALARS</strong> tab → <code>success_rate</code>: Rolling success rate over iterations
+- Compare multiple runs side-by-side
+- Identify when optimization stalls</p>
+<h2 id="example-monitoring-optimization-progress">Example: Monitoring Optimization Progress<a class="headerlink" href="#example-monitoring-optimization-progress" title="Permanent link">&para;</a></h2>
+<pre><code>import numpy as np
+from spotoptim import SpotOptim
+
+def rosenbrock(X):
+    &quot;&quot;&quot;Rosenbrock function - challenging optimization problem&quot;&quot;&quot;
+    x = X[:, 0]
+    y = X[:, 1]
+    return (1 - x)**2 + 100 * (y - x**2)**2
+
+# Run optimization with periodic success rate checks
+optimizer = SpotOptim(
+    fun=rosenbrock,
+    bounds=[(-2, 2), (-2, 2)],
+    max_iter=100,
+    n_initial=20,
+    tensorboard_log=True,
+    seed=42
+)
+
+result = optimizer.optimize()
+
+# Analyze final success rate
+print(f&quot;\nOptimization Results:&quot;)
+print(f&quot;Best value: {result.fun:.6f}&quot;)
+print(f&quot;Total evaluations: {optimizer.counter}&quot;)
+print(f&quot;Final success rate: {optimizer.success_rate:.2%}&quot;)
+
+# Interpret the result
+if optimizer.success_rate &gt; 0.5:
+    print(&quot;→ High success rate: Optimization is still making good progress&quot;)
+elif optimizer.success_rate &gt; 0.2:
+    print(&quot;→ Medium success rate: Approaching convergence&quot;)
+else:
+    print(&quot;→ Low success rate: Optimization has likely converged&quot;)
+</code></pre>
+<h2 id="example-comparing-multiple-runs">Example: Comparing Multiple Runs<a class="headerlink" href="#example-comparing-multiple-runs" title="Permanent link">&para;</a></h2>
+<pre><code>import numpy as np
+from spotoptim import SpotOptim
+
+def ackley(X):
+    &quot;&quot;&quot;Ackley function - multimodal test function&quot;&quot;&quot;
+    a = 20
+    b = 0.2
+    c = 2 * np.pi
+    n = X.shape[1]
+
+    sum_sq = np.sum(X**2, axis=1)
+    sum_cos = np.sum(np.cos(c * X), axis=1)
+
+    return -a * np.exp(-b * np.sqrt(sum_sq / n)) - np.exp(sum_cos / n) + a + np.e
+
+# Run with different configurations
+configs = [
+    {&quot;n_initial&quot;: 10, &quot;max_iter&quot;: 50, &quot;name&quot;: &quot;Small initial&quot;},
+    {&quot;n_initial&quot;: 30, &quot;max_iter&quot;: 50, &quot;name&quot;: &quot;Large initial&quot;},
+]
+
+results = []
+for config in configs:
+    optimizer = SpotOptim(
+        fun=ackley,
+        bounds=[(-5, 5), (-5, 5)],
+        n_initial=config[&quot;n_initial&quot;],
+        max_iter=config[&quot;max_iter&quot;],
+        seed=42,
+        verbose=False
+    )
+    result = optimizer.optimize()
+
+    results.append({
+        &quot;name&quot;: config[&quot;name&quot;],
+        &quot;best_value&quot;: result.fun,
+        &quot;success_rate&quot;: optimizer.success_rate,
+        &quot;n_evals&quot;: optimizer.counter
+    })
+
+    print(f&quot;\n{config['name']}:&quot;)
+    print(f&quot;  Best value: {result.fun:.6f}&quot;)
+    print(f&quot;  Success rate: {optimizer.success_rate:.2%}&quot;)
+    print(f&quot;  Evaluations: {optimizer.counter}&quot;)
+
+# Find best configuration
+best = min(results, key=lambda x: x[&quot;best_value&quot;])
+print(f&quot;\nBest configuration: {best['name']}&quot;)
+print(f&quot;  Achieved: f(x) = {best['best_value']:.6f}&quot;)
+print(f&quot;  Final success rate: {best['success_rate']:.2%}&quot;)
+</code></pre>
+<h2 id="success-rate-with-noisy-functions">Success Rate with Noisy Functions<a class="headerlink" href="#success-rate-with-noisy-functions" title="Permanent link">&para;</a></h2>
+<p>For noisy functions (when <code>repeats_initial &gt; 1</code> or <code>repeats_surrogate &gt; 1</code>), the success rate tracks improvements in the <strong>raw</strong> y values, not the aggregated means:</p>
+<pre><code>import numpy as np
+from spotoptim import SpotOptim
+
+def noisy_sphere(X):
+    &quot;&quot;&quot;Sphere function with Gaussian noise&quot;&quot;&quot;
+    base = np.sum(X**2, axis=1)
+    noise = np.random.normal(0, 0.5, size=base.shape)
+    return base + noise
+
+optimizer = SpotOptim(
+    fun=noisy_sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=50,
+    n_initial=15,
+    repeats_initial=3,    # 3 evaluations per initial point
+    repeats_surrogate=2,  # 2 evaluations per new point
+    seed=42,
+    verbose=True
+)
+
+result = optimizer.optimize()
+
+print(f&quot;\nNoisy Optimization Results:&quot;)
+print(f&quot;Best raw value: {optimizer.min_y:.6f}&quot;)
+print(f&quot;Best mean value: {optimizer.min_mean_y:.6f}&quot;)
+print(f&quot;Success rate: {optimizer.success_rate:.2%}&quot;)
+print(f&quot;Total evaluations: {optimizer.counter}&quot;)
+print(f&quot;Unique design points: {optimizer.mean_X.shape[0]}&quot;)
+</code></pre>
+<p><strong>Note:</strong> With noisy functions, the success rate may be lower because:
+- Noise can mask true improvements
+- Multiple evaluations of the same point contribute to the window
+- Focus on the mean values (<code>min_mean_y</code>) for better assessment</p>
+<h2 id="advanced-custom-window-size">Advanced: Custom Window Size<a class="headerlink" href="#advanced-custom-window-size" title="Permanent link">&para;</a></h2>
+<p>The success rate is calculated over a window of 100 evaluations by default. This is controlled by the <code>window_size</code> attribute:</p>
+<pre><code>optimizer = SpotOptim(
+    fun=objective,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=50,
+    n_initial=10
+)
+
+# Check default window size
+print(f&quot;Window size: {optimizer.window_size}&quot;)  # 100
+
+# The window size is set during initialization
+# To use a different window, you would need to modify it
+# before running optimization (not typically recommended)
+</code></pre>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="1-monitor-during-long-runs">1. Monitor During Long Runs<a class="headerlink" href="#1-monitor-during-long-runs" title="Permanent link">&para;</a></h3>
+<p>For expensive optimization runs, periodically check success rate:</p>
+<pre><code># Could be implemented with callbacks in future versions
+# For now, success rate is updated automatically and logged to TensorBoard
+</code></pre>
+<h3 id="2-combine-with-tensorboard">2. Combine with TensorBoard<a class="headerlink" href="#2-combine-with-tensorboard" title="Permanent link">&para;</a></h3>
+<p>Always enable TensorBoard logging for visual monitoring:</p>
+<pre><code>optimizer = SpotOptim(
+    fun=expensive_function,
+    bounds=bounds,
+    max_iter=1000,
+    tensorboard_log=True,  # Track success_rate visually
+    tensorboard_path=&quot;runs/long_optimization&quot;
+)
+</code></pre>
+<h3 id="3-use-as-stopping-criterion">3. Use as Stopping Criterion<a class="headerlink" href="#3-use-as-stopping-criterion" title="Permanent link">&para;</a></h3>
+<p>Consider stopping when success rate drops very low:</p>
+<pre><code># Manual stopping check (conceptual)
+if optimizer.success_rate &lt; 0.05 and optimizer.counter &gt; 50:
+    print(&quot;Success rate very low - optimization has likely converged&quot;)
+</code></pre>
+<h3 id="4-compare-different-strategies">4. Compare Different Strategies<a class="headerlink" href="#4-compare-different-strategies" title="Permanent link">&para;</a></h3>
+<p>Use success rate to compare optimization strategies:</p>
+<pre><code>strategies = [&quot;ei&quot;, &quot;pi&quot;, &quot;y&quot;]  # Different acquisition functions
+for acq in strategies:
+    opt = SpotOptim(fun=obj, bounds=bnds, acquisition=acq, max_iter=50)
+    result = opt.optimize()
+    print(f&quot;{acq}: success_rate={opt.success_rate:.2%}, best={result.fun:.6f}&quot;)
+</code></pre>
+<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permanent link">&para;</a></h2>
+<h3 id="how-success-is-counted">How Success is Counted<a class="headerlink" href="#how-success-is-counted" title="Permanent link">&para;</a></h3>
+<p>A new evaluation <code>y_new</code> is considered a success if:</p>
+<pre><code>y_new &lt; best_y_so_far
+</code></pre>
+<p>where <code>best_y_so_far</code> is the minimum value found in all previous evaluations.</p>
+<h3 id="rolling-window-calculation">Rolling Window Calculation<a class="headerlink" href="#rolling-window-calculation" title="Permanent link">&para;</a></h3>
+<p>The success rate is computed as:</p>
+<pre><code>success_rate = (number of successes in last 100 evals) / (window size)
+</code></pre>
+<ul>
+<li>Window size defaults to 100</li>
+<li>If fewer than 100 evaluations have been performed, the window size is the number of evaluations</li>
+<li>The window slides forward with each new evaluation</li>
+</ul>
+<h3 id="update-frequency">Update Frequency<a class="headerlink" href="#update-frequency" title="Permanent link">&para;</a></h3>
+<p>The success rate is updated after:
+1. Initial design evaluation
+2. Each iteration&rsquo;s new point evaluation(s)
+3. OCBA re-evaluations (if applicable)</p>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Success rate</strong> measures the percentage of recent evaluations that improve the best value</li>
+<li>Calculated over a rolling window of the last <strong>100 evaluations</strong></li>
+<li>Values range from <strong>0.0</strong> to <strong>1.0</strong></li>
+<li>High rates (&gt;0.5) indicate active progress</li>
+<li>Low rates (&lt;0.2) suggest convergence</li>
+<li>Automatically logged to <strong>TensorBoard</strong> when logging is enabled</li>
+<li>Available via <code>optimizer.success_rate</code> attribute after optimization</li>
+</ul>
+<p>Use success rate to:
+- ✓ Monitor optimization progress in real-time
+- ✓ Identify when to stop optimization
+- ✓ Compare different optimization strategies
+- ✓ Assess optimization difficulty for different problems</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2004 - 2025
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/bartzbeielstein" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M459.4 151.7c.3 4.5.3 9.1.3 13.6 0 138.7-105.6 298.6-298.6 298.6-59.5 0-114.7-17.2-161.1-47.1 8.4 1 16.6 1.3 25.3 1.3 49.1 0 94.2-16.6 130.3-44.8-46.1-1-84.8-31.2-98.1-72.8 6.5 1 13 1.6 19.8 1.6 9.4 0 18.8-1.3 27.6-3.6-48.1-9.7-84.1-52-84.1-103v-1.3c14 7.8 30.2 12.7 47.4 13.3-28.3-18.8-46.8-51-46.8-87.4 0-19.5 5.2-37.4 14.3-53C87.4 130.8 165 172.4 252.1 176.9c-1.6-7.8-2.6-15.9-2.6-24C249.5 95.1 296.3 48 354.4 48c30.2 0 57.5 12.7 76.7 33.1 23.7-4.5 46.5-13.3 66.6-25.3-7.8 24.4-24.4 44.8-46.1 57.8 21.1-2.3 41.6-8.1 60.4-16.2-14.3 20.8-32.2 39.3-52.6 54.3"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/thomas-bartz-beielstein-3157b541/" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zM102.2 96a38.5 38.5 0 1 1 0 77 38.5 38.5 0 1 1 0-77m282.1 320h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "navigation.instant", "navigation.indexes", "navigation.path", "navigation.prune", "navigation.expand"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
