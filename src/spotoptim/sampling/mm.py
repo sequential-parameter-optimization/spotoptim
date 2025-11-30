@@ -799,13 +799,15 @@ def mmphi_intensive_update(
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.
+    This should be more efficient than recalculating the metric from scratch, because it only needs to
+    compute the distances between the new point and the existing points.    
 
     Args:
         X (np.ndarray): Existing sampling plan (shape: (n, d)).
         new_point (np.ndarray): New point to add (shape: (d,)).
         J (np.ndarray): Multiplicities of distances for the existing design.
         d (np.ndarray): Unique distances for the existing design.
-        q (float): Exponent used in the computation of the metric. Defaults to 2.0.
+        q (float): Exponent used in the computation of the Morris-Mitchell metric. Defaults to 2.0.
         p (float): Distance norm to use (e.g., p=1 for Manhattan, p=2 for Euclidean). Defaults to 2.0.
 
     Returns:
@@ -881,7 +883,7 @@ def propose_mmphi_intensive_minimizing_point(
             # Existing design with 3 points in 2D
             X = np.array([[1.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
             # Propose a new point
-            new_point = propose_mmphi_intensive_minimizing_point    (X, n_candidates=500, q=2, p=2, seed=42)
+            new_point = propose_mmphi_intensive_minimizing_point(X, n_candidates=500, q=2, p=2, seed=42)
             print(new_point)
             # plot the existing points and the new proposed point
             import matplotlib.pyplot as plt
