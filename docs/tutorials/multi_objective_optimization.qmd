@@ -1,0 +1,167 @@
+# Multi-Objective Optimization with Morris-Mitchell Criterion
+
+This tutorial demonstrates how to perform multi-objective optimization using `spotoptim`. We will optimize two target variables ($y_1$ and $y_2$) predicted by Random Forest models, while simultaneously maximizing the space-filling property of the design using the **size-invariant Morris-Mitchell criterion** ($y_{mm}$).
+
+## 1. Setup and Data Generation
+
+First, we generate an artificial dataset with two input variables ($X$) and two target variables ($y_1, y_2$).
+
+```{python}
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from spotoptim.sampling.mm import mmphi_intensive, mmphi_intensive_update
+from scipy.optimize import dual_annealing
+from spotdesirability.utils.desirability import DMin, DMax, DOverall
+
+# Set random seed for reproducibility
+np.random.seed(42)
+
+# Generate artificial data
+n_samples = 50
+n_features = 2
+
+# X: Random points in [0, 1]^2
+X = np.random.rand(n_samples, n_features)
+
+# y1: Sphere function (minimize)
+y1 = np.sum((X - 0.5)**2, axis=1)
+
+# y2: Rosenbrock-like function (minimize)
+y2 = 100 * (X[:, 1] - X[:, 0]**2)**2 + (1 - X[:, 0])**2
+
+# Train Random Forest models
+model_y1 = RandomForestRegressor(n_estimators=100, random_state=42)
+model_y1.fit(X, y1)
+
+model_y2 = RandomForestRegressor(n_estimators=100, random_state=42)
+model_y2.fit(X, y2)
+
+print("Models trained successfully.")
+```
+
+## 2. Desirability Functions
+
+We define desirability functions to map each objective to a [0, 1] scale, where 1 is most desirable.
+
+- **Target 1 ($y_1$)**: Minimize.
+- **Target 2 ($y_2$)**: Minimize.
+- **Target 3 ($y_{mm}$)**: Maximize space-filling improvement.
+  - $y_{mm} = \Phi_{base} - \Phi_{new}$
+  - Since we want to minimize $\Phi_{new}$ (better space-filling), we want to maximize the difference $\Phi_{base} - \Phi_{new}$.
+
+# Define desirability functions using spotdesirability
+```{python}
+# Target 1 (y1): Minimize
+d1 = DMin(y1.min(), y1.max())
+
+# Target 2 (y2): Minimize
+d2 = DMin(y2.min(), y2.max())
+
+# Target 3 (y_mm): Maximize space-filling improvement
+# y_mm = Phi_base - Phi_new
+# We estimate bounds for y_mm
+X_base = X.copy()
+phi_base, J_base, d_base = mmphi_intensive(X_base, q=2, p=2)
+
+ymm_min = -0.5 # Allow for some degradation
+ymm_max = 0.5  # Expected improvement
+d_mm = DMax(ymm_min, ymm_max)
+
+# Combine into overall desirability
+# We use geometric mean (default for DOverall)
+D_overall = DOverall(d1, d2, d_mm)
+```
+
+## 3. The Multi-Objective Function
+
+This function calculates the combined desirability of a candidate point `x`.
+
+```{python}
+def multi_objective(x, models, X_base, J, d, phi_base):
+    """
+    Calculates the negative combined desirability for a candidate point x.
+    
+    Args:
+        x (np.ndarray): Candidate point (1D array).
+        models (list): List of trained models [model_y1, model_y2].
+        X_base (np.ndarray): Existing design points.
+        J (np.ndarray): Multiplicities of distances for X_base.
+        d (np.ndarray): Unique distances for X_base.
+        phi_base (float): Base Morris-Mitchell metric for X_base.
+        
+    Returns:
+        float: Negative geometric mean of desirabilities (for minimization).
+    """
+    # 1. Predict y1 and y2
+    # Reshape x for prediction (1, n_features)
+    x_reshaped = x.reshape(1, -1)
+    y1_pred = models[0].predict(x_reshaped)[0]
+    y2_pred = models[1].predict(x_reshaped)[0]
+    
+    # 2. Compute y_mm (Space-filling improvement)
+    # Use efficient update
+    phi_new, _, _ = mmphi_intensive_update(X_base, x, J, d, q=2, p=2)
+    y_mm = phi_base - phi_new
+    
+    # 3. Calculate combined desirability
+    # We pass the values as a list to the overall desirability object
+    D = D_overall.predict([y1_pred, y2_pred, y_mm])
+    
+    # Return negative D because optimizers usually minimize
+    return -D
+```
+
+## 4. Optimization Loop (`man_optim`)
+
+We use a global optimizer (e.g., `dual_annealing` from `scipy`) to find the best `x` that maximizes the combined desirability.
+
+```{python}
+def man_optim(X_base, models, bounds):
+    """
+    Optimizes the multi-objective function to find the next best point.
+    """
+    # Pre-calculate base MM stats
+    phi_base, J_base, d_base = mmphi_intensive(X_base, q=2, p=2)
+    
+    # Define the objective wrapper
+    def func(x):
+        return multi_objective(x, models, X_base, J_base, d_base, phi_base)
+    
+    # Run optimization
+    result = dual_annealing(func, bounds=bounds, maxiter=100, seed=42)
+    
+    return result.x, -result.fun # Return best x and its desirability
+```
+
+## 5. Running the Optimization
+
+Now we run the optimization to find the next point to add to our design.
+
+```{python}
+# Define bounds for the design variables (0 to 1)
+bounds = [(0, 1), (0, 1)]
+
+# Ensure X_base and MM stats are available (in case of partial execution)
+if 'X_base' not in locals():
+    X_base = X.copy()
+    phi_base, J_base, d_base = mmphi_intensive(X_base, q=2, p=2)
+
+# Find the next best point
+best_x, best_desirability = man_optim(X_base, [model_y1, model_y2], bounds)
+
+print(f"Best new point: {best_x}")
+print(f"Predicted Desirability: {best_desirability:.4f}")
+
+# Verify predictions for the new point
+y1_pred = model_y1.predict(best_x.reshape(1, -1))[0]
+y2_pred = model_y2.predict(best_x.reshape(1, -1))[0]
+phi_new, _, _ = mmphi_intensive_update(X_base, best_x, J_base, d_base, q=2, p=2)
+y_mm = phi_base - phi_new
+
+print(f"Predicted y1: {y1_pred:.4f}")
+print(f"Predicted y2: {y2_pred:.4f}")
+print(f"Space-filling improvement (y_mm): {y_mm:.4f}")
+```
+
+This approach allows you to balance the trade-offs between optimizing your target variables and maintaining a diverse, space-filling design.
