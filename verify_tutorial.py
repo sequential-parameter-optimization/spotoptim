@@ -1,12 +1,3 @@
-# Multi-Objective Optimization with Morris-Mitchell Criterion
-
-This tutorial demonstrates how to perform multi-objective optimization using `spotoptim`. We will optimize two target variables ($y_1$ and $y_2$) predicted by Random Forest models, while simultaneously maximizing the space-filling property of the design using the **size-invariant Morris-Mitchell criterion** ($y_{mm}$).
-
-## 1. Setup and Data Generation
-
-First, we generate an artificial dataset with two input variables ($X$) and two target variables ($y_1, y_2$).
-
-```{python}
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
@@ -39,20 +30,8 @@ model_y2 = RandomForestRegressor(n_estimators=100, random_state=42)
 model_y2.fit(X, y2)
 
 print("Models trained successfully.")
-```
-
-## 2. Desirability Functions
-
-We define desirability functions to map each objective to a [0, 1] scale, where 1 is most desirable.
-
-- **Target 1 ($y_1$)**: Minimize.
-- **Target 2 ($y_2$)**: Minimize.
-- **Target 3 ($y_{mm}$)**: Maximize space-filling improvement.
-  - $y_{mm} = \Phi_{base} - \Phi_{new}$
-  - Since we want to minimize $\Phi_{new}$ (better space-filling), we want to maximize the difference $\Phi_{base} - \Phi_{new}$.
 
 # Define desirability functions using spotdesirability
-```{python}
 # Target 1 (y1): Minimize
 d1 = DMin(y1.min(), y1.max())
 
@@ -72,13 +51,7 @@ d_mm = DMax(ymm_min, ymm_max)
 # Combine into overall desirability
 # We use geometric mean (default for DOverall)
 D_overall = DOverall(d1, d2, d_mm)
-```
 
-## 3. The Multi-Objective Function
-
-This function calculates the combined desirability of a candidate point `x`.
-
-```{python}
 def multi_objective(x, models, X_base, J, d, phi_base):
     """
     Calculates the negative combined desirability for a candidate point x.
@@ -112,13 +85,7 @@ def multi_objective(x, models, X_base, J, d, phi_base):
     # Return negative D because optimizers usually minimize
     # Also return the individual values for logging
     return -D, [y1_pred, y2_pred, y_mm]
-```
 
-## 4. Optimization Loop (`man_optim`)
-
-We use a global optimizer (e.g., `dual_annealing` from `scipy`) to find the best `x` that maximizes the combined desirability.
-
-```{python}
 def man_optim(X_base, models, bounds):
     """
     Optimizes the multi-objective function to find the next best point.
@@ -140,13 +107,7 @@ def man_optim(X_base, models, bounds):
     result = dual_annealing(func, bounds=bounds, maxiter=100, seed=42)
     
     return result.x, -result.fun, np.array(callback_values)
-```
 
-## 5. Running the Optimization
-
-Now we run the optimization to find the next point to add to our design.
-
-```{python}
 # Define bounds for the design variables (0 to 1)
 bounds = [(0, 1), (0, 1)]
 
@@ -170,9 +131,8 @@ y_mm = phi_base - phi_new
 print(f"Predicted y1: {y1_pred:.4f}")
 print(f"Predicted y2: {y2_pred:.4f}")
 print(f"Space-filling improvement (y_mm): {y_mm:.4f}")
-```
 
-```{python}
+# Visualization using plot_mo from index.qmd
 def is_pareto_efficient(costs: np.ndarray, minimize: bool = True) -> np.ndarray:
     """
     Find the Pareto-efficient points from a set of points.
@@ -202,9 +162,7 @@ def is_pareto_efficient(costs: np.ndarray, minimize: bool = True) -> np.ndarray:
                 is_efficient[is_efficient] = np.any(costs[is_efficient] > cost, axis=1)
             is_efficient[i] = True
     return is_efficient
-```
 
-```{python}
 def plot_mo(
     combinations: list,
     pareto: str,
@@ -306,7 +264,7 @@ def plot_mo(
         plt.grid()
         plt.title(title)
         plt.legend()
-        plt.show()
+        # plt.show() # Commented out to avoid blocking execution
 
 # Prepare data for plotting
 y_best_vals = np.array([[y1_pred, y2_pred, y_mm]])
@@ -324,158 +282,4 @@ plot_mo(
     y_rf_color="blue",
     y_best_color="red"
 )
-```
-
-## Comparison of known and best input values
-
-plot_anon_histograms and plot_anon_boxplots_single are used to compare the known and best input values.
-
-```{python}
-def plot_anon_histograms(
-    df: pd.DataFrame,
-    bins=10,
-    num_cols=2,
-    figwith=10,
-    thrs_unique=5,
-    add_points: pd.DataFrame = None,
-) -> None:
-    """
-    Generate histograms for each numerical column in the DataFrame within a single figure.
-    The title of each histogram shows the total, unique values count, outliers, and standard deviation.
-    If there are fewer unique values than the threshold thrs_unique, the histogram is colored differently.
-    Additional points can be added and highlighted in red.
-    """
-    numerical_columns = df.select_dtypes(include="number").columns.tolist()
-    num_plots = len(numerical_columns)
-    num_rows = (num_plots + num_cols - 1) // num_cols
-    fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(figwith, num_rows * 5))
-    axes = axes.flatten()
-    for i, col in enumerate(numerical_columns):
-        ax = axes[i]
-        data = df[col].dropna()
-        total_points = data.size
-        unique_values = data.nunique()
-        num_outliers = calculate_outliers(data)
-        std_dev = data.std()
-        fill_color = "lightcoral" if unique_values < thrs_unique else "lightblue"
-        ax.hist(data, bins=bins, alpha=0.7, color=fill_color, edgecolor="black")
-        if add_points is not None and col in add_points.columns:
-            points = add_points[col].dropna()
-            ax.scatter(points, [0] * len(points), label="Additional Points", zorder=3, color="red", marker="D", edgecolor="k")
-        ax.set_title(f"Total={total_points}, Unique={unique_values}, Outliers={num_outliers}, StdDev={std_dev:.2f}")
-        ax.set_xlabel(col)
-        ax.set_ylabel("Frequency")
-        ax.grid(True, linestyle="--", linewidth=0.5)
-    for i in range(num_plots, len(axes)):
-        fig.delaxes(axes[i])
-    plt.tight_layout()
-    plt.show()
-```
-
-```{python}
-def plot_anon_boxplots_single(
-    df: pd.DataFrame,
-    category_column_name: str = None,
-    num_cols: int = 2,
-    figwidth: int = 10,
-    box_width: float = 0.2,
-    both_names=True,
-    height_per_subplot: float = 2.0,
-    add_points: pd.DataFrame = None,
-) -> None:
-    """
-    Generate separate box plots for each numerical column in a DataFrame, arranged in a grid.
-    Each subplot has its own scale, similar to how histograms are shown in plot_histograms().
-    Additional points can be added and highlighted in red.
-    """
-    if df.ndim == 1:
-        df = df.to_frame()
-    numerical_columns = df.select_dtypes(include="number").columns.tolist()
-    num_plots = len(numerical_columns)
-    num_rows = (num_plots + num_cols - 1) // num_cols
-    fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(figwidth, num_rows * height_per_subplot))
-    axes = axes.flatten()
-    for i, col in enumerate(numerical_columns):
-        ax = axes[i]
-        if category_column_name and category_column_name in df.columns:
-            unique_categories = sorted(df[category_column_name].dropna().unique())
-            plot_data = [df.loc[df[category_column_name] == cat_value, col].dropna() for cat_value in unique_categories]
-        else:
-            plot_data = [df[col].dropna()]
-        ax.boxplot(
-            plot_data,
-            vert=False,
-            patch_artist=True,
-            boxprops=dict(facecolor="lightblue", color="black"),
-            medianprops=dict(color="red"),
-            whiskerprops=dict(color="black"),
-            capprops=dict(color="black"),
-            flierprops=dict(marker="o", color="black", alpha=0.5),
-            widths=box_width,
-        )
-        if add_points is not None and col in add_points.columns:
-            points = add_points[col].dropna()
-            ax.scatter(points, [1] * len(points), color="red", marker="D", edgecolor="k", label="Additional Points", zorder=3)
-        if both_names:
-            ax.set_title(col)
-        else:
-            ax.set_title(col)
-        ax.set_xlabel("Value")
-        if category_column_name and category_column_name in df.columns:
-            ax.set_yticklabels(unique_categories)
-            ax.set_ylabel(category_column_name)
-        else:
-            ax.set_yticklabels([""])
-        ax.xaxis.grid(True, linestyle="--", linewidth=0.5)
-        ax.yaxis.grid(True, linestyle="--", linewidth=0.5)
-    for j in range(num_plots, len(axes)):
-        fig.delaxes(axes[j])
-    plt.tight_layout()
-    plt.show()
-```
-
-
-
-```{python}
-def calculate_outliers(series, irqmultiplier=1.5) -> int:
-    """
-    Calculate the number of outliers in a given pandas Series using the IQR method.
-
-    Args:
-        series (pd.Series): The data series for which outliers are to be calculated.
-
-    Returns:
-        int: The number of outliers in the series.
-
-    Examples:
-        >>> import pandas as pd
-        >>> from pyverdichter.utils.eda import calculate_outliers
-        >>> series = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100])
-        >>> calculate_outliers(series)
-        1
-    """
-    quartile1 = series.quantile(0.25)
-    quartile3 = series.quantile(0.75)
-    iqr = quartile3 - quartile1
-    outliers = series[(series < (quartile1 - irqmultiplier * iqr)) | (series > (quartile3 + irqmultiplier * iqr))]
-    return outliers.shape[0]
-```
-
-```{python}
-# Prepare data for comparison
-# Convert X_base to DataFrame
-df_X = pd.DataFrame(X_base, columns=[f"x{i}" for i in range(n_features)])
-
-# Convert best_x to DataFrame (single row)
-df_best = pd.DataFrame(best_x.reshape(1, -1), columns=[f"x{i}" for i in range(n_features)])
-
-# Plot histograms comparing initial design and best point
-print("Comparison of Initial Design and Best Point (Histograms)")
-plot_anon_histograms(df_X, add_points=df_best)
-
-# Plot boxplots comparing initial design and best point
-print("Comparison of Initial Design and Best Point (Boxplots)")
-plot_anon_boxplots_single(df_X, add_points=df_best)
-```
-
-
+print("Verification script completed successfully.")
