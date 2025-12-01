@@ -281,11 +281,11 @@ print(f"n_iter_ (iterations): {opt.n_iter_}")
 
 ## Phase: Statistics Update
 
-### Method: `_update_stats()`
+### Method: `update_stats()`
 
 Update statistics like means and variances for noisy evaluations.
 
-*** What happens in `_update_stats()`:***
+*** What happens in `update_stats()`:***
 
 1. If `noise` is set (i.e., `repeats_initial` > 1):
     - Compute mean and variance of function values for each unique point
@@ -657,7 +657,7 @@ opt._update_storage(x_next_repeated, y_next)
 
 Update statistics after new evaluations.
 
-### What happens in `_update_stats()`:
+### What happens in `update_stats()`:
 
 **Always updated:**
 
@@ -672,7 +672,7 @@ Update statistics after new evaluations.
 - `var_y`: Variance per design point
 
 ```{python}
-opt._update_stats()
+opt.update_stats()
 print(f"Basic statistics:")
 print(f"  min_y: {opt.min_y:.6f}")
 print(f"  min_X: {opt.min_X}")
@@ -1016,7 +1016,7 @@ print(f"  Actual penalty = {penalty_base:.2f} + noise")
 4. `_handle_NA_initial_design()` - Remove NaN/inf from initial design
 5. `_check_size_initial_design()` - Validate sufficient points
 6. `_init_storage()` - Initialize storage (X_, y_, n_iter_)
-7. `_update_stats()` - Compute mean/variance for noisy functions
+7. `update_stats()` - Compute mean/variance for noisy functions
 8. `_init_tensorboard()` - Log initial design to TensorBoard (if enabled)
 9. `_get_best_xy_initial_design()` - Identify initial best
 
@@ -1036,7 +1036,7 @@ print(f"  Actual penalty = {penalty_base:.2f} + noise")
 16. `_update_success_rate()` - Update success tracking
 17. `_update_storage()` - Append new evaluations to storage
     - Internally calls `_inverse_transform_X()` - Convert back to original scale
-18. `_update_stats()` - Update mean/variance statistics
+18. `update_stats()` - Update mean/variance statistics
 19. `_write_tensorboard_hparams()` - Log hyperparameters (if enabled)
 20. `_write_tensorboard_scalars()` - Log scalar metrics (if enabled)
 21. `_update_best_main_loop()` - Update best solution
@@ -1206,7 +1206,7 @@ INITIALIZATION PHASE
   ├─► _init_storage()
   │     └─► Initialize X_, y_, n_iter_
   │
-  ├─► _update_stats()
+  ├─► update_stats()
   │     └─► Compute mean/variance (if noise)
   │
   ├─► _init_tensorboard() [if enabled]
@@ -1246,7 +1246,7 @@ SEQUENTIAL OPTIMIZATION LOOP (until max_iter or max_time)
   ├─► _update_storage()
   │     └─► Append new evaluations (with scale conversion)
   │
-  ├─► _update_stats()
+  ├─► update_stats()
   │     └─► Update mean/variance
   │
   ├─► _write_tensorboard_hparams() [if enabled]
