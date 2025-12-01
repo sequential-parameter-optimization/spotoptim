@@ -381,38 +381,17 @@ class SpotOptim(BaseEstimator):
         # Process bounds and factor variables
         self._factor_maps = {}  # Maps dimension index to {int: str} mapping
         self._original_bounds = bounds.copy()  # Store original bounds
-        self._process_factor_bounds()  # Maps factor bounds to integer indices
+        self.process_factor_bounds()  # Maps factor bounds to integer indices
 
         # Derived attribute dimension n_dim
         self.n_dim = len(bounds)
 
         # Default variable types
         if self.var_type is None:
-            # Auto-detect: factors for dims with string mappings, float otherwise
-            self.var_type = [
-                "factor" if i in self._factor_maps else "float"
-                for i in range(self.n_dim)
-            ]
+            self.var_type = self.detect_var_type()
 
         # Modify bounds based on var_type
-        for i, vtype in enumerate(self.var_type):
-            if vtype == "int":
-                # For integer variables, ensure bounds are integers
-                self.bounds[i] = (
-                    int(np.ceil(self.bounds[i][0])),
-                    int(np.floor(self.bounds[i][1])),
-                )
-            elif vtype == "factor":
-                # For factor variables, bounds are already set to (0, n_levels-1)
-                pass
-            elif vtype == "float":
-                # Continuous variable, convert explicitly to float bounds
-                self.bounds[i] = (float(self.bounds[i][0]), float(self.bounds[i][1]))
-            else:
-                raise ValueError(
-                    f"Unsupported var_type '{vtype}' at dimension {i}. "
-                    f"Supported types are 'float', 'int', 'factor'."
-                )
+        self.modify_bounds_based_on_var_type()
 
         self.lower = np.array([b[0] for b in self.bounds])
         self.upper = np.array([b[1] for b in self.bounds])
@@ -496,7 +475,70 @@ class SpotOptim(BaseEstimator):
         # Initialize TensorBoard writer
         self._init_tensorboard_writer()
 
-    def _process_factor_bounds(self) -> None:
+    def detect_var_type(self) -> list:
+        """Auto-detect variable types based on factor mappings.
+
+        Returns:
+            list: List of variable types ('factor' or 'float') for each dimension.
+                  Dimensions with factor mappings are assigned 'factor', others 'float'.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[('red', 'green', 'blue'), (0, 10)])
+            >>> spot.detect_var_type()
+            ['factor', 'float']
+        """
+        return [
+            "factor" if i in self._factor_maps else "float"
+            for i in range(self.n_dim)
+        ]
+
+    def modify_bounds_based_on_var_type(self) -> None:
+        """Modify bounds based on variable types.
+
+        Adjusts bounds for each dimension according to its var_type:
+        - 'int': Ensures bounds are integers (ceiling for lower, floor for upper)
+        - 'factor': Bounds already set to (0, n_levels-1) by process_factor_bounds
+        - 'float': Explicitly converts bounds to float
+
+        Raises:
+            ValueError: If an unsupported var_type is encountered.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0.5, 10.5)], var_type=['int'])
+            >>> spot.bounds
+            [(1, 10)]
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10)], var_type=['float'])
+            >>> spot.bounds
+            [(0.0, 10.0)]
+        """
+        for i, vtype in enumerate(self.var_type):
+            if vtype == "int":
+                # For integer variables, ensure bounds are integers
+                # Use Python's int() to convert numpy types to native Python int
+                lower = int(np.ceil(self.bounds[i][0]))
+                upper = int(np.floor(self.bounds[i][1]))
+                self.bounds[i] = (lower, upper)
+            elif vtype == "factor":
+                # For factor variables, bounds are already set to (0, n_levels-1)
+                # Ensure they are Python int, not numpy int64
+                lower = int(self.bounds[i][0])
+                upper = int(self.bounds[i][1])
+                self.bounds[i] = (lower, upper)
+            elif vtype == "float":
+                # Continuous variable, convert explicitly to float bounds
+                # Use Python's float() to convert numpy types to native Python float
+                lower = float(self.bounds[i][0])
+                upper = float(self.bounds[i][1])
+                self.bounds[i] = (lower, upper)
+            else:
+                raise ValueError(
+                    f"Unsupported var_type '{vtype}' at dimension {i}. "
+                    f"Supported types are 'float', 'int', 'factor'."
+                )
+
+    def process_factor_bounds(self) -> None:
         """Process bounds to handle factor variables.
 
         For dimensions with tuple bounds (factor variables), creates internal
@@ -507,7 +549,7 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> from spotoptim import SpotOptim
             >>> spot = SpotOptim(fun=lambda x: x, bounds=[('red', 'green', 'blue'), (0, 10)])
-            >>> spot._process_factor_bounds()
+            >>> spot.process_factor_bounds()
             Factor variable at dimension 0:
               Levels: ['red', 'green', 'blue']
               Mapped to integers: 0 to 2
@@ -529,8 +571,8 @@ class SpotOptim(BaseEstimator):
                         i: level for i, level in enumerate(factor_levels)
                     }
 
-                    # Replace with integer bounds
-                    processed_bounds.append((0, n_levels - 1))
+                    # Replace with integer bounds (use Python int, not numpy types)
+                    processed_bounds.append((int(0), int(n_levels - 1)))
 
                     if self.verbose:
                         print(f"Factor variable at dimension {dim_idx}:")
@@ -540,7 +582,17 @@ class SpotOptim(BaseEstimator):
                     isinstance(v, (int, float)) for v in bound
                 ):
                     # Numeric bound tuple
-                    processed_bounds.append(bound)
+                    # Always cast to Python int if both are integer-valued
+                    low, high = bound
+                    if isinstance(low, float) and low.is_integer():
+                        low = int(low)
+                    if isinstance(high, float) and high.is_integer():
+                        high = int(high)
+                    if isinstance(low, int) and isinstance(high, int):
+                        processed_bounds.append((low, high))
+                    else:
+                        # Keep as float if not integer-valued
+                        processed_bounds.append((low, high))
                 else:
                     raise ValueError(
                         f"Invalid bound at dimension {dim_idx}: {bound}. "
@@ -732,7 +784,14 @@ class SpotOptim(BaseEstimator):
                     self.lower[i], self.upper[i] = lower_t, upper_t
 
         # Update self.bounds to reflect transformed bounds
-        self.bounds = [(self.lower[i], self.upper[i]) for i in range(len(self.lower))]
+        # Convert numpy types to Python native types (int or float based on var_type)
+        self.bounds = []
+        for i in range(len(self.lower)):
+            # Check if var_type has this index (handle mismatched lengths)
+            if i < len(self.var_type) and (self.var_type[i] == 'int' or self.var_type[i] == 'factor'):
+                self.bounds.append((int(self.lower[i]), int(self.upper[i])))
+            else:
+                self.bounds.append((float(self.lower[i]), float(self.upper[i])))
 
     def _setup_dimension_reduction(self) -> None:
         """Set up dimension reduction by identifying fixed dimensions.
@@ -804,7 +863,14 @@ class SpotOptim(BaseEstimator):
             ]
 
             # Update bounds list for reduced dimensions
-            self.bounds = [(self.lower[i], self.upper[i]) for i in range(self.n_dim)]
+            # Convert numpy types to Python native types (int or float based on var_type)
+            self.bounds = []
+            for i in range(self.n_dim):
+                # Check if var_type has this index (handle mismatched lengths)
+                if i < len(self.var_type) and (self.var_type[i] == 'int' or self.var_type[i] == 'factor'):
+                    self.bounds.append((int(self.lower[i]), int(self.upper[i])))
+                else:
+                    self.bounds.append((float(self.lower[i]), float(self.upper[i])))
 
             # Recreate LHS sampler with reduced dimensions
             self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
