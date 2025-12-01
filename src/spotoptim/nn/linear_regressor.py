@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from typing import Any
 
 
 class LinearRegressor(nn.Module):
@@ -273,7 +274,7 @@ class LinearRegressor(nn.Module):
         return self.network(x)
 
     def get_optimizer(
-        self, optimizer_name: str = "Adam", lr: float = None, **kwargs
+        self, optimizer_name: str = "Adam", lr: float = None, **kwargs: Any
     ) -> "optim.Optimizer":
         """Get a PyTorch optimizer configured for this model.
 

@@ -56,7 +56,7 @@ def plot_mo(
     y_rf_color="blue",
     y_best_color="red",
     title: str = "",
-):
+) -> None:
     """
     Generates scatter plots for each combination of two targets from a multi-output
     prediction while highlighting Pareto optimal points.

@@ -605,20 +605,17 @@ class SpotOptim(BaseEstimator):
                         print(f"  Levels: {factor_levels}")
                         print(f"  Mapped to integers: 0 to {n_levels - 1}")
                 elif len(bound) == 2 and all(
-                    isinstance(v, (int, float)) for v in bound
+                    isinstance(v, (int, float, np.integer, np.floating)) for v in bound
                 ):
-                    # Numeric bound tuple
-                    # Always cast to Python int if both are integer-valued
-                    low, high = bound
-                    if isinstance(low, float) and low.is_integer():
-                        low = int(low)
-                    if isinstance(high, float) and high.is_integer():
-                        high = int(high)
-                    if isinstance(low, int) and isinstance(high, int):
-                        processed_bounds.append((low, high))
-                    else:
-                        # Keep as float if not integer-valued
-                        processed_bounds.append((low, high))
+                    # Numeric bound tuple (accepts Python and numpy numeric types)
+                    # Always cast to Python float/int
+                    low, high = float(bound[0]), float(bound[1])
+                    
+                    # Convert to int if both are integer-valued
+                    if low.is_integer() and high.is_integer():
+                        low, high = int(low), int(high)
+                    
+                    processed_bounds.append((low, high))
                 else:
                     raise ValueError(
                         f"Invalid bound at dimension {dim_idx}: {bound}. "
