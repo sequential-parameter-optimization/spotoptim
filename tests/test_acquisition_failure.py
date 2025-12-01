@@ -307,7 +307,7 @@ class TestAcquisitionFailureIntegration:
         # With high tolerance, points should be well-distributed
         # Check that minimum pairwise distance is reasonable
         n_points = optimizer.X_.shape[0]
-        min_pairwise_dist = float('inf')
+        min_pairwise_dist = float("inf")
         for i in range(n_points):
             for j in range(i + 1, n_points):
                 dist = np.linalg.norm(optimizer.X_[i] - optimizer.X_[j])
@@ -326,7 +326,7 @@ class TestAcquisitionFailureIntegration:
         def rosenbrock(X):
             x = X[:, 0]
             y = X[:, 1]
-            return (1 - x)**2 + 100 * (y - x**2)**2
+            return (1 - x) ** 2 + 100 * (y - x**2) ** 2
 
         # Random strategy
         opt_random = SpotOptim(
@@ -387,9 +387,9 @@ class TestAcquisitionFailureWithVariableTypes:
 
             # Check that all points are integers
             for x in optimizer.X_:
-                assert np.all(x == np.round(x)), (
-                    f"Strategy '{strategy}': Expected integer values, got {x}"
-                )
+                assert np.all(
+                    x == np.round(x)
+                ), f"Strategy '{strategy}': Expected integer values, got {x}"
 
             # Check final result
             assert result.success is True
@@ -399,7 +399,7 @@ class TestAcquisitionFailureWithVariableTypes:
         """Test fallback strategies respect factor variable constraints."""
 
         def factor_func(X):
-            return np.sum((X - 2)**2, axis=1)
+            return np.sum((X - 2) ** 2, axis=1)
 
         # Test both strategies
         for strategy in ["random", "mm"]:
@@ -418,9 +418,9 @@ class TestAcquisitionFailureWithVariableTypes:
 
             # Check that all points are integers (factors)
             for x in optimizer.X_:
-                assert np.all(x == np.round(x)), (
-                    f"Strategy '{strategy}': Expected factor (int) values, got {x}"
-                )
+                assert np.all(
+                    x == np.round(x)
+                ), f"Strategy '{strategy}': Expected factor (int) values, got {x}"
 
             # Check final result
             assert result.success is True
@@ -436,7 +436,7 @@ class TestAcquisitionFailureWithVariableTypes:
             optimizer = SpotOptim(
                 fun=mixed_func,
                 bounds=[(-5, 5), (-5, 5), (-5, 5)],
-                var_type=["num", "int", "factor"],
+                var_type=["float", "int", "factor"],
                 acquisition_failure_strategy=strategy,
                 max_iter=20,
                 n_initial=8,
@@ -448,15 +448,15 @@ class TestAcquisitionFailureWithVariableTypes:
 
             # Check variable types in all evaluated points
             for x in optimizer.X_:
-                # x[0] is num - can be any float
+                # x[0] is float - can be any float
                 # x[1] is int - must be integer
-                assert x[1] == np.round(x[1]), (
-                    f"Strategy '{strategy}': x[1] should be int, got {x[1]}"
-                )
+                assert x[1] == np.round(
+                    x[1]
+                ), f"Strategy '{strategy}': x[1] should be int, got {x[1]}"
                 # x[2] is factor - must be integer
-                assert x[2] == np.round(x[2]), (
-                    f"Strategy '{strategy}': x[2] should be factor (int), got {x[2]}"
-                )
+                assert x[2] == np.round(
+                    x[2]
+                ), f"Strategy '{strategy}': x[2] should be factor (int), got {x[2]}"
 
             assert result.success is True
 
@@ -568,6 +568,6 @@ class TestAcquisitionFailureEdgeCases:
             results[0].x,
             results[1].x,
             decimal=10,
-            err_msg="Results with same seed should be identical"
+            err_msg="Results with same seed should be identical",
         )
         assert abs(results[0].fun - results[1].fun) < 1e-10

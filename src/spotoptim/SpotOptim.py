@@ -381,12 +381,10 @@ class SpotOptim(BaseEstimator):
         # Process bounds and factor variables
         self._factor_maps = {}  # Maps dimension index to {int: str} mapping
         self._original_bounds = bounds.copy()  # Store original bounds
-        self._process_factor_bounds()
+        self._process_factor_bounds()  # Maps factor bounds to integer indices
 
-        # Derived attributes
+        # Derived attribute dimension n_dim
         self.n_dim = len(bounds)
-        self.lower = np.array([b[0] for b in self.bounds])
-        self.upper = np.array([b[1] for b in self.bounds])
 
         # Default variable types
         if self.var_type is None:
@@ -395,6 +393,29 @@ class SpotOptim(BaseEstimator):
                 "factor" if i in self._factor_maps else "float"
                 for i in range(self.n_dim)
             ]
+
+        # Modify bounds based on var_type
+        for i, vtype in enumerate(self.var_type):
+            if vtype == "int":
+                # For integer variables, ensure bounds are integers
+                self.bounds[i] = (
+                    int(np.ceil(self.bounds[i][0])),
+                    int(np.floor(self.bounds[i][1])),
+                )
+            elif vtype == "factor":
+                # For factor variables, bounds are already set to (0, n_levels-1)
+                pass
+            elif vtype == "float":
+                # Continuous variable, convert explicitly to float bounds
+                self.bounds[i] = (float(self.bounds[i][0]), float(self.bounds[i][1]))
+            else:
+                raise ValueError(
+                    f"Unsupported var_type '{vtype}' at dimension {i}. "
+                    f"Supported types are 'float', 'int', 'factor'."
+                )
+
+        self.lower = np.array([b[0] for b in self.bounds])
+        self.upper = np.array([b[1] for b in self.bounds])
 
         # Default variable names
         if self.var_name is None:
@@ -535,8 +556,8 @@ class SpotOptim(BaseEstimator):
         # Update bounds with processed values
         self.bounds = processed_bounds
 
-    def _transform_value(self, x: float, trans: Optional[str]) -> float:
-        """Apply transformation to a single value.
+    def transform_value(self, x: float, trans: Optional[str]) -> float:
+        """Apply transformation to a single float value.
 
         Args:
             x: Value to transform
@@ -546,20 +567,29 @@ class SpotOptim(BaseEstimator):
         Returns:
             Transformed value
 
+        Raises:
+            TypeError: If x is not a float.
+            ValueError: If an unknown transformation is specified.
+
         Examples:
             >>> from spotoptim import SpotOptim
             >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
-            >>> spot._transform_value(10, 'log10')
+            >>> spot.transform_value(10, 'log10')
             1.0
-            >>> spot._transform_value(100, 'log')
+            >>> spot.transform_value(100, 'log')
             4.605170185988092
-            >>> spot._transform_value(4, 'sqrt')
+            >>> spot.transform_value(4, 'sqrt')
             2.0
-            >>> spot._transform_value(2, 'exp')
+            >>> spot.transform_value(2, 'exp')
             7.38905609893065
-            >>> spot._transform_value(3, 'square')
+            >>> spot.transform_value(3, 'square')
             9
         """
+        # Ensure x is a float
+        if not isinstance(x, float):
+            raise TypeError(
+                f"transform_value expects a float, got {type(x).__name__} (value: {x})"
+            )
         if trans is None or trans == "id":
             return x
         elif trans == "log10":
@@ -579,8 +609,8 @@ class SpotOptim(BaseEstimator):
         else:
             raise ValueError(f"Unknown transformation: {trans}")
 
-    def _inverse_transform_value(self, x: float, trans: Optional[str]) -> float:
-        """Apply inverse transformation to a single value.
+    def inverse_transform_value(self, x: float, trans: Optional[str]) -> float:
+        """Apply inverse transformation to a single float value.
 
         Args:
             x: Transformed value
@@ -593,13 +623,18 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> from spotoptim import SpotOptim
             >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
-            >>> spot._inverse_transform_value(1.0, 'log10')
+            >>> spot.inverse_transform_value(1.0, 'log10')
             10.0
-            >>> spot._inverse_transform_value(4.605170185988092, 'log')
+            >>> spot.inverse_transform_value(4.605170185988092, 'log')
             100.0
-            >>> spot._inverse_transform_value(2.0, 'sqrt')
+            >>> spot.inverse_transform_value(2.0, 'sqrt')
             4.0
         """
+        # Ensure x is a float
+        if not isinstance(x, float):
+            raise TypeError(
+                f"transform_value expects a float, got {type(x).__name__} (value: {x})"
+            )
         if trans is None or trans == "id":
             return x
         elif trans == "log10":
@@ -642,7 +677,7 @@ class SpotOptim(BaseEstimator):
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
                 X_transformed[:, i] = np.array(
-                    [self._transform_value(x, trans) for x in X[:, i]]
+                    [self.transform_value(x, trans) for x in X[:, i]]
                 )
         return X_transformed
 
@@ -669,7 +704,7 @@ class SpotOptim(BaseEstimator):
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
                 X_original[:, i] = np.array(
-                    [self._inverse_transform_value(x, trans) for x in X[:, i]]
+                    [self.inverse_transform_value(x, trans) for x in X[:, i]]
                 )
         return X_original
 
@@ -687,8 +722,8 @@ class SpotOptim(BaseEstimator):
         """
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
-                lower_t = self._transform_value(self.lower[i], trans)
-                upper_t = self._transform_value(self.upper[i], trans)
+                lower_t = self.transform_value(self.lower[i], trans)
+                upper_t = self.transform_value(self.upper[i], trans)
 
                 # Handle reversed bounds (e.g., reciprocal transformation)
                 if lower_t > upper_t:

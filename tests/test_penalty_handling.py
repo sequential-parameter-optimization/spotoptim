@@ -91,7 +91,9 @@ class TestApplyPenaltyNAAdaptive:
 
         # The penalty value should be close to expected (with small random noise)
         assert y_result[4] > max_y  # Should be larger than max
-        assert np.abs(y_result[4] - expected_penalty) < 1.0  # Within reasonable range of noise
+        assert (
+            np.abs(y_result[4] - expected_penalty) < 1.0
+        )  # Within reasonable range of noise
 
     def test_adaptive_penalty_with_multiple_nans(self):
         """Test adaptive penalty with multiple NaN values."""
@@ -394,13 +396,13 @@ class TestApplyPenaltyNARandomNoise:
         )
 
         y = np.array([1.0, 2.0, 3.0, np.nan])
-        
+
         # Test with larger noise
         y_result_large = optimizer._apply_penalty_NA(y, sd=1.0)
-        
+
         # Reset random state
         np.random.seed(42)
-        
+
         # Test with smaller noise
         y_result_small = optimizer._apply_penalty_NA(y, sd=0.01)
 
@@ -495,7 +497,7 @@ class TestApplyPenaltyNAIntegration:
 
         y_original = np.array([1.0, 2.0, np.nan, 4.0])
         y_copy = y_original.copy()
-        
+
         y_result = optimizer._apply_penalty_NA(y_original)
 
         # Original array should be unchanged (NaN still present)
@@ -643,6 +645,7 @@ class TestApplyPenaltyNAEdgeCases:
         y[::100] = np.nan  # Every 100th value is NaN
 
         import time
+
         start = time.time()
         y_result = optimizer._apply_penalty_NA(y)
         elapsed = time.time() - start

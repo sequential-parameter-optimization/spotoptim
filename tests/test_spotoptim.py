@@ -418,7 +418,8 @@ class TestSpotOptimOptimize:
         optimizer = SpotOptim(
             fun=test_func,
             bounds=bounds,
-            max_iter=5, n_initial=5,
+            max_iter=5,
+            n_initial=5,
             seed=42,
             verbose=False,
         )

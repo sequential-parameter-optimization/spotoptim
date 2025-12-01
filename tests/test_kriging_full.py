@@ -208,9 +208,7 @@ class TestKrigingFull:
         y = np.sum(X**2, axis=1)
 
         # Model with 'float'
-        model_float = Kriging(
-            var_type=["float", "float"], seed=42, model_fun_evals=30
-        )
+        model_float = Kriging(var_type=["float", "float"], seed=42, model_fun_evals=30)
         model_float.fit(X, y)
 
         # Model with 'num'
@@ -224,9 +222,7 @@ class TestKrigingFull:
     def test_kriging_only_factor_variables(self):
         """Test Kriging with only factor variables."""
         # Categorical data: 3 variables, each with 2-3 categories
-        X = np.array(
-            [[0, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 1], [0, 0, 2], [1, 1, 2]]
-        )
+        X = np.array([[0, 0, 0], [1, 0, 1], [0, 1, 0], [1, 1, 1], [0, 0, 2], [1, 1, 2]])
         y = np.array([1.0, 2.0, 1.5, 3.0, 1.2, 3.5])
 
         model = Kriging(
@@ -465,7 +461,11 @@ class TestKrigingFull:
         y = np.sum(X**2, axis=1)
 
         model = Kriging(
-            method="regression", min_theta=-2.0, max_theta=1.0, seed=42, model_fun_evals=30
+            method="regression",
+            min_theta=-2.0,
+            max_theta=1.0,
+            seed=42,
+            model_fun_evals=30,
         )
         model.fit(X, y)
 

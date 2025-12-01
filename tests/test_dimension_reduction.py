@@ -20,8 +20,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-3, 3), (-1, 1)],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         assert not opt.red_dim
@@ -34,8 +35,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2, 2), (-3, 3)],  # Middle dimension fixed at 2
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         assert opt.red_dim
@@ -49,8 +51,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2, 2), (3, 3), (-1, 1)],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         assert opt.red_dim
@@ -64,7 +67,7 @@ class TestDimensionReduction:
             bounds=[(2, 2), (3, 3), (4, 4)],
             max_iter=1,
             n_initial=1,
-            seed=42
+            seed=42,
         )
 
         assert opt.red_dim
@@ -76,8 +79,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2, 2), (-3, 3)],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         # Create points in reduced space (only dimensions 0 and 2)
@@ -100,8 +104,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2, 2), (-3, 3)],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         # Create points in full space
@@ -121,8 +126,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2, 2), (3, 3), (-1, 1)],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         # Start with reduced points
@@ -137,6 +143,7 @@ class TestDimensionReduction:
 
     def test_optimization_with_fixed_dimensions(self):
         """Test that optimization works correctly with fixed dimensions."""
+
         def objective(X):
             # f(x0, x1, x2) = x0^2 + x1^2 + x2^2
             # With x1=2 fixed, minimum should be at x0=0, x2=0
@@ -148,7 +155,7 @@ class TestDimensionReduction:
             max_iter=10,
             n_initial=5,
             seed=42,
-            verbose=False
+            verbose=False,
         )
 
         result = opt.optimize()
@@ -174,8 +181,9 @@ class TestDimensionReduction:
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (100, 100), (1, 10), (5, 5)],  # pressure and volume fixed
             var_name=custom_names,
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         # Check reduced names only include varying dimensions
@@ -188,8 +196,9 @@ class TestDimensionReduction:
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2, 2), (0, 10), (3, 3)],
             var_type=["float", "int", "int", "factor"],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         # Check reduced types only include varying dimensions
@@ -201,8 +210,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2, 2), (-3, 3)],
-            max_iter=10, n_initial=10,
-            seed=42
+            max_iter=10,
+            n_initial=10,
+            seed=42,
         )
 
         X0 = opt._generate_initial_design()
@@ -212,22 +222,19 @@ class TestDimensionReduction:
 
     def test_provided_initial_design_full_dimensions(self):
         """Test optimization with user-provided initial design in full dimensions."""
+
         def objective(X):
             return np.sum(X**2, axis=1)
 
         # User provides points in full dimensions
-        X_start_full = np.array([
-            [1.0, 2.0, 3.0],
-            [0.5, 2.0, 1.0],
-            [-1.0, 2.0, -1.0]
-        ])
+        X_start_full = np.array([[1.0, 2.0, 3.0], [0.5, 2.0, 1.0], [-1.0, 2.0, -1.0]])
 
         opt = SpotOptim(
             fun=objective,
             bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 fixed at 2
             max_iter=5,
             n_initial=3,
-            seed=42
+            seed=42,
         )
 
         result = opt.optimize(X0=X_start_full)
@@ -247,8 +254,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=objective,
             bounds=[(-5, 5), (2, 2), (-5, 5)],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         opt.optimize()
@@ -263,7 +271,7 @@ class TestDimensionReduction:
             bounds=[(-5, 5), (2, 2), (-5, 5)],
             max_iter=5,
             n_initial=3,
-            seed=42
+            seed=42,
         )
 
         result = opt.optimize()
@@ -276,15 +284,12 @@ class TestDimensionReduction:
 
     def test_no_reduction_preserves_behavior(self):
         """Test that optimization without reduction works as before."""
+
         def sphere(X):
             return np.sum(X**2, axis=1)
 
         opt_no_red = SpotOptim(
-            fun=sphere,
-            bounds=[(-5, 5), (-5, 5)],
-            max_iter=10,
-            n_initial=5,
-            seed=42
+            fun=sphere, bounds=[(-5, 5), (-5, 5)], max_iter=10, n_initial=5, seed=42
         )
 
         result = opt_no_red.optimize()
@@ -298,15 +303,16 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[
-                (1, 1),      # Fixed
-                (-5, 5),     # Varying
-                (2, 2),      # Fixed
-                (-3, 3),     # Varying
-                (0, 0),      # Fixed
-                (1, 10)      # Varying
+                (1, 1),  # Fixed
+                (-5, 5),  # Varying
+                (2, 2),  # Fixed
+                (-3, 3),  # Varying
+                (0, 0),  # Fixed
+                (1, 10),  # Varying
             ],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         assert opt.red_dim
@@ -330,8 +336,9 @@ class TestDimensionReduction:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (2.0, 2.0), (-3, 3)],
-            max_iter=3, n_initial=3,
-            seed=42
+            max_iter=3,
+            n_initial=3,
+            seed=42,
         )
 
         assert opt.red_dim

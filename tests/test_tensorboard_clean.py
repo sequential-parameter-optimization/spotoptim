@@ -16,7 +16,7 @@ class TestTensorBoardClean:
         """Create a temporary runs directory with some test subdirectories."""
         # Ensure runs directory exists
         os.makedirs("runs", exist_ok=True)
-        
+
         # Create some test subdirectories
         test_dirs = [
             "runs/test_log_1",
@@ -58,10 +58,9 @@ class TestTensorBoardClean:
     def test_clean_removes_old_logs(self):
         """Test that enabling clean removes old TensorBoard logs."""
         # Count initial subdirectories
-        initial_count = len([
-            d for d in os.listdir("runs")
-            if os.path.isdir(os.path.join("runs", d))
-        ])
+        initial_count = len(
+            [d for d in os.listdir("runs") if os.path.isdir(os.path.join("runs", d))]
+        )
         assert initial_count > 0, "Test setup should create subdirectories"
 
         # Create optimizer with clean enabled (but no logging)
@@ -77,8 +76,7 @@ class TestTensorBoardClean:
         # Check that runs directory is now empty or doesn't exist
         if os.path.exists("runs"):
             remaining = [
-                d for d in os.listdir("runs")
-                if os.path.isdir(os.path.join("runs", d))
+                d for d in os.listdir("runs") if os.path.isdir(os.path.join("runs", d))
             ]
             assert len(remaining) == 0, "All subdirectories should be removed"
 
@@ -97,10 +95,9 @@ class TestTensorBoardClean:
 
         # Old logs should be cleaned, but new log directory should exist
         subdirs = [
-            d for d in os.listdir("runs")
-            if os.path.isdir(os.path.join("runs", d))
+            d for d in os.listdir("runs") if os.path.isdir(os.path.join("runs", d))
         ]
-        
+
         # Should have exactly one directory (the new one)
         assert len(subdirs) == 1
         # Should start with 'spotoptim_'
@@ -121,7 +118,7 @@ class TestTensorBoardClean:
             tensorboard_clean=True,
             verbose=False,
         )
-        
+
         # Optimizer should be created successfully
         assert optimizer.tensorboard_clean is True
 
@@ -163,8 +160,7 @@ class TestTensorBoardClean:
         """Test that logs are preserved when clean is disabled."""
         # Count initial subdirectories
         initial_dirs = [
-            d for d in os.listdir("runs")
-            if os.path.isdir(os.path.join("runs", d))
+            d for d in os.listdir("runs") if os.path.isdir(os.path.join("runs", d))
         ]
         initial_count = len(initial_dirs)
         assert initial_count > 0
@@ -181,8 +177,7 @@ class TestTensorBoardClean:
 
         # All original directories should still exist
         remaining_dirs = [
-            d for d in os.listdir("runs")
-            if os.path.isdir(os.path.join("runs", d))
+            d for d in os.listdir("runs") if os.path.isdir(os.path.join("runs", d))
         ]
         assert len(remaining_dirs) == initial_count
 
@@ -199,19 +194,18 @@ class TestTensorBoardClean:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should have successful optimization
         assert result.success
-        
+
         # Should have exactly one log directory
         subdirs = [
-            d for d in os.listdir("runs")
-            if os.path.isdir(os.path.join("runs", d))
+            d for d in os.listdir("runs") if os.path.isdir(os.path.join("runs", d))
         ]
         assert len(subdirs) == 1
-        
+
         # Log directory should contain TensorBoard event files
         log_dir = os.path.join("runs", subdirs[0])
         files = os.listdir(log_dir)
@@ -231,10 +225,10 @@ class TestTensorBoardCleanEdgeCases:
         # Create custom directory
         custom_path = "my_logs/experiment_1"
         os.makedirs(custom_path, exist_ok=True)
-        
+
         # Create some old logs in runs
         os.makedirs("runs/old_log", exist_ok=True)
-        
+
         try:
             # Create optimizer with clean and custom path
             optimizer = SpotOptim(
@@ -247,18 +241,19 @@ class TestTensorBoardCleanEdgeCases:
                 tensorboard_clean=True,
                 verbose=False,
             )
-            
+
             # Runs directory should be cleaned
             if os.path.exists("runs"):
                 subdirs = [
-                    d for d in os.listdir("runs")
+                    d
+                    for d in os.listdir("runs")
                     if os.path.isdir(os.path.join("runs", d))
                 ]
                 assert len(subdirs) == 0
-            
+
             # Custom directory should still exist
             assert os.path.exists(custom_path)
-            
+
         finally:
             if os.path.exists("my_logs"):
                 shutil.rmtree("my_logs")
@@ -267,7 +262,7 @@ class TestTensorBoardCleanEdgeCases:
         """Test that clean handles nested structures correctly."""
         # Create nested structure
         os.makedirs("runs/parent/child", exist_ok=True)
-        
+
         optimizer = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
@@ -276,19 +271,18 @@ class TestTensorBoardCleanEdgeCases:
             tensorboard_clean=True,
             verbose=False,
         )
-        
+
         # Should remove parent directory (which contains child)
         if os.path.exists("runs"):
             subdirs = [
-                d for d in os.listdir("runs")
-                if os.path.isdir(os.path.join("runs", d))
+                d for d in os.listdir("runs") if os.path.isdir(os.path.join("runs", d))
             ]
             assert len(subdirs) == 0
 
     def test_clean_multiple_times(self):
         """Test that clean can be called multiple times safely."""
         os.makedirs("runs/log1", exist_ok=True)
-        
+
         # First clean
         opt1 = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -298,10 +292,10 @@ class TestTensorBoardCleanEdgeCases:
             tensorboard_clean=True,
             verbose=False,
         )
-        
+
         # Recreate some logs
         os.makedirs("runs/log2", exist_ok=True)
-        
+
         # Second clean
         opt2 = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -311,6 +305,6 @@ class TestTensorBoardCleanEdgeCases:
             tensorboard_clean=True,
             verbose=False,
         )
-        
+
         # Should work without errors
         assert opt2.tensorboard_clean is True

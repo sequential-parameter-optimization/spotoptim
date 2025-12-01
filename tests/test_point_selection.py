@@ -30,12 +30,17 @@ def test_select_distant_points_basic():
     selected_X, selected_y = optimizer._select_distant_points(X, y, k)
 
     # Check shapes
-    assert selected_X.shape == (k, 2), f"Expected shape ({k}, 2), got {selected_X.shape}"
+    assert selected_X.shape == (
+        k,
+        2,
+    ), f"Expected shape ({k}, 2), got {selected_X.shape}"
     assert selected_y.shape == (k,), f"Expected shape ({k},), got {selected_y.shape}"
 
     # Check that selected points are from original set
     for point in selected_X:
-        assert any(np.allclose(point, x) for x in X), "Selected point not in original set"
+        assert any(
+            np.allclose(point, x) for x in X
+        ), "Selected point not in original set"
 
 
 def test_select_best_cluster_basic():
@@ -61,7 +66,9 @@ def test_select_best_cluster_basic():
 
     # Check that selected points are from original set
     for point in selected_X:
-        assert any(np.allclose(point, x) for x in X), "Selected point not in original set"
+        assert any(
+            np.allclose(point, x) for x in X
+        ), "Selected point not in original set"
 
     # Check that the best cluster (with smaller y values) was selected
     assert np.mean(selected_y) < 5, "Expected best cluster with smaller y values"
@@ -133,7 +140,8 @@ def test_fit_surrogate_with_selection():
     optimizer = SpotOptim(
         fun=sphere,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=10, n_initial=10,
+        max_iter=10,
+        n_initial=10,
         max_surrogate_points=5,
         selection_method="distant",
         verbose=False,
@@ -246,7 +254,8 @@ def test_verbose_output(capsys):
     optimizer = SpotOptim(
         fun=sphere,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=5, n_initial=5,
+        max_iter=5,
+        n_initial=5,
         max_surrogate_points=8,
         selection_method="distant",
         verbose=True,
@@ -260,7 +269,9 @@ def test_verbose_output(capsys):
     optimizer._fit_surrogate(X, y)
 
     captured = capsys.readouterr()
-    assert "Selecting subset" in captured.out, "Expected verbose output about point selection"
+    assert (
+        "Selecting subset" in captured.out
+    ), "Expected verbose output about point selection"
 
 
 if __name__ == "__main__":

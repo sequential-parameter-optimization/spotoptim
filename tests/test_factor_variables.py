@@ -279,7 +279,7 @@ class TestFactorVariables:
         assert opt.red_dim == True  # Using == for numpy bool
         assert opt.n_dim == 0  # Reduced to 0 dimensions (was 1 originally)
         assert len(opt.lower) == 0  # Reduced bounds
-        
+
         # The only level should be mapped
         assert 0 in opt._factor_maps
         assert opt._factor_maps[0][0] == "only_option"
@@ -351,7 +351,7 @@ class TestFactorVariables:
                 (0, 4),  # num_hidden_layers
                 ("ReLU", "Sigmoid", "Tanh", "LeakyReLU"),  # activation
             ],
-            var_type=["num", "int", "int", "factor"],
+            var_type=["float", "int", "int", "factor"],
             max_iter=30,
             n_initial=15,
             seed=42,
@@ -376,6 +376,8 @@ class TestFactorVariables:
         assert 0 <= result.x[2] <= 4
 
         # Likely to find ReLU since it's best
-        print(f"Best configuration: lr={lr_optimal:.6f}, l1={result.x[1]}, "
-              f"layers={result.x[2]}, activation={result.x[3]}")
+        print(
+            f"Best configuration: lr={lr_optimal:.6f}, l1={result.x[1]}, "
+            f"layers={result.x[2]}, activation={result.x[3]}"
+        )
         print(f"Best score: {result.fun:.4f}")

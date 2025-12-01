@@ -20,14 +20,15 @@ class TestMaxIterValidation:
             SpotOptim(
                 fun=simple_sphere,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=5, n_initial=10,  # n_initial > max_iter
-                seed=42
+                max_iter=5,
+                n_initial=10,  # n_initial > max_iter
+                seed=42,
             )
 
     def test_max_iter_equals_n_initial_works(self):
         """Test that max_iter == n_initial works correctly (returns best from initial design)."""
         n_initial = 10
-        
+
         optimizer = SpotOptim(
             fun=simple_sphere,
             bounds=[(-5, 5), (-5, 5)],
@@ -36,22 +37,22 @@ class TestMaxIterValidation:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should complete successfully
         assert result.success
-        
+
         # Should only perform initial design (no sequential iterations)
         assert result.nfev == n_initial
         assert result.nit == 0
-        
+
         # Should have valid result
         assert result.x is not None
         assert result.fun is not None
         assert isinstance(result.fun, (int, float))
         assert result.fun >= 0  # Sphere function is always >= 0
-        
+
         # Check that result came from initial design
         assert result.X.shape[0] == n_initial
         assert result.y.shape[0] == n_initial
@@ -66,12 +67,12 @@ class TestMaxIterValidation:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should complete successfully
         assert result.success
-        
+
         # Should perform sequential iterations
         assert result.nfev == 20
         assert result.nit == 10  # 20 - 10 = 10 sequential iterations
@@ -80,16 +81,16 @@ class TestMaxIterValidation:
         """Test that error message includes actual values."""
         max_iter = 3
         n_initial = 7
-        
+
         with pytest.raises(ValueError) as exc_info:
             SpotOptim(
                 fun=simple_sphere,
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=max_iter,
                 n_initial=n_initial,
-                seed=42
+                seed=42,
             )
-        
+
         error_message = str(exc_info.value)
         assert str(max_iter) in error_message
         assert str(n_initial) in error_message
@@ -105,9 +106,9 @@ class TestMaxIterValidation:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         assert result.success
         assert result.nfev == 1
         assert result.nit == 0
@@ -116,15 +117,9 @@ class TestMaxIterValidation:
 
     def test_custom_initial_design_with_equal_max_iter(self):
         """Test that custom initial design works when max_iter == n_initial."""
-        X0 = np.array([
-            [1.0, 1.0],
-            [-1.0, -1.0],
-            [2.0, -2.0],
-            [-2.0, 2.0],
-            [0.5, 0.5]
-        ])
+        X0 = np.array([[1.0, 1.0], [-1.0, -1.0], [2.0, -2.0], [-2.0, 2.0], [0.5, 0.5]])
         n_points = X0.shape[0]
-        
+
         optimizer = SpotOptim(
             fun=simple_sphere,
             bounds=[(-5, 5), (-5, 5)],
@@ -133,12 +128,12 @@ class TestMaxIterValidation:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize(X0=X0)
-        
+
         assert result.success
         assert result.nfev == n_points
         assert result.nit == 0
-        
+
         # Best should be the point closest to origin
         assert result.fun == 0.5  # [0.5, 0.5] -> 0.5^2 + 0.5^2 = 0.5

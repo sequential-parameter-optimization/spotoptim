@@ -14,7 +14,7 @@ class TestOCBAParameters:
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
-            n_initial=5
+            n_initial=5,
         )
         assert opt.ocba_delta == 0
 
@@ -25,7 +25,7 @@ class TestOCBAParameters:
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
             n_initial=5,
-            ocba_delta=3
+            ocba_delta=3,
         )
         assert opt.ocba_delta == 3
 
@@ -36,7 +36,7 @@ class TestOCBAParameters:
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
             n_initial=5,
-            ocba_delta=2
+            ocba_delta=2,
         )
         assert opt_no_noise.noise is False
         assert opt_no_noise.ocba_delta == 2
@@ -47,7 +47,7 @@ class TestOCBAParameters:
             max_iter=10,
             n_initial=5,
             repeats_initial=2,
-            ocba_delta=2
+            ocba_delta=2,
         )
         assert opt_with_noise.noise is True
         assert opt_with_noise.ocba_delta == 2
@@ -75,7 +75,7 @@ class TestOCBAIntegration:
             repeats_surrogate=1,
             ocba_delta=2,
             seed=42,
-            verbose=False
+            verbose=False,
         )
 
         result = opt.optimize()
@@ -112,7 +112,7 @@ class TestOCBAIntegration:
             repeats_initial=2,
             ocba_delta=2,
             seed=42,
-            verbose=False
+            verbose=False,
         )
 
         result = opt.optimize()
@@ -140,7 +140,7 @@ class TestOCBAIntegration:
             repeats_initial=2,
             ocba_delta=2,
             seed=42,
-            verbose=False
+            verbose=False,
         )
 
         result = opt.optimize()
@@ -168,7 +168,7 @@ class TestOCBAIntegration:
             repeats_surrogate=1,
             ocba_delta=3,
             seed=123,
-            verbose=False
+            verbose=False,
         )
 
         result = opt.optimize()
@@ -197,7 +197,7 @@ class TestOCBAComparison:
             """2D Rosenbrock with noise."""
             x0 = X[:, 0]
             x1 = X[:, 1]
-            base = (1 - x0)**2 + 100 * (x1 - x0**2)**2
+            base = (1 - x0) ** 2 + 100 * (x1 - x0**2) ** 2
             noise = np.random.normal(0, 1.0, size=base.shape)
             return base + noise
 
@@ -211,7 +211,7 @@ class TestOCBAComparison:
             repeats_surrogate=2,
             ocba_delta=0,  # No OCBA
             seed=42,
-            verbose=False
+            verbose=False,
         )
         result_no_ocba = opt_no_ocba.optimize()
 
@@ -225,7 +225,7 @@ class TestOCBAComparison:
             repeats_surrogate=2,
             ocba_delta=2,  # Use OCBA
             seed=42,
-            verbose=False
+            verbose=False,
         )
         result_with_ocba = opt_with_ocba.optimize()
 
@@ -249,6 +249,7 @@ class TestOCBAComparison:
 
     def test_ocba_deterministic_behavior(self):
         """Test that OCBA produces consistent results with same seed."""
+
         def noisy_function(X):
             base = np.sum(X**2, axis=1)
             noise = np.random.normal(0, 0.2, size=base.shape)
@@ -265,7 +266,7 @@ class TestOCBAComparison:
                 repeats_initial=2,
                 ocba_delta=2,
                 seed=999,
-                verbose=False
+                verbose=False,
             )
             result = opt.optimize()
             results.append(result)
@@ -294,7 +295,7 @@ class TestOCBAEdgeCases:
             repeats_initial=2,
             ocba_delta=5,  # Large OCBA (may not all be used)
             seed=55,
-            verbose=False
+            verbose=False,
         )
 
         result = opt.optimize()
@@ -319,7 +320,7 @@ class TestOCBAEdgeCases:
             repeats_surrogate=1,
             ocba_delta=0,  # Disabled
             seed=77,
-            verbose=False
+            verbose=False,
         )
 
         result = opt.optimize()

@@ -128,9 +128,7 @@ class TestToleranceXFloatVariables:
 
         # Minimum distance should be at least tolerance_x (or very close due to fallback)
         # Note: Fallback strategies may place points closer than tolerance_x
-        assert (
-            min_distance >= 0.0
-        ), f"Found points closer than expected: {min_distance}"
+        assert min_distance >= 0.0, f"Found points closer than expected: {min_distance}"
 
 
 class TestToleranceXIntegerVariables:
@@ -167,7 +165,7 @@ class TestToleranceXIntegerVariables:
 
     def test_rounding_causes_no_duplicates(self):
         """Test that rounding to integers doesn't create duplicates.
-        
+
         This is the critical test for the bug where points like [12.3, 2.7]
         and [12.4, 2.8] both round to [12, 3] causing duplicate evaluations.
         """
@@ -247,7 +245,7 @@ class TestToleranceXFactorVariables:
 
     def test_no_duplicate_evaluations_factors(self):
         """Test that factor variables minimize duplicate evaluations.
-        
+
         With 3 activations × 10 integers = 30 possible combinations and requesting
         30 evaluations, we should explore most unique combinations with minimal duplicates.
         """
@@ -286,7 +284,7 @@ class TestToleranceXFactorVariables:
 
         n_unique = len(set(configs))
         n_total = len(configs)
-        
+
         # With 30 combinations and 30 evaluations, should have high uniqueness
         # Allow a few duplicates (e.g., 90% unique = 27/30)
         uniqueness_ratio = n_unique / n_total
@@ -304,7 +302,9 @@ class TestToleranceXFactorVariables:
             for params in X:
                 # Combine different types
                 results.append(
-                    float(params[0]) ** 2 + float(params[1]) ** 2 + hash(str(params[2])) % 10
+                    float(params[0]) ** 2
+                    + float(params[1]) ** 2
+                    + hash(str(params[2])) % 10
                 )
             return np.array(results)
 
@@ -350,9 +350,9 @@ class TestToleranceXReproduceBug:
 
     def test_reproduce_identical_iterations(self):
         """Reproduce the exact scenario from the bug report.
-        
+
         The bug shows iterations 48-57 all evaluating the same configuration:
-        l1=12, num_layers=3, activation=ReLU, optimizer=RMSprop, 
+        l1=12, num_layers=3, activation=ReLU, optimizer=RMSprop,
         lr_unified=0.1454, alpha=0.0135
         """
 
@@ -370,8 +370,14 @@ class TestToleranceXReproduceBug:
                 lr_unified = float(params[4])
                 alpha = float(params[5])
 
-                config = (l1, num_layers, activation, optimizer, 
-                         round(lr_unified, 4), round(alpha, 4))
+                config = (
+                    l1,
+                    num_layers,
+                    activation,
+                    optimizer,
+                    round(lr_unified, 4),
+                    round(alpha, 4),
+                )
                 configs_evaluated.append(config)
 
                 # Simple mock objective
@@ -391,7 +397,14 @@ class TestToleranceXReproduceBug:
                 (0.0001, 0.1),  # alpha
             ],
             var_type=["int", "int", "factor", "factor", "float", "float"],
-            var_name=["l1", "num_layers", "activation", "optimizer", "lr_unified", "alpha"],
+            var_name=[
+                "l1",
+                "num_layers",
+                "activation",
+                "optimizer",
+                "lr_unified",
+                "alpha",
+            ],
             tolerance_x=0.01,
             max_iter=60,
             n_initial=15,
@@ -502,7 +515,7 @@ class TestToleranceXEdgeCases:
 
     def test_tolerance_with_small_bounds(self):
         """Test tolerance_x with very small parameter bounds.
-        
+
         With small bounds (5×3=15 possible combinations), we expect the algorithm
         to eventually exhaust the space and allow duplicates when necessary.
         The key is that it should explore all unique combinations first.
@@ -528,11 +541,11 @@ class TestToleranceXEdgeCases:
         # But we should have explored a good portion of unique combinations first
         X_int = np.round(optimizer.X_).astype(int)
         configs = [tuple(row) for row in X_int]
-        
+
         # Count unique configurations
         n_unique = len(set(configs))
         n_total = len(configs)
-        
+
         # Should have explored at least 10 unique configurations (67% of 15)
         assert n_unique >= 10, (
             f"Only explored {n_unique}/15 possible configurations. "
@@ -563,7 +576,9 @@ class TestToleranceXEdgeCases:
         n_unique = len(np.unique(X_int, axis=0))
         n_total = len(X_int)
 
-        assert n_unique == n_total, f"Found {n_total - n_unique} duplicate configurations"
+        assert (
+            n_unique == n_total
+        ), f"Found {n_total - n_unique} duplicate configurations"
 
     def test_very_large_tolerance(self):
         """Test that very large tolerance_x triggers fallback strategies appropriately."""
@@ -639,7 +654,7 @@ class TestSelectNewMethod:
 
     def test_select_new_with_integers(self):
         """Test _select_new detects points that round to same integer.
-        
+
         The key insight: we must round BOTH arrays before comparing, otherwise
         [12.4, 2.7] looks different from [12.0, 3.0] even though both round to [12, 3].
         """
@@ -659,10 +674,10 @@ class TestSelectNewMethod:
         X_existing = np.array([[12.0, 3.0], [5.0, 7.0]])
         # This point rounds to [12, 3] - same as first existing point
         X_new_raw = np.array([[12.4, 2.7]])
-        
+
         # Apply the same rounding that _suggest_next_point does
         X_new = optimizer._repair_non_numeric(X_new_raw, optimizer.var_type)
-        
+
         selected, mask = optimizer._select_new(X_new, X_existing, tolerance=0.1)
 
         # After rounding [12.4, 2.7] -> [12, 3], should match [12, 3] exactly

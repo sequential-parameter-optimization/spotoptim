@@ -36,13 +36,13 @@ class TestSaveLoadExperiment:
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=10,
                 n_initial=5,
-                seed=42
+                seed=42,
             )
-            
+
             # Save with default filename
             filename = os.path.join(tmpdir, "test_exp.pkl")
             opt.save_experiment(filename=filename, verbosity=0)
-            
+
             # Check file exists
             assert os.path.exists(filename)
 
@@ -54,12 +54,12 @@ class TestSaveLoadExperiment:
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=10,
                 n_initial=5,
-                seed=42
+                seed=42,
             )
-            
+
             # Save with prefix
             opt.save_experiment(prefix="my_experiment", path=tmpdir, verbosity=0)
-            
+
             # Check file exists
             expected_file = os.path.join(tmpdir, "my_experiment_exp.pkl")
             assert os.path.exists(expected_file)
@@ -74,15 +74,15 @@ class TestSaveLoadExperiment:
                 max_iter=30,
                 n_initial=10,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             filename = os.path.join(tmpdir, "experiment.pkl")
             opt_original.save_experiment(filename=filename, verbosity=0)
-            
+
             # Load experiment
             opt_loaded = SpotOptim.load_experiment(filename)
-            
+
             # Verify configuration preserved
             np.testing.assert_array_equal(opt_loaded.lower, opt_original.lower)
             np.testing.assert_array_equal(opt_loaded.upper, opt_original.upper)
@@ -92,7 +92,7 @@ class TestSaveLoadExperiment:
 
     def test_load_experiment_file_not_found(self):
         """Test loading experiment from non-existent file raises error."""
-        
+
         with pytest.raises(FileNotFoundError):
             SpotOptim.load_experiment("nonexistent_file.pkl")
 
@@ -104,14 +104,14 @@ class TestSaveLoadExperiment:
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=10,
                 n_initial=5,
-                seed=42
+                seed=42,
             )
-            
+
             filename = os.path.join(tmpdir, "test.pkl")
-            
+
             # Save first time
             opt.save_experiment(filename=filename, verbosity=0)
-            
+
             # Try to save again with overwrite=False
             with pytest.raises(FileExistsError):
                 opt.save_experiment(filename=filename, overwrite=False, verbosity=0)
@@ -124,18 +124,18 @@ class TestSaveLoadExperiment:
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=10,
                 n_initial=5,
-                seed=42
+                seed=42,
             )
-            
+
             filename = os.path.join(tmpdir, "test.pkl")
-            
+
             # Save first time
             opt.save_experiment(filename=filename, verbosity=0)
-            
+
             # Modify and save again with overwrite=True
             opt.max_iter = 20
             opt.save_experiment(filename=filename, overwrite=True, verbosity=0)
-            
+
             # Load and verify
             opt_loaded = SpotOptim.load_experiment(filename)
             assert opt_loaded.max_iter == 20
@@ -148,15 +148,15 @@ class TestSaveLoadExperiment:
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=10,
                 n_initial=5,
-                seed=42
+                seed=42,
             )
-            
+
             filename = os.path.join(tmpdir, "experiment.pkl")
             opt.save_experiment(filename=filename, verbosity=0)
-            
+
             # Load experiment
             opt_loaded = SpotOptim.load_experiment(filename)
-            
+
             # Function should not be preserved (set to None or not exist properly)
             # The loaded optimizer needs fun re-attached
             assert opt_loaded.fun is None or not callable(opt_loaded.fun)
@@ -171,21 +171,21 @@ class TestSaveLoadExperiment:
                 max_iter=15,
                 n_initial=5,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             filename = os.path.join(tmpdir, "experiment.pkl")
             opt_original.save_experiment(filename=filename, verbosity=0)
-            
+
             # Load experiment
             opt_loaded = SpotOptim.load_experiment(filename)
-            
+
             # Re-attach function
             opt_loaded.fun = simple_func
-            
+
             # Run optimization
             result = opt_loaded.optimize()
-            
+
             # Verify optimization ran
             assert result.success is True
             assert result.nfev == 15
@@ -204,16 +204,16 @@ class TestSaveLoadResult:
                 max_iter=10,
                 n_initial=5,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             # Run optimization
             opt.optimize()
-            
+
             # Save result
             filename = os.path.join(tmpdir, "test_res.pkl")
             opt.save_result(filename=filename, verbosity=0)
-            
+
             # Check file exists
             assert os.path.exists(filename)
 
@@ -226,15 +226,15 @@ class TestSaveLoadResult:
                 max_iter=10,
                 n_initial=5,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             # Run optimization
             opt.optimize()
-            
+
             # Save with prefix
             opt.save_result(prefix="my_result", path=tmpdir, verbosity=0)
-            
+
             # Check file exists
             expected_file = os.path.join(tmpdir, "my_result_res.pkl")
             assert os.path.exists(expected_file)
@@ -249,22 +249,20 @@ class TestSaveLoadResult:
                 max_iter=20,
                 n_initial=8,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             result_original = opt_original.optimize()
-            
+
             filename = os.path.join(tmpdir, "result.pkl")
             opt_original.save_result(filename=filename, verbosity=0)
-            
+
             # Load result
             opt_loaded = SpotOptim.load_result(filename)
-            
+
             # Verify results preserved
             np.testing.assert_array_almost_equal(
-                opt_loaded.best_x_, 
-                opt_original.best_x_,
-                decimal=10
+                opt_loaded.best_x_, opt_original.best_x_, decimal=10
             )
             assert abs(opt_loaded.best_y_ - opt_original.best_y_) < 1e-10
             assert opt_loaded.n_iter_ == opt_original.n_iter_
@@ -280,17 +278,17 @@ class TestSaveLoadResult:
                 max_iter=15,
                 n_initial=5,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             opt_original.optimize()
-            
+
             filename = os.path.join(tmpdir, "result.pkl")
             opt_original.save_result(filename=filename, verbosity=0)
-            
+
             # Load result
             opt_loaded = SpotOptim.load_result(filename)
-            
+
             # Verify all evaluations preserved
             assert opt_loaded.X_.shape == opt_original.X_.shape
             assert opt_loaded.y_.shape == opt_original.y_.shape
@@ -299,7 +297,7 @@ class TestSaveLoadResult:
 
     def test_load_result_file_not_found(self):
         """Test loading result from non-existent file raises error."""
-        
+
         with pytest.raises(FileNotFoundError):
             SpotOptim.load_result("nonexistent_result.pkl")
 
@@ -313,20 +311,20 @@ class TestSaveLoadResult:
                 max_iter=25,
                 n_initial=10,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             opt_original.optimize()
-            
+
             filename = os.path.join(tmpdir, "result.pkl")
             opt_original.save_result(filename=filename, verbosity=0)
-            
+
             # Load result
             opt_loaded = SpotOptim.load_result(filename)
-            
+
             # Verify success rate preserved
-            assert hasattr(opt_loaded, 'success_rate')
-            assert hasattr(opt_loaded, 'success_counter')
+            assert hasattr(opt_loaded, "success_rate")
+            assert hasattr(opt_loaded, "success_counter")
             assert opt_loaded.success_rate == opt_original.success_rate
 
 
@@ -345,17 +343,17 @@ class TestSaveLoadWithNoise:
                 repeats_initial=2,
                 repeats_surrogate=2,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             opt_original.optimize()
-            
+
             filename = os.path.join(tmpdir, "noisy_result.pkl")
             opt_original.save_result(filename=filename, verbosity=0)
-            
+
             # Load result
             opt_loaded = SpotOptim.load_result(filename)
-            
+
             # Verify noise statistics preserved
             assert opt_loaded.noise == opt_original.noise
             if opt_original.mean_X is not None:
@@ -377,17 +375,17 @@ class TestSaveLoadWithVariableTypes:
                 max_iter=15,
                 n_initial=5,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             opt_original.optimize()
-            
+
             filename = os.path.join(tmpdir, "int_result.pkl")
             opt_original.save_result(filename=filename, verbosity=0)
-            
+
             # Load and verify
             opt_loaded = SpotOptim.load_result(filename)
-            
+
             assert opt_loaded.var_type == opt_original.var_type
             np.testing.assert_array_equal(opt_loaded.X_, opt_original.X_)
 
@@ -397,22 +395,22 @@ class TestSaveLoadWithVariableTypes:
             opt_original = SpotOptim(
                 fun=simple_func,
                 bounds=[(-5, 5), (-5, 5), (-5, 5)],
-                var_type=["num", "int", "factor"],
+                var_type=["float", "int", "factor"],
                 var_name=["x", "y", "z"],
                 max_iter=15,
                 n_initial=5,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             opt_original.optimize()
-            
+
             filename = os.path.join(tmpdir, "mixed_result.pkl")
             opt_original.save_result(filename=filename, verbosity=0)
-            
+
             # Load and verify
             opt_loaded = SpotOptim.load_result(filename)
-            
+
             assert opt_loaded.var_type == opt_original.var_type
             assert opt_loaded.var_name == opt_original.var_name
 
@@ -429,20 +427,20 @@ class TestExperimentResultDifference:
                 max_iter=30,
                 n_initial=10,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             # Save experiment before optimization
             exp_file = os.path.join(tmpdir, "exp.pkl")
             opt.save_experiment(filename=exp_file, verbosity=0)
             exp_size = os.path.getsize(exp_file)
-            
+
             # Run optimization and save result
             opt.optimize()
             res_file = os.path.join(tmpdir, "res.pkl")
             opt.save_result(filename=res_file, verbosity=0)
             res_size = os.path.getsize(res_file)
-            
+
             # Result should be larger (contains evaluations)
             assert res_size > exp_size
 
@@ -455,18 +453,20 @@ class TestExperimentResultDifference:
                 max_iter=20,
                 n_initial=8,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             opt_original.optimize()
-            
+
             # Save as experiment (should exclude results)
             exp_file = os.path.join(tmpdir, "exp.pkl")
-            opt_original.save_experiment(filename=exp_file, unpickleables="all", verbosity=0)
-            
+            opt_original.save_experiment(
+                filename=exp_file, unpickleables="all", verbosity=0
+            )
+
             # Load experiment
             opt_loaded = SpotOptim.load_experiment(exp_file)
-            
+
             # Experiment should not have evaluation data
             # (or have it as None/empty depending on implementation)
             # Configuration should be present
@@ -485,15 +485,15 @@ class TestEdgeCases:
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=10,
                 n_initial=5,
-                seed=42
+                seed=42,
             )
-            
+
             # Path to nonexistent subdirectory
             nested_path = os.path.join(tmpdir, "subdir", "nested")
-            
+
             # Should create directory and save
             opt.save_experiment(prefix="test", path=nested_path, verbosity=0)
-            
+
             # Verify directory and file created
             assert os.path.exists(nested_path)
             expected_file = os.path.join(nested_path, "test_exp.pkl")
@@ -509,21 +509,21 @@ class TestEdgeCases:
                 max_iter=20,
                 n_initial=8,
                 seed=42,
-                verbose=False
+                verbose=False,
             )
-            
+
             filename = os.path.join(tmpdir, "exp.pkl")
             opt1.save_experiment(filename=filename, verbosity=0)
-            
+
             # Load and run twice
             opt2 = SpotOptim.load_experiment(filename)
             opt2.fun = simple_func
             result2 = opt2.optimize()
-            
+
             opt3 = SpotOptim.load_experiment(filename)
             opt3.fun = simple_func
             result3 = opt3.optimize()
-            
+
             # Results should be identical
             np.testing.assert_array_almost_equal(result2.x, result3.x, decimal=10)
             assert abs(result2.fun - result3.fun) < 1e-10

@@ -27,7 +27,7 @@ class TestLinearRegressorLR:
     def test_optimizer_with_model_lr(self):
         """Test that get_optimizer uses model's lr when not specified."""
         model = LinearRegressor(input_dim=10, output_dim=1, lr=2.0)
-        
+
         # Adam: default 0.001, so 2.0 * 0.001 = 0.002
         optimizer = model.get_optimizer("Adam")
         assert optimizer.param_groups[0]["lr"] == 0.002
@@ -39,7 +39,7 @@ class TestLinearRegressorLR:
     def test_optimizer_with_override_lr(self):
         """Test that lr parameter overrides model's lr."""
         model = LinearRegressor(input_dim=10, output_dim=1, lr=1.0)
-        
+
         # Override with lr=0.5
         optimizer = model.get_optimizer("Adam", lr=0.5)
         assert optimizer.param_groups[0]["lr"] == 0.5 * 0.001  # 0.0005
@@ -69,9 +69,9 @@ class TestLinearRegressorLR:
                 optimizer = model.get_optimizer(optimizer_name)
                 expected_lr = OPTIMIZER_DEFAULT_LR[optimizer_name]
                 actual_lr = optimizer.param_groups[0]["lr"]
-                assert actual_lr == expected_lr, (
-                    f"{optimizer_name}: expected {expected_lr}, got {actual_lr}"
-                )
+                assert (
+                    actual_lr == expected_lr
+                ), f"{optimizer_name}: expected {expected_lr}, got {actual_lr}"
             except Exception as e:
                 pytest.fail(f"Failed to create {optimizer_name}: {str(e)}")
 
@@ -97,14 +97,15 @@ class TestLinearRegressorLR:
     def test_training_with_mapped_lr(self):
         """Test that training works with mapped learning rates."""
         torch.manual_seed(42)
-        
+
         # Create simple dataset
         X = torch.randn(100, 5)
         y = torch.randn(100, 1)
 
         # Create model with unified lr
-        model = LinearRegressor(input_dim=5, output_dim=1, l1=8, 
-                               num_hidden_layers=1, lr=1.0)
+        model = LinearRegressor(
+            input_dim=5, output_dim=1, l1=8, num_hidden_layers=1, lr=1.0
+        )
         optimizer = model.get_optimizer("Adam")
         criterion = nn.MSELoss()
 
@@ -136,7 +137,7 @@ class TestLinearRegressorLR:
         # Test with different unified lr values
         for lr_unified in [0.1, 0.5, 1.0, 2.0, 10.0]:
             model.lr = lr_unified
-            
+
             optimizer = model.get_optimizer("Adam")
             expected = lr_unified * 0.001
             actual = optimizer.param_groups[0]["lr"]
@@ -144,31 +145,36 @@ class TestLinearRegressorLR:
 
     def test_zero_hidden_layers_with_lr(self):
         """Test that lr works with pure linear regression."""
-        model = LinearRegressor(input_dim=10, output_dim=1, 
-                               num_hidden_layers=0, lr=0.5)
+        model = LinearRegressor(input_dim=10, output_dim=1, num_hidden_layers=0, lr=0.5)
         optimizer = model.get_optimizer("Adam")
-        
+
         # Should use 0.5 * 0.001 = 0.0005
         assert optimizer.param_groups[0]["lr"] == 0.0005
 
     def test_different_activations_with_lr(self):
         """Test that lr works with different activation functions."""
         activations = ["ReLU", "Tanh", "Sigmoid", "LeakyReLU"]
-        
+
         for activation in activations:
-            model = LinearRegressor(input_dim=10, output_dim=1, l1=16,
-                                   num_hidden_layers=1, activation=activation, lr=1.0)
+            model = LinearRegressor(
+                input_dim=10,
+                output_dim=1,
+                l1=16,
+                num_hidden_layers=1,
+                activation=activation,
+                lr=1.0,
+            )
             optimizer = model.get_optimizer("Adam")
             assert optimizer.param_groups[0]["lr"] == 0.001
 
     def test_log_scale_lr_optimization(self):
         """Test typical log-scale hyperparameter optimization scenario."""
         # Common pattern: sample from log10 scale [-4, 0], then lr_unified = 10^x
-        
+
         for log_lr in [-4, -3, -2, -1, 0]:
-            lr_unified = 10 ** log_lr
+            lr_unified = 10**log_lr
             model = LinearRegressor(input_dim=10, output_dim=1, lr=lr_unified)
-            
+
             optimizer = model.get_optimizer("Adam")
             expected = lr_unified * 0.001
             actual = optimizer.param_groups[0]["lr"]
@@ -191,12 +197,13 @@ class TestLinearRegressorLR:
     def test_backward_compatibility(self):
         """Test that old code without lr parameter still works."""
         # Old code that doesn't specify lr
-        model = LinearRegressor(input_dim=10, output_dim=1, l1=32, 
-                               num_hidden_layers=2, activation="ReLU")
-        
+        model = LinearRegressor(
+            input_dim=10, output_dim=1, l1=32, num_hidden_layers=2, activation="ReLU"
+        )
+
         # Should default to lr=1.0
         assert model.lr == 1.0
-        
+
         # Should still work with old-style optimizer creation
         optimizer = model.get_optimizer("Adam")
         assert optimizer.param_groups[0]["lr"] == 0.001
@@ -208,12 +215,13 @@ class TestLinearRegressorLRIntegration:
     def test_full_training_cycle_adam(self):
         """Test complete training cycle with Adam and mapped lr."""
         torch.manual_seed(42)
-        
+
         X = torch.randn(200, 10)
         y = torch.randn(200, 1)
-        
-        model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
-                               num_hidden_layers=1, lr=5.0)
+
+        model = LinearRegressor(
+            input_dim=10, output_dim=1, l1=16, num_hidden_layers=1, lr=5.0
+        )
         optimizer = model.get_optimizer("Adam")  # Uses 5.0 * 0.001 = 0.005
         criterion = nn.MSELoss()
 
@@ -232,12 +240,13 @@ class TestLinearRegressorLRIntegration:
     def test_full_training_cycle_sgd(self):
         """Test complete training cycle with SGD and mapped lr."""
         torch.manual_seed(42)
-        
+
         X = torch.randn(200, 10)
         y = torch.randn(200, 1)
-        
-        model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
-                               num_hidden_layers=1, lr=0.5)
+
+        model = LinearRegressor(
+            input_dim=10, output_dim=1, l1=16, num_hidden_layers=1, lr=0.5
+        )
         optimizer = model.get_optimizer("SGD", momentum=0.9)  # Uses 0.5 * 0.01 = 0.005
         criterion = nn.MSELoss()
 
@@ -256,18 +265,19 @@ class TestLinearRegressorLRIntegration:
     def test_optimizer_comparison_with_unified_lr(self):
         """Test that unified lr enables fair optimizer comparison."""
         torch.manual_seed(42)
-        
+
         X = torch.randn(100, 10)
         y = torch.randn(100, 1)
-        
+
         lr_unified = 1.0
         results = {}
 
         for optimizer_name in ["Adam", "SGD", "RMSprop"]:
             torch.manual_seed(42)  # Reset for fair comparison
-            
-            model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
-                                   num_hidden_layers=1, lr=lr_unified)
+
+            model = LinearRegressor(
+                input_dim=10, output_dim=1, l1=16, num_hidden_layers=1, lr=lr_unified
+            )
             optimizer = model.get_optimizer(optimizer_name)
             criterion = nn.MSELoss()
 
@@ -284,7 +294,7 @@ class TestLinearRegressorLRIntegration:
             model.eval()
             with torch.no_grad():
                 final_loss = criterion(model(X), y).item()
-            
+
             results[optimizer_name] = final_loss
 
         # All optimizers should have produced reasonable results
@@ -295,7 +305,7 @@ class TestLinearRegressorLRIntegration:
     def test_realistic_hyperparameter_optimization_scenario(self):
         """Test realistic scenario with multiple hyperparameters."""
         torch.manual_seed(42)
-        
+
         X_train = torch.randn(100, 10)
         y_train = torch.randn(100, 1)
         X_test = torch.randn(30, 10)
@@ -312,8 +322,9 @@ class TestLinearRegressorLRIntegration:
         ]
 
         for lr_unified, optimizer_name in configs:
-            model = LinearRegressor(input_dim=10, output_dim=1, l1=16, 
-                                   num_hidden_layers=1, lr=lr_unified)
+            model = LinearRegressor(
+                input_dim=10, output_dim=1, l1=16, num_hidden_layers=1, lr=lr_unified
+            )
             # Only pass momentum for SGD
             if optimizer_name == "SGD":
                 optimizer = model.get_optimizer(optimizer_name, momentum=0.9)

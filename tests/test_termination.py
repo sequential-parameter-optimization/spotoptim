@@ -24,7 +24,7 @@ class TestMaxIterTermination:
         """Test that max_iter includes initial design evaluations."""
         n_initial = 10
         max_iter = 30
-        
+
         optimizer = SpotOptim(
             fun=simple_sphere,
             bounds=[(-5, 5), (-5, 5)],
@@ -33,24 +33,27 @@ class TestMaxIterTermination:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Total evaluations should equal max_iter
-        assert result.nfev == max_iter, f"Expected {max_iter} evaluations, got {result.nfev}"
-        
+        assert (
+            result.nfev == max_iter
+        ), f"Expected {max_iter} evaluations, got {result.nfev}"
+
         # Number of sequential iterations should be max_iter - n_initial
         expected_iterations = max_iter - n_initial
-        assert result.nit == expected_iterations, \
-            f"Expected {expected_iterations} iterations, got {result.nit}"
-        
+        assert (
+            result.nit == expected_iterations
+        ), f"Expected {expected_iterations} iterations, got {result.nit}"
+
         # Check termination message
         assert "maximum evaluations" in result.message.lower()
 
     def test_max_iter_exactly_n_initial(self):
         """Test when max_iter equals n_initial (no sequential iterations)."""
         n_initial = 10
-        
+
         optimizer = SpotOptim(
             fun=simple_sphere,
             bounds=[(-5, 5), (-5, 5)],
@@ -59,18 +62,18 @@ class TestMaxIterTermination:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should only perform initial design
         assert result.nfev == n_initial
         assert result.nit == 0  # No sequential iterations
-        
+
     def test_max_iter_less_than_n_initial(self):
         """Test when max_iter is less than n_initial - should raise ValueError."""
         n_initial = 20
         max_iter = 15
-        
+
         with pytest.raises(ValueError, match="max_iter.*must be >= n_initial"):
             optimizer = SpotOptim(
                 fun=simple_sphere,
@@ -83,16 +86,10 @@ class TestMaxIterTermination:
 
     def test_max_iter_with_custom_initial_design(self):
         """Test max_iter with user-provided initial design."""
-        X0 = np.array([
-            [1.0, 1.0],
-            [-1.0, -1.0],
-            [2.0, -2.0],
-            [-2.0, 2.0],
-            [0.5, 0.5]
-        ])
+        X0 = np.array([[1.0, 1.0], [-1.0, -1.0], [2.0, -2.0], [-2.0, 2.0], [0.5, 0.5]])
         n_initial = X0.shape[0]
         max_iter = 15
-        
+
         optimizer = SpotOptim(
             fun=simple_sphere,
             bounds=[(-5, 5), (-5, 5)],
@@ -101,9 +98,9 @@ class TestMaxIterTermination:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize(X0=X0)
-        
+
         # Total evaluations should equal max_iter
         assert result.nfev == max_iter
         assert result.nit == max_iter - n_initial
@@ -114,14 +111,15 @@ class TestMaxTimeTermination:
 
     def test_max_time_terminates_early(self):
         """Test that optimization stops when max_time is exceeded."""
+
         # Create a slow objective function
         def slow_sphere(X):
             time.sleep(0.1)  # 100ms per evaluation
             X = np.atleast_2d(X)
             return np.sum(X**2, axis=1)
-        
+
         max_time = 0.5 / 60  # 0.5 seconds = 0.00833 minutes
-        
+
         optimizer = SpotOptim(
             fun=slow_sphere,
             bounds=[(-5, 5), (-5, 5)],
@@ -131,18 +129,21 @@ class TestMaxTimeTermination:
             seed=42,
             verbose=False,
         )
-        
+
         start_time = time.time()
         result = optimizer.optimize()
         elapsed_time = time.time() - start_time
-        
+
         # Should terminate before completing all iterations
-        assert result.nfev < 100, f"Expected early termination, got {result.nfev} evaluations"
-        
+        assert (
+            result.nfev < 100
+        ), f"Expected early termination, got {result.nfev} evaluations"
+
         # Should stop approximately at max_time (with some tolerance for overhead)
-        assert elapsed_time < max_time * 60 + 1.0, \
-            f"Runtime {elapsed_time:.2f}s exceeded time limit by >1s"
-        
+        assert (
+            elapsed_time < max_time * 60 + 1.0
+        ), f"Runtime {elapsed_time:.2f}s exceeded time limit by >1s"
+
         # Check termination message
         assert "time limit" in result.message.lower()
 
@@ -156,12 +157,12 @@ class TestMaxTimeTermination:
             seed=42,
             verbose=False,
         )
-        
+
         # max_time should be np.inf by default
         assert optimizer.max_time == np.inf
-        
+
         result = optimizer.optimize()
-        
+
         # Should complete all iterations
         assert result.nfev == 15
         assert "maximum evaluations" in result.message.lower()
@@ -177,9 +178,9 @@ class TestMaxTimeTermination:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should complete all iterations
         assert result.nfev == 15
         assert "maximum evaluations" in result.message.lower()
@@ -199,22 +200,23 @@ class TestCombinedTermination:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should terminate due to max_iter
         assert result.nfev == 15
         assert "maximum evaluations" in result.message.lower()
 
     def test_max_time_reached_before_max_iter(self):
         """Test termination when max_time is reached first."""
+
         def slow_sphere(X):
             time.sleep(0.15)  # 150ms per evaluation
             X = np.atleast_2d(X)
             return np.sum(X**2, axis=1)
-        
+
         max_time = 0.6 / 60  # 0.6 seconds in minutes
-        
+
         optimizer = SpotOptim(
             fun=slow_sphere,
             bounds=[(-5, 5), (-5, 5)],
@@ -224,11 +226,13 @@ class TestCombinedTermination:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should terminate due to max_time before reaching max_iter
-        assert result.nfev < 100, f"Expected early termination, got {result.nfev} evaluations"
+        assert (
+            result.nfev < 100
+        ), f"Expected early termination, got {result.nfev} evaluations"
         assert "time limit" in result.message.lower()
 
 
@@ -245,9 +249,9 @@ class TestBackwardCompatibility:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should complete all iterations as before
         assert result.nfev == 20
         assert result.nit == 10
@@ -263,19 +267,19 @@ class TestBackwardCompatibility:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Check all expected attributes exist
-        assert hasattr(result, 'x')
-        assert hasattr(result, 'fun')
-        assert hasattr(result, 'nfev')
-        assert hasattr(result, 'nit')
-        assert hasattr(result, 'success')
-        assert hasattr(result, 'message')
-        assert hasattr(result, 'X')
-        assert hasattr(result, 'y')
-        
+        assert hasattr(result, "x")
+        assert hasattr(result, "fun")
+        assert hasattr(result, "nfev")
+        assert hasattr(result, "nit")
+        assert hasattr(result, "success")
+        assert hasattr(result, "message")
+        assert hasattr(result, "X")
+        assert hasattr(result, "y")
+
         # Check types
         assert isinstance(result, OptimizeResult)
         assert isinstance(result.x, np.ndarray)
@@ -301,20 +305,20 @@ class TestDimensionReductionWithTermination:
             seed=42,
             verbose=False,
         )
-        
+
         result = optimizer.optimize()
-        
+
         # Should have dimension reduction active
         assert optimizer.red_dim
-        
+
         # Should complete all iterations
         assert result.nfev == 20
         assert result.nit == 10
-        
+
         # Result should be in full dimensions
         assert result.x.shape[0] == 3
         assert result.X.shape[1] == 3
-        
+
         # Fixed dimension should have correct value
         assert result.x[1] == 2.0
         np.testing.assert_array_equal(result.X[:, 1], np.full(20, 2.0))

@@ -11,9 +11,9 @@ class TestMapLR:
         """Test that lr_unified=1.0 returns optimizer defaults."""
         for optimizer_name, expected_lr in OPTIMIZER_DEFAULT_LR.items():
             actual_lr = map_lr(1.0, optimizer_name)
-            assert actual_lr == expected_lr, (
-                f"For {optimizer_name}, expected {expected_lr}, got {actual_lr}"
-            )
+            assert (
+                actual_lr == expected_lr
+            ), f"For {optimizer_name}, expected {expected_lr}, got {actual_lr}"
 
     def test_scaling_multiplier(self):
         """Test that lr_unified acts as a multiplier."""
@@ -45,9 +45,9 @@ class TestMapLR:
                 assert lr > 0, f"{optimizer_name} returned non-positive lr: {lr}"
                 # Check that it's the correct multiple
                 expected = lr_unified * OPTIMIZER_DEFAULT_LR[optimizer_name]
-                assert lr == expected, (
-                    f"{optimizer_name}: expected {expected}, got {lr}"
-                )
+                assert (
+                    lr == expected
+                ), f"{optimizer_name}: expected {expected}, got {lr}"
             except Exception as e:
                 pytest.fail(f"Failed for {optimizer_name}: {str(e)}")
 
@@ -56,9 +56,9 @@ class TestMapLR:
         lr_unified = 0.123
         for optimizer_name in OPTIMIZER_DEFAULT_LR.keys():
             actual_lr = map_lr(lr_unified, optimizer_name, use_default_scale=False)
-            assert actual_lr == lr_unified, (
-                f"With use_default_scale=False, expected {lr_unified}, got {actual_lr}"
-            )
+            assert (
+                actual_lr == lr_unified
+            ), f"With use_default_scale=False, expected {lr_unified}, got {actual_lr}"
 
     def test_invalid_optimizer(self):
         """Test that invalid optimizer name raises ValueError."""
@@ -103,19 +103,19 @@ class TestMapLR:
         """Test typical log-scale hyperparameter optimization scenario."""
         # Common pattern: sample from log10 scale [-4, 0]
         # Then convert: lr_unified = 10^x
-        
+
         # x = -4 → lr_unified = 0.0001
         lr_unified = 10 ** (-4)
         lr_adam = map_lr(lr_unified, "Adam")
         assert lr_adam == 0.0001 * 0.001  # 1e-7
-        
+
         # x = -2 → lr_unified = 0.01
         lr_unified = 10 ** (-2)
         lr_sgd = map_lr(lr_unified, "SGD")
         assert lr_sgd == 0.01 * 0.01  # 1e-4
-        
+
         # x = 0 → lr_unified = 1.0
-        lr_unified = 10 ** 0
+        lr_unified = 10**0
         lr_rmsprop = map_lr(lr_unified, "RMSprop")
         assert lr_rmsprop == 1.0 * 0.01  # 0.01 (default)
 
@@ -131,14 +131,10 @@ class TestMapLR:
             half = map_lr(lr_half, optimizer_name)
 
             # Check that doubling unified lr doubles actual lr
-            assert abs(double - 2 * base) < 1e-10, (
-                f"{optimizer_name}: doubling failed"
-            )
+            assert abs(double - 2 * base) < 1e-10, f"{optimizer_name}: doubling failed"
 
             # Check that halving unified lr halves actual lr
-            assert abs(half - 0.5 * base) < 1e-10, (
-                f"{optimizer_name}: halving failed"
-            )
+            assert abs(half - 0.5 * base) < 1e-10, f"{optimizer_name}: halving failed"
 
     def test_adam_family_consistency(self):
         """Test that Adam-family optimizers have consistent defaults."""
@@ -146,7 +142,7 @@ class TestMapLR:
         lr_unified = 1.0
 
         adam_lr = map_lr(lr_unified, "Adam")
-        
+
         for optimizer_name in adam_family:
             if optimizer_name == "Adam":
                 continue
@@ -154,9 +150,9 @@ class TestMapLR:
             # Adam variants should have similar (though not necessarily identical) defaults
             # We just check they're in the same ballpark (within 10x)
             ratio = lr / adam_lr
-            assert 0.1 <= ratio <= 10, (
-                f"{optimizer_name} lr {lr} too different from Adam lr {adam_lr}"
-            )
+            assert (
+                0.1 <= ratio <= 10
+            ), f"{optimizer_name} lr {lr} too different from Adam lr {adam_lr}"
 
     def test_float_precision(self):
         """Test that float precision is maintained."""
@@ -182,15 +178,25 @@ class TestMapLR:
     def test_all_pytorch_optimizers_covered(self):
         """Test that all major PyTorch optimizers are covered."""
         expected_optimizers = [
-            "Adadelta", "Adagrad", "Adam", "AdamW", "SparseAdam",
-            "Adamax", "ASGD", "LBFGS", "NAdam", "RAdam",
-            "RMSprop", "Rprop", "SGD"
+            "Adadelta",
+            "Adagrad",
+            "Adam",
+            "AdamW",
+            "SparseAdam",
+            "Adamax",
+            "ASGD",
+            "LBFGS",
+            "NAdam",
+            "RAdam",
+            "RMSprop",
+            "Rprop",
+            "SGD",
         ]
-        
+
         for optimizer_name in expected_optimizers:
-            assert optimizer_name in OPTIMIZER_DEFAULT_LR, (
-                f"Optimizer {optimizer_name} missing from OPTIMIZER_DEFAULT_LR"
-            )
+            assert (
+                optimizer_name in OPTIMIZER_DEFAULT_LR
+            ), f"Optimizer {optimizer_name} missing from OPTIMIZER_DEFAULT_LR"
 
     def test_realistic_use_case(self):
         """Test realistic hyperparameter optimization scenario."""
@@ -201,12 +207,12 @@ class TestMapLR:
         for opt in optimizers:
             for lr_u in lr_unified_candidates:
                 lr = map_lr(lr_u, opt)
-                
+
                 # Check that lr is reasonable
-                assert 1e-6 < lr < 10.0, (
-                    f"Unreasonable lr {lr} for {opt} with unified lr {lr_u}"
-                )
-                
+                assert (
+                    1e-6 < lr < 10.0
+                ), f"Unreasonable lr {lr} for {opt} with unified lr {lr_u}"
+
                 # Check that it's the correct mapping
                 expected = lr_u * OPTIMIZER_DEFAULT_LR[opt]
                 assert abs(lr - expected) < 1e-10
@@ -223,9 +229,9 @@ class TestDefaultLRConstants:
     def test_all_values_reasonable(self):
         """Test that all default learning rates are in reasonable range."""
         for optimizer_name, lr in OPTIMIZER_DEFAULT_LR.items():
-            assert 0.0001 <= lr <= 10.0, (
-                f"{optimizer_name} has unreasonable default lr: {lr}"
-            )
+            assert (
+                0.0001 <= lr <= 10.0
+            ), f"{optimizer_name} has unreasonable default lr: {lr}"
 
     def test_dictionary_not_empty(self):
         """Test that the dictionary is not empty."""
