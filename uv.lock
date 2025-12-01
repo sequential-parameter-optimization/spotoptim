@@ -4139,7 +4139,7 @@ wheels = [
 [[package]]
 name = "spotdesirability"
 version = "0.0.11"
-source = { git = "https://github.com/sequential-parameter-optimization/spotdesirability.git#afe1b5819c7beb8bf1f2ce37c6d3c6162013ade7" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build" },
     { name = "matplotlib" },
@@ -4161,10 +4161,14 @@ dependencies = [
     { name = "seaborn" },
     { name = "tabulate" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/07/502706eca506be652c3573aa2cda019bbb56871a00f050ab4d2b7d936ab3/spotdesirability-0.0.11.tar.gz", hash = "sha256:c1dcb183fd47e61e55b642dad9b1ded281f61fcb2ff93e4e071a0c0ec841b66f", size = 97306, upload-time = "2025-10-20T12:18:36.675Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5c/7c/d5b8025f45ed3df2f946457bd7123089c25b88a81ad22f46f38fedf6ac5c/spotdesirability-0.0.11-py3-none-any.whl", hash = "sha256:29a62b12e2226c90f6b614262fae2059e959f855fb639149d3a71ddf0cf9a058", size = 19391, upload-time = "2025-10-20T12:18:35.38Z" },
+]
 
 [[package]]
 name = "spotoptim"
-version = "0.0.42"
+version = "0.0.43"
 source = { editable = "." }
 dependencies = [
     { name = "jupyter" },
@@ -4217,7 +4221,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.3.0" },
     { name = "scipy", specifier = ">=1.10.1" },
     { name = "seaborn", specifier = ">=0.13.2" },
-    { name = "spotdesirability", git = "https://github.com/sequential-parameter-optimization/spotdesirability.git" },
+    { name = "spotdesirability", specifier = ">=0.0.1" },
     { name = "spotpython", specifier = ">=0.36.2" },
     { name = "tabulate", specifier = ">=0.9.0" },
     { name = "tensorboard", specifier = ">=2.20.0" },
