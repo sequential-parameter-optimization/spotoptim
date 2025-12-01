@@ -12,9 +12,9 @@ from spotoptim.SpotOptim import SpotOptim
 
 
 class TestSetInitialDesign:
-    """Tests for _set_initial_design() method."""
+    """Tests for get_initial_design() method."""
 
-    def test_set_initial_design_none_generates_lhs(self):
+    def test_get_initial_design_none_generates_lhs(self):
         """Test that X0=None generates LHS design."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -22,12 +22,12 @@ class TestSetInitialDesign:
             n_initial=10,
             seed=42,
         )
-        X0 = opt._set_initial_design(X0=None)
+        X0 = opt.get_initial_design(X0=None)
 
         assert X0.shape == (10, 2)
         assert np.all(X0 >= -5) and np.all(X0 <= 5)
 
-    def test_set_initial_design_with_x0_includes_starting_point(self):
+    def test_get_initial_design_with_x0_includes_starting_point(self):
         """Test that x0 is included as first point when X0=None."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -36,13 +36,13 @@ class TestSetInitialDesign:
             x0=[0.0, 0.0],
             seed=42,
         )
-        X0 = opt._set_initial_design(X0=None)
+        X0 = opt.get_initial_design(X0=None)
 
         assert X0.shape == (10, 2)
         # First point should be x0
         np.testing.assert_array_almost_equal(X0[0], [0.0, 0.0], decimal=5)
 
-    def test_set_initial_design_provided_custom(self):
+    def test_get_initial_design_provided_custom(self):
         """Test that provided X0 is properly transformed."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -51,13 +51,13 @@ class TestSetInitialDesign:
             seed=42,
         )
         X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
-        X0 = opt._set_initial_design(X0=X0_custom)
+        X0 = opt.get_initial_design(X0=X0_custom)
 
         assert X0.shape == (3, 2)
         # Values should be within bounds after transformation
         assert np.all(X0 >= -5) and np.all(X0 <= 5)
 
-    def test_set_initial_design_integer_variables(self):
+    def test_get_initial_design_integer_variables(self):
         """Test initial design with integer variables gets rounded."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -66,7 +66,7 @@ class TestSetInitialDesign:
             n_initial=5,
             seed=42,
         )
-        X0 = opt._set_initial_design(X0=None)
+        X0 = opt.get_initial_design(X0=None)
 
         assert X0.shape == (5, 2)
         # All values should be integers

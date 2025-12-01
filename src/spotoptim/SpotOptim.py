@@ -400,27 +400,13 @@ class SpotOptim(BaseEstimator):
         if self.var_name is None:
             self.var_name = [f"x{i}" for i in range(self.n_dim)]
 
-        # Default variable transformations (None means no transformation)
-        if self.var_trans is None:
-            self.var_trans = [None] * self.n_dim
-        else:
-            # Normalize transformation names
-            self.var_trans = [
-                None if (t is None or t == "id" or t == "None") else t
-                for t in self.var_trans
-            ]
-
-        # Validate var_trans length
-        if len(self.var_trans) != self.n_dim:
-            raise ValueError(
-                f"Length of var_trans ({len(self.var_trans)}) must match "
-                f"number of dimensions ({self.n_dim})"
-            )
+        # Handle default variable transformations
+        self.handle_default_var_trans()
 
         # Apply transformations to bounds (internal representation)
         self._original_lower = self.lower.copy()
         self._original_upper = self.upper.copy()
-        self._transform_bounds()
+        self.transform_bounds()
 
         # Dimension reduction: backup original bounds and identify fixed dimensions
         self._setup_dimension_reduction()
@@ -489,8 +475,7 @@ class SpotOptim(BaseEstimator):
             ['factor', 'float']
         """
         return [
-            "factor" if i in self._factor_maps else "float"
-            for i in range(self.n_dim)
+            "factor" if i in self._factor_maps else "float" for i in range(self.n_dim)
         ]
 
     def modify_bounds_based_on_var_type(self) -> None:
@@ -537,6 +522,47 @@ class SpotOptim(BaseEstimator):
                     f"Unsupported var_type '{vtype}' at dimension {i}. "
                     f"Supported types are 'float', 'int', 'factor'."
                 )
+
+    def handle_default_var_trans(self) -> None:
+        """Handle default variable transformations.
+
+        Sets var_trans to a list of None values if not specified, or normalizes
+        transformation names by converting 'id', 'None', or None to None.
+
+        Also validates that var_trans length matches the number of dimensions.
+
+        Raises:
+            ValueError: If var_trans length doesn't match n_dim.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> # Default behavior - all None
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10), (0, 10)])
+            >>> spot.var_trans
+            [None, None]
+            >>>
+            >>> # Normalize transformation names
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (1, 100)],
+            ...                  var_trans=['log10', 'id', None, 'None'])
+            >>> spot.var_trans
+            ['log10', None, None, None]
+        """
+        # Default variable transformations (None means no transformation)
+        if self.var_trans is None:
+            self.var_trans = [None] * self.n_dim
+        else:
+            # Normalize transformation names
+            self.var_trans = [
+                None if (t is None or t == "id" or t == "None") else t
+                for t in self.var_trans
+            ]
+
+        # Validate var_trans length
+        if len(self.var_trans) != self.n_dim:
+            raise ValueError(
+                f"Length of var_trans ({len(self.var_trans)}) must match "
+                f"number of dimensions ({self.n_dim})"
+            )
 
     def process_factor_bounds(self) -> None:
         """Process bounds to handle factor variables.
@@ -760,14 +786,14 @@ class SpotOptim(BaseEstimator):
                 )
         return X_original
 
-    def _transform_bounds(self) -> None:
+    def transform_bounds(self) -> None:
         """Transform bounds from original to internal scale.
 
         Examples:
             >>> from spotoptim import SpotOptim
             >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (0.1, 100)])
             >>> spot.var_trans = ['log10', 'sqrt']
-            >>> spot._transform_bounds()
+            >>> spot.transform_bounds()
             >>> print(spot.bounds)
             [(0.0, 1.0), (0.31622776601683794, 10.0)]
 
@@ -788,7 +814,9 @@ class SpotOptim(BaseEstimator):
         self.bounds = []
         for i in range(len(self.lower)):
             # Check if var_type has this index (handle mismatched lengths)
-            if i < len(self.var_type) and (self.var_type[i] == 'int' or self.var_type[i] == 'factor'):
+            if i < len(self.var_type) and (
+                self.var_type[i] == "int" or self.var_type[i] == "factor"
+            ):
                 self.bounds.append((int(self.lower[i]), int(self.upper[i])))
             else:
                 self.bounds.append((float(self.lower[i]), float(self.upper[i])))
@@ -867,7 +895,9 @@ class SpotOptim(BaseEstimator):
             self.bounds = []
             for i in range(self.n_dim):
                 # Check if var_type has this index (handle mismatched lengths)
-                if i < len(self.var_type) and (self.var_type[i] == 'int' or self.var_type[i] == 'factor'):
+                if i < len(self.var_type) and (
+                    self.var_type[i] == "int" or self.var_type[i] == "factor"
+                ):
                     self.bounds.append((int(self.lower[i]), int(self.upper[i])))
                 else:
                     self.bounds.append((float(self.lower[i]), float(self.upper[i])))
@@ -2710,7 +2740,7 @@ class SpotOptim(BaseEstimator):
             x_next_repeated = x_next.reshape(1, -1)
         return x_next_repeated
 
-    def _set_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
+    def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
         """Generate or process initial design points.
 
         Handles three scenarios:
@@ -2736,13 +2766,13 @@ class SpotOptim(BaseEstimator):
             ...     n_initial=10
             ... )
             >>> # Generate default LHS design
-            >>> X0 = opt._set_initial_design()
+            >>> X0 = opt.get_initial_design()
             >>> X0.shape
             (10, 2)
             >>>
             >>> # Provide custom initial design
             >>> X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
-            >>> X0_processed = opt._set_initial_design(X0_custom)
+            >>> X0_processed = opt.get_initial_design(X0_custom)
             >>> X0_processed.shape
             (3, 2)
         """
@@ -2796,7 +2826,7 @@ class SpotOptim(BaseEstimator):
             ...     n_initial=10,
             ...     var_type=['int', 'int']  # Integer variables may cause duplicates
             ... )
-            >>> X0 = opt._set_initial_design()
+            >>> X0 = opt.get_initial_design()
             >>> X0_curated = opt._curate_initial_design(X0)
             >>> X0_curated.shape[0] == 10  # Should have n_initial unique points
             True
@@ -2808,7 +2838,7 @@ class SpotOptim(BaseEstimator):
             ...     n_initial=5,
             ...     repeats_initial=3
             ... )
-            >>> X0 = opt_repeat._set_initial_design()
+            >>> X0 = opt_repeat.get_initial_design()
             >>> X0_curated = opt_repeat._curate_initial_design(X0)
             >>> X0_curated.shape[0] == 15  # 5 unique points * 3 repeats
             True
@@ -3375,7 +3405,7 @@ class SpotOptim(BaseEstimator):
         timeout_start = time.time()
 
         # Set initial design (generate or process user-provided points)
-        X0 = self._set_initial_design(X0)
+        X0 = self.get_initial_design(X0)
 
         # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
         X0 = self._curate_initial_design(X0)
