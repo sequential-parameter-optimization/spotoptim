@@ -333,7 +333,6 @@ class SpotOptim(BaseEstimator):
         penalty: Optional[float] = None,
         x0: Optional[np.ndarray] = None,
     ):
-
         warnings.filterwarnings(warnings_filter)
 
         # small value, converted to float
@@ -3849,10 +3848,14 @@ class SpotOptim(BaseEstimator):
 
         # Generate mesh grid with factor handling
         if is_factor_i or is_factor_j:
-            X_i, X_j, grid_points, factor_labels_i, factor_labels_j = (
-                self._generate_mesh_grid_with_factors(
-                    i, j, num, is_factor_i, is_factor_j
-                )
+            (
+                X_i,
+                X_j,
+                grid_points,
+                factor_labels_i,
+                factor_labels_j,
+            ) = self._generate_mesh_grid_with_factors(
+                i, j, num, is_factor_i, is_factor_j
             )
         else:
             X_i, X_j, grid_points = self._generate_mesh_grid(i, j, num)

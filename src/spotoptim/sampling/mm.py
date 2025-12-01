@@ -800,7 +800,7 @@ def mmphi_intensive_update(
     """
     Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.
     This should be more efficient than recalculating the metric from scratch, because it only needs to
-    compute the distances between the new point and the existing points.    
+    compute the distances between the new point and the existing points.
 
     Args:
         X (np.ndarray): Existing sampling plan (shape: (n, d)).

@@ -1,5 +1,6 @@
 """Utility functions for spotoptim."""
 
+from .boundaries import get_boundaries, map_to_original_scale
 from .mapping import map_lr
 
-__all__ = ["map_lr"]
+__all__ = ["get_boundaries", "map_to_original_scale", "map_lr"]
