@@ -203,9 +203,6 @@ def michalewicz(X, m: int = 10) -> np.ndarray:
 
     i = np.arange(1, X.shape[1] + 1)
     # Broadcasting: (n_samples, n_features)
-    result = -np.sum(
-        np.sin(X) * (np.sin(i * X**2 / np.pi)) ** (2 * m),
-        axis=1
-    )
+    result = -np.sum(np.sin(X) * (np.sin(i * X**2 / np.pi)) ** (2 * m), axis=1)
 
     return result

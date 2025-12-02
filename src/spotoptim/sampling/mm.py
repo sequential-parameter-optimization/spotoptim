@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Tuple, Optional
 import matplotlib.pyplot as plt
+from spotoptim.utils.stats import normalize_X
 
 
 def rlh(n: int, k: int, edges: int = 0) -> np.ndarray:
@@ -715,7 +716,10 @@ def subset(X: np.ndarray, ns: int) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def mmphi_intensive(
-    X: np.ndarray, q: Optional[float] = 2.0, p: Optional[float] = 2.0
+    X: np.ndarray,
+    q: Optional[float] = 2.0,
+    p: Optional[float] = 2.0,
+    normalize_flag: bool = True,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Calculates a size-invariant Morris-Mitchell criterion.
@@ -733,6 +737,9 @@ def mmphi_intensive(
         p (float, optional):
             The distance norm to use (e.g., p=1 for Manhattan, p=2 for Euclidean).
             Defaults to 2.0.
+        normalize_flag (bool, optional):
+            If True, normalizes the X array before computing distances.
+            Defaults to True.
 
     Returns:
         tuple[float, np.ndarray, np.ndarray]:
@@ -759,6 +766,10 @@ def mmphi_intensive(
         X = np.unique(X, axis=0)
 
     n_points = X.shape[0]
+
+    # Normalize X to [0, 1] in each dimension if requested
+    if normalize_flag:
+        X = normalize_X(X)
 
     # The criterion is not well-defined for fewer than 2 points.
     if n_points < 2:
@@ -796,6 +807,7 @@ def mmphi_intensive_update(
     d: np.ndarray,
     q: float = 2.0,
     p: float = 2.0,
+    normalize_flag: bool = True,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.
@@ -809,6 +821,7 @@ def mmphi_intensive_update(
         d (np.ndarray): Unique distances for the existing design.
         q (float): Exponent used in the computation of the Morris-Mitchell metric. Defaults to 2.0.
         p (float): Distance norm to use (e.g., p=1 for Manhattan, p=2 for Euclidean). Defaults to 2.0.
+        normalize_flag (bool): If True, normalizes the X array and the new_point before computing distances. Defaults to True.
 
     Returns:
         tuple[float, np.ndarray, np.ndarray]: Updated intensive_phiq, updated_J, updated_d.
@@ -828,6 +841,13 @@ def mmphi_intensive_update(
     n_points = X.shape[0]
     if n_points < 1:
         raise ValueError("The existing design must contain at least one point.")
+
+    # Normalize X and new_point to [0, 1] in each dimension if requested
+    if normalize_flag:
+        X = normalize_X(X)
+        new_point = (new_point - np.min(X, axis=0)) / (
+            np.max(X, axis=0) - np.min(X, axis=0)
+        )
 
     # Compute distances between the new point and all existing points
     new_distances = np.array(
@@ -861,6 +881,7 @@ def propose_mmphi_intensive_minimizing_point(
     seed: Optional[int] = None,
     lower: Optional[np.ndarray] = None,
     upper: Optional[np.ndarray] = None,
+    normalize_flag: bool = True,
 ) -> np.ndarray:
     """
     Propose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion.
@@ -873,6 +894,7 @@ def propose_mmphi_intensive_minimizing_point(
         seed (int, optional): Random seed.
         lower (np.ndarray, optional): Lower bounds for each dimension (default: 0).
         upper (np.ndarray, optional): Upper bounds for each dimension (default: 1).
+        normalize_flag (bool): If True, normalizes the X array and candidate points before computing distances. Defaults to True.
 
     Returns:
         np.ndarray: Proposed new point, shape (1, n_dim).
@@ -903,8 +925,13 @@ def propose_mmphi_intensive_minimizing_point(
         lower = np.zeros(n_dim)
     if upper is None:
         upper = np.ones(n_dim)
+    if np.any(lower >= upper):
+        raise ValueError("Lower bounds must be less than upper bounds.")
     # Generate candidate points uniformly
     candidates = rng.uniform(lower, upper, size=(n_candidates, n_dim))
+    if normalize_flag:
+        X = normalize_X(X)
+        candidates = (candidates - lower) / (upper - lower)
     best_phi = np.inf
     best_point = None
     for cand in candidates:
@@ -914,3 +941,42 @@ def propose_mmphi_intensive_minimizing_point(
             best_phi = phi
             best_point = cand
     return best_point.reshape(1, -1)
+
+
+def mm_improvement(
+    x, X_base, phi_base=None, J_base=None, d_base=None, q=2, p=2, normalize_flag=True
+) -> float:
+    """
+    Calculates the Morris-Mitchell improvement for a candidate point x.
+    This is the exponential of the difference between the Morris-Mitchell intensive metric of the base design and the Morris-Mitchell intensive metric of the new design.
+
+    Args:
+        x (np.ndarray): Candidate point (1D array).
+        X_base (np.ndarray): Existing design points.
+        J_base (np.ndarray): Multiplicities of distances for X_base.
+        d_base (np.ndarray): Unique distances for X_base.
+        q (int): Number of nearest neighbors for MM metric.
+        p (int): Power for MM metric.
+        normalize_flag (bool): If True, normalizes the X array and candidate point before computing distances. Defaults to True.
+
+    Returns:
+        float: Morris-Mitchell improvement.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import mm_improvement
+        >>> X_base = np.array([[0.1, 0.2], [0.4, 0.5], [0.7, 0.8]])
+        >>> x = np.array([0.5, 0.5])
+        >>> improvement = mm_improvement(x, X_base, q=2, p=2)
+        >>> print(improvement)
+        0.123456789
+    """
+    if phi_base is None or J_base is None or d_base is None:
+        phi_base, J_base, d_base = mmphi_intensive(
+            X_base, q=q, p=p, normalize_flag=normalize_flag
+        )
+    phi_new, _, _ = mmphi_intensive_update(
+        X_base, x, J_base, d_base, q=q, p=p, normalize_flag=normalize_flag
+    )
+    y_mm = np.exp(phi_base - phi_new)
+    return float(y_mm)

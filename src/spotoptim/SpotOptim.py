@@ -610,11 +610,11 @@ class SpotOptim(BaseEstimator):
                     # Numeric bound tuple (accepts Python and numpy numeric types)
                     # Always cast to Python float/int
                     low, high = float(bound[0]), float(bound[1])
-                    
+
                     # Convert to int if both are integer-valued
                     if low.is_integer() and high.is_integer():
                         low, high = int(low), int(high)
-                    
+
                     processed_bounds.append((low, high))
                 else:
                     raise ValueError(
