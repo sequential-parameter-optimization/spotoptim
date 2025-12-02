@@ -2279,7 +2279,7 @@ class SpotOptim(BaseEstimator):
              [6. 6.8]]
         """
         # Don't round float or num types (continuous values)
-        mask = np.isin(var_type, ["float", "num"], invert=True)
+        mask = np.isin(var_type, ["float", "float"], invert=True)
         X[:, mask] = np.around(X[:, mask])
         return X
 
@@ -3880,7 +3880,7 @@ class SpotOptim(BaseEstimator):
             f"Plotting surrogate contours for top {max_imp} most important parameters:"
         )
         for idx in top_indices:
-            param_type = self.var_type[idx] if self.var_type else "num"
+            param_type = self.var_type[idx] if self.var_type else "float"
             print(
                 f"  {param_names[idx]}: importance = {importance[idx]:.2f}% (type: {param_type})"
             )
@@ -4332,7 +4332,7 @@ class SpotOptim(BaseEstimator):
             ax = axes_flat[idx]
             param_values = all_params[:, idx]
             param_name = self.var_name[idx] if self.var_name else f"x{idx}"
-            var_type = self.var_type[idx] if self.var_type else "num"
+            var_type = self.var_type[idx] if self.var_type else "float"
             var_trans = self.var_trans[idx] if self.var_trans else None
 
             # Check if this is a factor variable
@@ -5074,7 +5074,7 @@ class SpotOptim(BaseEstimator):
             >>> opt = SpotOptim(
             ...     fun=objective,
             ...     bounds=[(16, 128), (1, 4), (-3, 0), (-2, 1)],
-            ...     var_type=["int", "int", "num", "num"],
+            ...     var_type=["int", "int", "float", "float"],
             ...     var_name=["neurons", "layers", "log10_lr", "log10_alpha"],
             ...     max_iter=30,
             ...     n_initial=10
@@ -5168,7 +5168,7 @@ class SpotOptim(BaseEstimator):
                 display_value = value
 
             # Format based on variable type
-            var_type = self.all_var_type[i] if i < len(self.all_var_type) else "num"
+            var_type = self.all_var_type[i] if i < len(self.all_var_type) else "float"
 
             if var_type == "int" or isinstance(display_value, (int, np.integer)):
                 print(f"  {name}: {int(display_value)}")
@@ -5247,7 +5247,7 @@ class SpotOptim(BaseEstimator):
             param_values = all_params[:, param_idx]
 
             # Check if it's a factor variable
-            var_type = self.var_type[param_idx] if self.var_type else "num"
+            var_type = self.var_type[param_idx] if self.var_type else "float"
 
             if var_type == "factor":
                 # For categorical variables, skip correlation
@@ -5339,7 +5339,7 @@ class SpotOptim(BaseEstimator):
             ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],
             ...     var_name=["x1", "x2", "x3"],
-            ...     var_type=["num", "num", "num"],
+            ...     var_type=["float", "float", "float"],
             ...     max_iter=30,
             ...     n_initial=10
             ... )
@@ -5376,7 +5376,7 @@ class SpotOptim(BaseEstimator):
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), ("red", "green", "blue")],
             ...     var_name=["size", "color"],
-            ...     var_type=["num", "factor"],
+            ...     var_type=["float", "factor"],
             ...     max_iter=20,
             ...     n_initial=10
             ... )
@@ -5425,7 +5425,7 @@ class SpotOptim(BaseEstimator):
             "type": (
                 self.all_var_type
                 if self.all_var_type
-                else ["num"] * len(best_x_display)
+                else ["float"] * len(best_x_display)
             ),
             "lower": [],
             "upper": [],
@@ -5536,7 +5536,7 @@ class SpotOptim(BaseEstimator):
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-10, 10), (0, 1)],
             ...     var_name=["x1", "x2", "x3"],
-            ...     var_type=["num", "int", "num"],
+            ...     var_type=["float", "int", "float"],
             ...     max_iter=20,
             ...     n_initial=10
             ... )
@@ -5553,7 +5553,7 @@ class SpotOptim(BaseEstimator):
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(10, 100), ("SGD", "Adam", "RMSprop"), (0.001, 0.1)],
             ...     var_name=["neurons", "optimizer", "lr"],
-            ...     var_type=["int", "factor", "num"],
+            ...     var_type=["int", "factor", "float"],
             ...     max_iter=30,
             ...     n_initial=10
             ... )
@@ -5573,7 +5573,7 @@ class SpotOptim(BaseEstimator):
             ...     fun=hyperparameter_objective,
             ...     bounds=[(1, 5), (16, 256), (0.0, 0.5)],
             ...     var_name=["layers", "neurons", "dropout"],
-            ...     var_type=["int", "int", "num"],
+            ...     var_type=["int", "int", "float"],
             ...     max_iter=50,
             ...     n_initial=15
             ... )
@@ -5612,7 +5612,7 @@ class SpotOptim(BaseEstimator):
             "type": (
                 self.all_var_type
                 if self.all_var_type
-                else ["num"] * len(self.all_lower)
+                else ["float"] * len(self.all_lower)
             ),
             "lower": [],
             "upper": [],
