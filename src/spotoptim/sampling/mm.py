@@ -2,69 +2,8 @@ import numpy as np
 from typing import Tuple, Optional
 import matplotlib.pyplot as plt
 from spotoptim.utils.stats import normalize_X
-
-
-def rlh(n: int, k: int, edges: int = 0) -> np.ndarray:
-    """
-    Generates a random Latin hypercube within the [0,1]^k hypercube.
-
-    Args:
-        n (int): Desired number of points.
-        k (int): Number of design variables (dimensions).
-        edges (int, optional):
-            If 1, places centers of the extreme bins at the domain edges ([0,1]).
-            Otherwise, bins are fully contained within the domain, i.e. midpoints.
-            Defaults to 0.
-
-    Returns:
-        np.ndarray: A Latin hypercube sampling plan of n points in k dimensions,
-                    with each coordinate in the range [0,1].
-
-    Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
-        "This program is free software: you can redistribute it and/or modify  it
-        under the terms of the GNU Lesser General Public License as published by
-        the Free Software Foundation, either version 3 of the License, or any
-        later version.
-        This program is distributed in the hope that it will be useful, but
-        WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
-        General Public License for more details.
-        You should have received a copy of the GNU General Public License and GNU
-        Lesser General Public License along with this program. If not, see
-        <http://www.gnu.org/licenses/>."
-
-    Examples:
-        >>> import numpy as np
-        >>> from spotoptim.sampling.mm import rlh
-        >>> # Generate a 2D Latin hypercube with 5 points and edges=0
-        >>> X = rlh(n=5, k=2, edges=0)
-        >>> print(X)
-        # Example output (values vary due to randomness):
-        # [[0.1  0.5 ]
-        #  [0.7  0.1 ]
-        #  [0.9  0.7 ]
-        #  [0.3  0.9 ]
-        #  [0.5  0.3 ]]
-
-    """
-    # Initialize array
-    X = np.zeros((n, k), dtype=float)
-
-    # Fill with random permutations
-    for i in range(k):
-        X[:, i] = np.random.permutation(n)
-
-    # Adjust normalization based on the edges flag
-    if edges == 1:
-        # [X=0..n-1] -> [0..1]
-        X = X / (n - 1)
-    else:
-        # Points at true midpoints
-        # [X=0..n-1] -> [0.5/n..(n-0.5)/n]
-        X = (X + 0.5) / n
-
-    return X
+from spotoptim.sampling.lhs import rlh
+from scipy.stats.qmc import LatinHypercube
 
 
 def jd(X: np.ndarray, p: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
@@ -980,3 +919,193 @@ def mm_improvement(
     )
     y_mm = np.exp(phi_base - phi_new)
     return float(y_mm)
+
+
+def bestlh(
+    n: int,
+    k: int,
+    population: int,
+    iterations: int,
+    p=1,
+    plot=False,
+    verbosity=0,
+    edges=0,
+    q_list=[1, 2, 5, 10, 20, 50, 100],
+) -> np.ndarray:
+    """
+    Generates an optimized Latin hypercube by evolving the Morris-Mitchell
+    criterion across multiple exponents (q values) and selecting the best plan.
+
+    Args:
+        n (int):
+            Number of points required in the Latin hypercube.
+        k (int):
+            Number of design variables (dimensions).
+        population (int):
+            Number of offspring in each generation of the evolutionary search.
+        iterations (int):
+            Number of generations for the evolutionary search.
+        p (int, optional):
+            The distance norm to use. p=1 for Manhattan (L1), p=2 for Euclidean (L2).
+            Defaults to 1 (faster than 2).
+        plot (bool, optional):
+            If True, a scatter plot of the optimized plan in the first two dimensions
+            will be displayed. Only if k>=2. Defaults to False.
+        verbosity (int, optional):
+            Verbosity level. 0 is silent, 1 prints the best q value found. Defaults to 0.
+        edges (int, optional):
+            If 1, places centers of the extreme bins at the domain edges ([0,1]).
+            Otherwise, bins are fully contained within the domain, i.e. midpoints.
+            Defaults to 0.
+        q_list (list, optional):
+            A list of q values to optimize. Defaults to [1, 2, 5, 10, 20, 50, 100].
+            These values are used to evaluate the space-fillingness of the Latin
+            hypercube. The best plan is selected based on the lowest mmphi value.
+
+    Returns:
+        np.ndarray:
+            A 2D array of shape (n, k) representing an optimized Latin hypercube.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import bestlh
+        # Generate a 5-point, 2-dimensional Latin hypercube
+        >>> X = bestlh(n=5, k=2, population=5, iterations=10)
+        >>> print(X.shape)
+        (5, 2)
+    """
+    if n < 2:
+        raise ValueError("Latin hypercubes require at least 2 points")
+    if k < 2:
+        raise ValueError("Latin hypercubes are not defined for dim k < 2")
+
+    # Start with a random Latin hypercube
+    X_start = rlh(n, k, edges=edges)
+
+    # Allocate a 3D array to store the results for each q
+    # (shape: (n, k, number_of_q_values))
+    X3D = np.zeros((n, k, len(q_list)))
+
+    # Evolve the plan for each q in q_list
+    for i, q_val in enumerate(q_list):
+        if verbosity > 0:
+            print(f"Now optimizing for q={q_val}...")
+        X3D[:, :, i] = mmlhs(X_start, population, iterations, q_val)
+
+    # Sort the set of evolved plans according to the Morris-Mitchell criterion
+    index_order = mmsort(X3D, p=p)
+
+    # index_order is a 1-based array of plan indices; the first element is the best
+    best_idx = index_order[0] - 1
+    if verbosity > 0:
+        print(f"Best lh found using q={q_list[best_idx]}...")
+
+    # The best plan in 3D array order
+    X = X3D[:, :, best_idx]
+
+    # Plot the first two dimensions
+    if plot and (k >= 2):
+        plt.scatter(X[:, 0], X[:, 1], c="r", marker="o")
+        plt.title(f"Morris-Mitchell optimum plan found using q={q_list[best_idx]}")
+        plt.xlabel("x_1")
+        plt.ylabel("x_2")
+        plt.grid(True)
+        plt.show()
+
+    return X
+
+
+def plot_mmphi_vs_n_lhs(
+    k_dim: int,
+    seed: int,
+    n_min: int = 10,
+    n_max: int = 100,
+    n_step: int = 5,
+    q_phi: float = 2.0,
+    p_phi: float = 2.0,
+):
+    """
+    Generates LHS designs for varying n, calculates mmphi and mmphi_intensive,
+    and plots them against the number of samples (n).
+
+    Args:
+        k_dim (int): Number of dimensions for the LHS design.
+        seed (int): Random seed for reproducibility.
+        n_min (int): Minimum number of samples.
+        n_max (int): Maximum number of samples.
+        n_step (int): Step size for increasing n.
+        q_phi (float): Exponent q for the Morris-Mitchell criteria.
+        p_phi (float): Distance norm p for the Morris-Mitchell criteria.
+
+    Returns:
+        None: Displays a plot of mmphi and mmphi_intensive vs. number of samples (n).
+
+    Examples:
+        >>> from spotoptim.sampling.mm import plot_mmphi_vs_n_lhs
+        >>> plot_mmphi_vs_n_lhs(k_dim=3, seed=42, n_min=10, n_max=50, n_step=5, q_phi=2.0, p_phi=2.0)
+    """
+    n_values = list(range(n_min, n_max + 1, n_step))
+    if not n_values:
+        print("Warning: n_values list is empty. Check n_min, n_max, and n_step.")
+        return
+    mmphi_results = []
+    mmphi_intensive_results = []
+    lhs_sampler = LatinHypercube(d=k_dim, seed=seed)
+    print(f"Calculating for n from {n_min} to {n_max} with step {n_step}...")
+    for n_points in n_values:
+        if n_points < 2:  # mmphi requires at least 2 points to calculate distances
+            print(f"Skipping n={n_points} as it's less than 2.")
+            mmphi_results.append(np.nan)
+            mmphi_intensive_results.append(np.nan)
+            continue
+        try:
+            X_design = lhs_sampler.random(n=n_points)
+            phi = mmphi(X_design, q=q_phi, p=p_phi)
+            phi_intensive, _, _ = mmphi_intensive(X_design, q=q_phi, p=p_phi)
+            mmphi_results.append(phi)
+            mmphi_intensive_results.append(phi_intensive)
+        except Exception as e:
+            print(f"Error calculating for n={n_points}: {e}")
+            mmphi_results.append(np.nan)
+            mmphi_intensive_results.append(np.nan)
+
+    fig, ax1 = plt.subplots(figsize=(9, 6))
+
+    color = "tab:red"
+    ax1.set_xlabel("Number of Samples (n)")
+    ax1.set_ylabel("mmphi (Phiq)", color=color)
+    ax1.plot(
+        n_values,
+        mmphi_results,
+        color=color,
+        marker="o",
+        linestyle="-",
+        label="mmphi (Phiq)",
+    )
+    ax1.tick_params(axis="y", labelcolor=color)
+    ax1.grid(True, linestyle="--", alpha=0.7)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    color = "tab:blue"
+    ax2.set_ylabel(
+        "mmphi_intensive (PhiqI)", color=color
+    )  # we already handled the x-label with ax1
+    ax2.plot(
+        n_values,
+        mmphi_intensive_results,
+        color=color,
+        marker="x",
+        linestyle="--",
+        label="mmphi_intensive (PhiqI)",
+    )
+    ax2.tick_params(axis="y", labelcolor=color)
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.title(
+        f"Morris-Mitchell Criteria vs. Number of Samples (n)\nLHS (k={k_dim}, q={q_phi}, p={p_phi})"
+    )
+    # Add legends
+    lines, labels = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, loc="best")
+    plt.show()

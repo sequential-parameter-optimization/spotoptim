@@ -13,6 +13,8 @@ from spotoptim.sampling.mm import (
     mmphi_intensive,
     mmphi_intensive_update,
     propose_mmphi_intensive_minimizing_point,
+    bestlh,
+    plot_mmphi_vs_n_lhs,
 )
 
 __all__ = [
@@ -28,4 +30,6 @@ __all__ = [
     "mmphi_intensive",
     "mmphi_intensive_update",
     "propose_mmphi_intensive_minimizing_point",
+    "bestlh",
+    "plot_mmphi_vs_n_lhs",
 ]

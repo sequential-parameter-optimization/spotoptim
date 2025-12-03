@@ -285,3 +285,12 @@ class TestNormalizeXDocstring:
         
         expected = np.array([[0.5, 0.5], [0.5, 0.5], [0.5, 0.5]])
         np.testing.assert_array_almost_equal(result, expected)
+
+    def test_empty_array(self):
+        """Test normalization with empty array."""
+        X_empty = np.zeros((0, 2))
+        result = normalize_X(X_empty)
+        
+        # Should return empty array with same shape
+        assert result.shape == (0, 2)
+        assert result.size == 0

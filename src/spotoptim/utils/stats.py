@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 def normalize_X(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
@@ -32,6 +33,10 @@ def normalize_X(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
                [0.5, 0.5],
                [0.5, 0.5]])
     """
+    # Handle empty array
+    if X.size == 0:
+        return X.copy()
+
     X_min = np.min(X, axis=0)
     X_max = np.max(X, axis=0)
     X_range = X_max - X_min
@@ -49,3 +54,93 @@ def normalize_X(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     X_normalized[:, constant_dims] = 0.5
 
     return X_normalized
+
+
+def calculate_outliers(series_or_df, irqmultiplier: float = 1.5) -> int:
+    """
+    Calculate the number of outliers using the IQR method.
+
+    Accepts either a pandas Series or a pandas DataFrame. For a DataFrame,
+    counts outliers across all numeric columns and returns the total count.
+
+    Args:
+        series_or_df: pd.Series or pd.DataFrame containing numeric data.
+        irqmultiplier (float, optional): Multiplier for IQR to define fences. Defaults to 1.5.
+
+    Returns:
+        int: The number of outliers.
+
+    Examples:
+        >>> import pandas as pd
+        >>> from spotoptim.utils.stats import calculate_outliers
+        >>> s = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100])
+        >>> calculate_outliers(s)
+        1
+
+        >>> df = pd.DataFrame({
+        ...     'a': [1, 2, 3, 100],
+        ...     'b': [10, 12, 11, 10]
+        ... })
+        >>> calculate_outliers(df)
+        1
+    """
+    if isinstance(series_or_df, pd.Series):
+        s = series_or_df.dropna()
+        q1 = s.quantile(0.25)
+        q3 = s.quantile(0.75)
+        iqr = q3 - q1
+        lower_fence = q1 - irqmultiplier * iqr
+        upper_fence = q3 + irqmultiplier * iqr
+        return int(s[(s < lower_fence) | (s > upper_fence)].shape[0])
+
+    if isinstance(series_or_df, pd.DataFrame):
+        df = series_or_df.select_dtypes(include=["number"]).dropna(how="all")
+        total_outliers = 0
+        for col in df.columns:
+            s = df[col].dropna()
+            if s.empty:
+                continue
+            q1 = s.quantile(0.25)
+            q3 = s.quantile(0.75)
+            iqr = q3 - q1
+            lower_fence = q1 - irqmultiplier * iqr
+            upper_fence = q3 + irqmultiplier * iqr
+            total_outliers += int(s[(s < lower_fence) | (s > upper_fence)].shape[0])
+        return total_outliers
+
+    raise TypeError("Input must be a pandas Series or DataFrame")
+
+
+def get_combinations(ind_list: list, type="indices") -> list:
+    """
+    Generates all possible combinations of two values from a list of values. Order is not important.
+
+    Args:
+        ind_list (list): A list of target indices.
+        type (str): The type of output, either 'values' or 'indices'. Default is 'indices'.
+
+    Returns:
+        list: A list of tuples, where each tuple contains a combination of two values. The order of the values within a tuple is not important, and each combination appears only once.
+
+    Examples:
+        >>> from spotoptim.utils import get_combinations
+        >>> ind_list = [0, 10, 20, 30]
+        >>> combinations = get_combinations(ind_list)
+        >>> combinations = get_combinations(ind_list, type='indices')
+            [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+        >>> print(combinations, type='values')
+            [(0, 10), (0, 20), (0, 30), (1, 20), (1, 30), (2, 30)]
+    """
+    # check that ind_list is a list
+    if not isinstance(ind_list, list):
+        raise ValueError("ind_list must be a list.")
+    m = len(ind_list)
+    if type == "values":
+        combinations = [
+            (ind_list[i], ind_list[j]) for i in range(m) for j in range(i + 1, m)
+        ]
+    elif type == "indices":
+        combinations = [(i, j) for i in range(m) for j in range(i + 1, m)]
+    else:
+        raise ValueError("type must be either 'values' or 'indices'.")
+    return combinations
