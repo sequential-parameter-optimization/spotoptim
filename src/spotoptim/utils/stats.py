@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import Union
 
 
 def normalize_X(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
@@ -56,7 +57,9 @@ def normalize_X(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return X_normalized
 
 
-def calculate_outliers(series_or_df, irqmultiplier: float = 1.5) -> int:
+def calculate_outliers(
+    series_or_df: Union[pd.Series, pd.DataFrame], irqmultiplier: float = 1.5
+) -> int:
     """
     Calculate the number of outliers using the IQR method.
 

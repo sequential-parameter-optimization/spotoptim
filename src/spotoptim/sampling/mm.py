@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from typing import Tuple, Optional
 import matplotlib.pyplot as plt
 from spotoptim.utils.stats import normalize_X
@@ -1023,7 +1024,7 @@ def plot_mmphi_vs_n_lhs(
     n_step: int = 5,
     q_phi: float = 2.0,
     p_phi: float = 2.0,
-):
+) -> None:
     """
     Generates LHS designs for varying n, calculates mmphi and mmphi_intensive,
     and plots them against the number of samples (n).
@@ -1109,3 +1110,116 @@ def plot_mmphi_vs_n_lhs(
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax2.legend(lines + lines2, labels + labels2, loc="best")
     plt.show()
+
+
+def plot_mmphi_vs_points(
+    X_base: np.ndarray,
+    x_min: np.ndarray,
+    x_max: np.ndarray,
+    p_min: int = 10,
+    p_max: int = 100,
+    p_step: int = 10,
+    n_repeats: int = 5,
+) -> pd.DataFrame:
+    """
+    Plot the Morris-Mitchell criterion versus the number of added points.
+
+    Args:
+        X_base (np.ndarray): Base design matrix
+        x_min (np.ndarray): Lower bounds for variables
+        x_max (np.ndarray): Upper bounds for variables
+        p_min (int): Minimum number of points to add
+        p_max (int): Maximum number of points to add
+        p_step (int): Step size for number of points
+        n_repeats (int): Number of repetitions for each point count
+
+    Returns:
+        pd.DataFrame: Summary DataFrame with mean and std of mmphi for each number of added points.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import plot_mmphi_vs_points
+        >>> # Define base design
+        >>> X_base = np.array([[0.1, 0.2], [0.4, 0.5], [0.7, 0.8]])
+        >>> # Define variable bounds
+        >>> x_min = np.array([0.0, 0.0])
+        >>> x_max = np.array([1.0, 1.0])
+        >>> # Plot mmphi vs number of added points
+        >>> df_summary = plot_mmphi_vs_points(X_base, x_min, x_max, p_min=10, p_max=50, p_step=10, n_repeats=3)
+    """
+    n, m = X_base.shape
+    p_values = range(p_min, p_max + 1, p_step)
+
+    # Calculate base mmphi value
+    mmphi_base, _, _ = mmphi_intensive(X=X_base)
+
+    # Store results
+    results = []
+
+    # For each number of points
+    for p in p_values:
+        # Repeat multiple times to get average behavior
+        for _ in range(n_repeats):
+            # Generate random points
+            x_random = np.random.uniform(low=x_min, high=x_max, size=(p, m))
+
+            # Append to base design
+            X_extended = np.append(X_base, x_random, axis=0)
+
+            # Calculate new mmphi value
+            mmphi_extended, _, _ = mmphi_intensive(X=X_extended)
+
+            # Store results
+            results.append({"n_points": p, "mmphi": mmphi_extended})
+
+    # Convert results to DataFrame for easier plotting
+    df_results = pd.DataFrame(results)
+
+    # Calculate mean and std for each point count
+    df_summary = (
+        df_results.groupby("n_points").agg({"mmphi": ["mean", "std"]}).reset_index()
+    )
+
+    # Create the plot
+    plt.figure(figsize=(10, 6))
+
+    # Plot mean line with error bars
+    plt.errorbar(
+        df_summary["n_points"],
+        df_summary["mmphi"]["mean"],
+        yerr=df_summary["mmphi"]["std"],
+        fmt="bo-",
+        capsize=5,
+        capthick=1,
+        elinewidth=1,
+        label="Mean mmphi ± std",
+    )
+
+    # Add error bands (optional - can keep or remove depending on preference)
+    plt.fill_between(
+        df_summary["n_points"],
+        df_summary["mmphi"]["mean"] - df_summary["mmphi"]["std"],
+        df_summary["mmphi"]["mean"] + df_summary["mmphi"]["std"],
+        alpha=0.1,
+        color="blue",
+    )
+
+    # Add baseline
+    plt.axhline(
+        y=mmphi_base,
+        color="r",
+        linestyle="--",
+        label=f"Base design mmphi ({mmphi_base:.4f})",
+    )
+
+    # Customize plot
+    plt.xlabel("Number of Added Points")
+    plt.ylabel("Morris-Mitchell Criterion")
+    plt.title("Morris-Mitchell Criterion vs Number of Added Points")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+
+    # Show plot
+    plt.show()
+
+    return df_summary

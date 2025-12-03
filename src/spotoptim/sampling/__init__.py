@@ -1,7 +1,6 @@
 """Sampling methods for design of experiments."""
 
 from spotoptim.sampling.mm import (
-    rlh,
     jd,
     mm,
     mmphi,
@@ -16,6 +15,8 @@ from spotoptim.sampling.mm import (
     bestlh,
     plot_mmphi_vs_n_lhs,
 )
+
+from spotoptim.sampling.lhs import rlh
 
 __all__ = [
     "rlh",

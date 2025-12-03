@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import patch
 from sklearn.datasets import make_regression
 
-from spotoptim.sensitivity.importance import generate_mdi, generate_imp, plot_importances
+from spotoptim.inspection.importance import generate_mdi, generate_imp, plot_importances
 
 
 @pytest.fixture

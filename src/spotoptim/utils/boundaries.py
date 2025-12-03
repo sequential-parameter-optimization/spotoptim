@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from typing import Union
 
 
 def get_boundaries(data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -35,7 +36,11 @@ def get_boundaries(data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return min_values, max_values
 
 
-def map_to_original_scale(X_search, x_min: np.ndarray, x_max: np.ndarray):
+def map_to_original_scale(
+    X_search: Union[pd.DataFrame, np.ndarray],
+    x_min: np.ndarray,
+    x_max: np.ndarray,
+) -> Union[pd.DataFrame, np.ndarray]:
     """
     Maps the values in X_search from the range [0, 1] to the original scale defined by x_min and x_max.
 

@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import patch
 from sklearn.datasets import make_regression
 
-from spotoptim.sensitivity.importance import plot_feature_importances
+from spotoptim.inspection.importance import plot_feature_importances
 
 
 @pytest.fixture

@@ -8,6 +8,7 @@ This implementation follows Forrester et al. (2008) "Engineering Design via Surr
 import numpy as np
 from numpy.linalg import LinAlgError, cond
 from typing import Dict, Tuple, List, Optional
+import typing
 from scipy.optimize import differential_evolution
 from sklearn.base import BaseEstimator, RegressorMixin
 from scipy.spatial.distance import cdist, pdist, squareform
@@ -554,7 +555,7 @@ class Kriging(BaseEstimator, RegressorMixin):
             "theta": self.theta,
         }
 
-    def set_params(self, **params) -> "Kriging":
+    def set_params(self, **params: "typing.Any") -> "Kriging":
         """Set parameters (scikit-learn compatibility).
 
         Args:
