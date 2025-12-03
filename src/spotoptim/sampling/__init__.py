@@ -14,6 +14,7 @@ from spotoptim.sampling.mm import (
     propose_mmphi_intensive_minimizing_point,
     bestlh,
     plot_mmphi_vs_n_lhs,
+    mm_improvement_contour,
 )
 
 from spotoptim.sampling.lhs import rlh
@@ -33,4 +34,5 @@ __all__ = [
     "propose_mmphi_intensive_minimizing_point",
     "bestlh",
     "plot_mmphi_vs_n_lhs",
+    "mm_improvement_contour",
 ]

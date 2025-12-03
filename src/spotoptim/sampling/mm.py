@@ -1223,3 +1223,47 @@ def plot_mmphi_vs_points(
     plt.show()
 
     return df_summary
+
+
+def mm_improvement_contour(
+    X_base, x1=np.linspace(0, 1, 100), x2=np.linspace(0, 1, 100), q=2, p=2
+):
+    """
+    Generates a contour plot of the Morris-Mitchell improvement over a grid defined by x1 and x2.
+
+    Args:
+        X_base (np.ndarray):
+            Base design points.
+        x1 (np.ndarray):
+            Grid values for the first dimension. Default is np.linspace(0, 1, 100).
+        x2 (np.ndarray): Grid values for the second dimension. Default is np.linspace(0, 1, 100).
+        q (int):
+            Morris-Mitchell metric parameter. Default is 2.
+        p (int):
+            Morris-Mitchell metric parameter. Default is 2.
+    Returns:
+        None: Displays a contour plot of the Morris-Mitchell improvement.
+
+    Examples:
+        >>> import numpy as np
+            from spotoptim.sampling.mm import mm_improvement_contour
+            X_base = np.array([[0.1, 0.1], [0.2, 0.2], [0.7, 0.7]])
+            mm_improvement_contour(X_base)
+    """
+
+    _, J_base, d_base = mmphi_intensive(X_base, q=2, p=2)
+    X1, X2 = np.meshgrid(x1, x2)
+    improvement_grid = np.zeros(X1.shape)
+    for i in range(X1.shape[0]):
+        for j in range(X1.shape[1]):
+            x = np.array([X1[i, j], X2[i, j]])
+            improvement_grid[i, j] = mm_improvement(x, X_base, J_base, d_base, q=2, p=2)
+    plt.contourf(X1, X2, improvement_grid, levels=30, cmap="viridis")
+    plt.colorbar(label="Morris-Mitchell Improvement")
+    plt.scatter(X_base[:, 0], X_base[:, 1], color="red", label="X_base")
+    plt.title("Morris-Mitchell Improvement Contour Plot")
+    plt.xlabel("X1")
+    plt.ylabel("X2")
+    plt.legend()
+    plt.grid()
+    plt.show()
