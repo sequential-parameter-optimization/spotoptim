@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://github.com/sequential-parameter-optimization/spotoptim/reference/spotoptim/utils/boundaries/">
+        <link rel="canonical" href="https://github.com/sequential-parameter-optimization/spotoptim/reference/spotoptim/sampling/lhs/">
       
       
-        <link rel="prev" href="../../surrogate/simple_kriging/">
+        <link rel="prev" href="../../nn/linear_regressor/">
       
       
-        <link rel="next" href="../mapping/">
+        <link rel="next" href="../mm/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>boundaries - spotoptim</title>
+        <title>lhs - spotoptim</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#spotoptim.utils.boundaries" class="md-skip">
+        <a href="#spotoptim.sampling.lhs" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              boundaries
+              lhs
             
           </span>
         </div>
@@ -760,6 +760,8 @@
                 
   
   
+    
+  
   
   
     
@@ -774,18 +776,16 @@
     
     
       
-        
-        
-      
     
-    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
-  
-  
-  
-    <a href="../../sampling/lhs/" class="md-nav__link">
-      
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_8" id="__nav_2_1_8_label" tabindex="0">
+            
   
   
   <span class="md-ellipsis">
@@ -799,12 +799,143 @@
   
   
 
-      
-        <span class="md-nav__icon md-icon"></span>
-      
-    </a>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    sampling
   
 
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    lhs
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    lhs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.sampling.lhs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lhs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.sampling.lhs.rlh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rlh
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    mm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -870,34 +1001,34 @@
                 
   
   
+  
+  
     
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
   
   
   
-    
-    
+    <a href="../../utils/boundaries/" class="md-nav__link">
       
-        
-      
-        
-      
-        
-      
-    
-    
-    
-    
-      
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_10" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_2_1_10" id="__nav_2_1_10_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
@@ -911,182 +1042,12 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_10_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_1_10">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    utils
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    boundaries
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    boundaries
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#spotoptim.utils.boundaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        boundaries
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#spotoptim.utils.boundaries.get_boundaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        get_boundaries
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#spotoptim.utils.boundaries.map_to_original_scale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        map_to_original_scale
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../mapping/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    mapping
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../stats/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    stats
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
       
     </li>
   
@@ -1241,10 +1202,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#spotoptim.utils.boundaries" class="md-nav__link">
+  <a href="#spotoptim.sampling.lhs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        boundaries
+        lhs
       
     </span>
   </a>
@@ -1252,21 +1213,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#spotoptim.utils.boundaries.get_boundaries" class="md-nav__link">
+  <a href="#spotoptim.sampling.lhs.rlh" class="md-nav__link">
     <span class="md-ellipsis">
       
-        get_boundaries
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#spotoptim.utils.boundaries.map_to_original_scale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        map_to_original_scale
+        rlh
       
     </span>
   </a>
@@ -1363,7 +1313,7 @@
         <a href="./" class="md-path__link">
           
   <span class="md-ellipsis">
-    utils
+    sampling
   </span>
 
         </a>
@@ -1385,13 +1335,13 @@
   
 
 
-  <h1>boundaries</h1>
+  <h1>lhs</h1>
 
 <div class="doc doc-object doc-module">
 
 
 
-<a id="spotoptim.utils.boundaries"></a>
+<a id="spotoptim.sampling.lhs"></a>
     <div class="doc doc-contents first">
 
 
@@ -1417,15 +1367,15 @@
 <div class="doc doc-object doc-function">
 
 
-<h2 id="spotoptim.utils.boundaries.get_boundaries" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_boundaries</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></code>
+<h2 id="spotoptim.sampling.lhs.rlh" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">rlh</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">edges</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
 
-<a href="#spotoptim.utils.boundaries.get_boundaries" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#spotoptim.sampling.lhs.rlh" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Calculates the minimum and maximum values for each column in a NumPy array.</p>
+        <p>Generates a random Latin hypercube within the [0,1]^k hypercube.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1441,19 +1391,52 @@
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>data</code>
+                <code>n</code>
             </td>
             <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
+                  <code><span title="int">int</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A NumPy array of shape (n, k), where n is the number of rows
-and k is the number of columns.</p>
+                <p>Desired number of points.</p>
               </div>
             </td>
             <td>
                 <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>k</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of design variables (dimensions).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>edges</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If 1, places centers of the extreme bins at the domain edges ([0,1]).
+Otherwise, bins are fully contained within the domain, i.e. midpoints.
+Defaults to 0.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
             </td>
           </tr>
       </tbody>
@@ -1471,36 +1454,12 @@ and k is the number of columns.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="tuple">tuple</span>[<span title="numpy.ndarray">ndarray</span>, <span title="numpy.ndarray">ndarray</span>]</code>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>tuple[np.ndarray, np.ndarray]: A tuple containing two NumPy arrays:
-- The first array contains the minimum values for each column, with shape (k,).
-- The second array contains the maximum values for each column, with shape (k,).</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If the input array has shape (1, 0) (empty array).</p>
+                <p>np.ndarray: A Latin hypercube sampling plan of n points in k dimensions,
+        with each coordinate in the range [0,1].</p>
               </div>
             </td>
           </tr>
@@ -1509,20 +1468,24 @@ and k is the number of columns.</p>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.utils.boundaries</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_boundaries</span>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.sampling.lhs</span><span class="w"> </span><span class="kn">import</span> <span class="n">rlh</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">min_values</span><span class="p">,</span> <span class="n">max_values</span> <span class="o">=</span> <span class="n">get_boundaries</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Minimum values:&quot;</span><span class="p">,</span> <span class="n">min_values</span><span class="p">)</span>
-<span class="go">Minimum values: [1 2 3]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Maximum values:&quot;</span><span class="p">,</span> <span class="n">max_values</span><span class="p">)</span>
-<span class="go">Maximum values: [7 8 9]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Generate a 2D Latin hypercube with 5 points and edges=0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rlh</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">edges</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go"># Example output (values vary due to randomness):</span>
+<span class="go"># [[0.1  0.5 ]</span>
+<span class="go">#  [0.7  0.1 ]</span>
+<span class="go">#  [0.9  0.7 ]</span>
+<span class="go">#  [0.3  0.9 ]</span>
+<span class="go">#  [0.5  0.3 ]]</span>
 </code></pre></div>
 
 
             <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/spotoptim/utils/boundaries.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 5</span>
+              <summary>Source code in <code>src/spotoptim/sampling/lhs.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 4</span>
+<span class="normal"> 5</span>
 <span class="normal"> 6</span>
 <span class="normal"> 7</span>
 <span class="normal"> 8</span>
@@ -1552,160 +1515,10 @@ and k is the number of columns.</p>
 <span class="normal">32</span>
 <span class="normal">33</span>
 <span class="normal">34</span>
-<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_boundaries</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates the minimum and maximum values for each column in a NumPy array.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        data (np.ndarray): A NumPy array of shape (n, k), where n is the number of rows</span>
-<span class="sd">            and k is the number of columns.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple[np.ndarray, np.ndarray]: A tuple containing two NumPy arrays:</span>
-<span class="sd">            - The first array contains the minimum values for each column, with shape (k,).</span>
-<span class="sd">            - The second array contains the maximum values for each column, with shape (k,).</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If the input array has shape (1, 0) (empty array).</span>
-
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; from spotoptim.utils.boundaries import get_boundaries</span>
-<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">        &gt;&gt;&gt; data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])</span>
-<span class="sd">        &gt;&gt;&gt; min_values, max_values = get_boundaries(data)</span>
-<span class="sd">        &gt;&gt;&gt; print(&quot;Minimum values:&quot;, min_values)</span>
-<span class="sd">        Minimum values: [1 2 3]</span>
-<span class="sd">        &gt;&gt;&gt; print(&quot;Maximum values:&quot;, max_values)</span>
-<span class="sd">        Maximum values: [7 8 9]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input array cannot be empty.&quot;</span><span class="p">)</span>
-    <span class="n">min_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">max_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">min_values</span><span class="p">,</span> <span class="n">max_values</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="spotoptim.utils.boundaries.map_to_original_scale" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">map_to_original_scale</span><span class="p">(</span><span class="n">X_search</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span></code>
-
-<a href="#spotoptim.utils.boundaries.map_to_original_scale" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Maps the values in X_search from the range [0, 1] to the original scale defined by x_min and x_max.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>X_search</code>
-            </td>
-            <td>
-                  <code><span title="Union">Union</span>[<span title="pandas.DataFrame">DataFrame</span>, <span title="numpy.ndarray">ndarray</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A Pandas DataFrame or NumPy array containing the search points in the range [0, 1].</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>x_min</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A NumPy array containing the minimum values for each feature in the original scale.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>x_max</code>
-            </td>
-            <td>
-                  <code><span title="numpy.ndarray">ndarray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A NumPy array containing the maximum values for each feature in the original scale.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Union[pd.DataFrame, np.ndarray]: A Pandas DataFrame or NumPy array with the values mapped to the original scale.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-<p><span class="doc-section-title">Examples:</span></p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.utils.boundaries</span><span class="w"> </span><span class="kn">import</span> <span class="n">map_to_original_scale</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">X_search</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">]],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">X_search_scaled</span> <span class="o">=</span> <span class="n">map_to_original_scale</span><span class="p">(</span><span class="n">X_search</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">X_search_scaled</span><span class="p">)</span>
-<span class="go">      x     y</span>
-<span class="go">0   5.0  10.0</span>
-<span class="go">1   2.5  15.0</span>
-</code></pre></div>
-
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/spotoptim/utils/boundaries.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
 <span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
@@ -1728,100 +1541,64 @@ and k is the number of columns.</p>
 <span class="normal">58</span>
 <span class="normal">59</span>
 <span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span>
-<span class="normal">82</span>
-<span class="normal">83</span>
-<span class="normal">84</span>
-<span class="normal">85</span>
-<span class="normal">86</span>
-<span class="normal">87</span>
-<span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span>
-<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">map_to_original_scale</span><span class="p">(</span><span class="n">X_search</span><span class="p">,</span> <span class="n">x_min</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">x_max</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="normal">61</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rlh</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">edges</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Maps the values in X_search from the range [0, 1] to the original scale defined by x_min and x_max.</span>
+<span class="sd">    Generates a random Latin hypercube within the [0,1]^k hypercube.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        X_search (Union[pd.DataFrame, np.ndarray]): A Pandas DataFrame or NumPy array containing the search points in the range [0, 1].</span>
-<span class="sd">        x_min (np.ndarray): A NumPy array containing the minimum values for each feature in the original scale.</span>
-<span class="sd">        x_max (np.ndarray): A NumPy array containing the maximum values for each feature in the original scale.</span>
+<span class="sd">        n (int): Desired number of points.</span>
+<span class="sd">        k (int): Number of design variables (dimensions).</span>
+<span class="sd">        edges (int, optional):</span>
+<span class="sd">            If 1, places centers of the extreme bins at the domain edges ([0,1]).</span>
+<span class="sd">            Otherwise, bins are fully contained within the domain, i.e. midpoints.</span>
+<span class="sd">            Defaults to 0.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Union[pd.DataFrame, np.ndarray]: A Pandas DataFrame or NumPy array with the values mapped to the original scale.</span>
+<span class="sd">        np.ndarray: A Latin hypercube sampling plan of n points in k dimensions,</span>
+<span class="sd">                    with each coordinate in the range [0,1].</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; from spotoptim.utils.boundaries import map_to_original_scale</span>
+<span class="sd">        &gt;&gt;&gt; from spotoptim.sampling.lhs import rlh</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
-<span class="sd">        &gt;&gt;&gt; X_search = pd.DataFrame([[0.5, 0.5], [0.25, 0.75]], columns=[&#39;x&#39;, &#39;y&#39;])</span>
-<span class="sd">        &gt;&gt;&gt; x_min = np.array([0, 0])</span>
-<span class="sd">        &gt;&gt;&gt; x_max = np.array([10, 20])</span>
-<span class="sd">        &gt;&gt;&gt; X_search_scaled = map_to_original_scale(X_search, x_min, x_max)</span>
-<span class="sd">        &gt;&gt;&gt; print(X_search_scaled)</span>
-<span class="sd">              x     y</span>
-<span class="sd">        0   5.0  10.0</span>
-<span class="sd">        1   2.5  15.0</span>
+<span class="sd">        &gt;&gt;&gt; # Generate a 2D Latin hypercube with 5 points and edges=0</span>
+<span class="sd">        &gt;&gt;&gt; X = rlh(n=5, k=2, edges=0)</span>
+<span class="sd">        &gt;&gt;&gt; print(X)</span>
+<span class="sd">        # Example output (values vary due to randomness):</span>
+<span class="sd">        # [[0.1  0.5 ]</span>
+<span class="sd">        #  [0.7  0.1 ]</span>
+<span class="sd">        #  [0.9  0.7 ]</span>
+<span class="sd">        #  [0.3  0.9 ]</span>
+<span class="sd">        #  [0.5  0.3 ]]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X_search</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;X_search must be a Pandas DataFrame or a NumPy array.&quot;</span><span class="p">)</span>
+    <span class="c1"># Validate inputs</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n must be &gt;= 1&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;k must be &gt;= 1&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">edges</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;edges must be 0 or 1&quot;</span><span class="p">)</span>
 
-    <span class="c1"># if x_min or x_max are not numpy arrays, convert them to numpy arrays</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="n">x_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_min</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="n">x_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_max</span><span class="p">)</span>
+    <span class="c1"># Initialize array</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_min</span><span class="p">)</span> <span class="o">!=</span> <span class="n">X_search</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;x_min and X_search must have the same number of columns. x_min has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x_min</span><span class="p">)</span><span class="si">}</span><span class="s2"> columns and X_search has </span><span class="si">{</span><span class="n">X_search</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns.&quot;</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_max</span><span class="p">)</span> <span class="o">!=</span> <span class="n">X_search</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;x_max and X_search must have the same number of columns. x_max has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">x_max</span><span class="p">)</span><span class="si">}</span><span class="s2"> columns and X_search has </span><span class="si">{</span><span class="n">X_search</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns.&quot;</span>
-        <span class="p">)</span>
+    <span class="c1"># Fill with random permutations</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+        <span class="n">X</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X_search</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-        <span class="n">X_search_scaled</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">X_search</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="p">)</span>  <span class="c1"># Create a copy to avoid modifying the original DataFrame</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">X_search</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
-            <span class="n">X_search_scaled</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">X_search</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_max</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_min</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">x_min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="n">X_search_scaled</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X_search</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-        <span class="n">X_search_scaled</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">X_search</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="p">)</span>  <span class="c1"># Create a copy to avoid modifying the original array</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X_search</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-            <span class="n">X_search_scaled</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_search</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_max</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_min</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">x_min</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">X_search_scaled</span>
+    <span class="c1"># Adjust normalization based on the edges flag</span>
+    <span class="k">if</span> <span class="n">edges</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># [X=0..n-1] -&gt; [0..1]</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Avoid division by zero; for a single point place at 0</span>
+            <span class="n">X</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Points at true midpoints</span>
+        <span class="c1"># [X=0..n-1] -&gt; [0.5/n..(n-0.5)/n]</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+
+    <span class="k">return</span> <span class="n">X</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

@@ -362,6 +362,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -857,6 +861,59 @@
   
   
   
+    <a href="../eda/plots/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    eda
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
     <a href="../function/analytical/" class="md-nav__link">
       
   
@@ -865,6 +922,61 @@
     
   
     function
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../inspection/importance/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspection
   
 
     
@@ -1001,6 +1113,8 @@
       
         
       
+        
+      
     
     
     
@@ -1016,7 +1130,7 @@
   
   
   
-    <a href="../sampling/mm/" class="md-nav__link">
+    <a href="../sampling/lhs/" class="md-nav__link">
       
   
   
@@ -1106,6 +1220,8 @@
   
     
     
+      
+        
       
         
       
@@ -10686,7 +10802,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">             [6. 6.8]]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Don&#39;t round float or num types (continuous values)</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">var_type</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">],</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">var_type</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">],</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">X</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">mask</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">X</span>
 
@@ -12287,7 +12403,7 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="sa">f</span><span class="s2">&quot;Plotting surrogate contours for top </span><span class="si">{</span><span class="n">max_imp</span><span class="si">}</span><span class="s2"> most important parameters:&quot;</span>
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">top_indices</span><span class="p">:</span>
-            <span class="n">param_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+            <span class="n">param_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">param_names</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">}</span><span class="s2">: importance = </span><span class="si">{</span><span class="n">importance</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">% (type: </span><span class="si">{</span><span class="n">param_type</span><span class="si">}</span><span class="s2">)&quot;</span>
             <span class="p">)</span>
@@ -12739,7 +12855,7 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="n">ax</span> <span class="o">=</span> <span class="n">axes_flat</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
             <span class="n">param_values</span> <span class="o">=</span> <span class="n">all_params</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
             <span class="n">param_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+            <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
             <span class="n">var_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_trans</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_trans</span> <span class="k">else</span> <span class="kc">None</span>
 
             <span class="c1"># Check if this is a factor variable</span>
@@ -13481,7 +13597,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            &gt;&gt;&gt; opt = SpotOptim(</span>
 <span class="sd">            ...     fun=objective,</span>
 <span class="sd">            ...     bounds=[(16, 128), (1, 4), (-3, 0), (-2, 1)],</span>
-<span class="sd">            ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;num&quot;, &quot;num&quot;],</span>
+<span class="sd">            ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;float&quot;, &quot;float&quot;],</span>
 <span class="sd">            ...     var_name=[&quot;neurons&quot;, &quot;layers&quot;, &quot;log10_lr&quot;, &quot;log10_alpha&quot;],</span>
 <span class="sd">            ...     max_iter=30,</span>
 <span class="sd">            ...     n_initial=10</span>
@@ -13575,7 +13691,7 @@ A success is counted when a new evaluation improves upon the best value found so
                 <span class="n">display_value</span> <span class="o">=</span> <span class="n">value</span>
 
             <span class="c1"># Format based on variable type</span>
-            <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+            <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
 
             <span class="k">if</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">display_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">display_value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -13654,7 +13770,7 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="n">param_values</span> <span class="o">=</span> <span class="n">all_params</span><span class="p">[:,</span> <span class="n">param_idx</span><span class="p">]</span>
 
             <span class="c1"># Check if it&#39;s a factor variable</span>
-            <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">param_idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+            <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">param_idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
 
             <span class="k">if</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;factor&quot;</span><span class="p">:</span>
                 <span class="c1"># For categorical variables, skip correlation</span>
@@ -13746,7 +13862,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            ...     fun=sphere,</span>
 <span class="sd">            ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],</span>
 <span class="sd">            ...     var_name=[&quot;x1&quot;, &quot;x2&quot;, &quot;x3&quot;],</span>
-<span class="sd">            ...     var_type=[&quot;num&quot;, &quot;num&quot;, &quot;num&quot;],</span>
+<span class="sd">            ...     var_type=[&quot;float&quot;, &quot;float&quot;, &quot;float&quot;],</span>
 <span class="sd">            ...     max_iter=30,</span>
 <span class="sd">            ...     n_initial=10</span>
 <span class="sd">            ... )</span>
@@ -13783,7 +13899,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            ...     fun=lambda X: np.sum(X**2, axis=1),</span>
 <span class="sd">            ...     bounds=[(-5, 5), (&quot;red&quot;, &quot;green&quot;, &quot;blue&quot;)],</span>
 <span class="sd">            ...     var_name=[&quot;size&quot;, &quot;color&quot;],</span>
-<span class="sd">            ...     var_type=[&quot;num&quot;, &quot;factor&quot;],</span>
+<span class="sd">            ...     var_type=[&quot;float&quot;, &quot;factor&quot;],</span>
 <span class="sd">            ...     max_iter=20,</span>
 <span class="sd">            ...     n_initial=10</span>
 <span class="sd">            ... )</span>
@@ -13832,7 +13948,7 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
-                <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;num&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_x_display</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_x_display</span><span class="p">)</span>
             <span class="p">),</span>
             <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="p">[],</span>
             <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="p">[],</span>
@@ -13943,7 +14059,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            ...     fun=lambda X: np.sum(X**2, axis=1),</span>
 <span class="sd">            ...     bounds=[(-5, 5), (-10, 10), (0, 1)],</span>
 <span class="sd">            ...     var_name=[&quot;x1&quot;, &quot;x2&quot;, &quot;x3&quot;],</span>
-<span class="sd">            ...     var_type=[&quot;num&quot;, &quot;int&quot;, &quot;num&quot;],</span>
+<span class="sd">            ...     var_type=[&quot;float&quot;, &quot;int&quot;, &quot;float&quot;],</span>
 <span class="sd">            ...     max_iter=20,</span>
 <span class="sd">            ...     n_initial=10</span>
 <span class="sd">            ... )</span>
@@ -13960,7 +14076,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            ...     fun=lambda X: np.sum(X**2, axis=1),</span>
 <span class="sd">            ...     bounds=[(10, 100), (&quot;SGD&quot;, &quot;Adam&quot;, &quot;RMSprop&quot;), (0.001, 0.1)],</span>
 <span class="sd">            ...     var_name=[&quot;neurons&quot;, &quot;optimizer&quot;, &quot;lr&quot;],</span>
-<span class="sd">            ...     var_type=[&quot;int&quot;, &quot;factor&quot;, &quot;num&quot;],</span>
+<span class="sd">            ...     var_type=[&quot;int&quot;, &quot;factor&quot;, &quot;float&quot;],</span>
 <span class="sd">            ...     max_iter=30,</span>
 <span class="sd">            ...     n_initial=10</span>
 <span class="sd">            ... )</span>
@@ -13980,7 +14096,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            ...     fun=hyperparameter_objective,</span>
 <span class="sd">            ...     bounds=[(1, 5), (16, 256), (0.0, 0.5)],</span>
 <span class="sd">            ...     var_name=[&quot;layers&quot;, &quot;neurons&quot;, &quot;dropout&quot;],</span>
-<span class="sd">            ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;num&quot;],</span>
+<span class="sd">            ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;float&quot;],</span>
 <span class="sd">            ...     max_iter=50,</span>
 <span class="sd">            ...     n_initial=15</span>
 <span class="sd">            ... )</span>
@@ -14019,7 +14135,7 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
-                <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;num&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_lower</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_lower</span><span class="p">)</span>
             <span class="p">),</span>
             <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="p">[],</span>
             <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="p">[],</span>
@@ -16603,7 +16719,7 @@ Defaults to (12, 10).</p>
         <span class="sa">f</span><span class="s2">&quot;Plotting surrogate contours for top </span><span class="si">{</span><span class="n">max_imp</span><span class="si">}</span><span class="s2"> most important parameters:&quot;</span>
     <span class="p">)</span>
     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">top_indices</span><span class="p">:</span>
-        <span class="n">param_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+        <span class="n">param_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">param_names</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">}</span><span class="s2">: importance = </span><span class="si">{</span><span class="n">importance</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">% (type: </span><span class="si">{</span><span class="n">param_type</span><span class="si">}</span><span class="s2">)&quot;</span>
         <span class="p">)</span>
@@ -17166,7 +17282,7 @@ Defaults to False.</p>
         <span class="n">ax</span> <span class="o">=</span> <span class="n">axes_flat</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
         <span class="n">param_values</span> <span class="o">=</span> <span class="n">all_params</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
         <span class="n">param_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+        <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
         <span class="n">var_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_trans</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_trans</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="c1"># Check if this is a factor variable</span>
@@ -18391,7 +18507,7 @@ Defaults to 4.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span> <span class="o">=</span> <span class="n">SpotOptim</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">fun</span><span class="o">=</span><span class="n">objective</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
-<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;neurons&quot;</span><span class="p">,</span> <span class="s2">&quot;layers&quot;</span><span class="p">,</span> <span class="s2">&quot;log10_lr&quot;</span><span class="p">,</span> <span class="s2">&quot;log10_alpha&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">max_iter</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">n_initial</span><span class="o">=</span><span class="mi">10</span>
@@ -18653,7 +18769,7 @@ Defaults to 4.</p>
 <span class="sd">        &gt;&gt;&gt; opt = SpotOptim(</span>
 <span class="sd">        ...     fun=objective,</span>
 <span class="sd">        ...     bounds=[(16, 128), (1, 4), (-3, 0), (-2, 1)],</span>
-<span class="sd">        ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;num&quot;, &quot;num&quot;],</span>
+<span class="sd">        ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;float&quot;, &quot;float&quot;],</span>
 <span class="sd">        ...     var_name=[&quot;neurons&quot;, &quot;layers&quot;, &quot;log10_lr&quot;, &quot;log10_alpha&quot;],</span>
 <span class="sd">        ...     max_iter=30,</span>
 <span class="sd">        ...     n_initial=10</span>
@@ -18747,7 +18863,7 @@ Defaults to 4.</p>
             <span class="n">display_value</span> <span class="o">=</span> <span class="n">value</span>
 
         <span class="c1"># Format based on variable type</span>
-        <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+        <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
 
         <span class="k">if</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">display_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">display_value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -18863,7 +18979,7 @@ Defaults to 4.</p>
 <span class="gp">... </span>    <span class="n">fun</span><span class="o">=</span><span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>    <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
 <span class="gp">... </span>    <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">max_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">n_initial</span><span class="o">=</span><span class="mi">10</span>
 <span class="gp">... </span><span class="p">)</span>
@@ -18880,7 +18996,7 @@ Defaults to 4.</p>
 <span class="gp">... </span>    <span class="n">fun</span><span class="o">=</span><span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>    <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;SGD&quot;</span><span class="p">,</span> <span class="s2">&quot;Adam&quot;</span><span class="p">,</span> <span class="s2">&quot;RMSprop&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)],</span>
 <span class="gp">... </span>    <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;neurons&quot;</span><span class="p">,</span> <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="s2">&quot;lr&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;factor&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;factor&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">max_iter</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">n_initial</span><span class="o">=</span><span class="mi">10</span>
 <span class="gp">... </span><span class="p">)</span>
@@ -18900,7 +19016,7 @@ Defaults to 4.</p>
 <span class="gp">... </span>    <span class="n">fun</span><span class="o">=</span><span class="n">hyperparameter_objective</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)],</span>
 <span class="gp">... </span>    <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">,</span> <span class="s2">&quot;neurons&quot;</span><span class="p">,</span> <span class="s2">&quot;dropout&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">n_initial</span><span class="o">=</span><span class="mi">15</span>
 <span class="gp">... </span><span class="p">)</span>
@@ -19103,7 +19219,7 @@ Defaults to 4.</p>
 <span class="sd">        ...     fun=lambda X: np.sum(X**2, axis=1),</span>
 <span class="sd">        ...     bounds=[(-5, 5), (-10, 10), (0, 1)],</span>
 <span class="sd">        ...     var_name=[&quot;x1&quot;, &quot;x2&quot;, &quot;x3&quot;],</span>
-<span class="sd">        ...     var_type=[&quot;num&quot;, &quot;int&quot;, &quot;num&quot;],</span>
+<span class="sd">        ...     var_type=[&quot;float&quot;, &quot;int&quot;, &quot;float&quot;],</span>
 <span class="sd">        ...     max_iter=20,</span>
 <span class="sd">        ...     n_initial=10</span>
 <span class="sd">        ... )</span>
@@ -19120,7 +19236,7 @@ Defaults to 4.</p>
 <span class="sd">        ...     fun=lambda X: np.sum(X**2, axis=1),</span>
 <span class="sd">        ...     bounds=[(10, 100), (&quot;SGD&quot;, &quot;Adam&quot;, &quot;RMSprop&quot;), (0.001, 0.1)],</span>
 <span class="sd">        ...     var_name=[&quot;neurons&quot;, &quot;optimizer&quot;, &quot;lr&quot;],</span>
-<span class="sd">        ...     var_type=[&quot;int&quot;, &quot;factor&quot;, &quot;num&quot;],</span>
+<span class="sd">        ...     var_type=[&quot;int&quot;, &quot;factor&quot;, &quot;float&quot;],</span>
 <span class="sd">        ...     max_iter=30,</span>
 <span class="sd">        ...     n_initial=10</span>
 <span class="sd">        ... )</span>
@@ -19140,7 +19256,7 @@ Defaults to 4.</p>
 <span class="sd">        ...     fun=hyperparameter_objective,</span>
 <span class="sd">        ...     bounds=[(1, 5), (16, 256), (0.0, 0.5)],</span>
 <span class="sd">        ...     var_name=[&quot;layers&quot;, &quot;neurons&quot;, &quot;dropout&quot;],</span>
-<span class="sd">        ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;num&quot;],</span>
+<span class="sd">        ...     var_type=[&quot;int&quot;, &quot;int&quot;, &quot;float&quot;],</span>
 <span class="sd">        ...     max_iter=50,</span>
 <span class="sd">        ...     n_initial=15</span>
 <span class="sd">        ... )</span>
@@ -19179,7 +19295,7 @@ Defaults to 4.</p>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
-            <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;num&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_lower</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_lower</span><span class="p">)</span>
         <span class="p">),</span>
         <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="p">[],</span>
@@ -19374,7 +19490,7 @@ Defaults to 0.0.</p>
 <span class="gp">... </span>    <span class="n">fun</span><span class="o">=</span><span class="n">sphere</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)],</span>
 <span class="gp">... </span>    <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;num&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">max_iter</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">n_initial</span><span class="o">=</span><span class="mi">10</span>
 <span class="gp">... </span><span class="p">)</span>
@@ -19411,7 +19527,7 @@ Defaults to 0.0.</p>
 <span class="gp">... </span>    <span class="n">fun</span><span class="o">=</span><span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="gp">... </span>    <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">)],</span>
 <span class="gp">... </span>    <span class="n">var_name</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="s2">&quot;factor&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">var_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;factor&quot;</span><span class="p">],</span>
 <span class="gp">... </span>    <span class="n">max_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">n_initial</span><span class="o">=</span><span class="mi">10</span>
 <span class="gp">... </span><span class="p">)</span>
@@ -19675,7 +19791,7 @@ Defaults to 0.0.</p>
 <span class="sd">        ...     fun=sphere,</span>
 <span class="sd">        ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],</span>
 <span class="sd">        ...     var_name=[&quot;x1&quot;, &quot;x2&quot;, &quot;x3&quot;],</span>
-<span class="sd">        ...     var_type=[&quot;num&quot;, &quot;num&quot;, &quot;num&quot;],</span>
+<span class="sd">        ...     var_type=[&quot;float&quot;, &quot;float&quot;, &quot;float&quot;],</span>
 <span class="sd">        ...     max_iter=30,</span>
 <span class="sd">        ...     n_initial=10</span>
 <span class="sd">        ... )</span>
@@ -19712,7 +19828,7 @@ Defaults to 0.0.</p>
 <span class="sd">        ...     fun=lambda X: np.sum(X**2, axis=1),</span>
 <span class="sd">        ...     bounds=[(-5, 5), (&quot;red&quot;, &quot;green&quot;, &quot;blue&quot;)],</span>
 <span class="sd">        ...     var_name=[&quot;size&quot;, &quot;color&quot;],</span>
-<span class="sd">        ...     var_type=[&quot;num&quot;, &quot;factor&quot;],</span>
+<span class="sd">        ...     var_type=[&quot;float&quot;, &quot;factor&quot;],</span>
 <span class="sd">        ...     max_iter=20,</span>
 <span class="sd">        ...     n_initial=10</span>
 <span class="sd">        ... )</span>
@@ -19761,7 +19877,7 @@ Defaults to 0.0.</p>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_type</span>
-            <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;num&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_x_display</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;float&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_x_display</span><span class="p">)</span>
         <span class="p">),</span>
         <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="p">[],</span>
@@ -20972,7 +21088,7 @@ Only meaningful after optimize() has been called with sufficient evaluations.</p
         <span class="n">param_values</span> <span class="o">=</span> <span class="n">all_params</span><span class="p">[:,</span> <span class="n">param_idx</span><span class="p">]</span>
 
         <span class="c1"># Check if it&#39;s a factor variable</span>
-        <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">param_idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;num&quot;</span>
+        <span class="n">var_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span><span class="p">[</span><span class="n">param_idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_type</span> <span class="k">else</span> <span class="s2">&quot;float&quot;</span>
 
         <span class="k">if</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;factor&quot;</span><span class="p">:</span>
             <span class="c1"># For categorical variables, skip correlation</span>
