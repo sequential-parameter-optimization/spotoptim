@@ -265,13 +265,13 @@ def plot_importances(
         ax2.boxplot(
             perm_imp.importances[perm_sorted_idx].T,
             vert=False,
-            labels=np.array(feature_names)[perm_sorted_idx],
+            tick_labels=np.array(feature_names)[perm_sorted_idx],
         )
     else:
         ax2.boxplot(
             perm_imp.importances[perm_sorted_idx].T,
             vert=False,
-            labels=X_test.columns[perm_sorted_idx],
+            tick_labels=X_test.columns[perm_sorted_idx],
         )
     ax2.axvline(x=0, color="k", linestyle="--")
     if target_name:
@@ -323,8 +323,10 @@ def plot_feature_scatter_matrix(
     # Create DataFrame with top features and target
     X_top = pd.DataFrame(X, columns=feature_names)[top_features]
     y_df = pd.DataFrame(y).iloc[:, target_index]
-    # plot_df = pd.concat([X_top, y_df.rename(target_names[target_index])], axis=1)
-    plot_df = pd.concat([X_top, y_df], axis=1)
+    # Exclude empty entries before concatenation to avoid FutureWarning
+    to_concat = [X_top, y_df]
+    to_concat = [df for df in to_concat if not df.empty]
+    plot_df = pd.concat(to_concat, axis=1)
 
     # Create scatter plot matrix
     plt.figure(figsize=figsize)

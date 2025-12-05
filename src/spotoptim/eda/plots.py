@@ -149,7 +149,7 @@ def plot_ip_boxplots(
             plot_data = [df[col].dropna()]
         ax.boxplot(
             plot_data,
-            vert=False,
+            orientation="horizontal",
             patch_artist=True,
             boxprops=dict(facecolor="lightblue", color="black"),
             medianprops=dict(color="red"),
