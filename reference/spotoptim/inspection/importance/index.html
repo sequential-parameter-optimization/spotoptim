@@ -2571,7 +2571,9 @@
 <span class="normal">343</span>
 <span class="normal">344</span>
 <span class="normal">345</span>
-<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_feature_scatter_matrix</span><span class="p">(</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_feature_scatter_matrix</span><span class="p">(</span>
     <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">feature_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
@@ -2608,8 +2610,10 @@
     <span class="c1"># Create DataFrame with top features and target</span>
     <span class="n">X_top</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">feature_names</span><span class="p">)[</span><span class="n">top_features</span><span class="p">]</span>
     <span class="n">y_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">target_index</span><span class="p">]</span>
-    <span class="c1"># plot_df = pd.concat([X_top, y_df.rename(target_names[target_index])], axis=1)</span>
-    <span class="n">plot_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_top</span><span class="p">,</span> <span class="n">y_df</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Exclude empty entries before concatenation to avoid FutureWarning</span>
+    <span class="n">to_concat</span> <span class="o">=</span> <span class="p">[</span><span class="n">X_top</span><span class="p">,</span> <span class="n">y_df</span><span class="p">]</span>
+    <span class="n">to_concat</span> <span class="o">=</span> <span class="p">[</span><span class="n">df</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">to_concat</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">]</span>
+    <span class="n">plot_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">to_concat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="c1"># Create scatter plot matrix</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
@@ -2992,13 +2996,13 @@
         <span class="n">ax2</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span>
             <span class="n">perm_imp</span><span class="o">.</span><span class="n">importances</span><span class="p">[</span><span class="n">perm_sorted_idx</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
             <span class="n">vert</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">labels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">feature_names</span><span class="p">)[</span><span class="n">perm_sorted_idx</span><span class="p">],</span>
+            <span class="n">tick_labels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">feature_names</span><span class="p">)[</span><span class="n">perm_sorted_idx</span><span class="p">],</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ax2</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span>
             <span class="n">perm_imp</span><span class="o">.</span><span class="n">importances</span><span class="p">[</span><span class="n">perm_sorted_idx</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
             <span class="n">vert</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">labels</span><span class="o">=</span><span class="n">X_test</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">perm_sorted_idx</span><span class="p">],</span>
+            <span class="n">tick_labels</span><span class="o">=</span><span class="n">X_test</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">perm_sorted_idx</span><span class="p">],</span>
         <span class="p">)</span>
     <span class="n">ax2</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">target_name</span><span class="p">:</span>
