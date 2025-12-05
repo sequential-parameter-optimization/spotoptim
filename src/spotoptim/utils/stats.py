@@ -38,6 +38,9 @@ def normalize_X(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     if X.size == 0:
         return X.copy()
 
+    # Ensure X is a numpy array (handles DataFrames)
+    X = np.asarray(X)
+
     X_min = np.min(X, axis=0)
     X_max = np.max(X, axis=0)
     X_range = X_max - X_min
