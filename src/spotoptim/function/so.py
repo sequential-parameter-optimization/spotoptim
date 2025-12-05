@@ -1,8 +1,7 @@
 """
-Analytical test functions for optimization benchmarking.
+Analytical single-objective test functions for optimization benchmarking.
 
-This module provides well-known analytical test functions commonly used
-for evaluating and benchmarking optimization algorithms.
+This module provides well-known analytical test functions commonly used for evaluating and benchmarking optimization algorithms.
 """
 
 import numpy as np
