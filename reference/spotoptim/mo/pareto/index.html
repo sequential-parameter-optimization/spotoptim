@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://github.com/sequential-parameter-optimization/spotoptim/reference/spotoptim/mo/pareto/">
       
       
-        <link rel="prev" href="../../inspection/predictions/">
+        <link rel="prev" href="../mo_mm/">
       
       
         <link rel="next" href="../../nn/linear_regressor/">
@@ -665,6 +665,8 @@
       
         
       
+        
+      
     
     
     
@@ -706,6 +708,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mo_mm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    mo_mm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -785,6 +815,28 @@
     <span class="md-ellipsis">
       
         is_pareto_efficient
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.mo.pareto.mo_pareto_optx_plot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mo_pareto_optx_plot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.mo.pareto.mo_xy_surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mo_xy_surface
       
     </span>
   </a>
@@ -1209,6 +1261,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#spotoptim.mo.pareto.mo_pareto_optx_plot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mo_pareto_optx_plot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.mo.pareto.mo_xy_surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mo_xy_surface
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#spotoptim.mo.pareto.plot_mo" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1306,7 +1380,7 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../mo_mm/" class="md-path__link">
           
   <span class="md-ellipsis">
     mo
@@ -1349,7 +1423,7 @@
 
 
 
-  <div class="doc doc-children">
+<div class="doc doc-children">
 
 
 
@@ -1460,8 +1534,7 @@ A boolean mask of length N, where True indicates that the corresponding point is
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/mo/pareto.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 6</span>
-<span class="normal"> 7</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
@@ -1497,7 +1570,8 @@ A boolean mask of length N, where True indicates that the corresponding point is
 <span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
-<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_pareto_efficient</span><span class="p">(</span><span class="n">costs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">43</span>
+<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_pareto_efficient</span><span class="p">(</span><span class="n">costs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find the Pareto-efficient points from a set of points.</span>
 
@@ -1535,6 +1609,792 @@ A boolean mask of length N, where True indicates that the corresponding point is
                 <span class="n">is_efficient</span><span class="p">[</span><span class="n">is_efficient</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">costs</span><span class="p">[</span><span class="n">is_efficient</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">cost</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">is_efficient</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">return</span> <span class="n">is_efficient</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.mo.pareto.mo_pareto_optx_plot" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">mo_pareto_optx_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">minimize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">feature_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#spotoptim.mo.pareto.mo_pareto_optx_plot" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Visualizes the Pareto-optimal points in the input space for each pair of inputs
+x_i and x_j (with i &lt; j) and each objective f_k.</p>
+<p>Plots are placed on a grid where rows correspond to input pairs and columns
+correspond to objectives.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An (N,D) array of input points, where N is the number of points and
+D is the number of variables (dimensions).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>Y</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An (N,M) array of objective values, where N is the number of points and
+M is the number of objectives.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>minimize</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If True, assumes minimization of objectives. Defaults to True.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>feature_names</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of names for the input variables. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target_names</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of names for the objectives. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>**kwargs</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional arguments passed to plt.subplots (e.g., figsize).</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>None</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.mo.pareto</span><span class="w"> </span><span class="kn">import</span> <span class="n">mo_pareto_optx_plot</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mo_pareto_optx_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/mo/pareto.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_pareto_optx_plot</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">Y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">minimize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">feature_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">target_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Visualizes the Pareto-optimal points in the input space for each pair of inputs</span>
+<span class="sd">    x_i and x_j (with i &lt; j) and each objective f_k.</span>
+
+<span class="sd">    Plots are placed on a grid where rows correspond to input pairs and columns</span>
+<span class="sd">    correspond to objectives.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (np.ndarray):</span>
+<span class="sd">            An (N,D) array of input points, where N is the number of points and</span>
+<span class="sd">            D is the number of variables (dimensions).</span>
+<span class="sd">        Y (np.ndarray):</span>
+<span class="sd">            An (N,M) array of objective values, where N is the number of points and</span>
+<span class="sd">            M is the number of objectives.</span>
+<span class="sd">        minimize (bool, optional):</span>
+<span class="sd">            If True, assumes minimization of objectives. Defaults to True.</span>
+<span class="sd">        feature_names (list, optional):</span>
+<span class="sd">            List of names for the input variables. Defaults to None.</span>
+<span class="sd">        target_names (list, optional):</span>
+<span class="sd">            List of names for the objectives. Defaults to None.</span>
+<span class="sd">        **kwargs (Any):</span>
+<span class="sd">            Additional arguments passed to plt.subplots (e.g., figsize).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from spotoptim.mo.pareto import mo_pareto_optx_plot</span>
+<span class="sd">        &gt;&gt;&gt; X = np.array([[1, 2], [3, 4], [5, 6]])</span>
+<span class="sd">        &gt;&gt;&gt; Y = np.array([[1, 2], [3, 4], [5, 6]])</span>
+<span class="sd">        &gt;&gt;&gt; mo_pareto_optx_plot(X, Y)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+    <span class="n">n_points</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">n_objectives</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">feature_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">target_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">target_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;f</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_objectives</span><span class="p">)]</span>
+
+    <span class="c1"># 1. Determine Pareto-efficient points</span>
+    <span class="n">pareto_mask</span> <span class="o">=</span> <span class="n">is_pareto_efficient</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">minimize</span><span class="o">=</span><span class="n">minimize</span><span class="p">)</span>
+
+    <span class="c1"># 2. Identify input pairs (i, j) with i &lt; j</span>
+    <span class="n">feature_pairs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">n_pairs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_pairs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_pairs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Need at least 2 features to generate plots.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># 3. Create grid of plots</span>
+    <span class="c1"># Grid: Rows = Feature Pairs, Cols = Objectives</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">n_pairs</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">n_objectives</span>
+
+    <span class="c1"># Handle figsize in kwargs or default</span>
+    <span class="k">if</span> <span class="s2">&quot;figsize&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="c1"># Default size estimation: 4 inches per row, 5 inches per col</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">rows</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Ensure axes is always a 2D array for consistent indexing</span>
+    <span class="k">if</span> <span class="n">rows</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">cols</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">axes</span><span class="p">]])</span>
+    <span class="k">elif</span> <span class="n">rows</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">cols</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># 4. Iterate and plot</span>
+    <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">feature_pairs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_objectives</span><span class="p">):</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">]</span>
+
+            <span class="c1"># Scatter all points (not pareto) - maybe faint?</span>
+            <span class="c1"># User request: &quot;visualize the Pareto-optimal points&quot;</span>
+            <span class="c1"># &quot;points in the input space that correspond to the Pareto front&quot;</span>
+            <span class="c1"># Let&#39;s plot all points first for context, then highlight Pareto.</span>
+
+            <span class="c1"># Plot non-Pareto points</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">pareto_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
+                <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">pareto_mask</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                <span class="n">c</span><span class="o">=</span><span class="s2">&quot;lightgray&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Non-Pareto&quot;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Plot Pareto points</span>
+            <span class="c1"># Color by objective value f_k (Y[:, c])</span>
+            <span class="n">sc</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">X</span><span class="p">[</span><span class="n">pareto_mask</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
+                <span class="n">X</span><span class="p">[</span><span class="n">pareto_mask</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                <span class="n">c</span><span class="o">=</span><span class="n">Y</span><span class="p">[</span><span class="n">pareto_mask</span><span class="p">,</span> <span class="n">c</span><span class="p">],</span>
+                <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Pareto&quot;</span><span class="p">,</span>
+                <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">feature_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">feature_names</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_names</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="si">}</span><span class="s2"> (Color)&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Add colorbar for this subplot</span>
+            <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+            <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="n">target_names</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.mo.pareto.mo_xy_surface" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">mo_xy_surface</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">target_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feature_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#spotoptim.mo.pareto.mo_xy_surface" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generates surface plots of every combination of two input variables x_i and x_j
+(where i &lt; j) and for each of the multiple objectives f_k.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>models</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of trained models (one per objective).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>bounds</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of tuples (min, max) for each input variable.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target_names</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of names for the objectives. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>feature_names</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of names for the input variables. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>resolution</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Grid resolution for the surface plot. Defaults to 50.</p>
+              </div>
+            </td>
+            <td>
+                  <code>50</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>**kwargs</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments passed to plt.subplots (e.g., figsize).</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>None</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/mo/pareto.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_xy_surface</span><span class="p">(</span>
+    <span class="n">models</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">target_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">feature_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">resolution</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates surface plots of every combination of two input variables x_i and x_j</span>
+<span class="sd">    (where i &lt; j) and for each of the multiple objectives f_k.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        models (list):</span>
+<span class="sd">            List of trained models (one per objective).</span>
+<span class="sd">        bounds (list):</span>
+<span class="sd">            List of tuples (min, max) for each input variable.</span>
+<span class="sd">        target_names (list, optional):</span>
+<span class="sd">            List of names for the objectives. Defaults to None.</span>
+<span class="sd">        feature_names (list, optional):</span>
+<span class="sd">            List of names for the input variables. Defaults to None.</span>
+<span class="sd">        resolution (int, optional):</span>
+<span class="sd">            Grid resolution for the surface plot. Defaults to 50.</span>
+<span class="sd">        **kwargs (Any):</span>
+<span class="sd">            Additional keyword arguments passed to plt.subplots (e.g., figsize).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.mplot3d</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axes3D</span>  <span class="c1"># noqa: F401 unused import</span>
+
+    <span class="n">n_features</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span>
+    <span class="n">n_objectives</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">feature_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">target_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">target_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;f</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_objectives</span><span class="p">)]</span>
+
+    <span class="c1"># Generate all pairs of features (i, j) with i &lt; j</span>
+    <span class="n">feature_pairs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">n_pairs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_pairs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_pairs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Need at least 2 features to generate surface plots.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Create a grid of subplots</span>
+    <span class="c1"># Rows: feature pairs, Cols: objectives</span>
+    <span class="c1"># Or maybe better: one figure per feature pair?</span>
+    <span class="c1"># The user request said: &quot;The plots should be placed on a grid (e.g. 2 x 2 if the are two inputs and two objectives)&quot;</span>
+    <span class="c1"># If we have 2 inputs (1 pair) and 2 objectives, we need 1x2 plots?</span>
+    <span class="c1"># Wait, &quot;2 inputs and two objectives&quot; -&gt; 1 pair (x0, x1). So 2 plots total.</span>
+    <span class="c1"># If we have 3 inputs (3 pairs: 0-1, 0-2, 1-2) and 2 objectives -&gt; 6 plots.</span>
+    <span class="c1"># Let&#39;s arrange them: Rows = Feature Pairs, Cols = Objectives.</span>
+
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">n_pairs</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">n_objectives</span>
+
+    <span class="c1"># Handle figsize in kwargs or default</span>
+    <span class="k">if</span> <span class="s2">&quot;figsize&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="n">cols</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">rows</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Base point (midpoint of bounds)</span>
+    <span class="n">x_base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">])</span>
+
+    <span class="n">plot_idx</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">feature_pairs</span><span class="p">:</span>
+        <span class="c1"># Create grid for x_i, x_j</span>
+        <span class="n">xi_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">bounds</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">resolution</span><span class="p">)</span>
+        <span class="n">xj_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">bounds</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">resolution</span><span class="p">)</span>
+        <span class="n">Xi</span><span class="p">,</span> <span class="n">Xj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xi_vals</span><span class="p">,</span> <span class="n">xj_vals</span><span class="p">)</span>
+
+        <span class="c1"># Prepare input array</span>
+        <span class="c1"># We need to flatten Xi, Xj and repeat x_base for other dimensions</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="n">resolution</span> <span class="o">*</span> <span class="n">resolution</span>
+        <span class="n">X_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x_base</span><span class="p">,</span> <span class="p">(</span><span class="n">n_points</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">X_grid</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Xi</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">X_grid</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">Xj</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">models</span><span class="p">):</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">plot_idx</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Predict</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_grid</span><span class="p">)</span>
+
+            <span class="c1"># Reshape for plotting</span>
+            <span class="n">Z</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Xi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+            <span class="c1"># Plot surface</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">Xi</span><span class="p">,</span> <span class="n">Xj</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">feature_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">feature_names</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">target_names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Add colorbar? Maybe too crowded.</span>
+
+            <span class="n">plot_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1813,8 +2673,7 @@ Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/mo/pareto.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 46</span>
-<span class="normal"> 47</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 47</span>
 <span class="normal"> 48</span>
 <span class="normal"> 49</span>
 <span class="normal"> 50</span>
@@ -2029,7 +2888,8 @@ Defaults to None.</p>
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
-<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_mo</span><span class="p">(</span>
+<span class="normal">262</span>
+<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_mo</span><span class="p">(</span>
     <span class="n">combinations</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">pareto</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">y_rf</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>

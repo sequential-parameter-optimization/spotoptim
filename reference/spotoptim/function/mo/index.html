@@ -915,6 +915,8 @@
       
         
       
+        
+      
     
     
     
@@ -930,7 +932,7 @@
   
   
   
-    <a href="../../mo/pareto/" class="md-nav__link">
+    <a href="../../mo/mo_mm/" class="md-nav__link">
       
   
   
@@ -1601,7 +1603,7 @@ for evaluating and benchmarking multiobjective optimization algorithms.</p>
 
 
 
-  <div class="doc doc-children">
+<div class="doc doc-children">
 
 
 
@@ -2420,9 +2422,10 @@ in multiobjective optimization.&rdquo; Evolutionary computation, 3(1), 1-16.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Kursawe multi-objective test function (2 objectives).</p>
-<p>The Kursawe function is a bi-objective problem with a disconnected Pareto front,
-making it challenging for many algorithms.</p>
+        <p>Kursawe multi-objective test function (2 objectives, minimization).</p>
+<p>The Kursawe function is a classic bi-objective minimization benchmark with a
+non-convex, disconnected Pareto front, often used to test an optimizer&rsquo;s ability
+to maintain diversity and avoid getting trapped in local fronts.</p>
 
 
 <details class="mathematical-formulation" open>
@@ -2603,11 +2606,13 @@ Springer.</p>
 <span class="normal">612</span>
 <span class="normal">613</span>
 <span class="normal">614</span>
-<span class="normal">615</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">kursawe</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kursawe multi-objective test function (2 objectives).</span>
+<span class="normal">615</span>
+<span class="normal">616</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">kursawe</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kursawe multi-objective test function (2 objectives, minimization).</span>
 
-<span class="sd">    The Kursawe function is a bi-objective problem with a disconnected Pareto front,</span>
-<span class="sd">    making it challenging for many algorithms.</span>
+<span class="sd">    The Kursawe function is a classic bi-objective minimization benchmark with a</span>
+<span class="sd">    non-convex, disconnected Pareto front, often used to test an optimizer&#39;s ability</span>
+<span class="sd">    to maintain diversity and avoid getting trapped in local fronts.</span>
 
 <span class="sd">    Mathematical formulation:</span>
 <span class="sd">        f1(X) = sum(-10 * exp(-0.2 * sqrt(x_i^2 + x_{i+1}^2)) for i=1 to n-1)</span>
@@ -2678,15 +2683,22 @@ Springer.</p>
     <div class="doc doc-contents ">
 
         <p>Convex bi-objective maximization test function (2 objectives).</p>
+<p>A smooth, convex two-objective maximization problem on [0, 1]^2 using flipped
+versions of the minimization objectives:
+    f1(x, y) = 2 - (x^2 + y^2)
+    f2(x, y) = 2 - ((1 - x)^2 + (1 - y)^2)</p>
 
 
-<details class="this-function-provides-a-simple-convex-bi-objective-maximization-problem-with-two-objectives" open>
-  <summary>This function provides a simple convex bi-objective maximization problem with two objectives</summary>
-  <p>f1(x, y) = x^2 + y^2
-f2(x, y) = (1-x)^2 + (1-y)^2</p>
-</details>        <p>The Pareto front is convex and quadratic, with the ideal points at (1, 1) for f1 and (0, 0) for f2.
-The input domain is [0, 1]^2.</p>
-
+<details class="properties" open>
+  <summary>Properties</summary>
+  <ul>
+<li>Domain: [0, 1]^2</li>
+<li>Objectives: maximize both f1 and f2</li>
+<li>Ideal points: (0, 0) for f1 (gives f1=2); (1, 1) for f2 (gives f2=2)</li>
+<li>Pareto set: line x = y in [0, 1]</li>
+<li>Pareto front: convex quadratic trade-off f1 = 2 - 2t^2, f2 = 2 - 2(1 - t)^2, t ∈ [0, 1]</li>
+</ul>
+</details>
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <table>
@@ -2810,12 +2822,7 @@ Must have exactly 2 dimensions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/function/mo.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">700</span>
 <span class="normal">701</span>
 <span class="normal">702</span>
 <span class="normal">703</span>
@@ -2884,15 +2891,30 @@ Must have exactly 2 dimensions.</p>
 <span class="normal">766</span>
 <span class="normal">767</span>
 <span class="normal">768</span>
-<span class="normal">769</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_conv2_max</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_conv2_max</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convex bi-objective maximization test function (2 objectives).</span>
 
-<span class="sd">    This function provides a simple convex bi-objective maximization problem with two objectives:</span>
-<span class="sd">        f1(x, y) = x^2 + y^2</span>
-<span class="sd">        f2(x, y) = (1-x)^2 + (1-y)^2</span>
+<span class="sd">    A smooth, convex two-objective maximization problem on [0, 1]^2 using flipped</span>
+<span class="sd">    versions of the minimization objectives:</span>
+<span class="sd">        f1(x, y) = 2 - (x^2 + y^2)</span>
+<span class="sd">        f2(x, y) = 2 - ((1 - x)^2 + (1 - y)^2)</span>
 
-<span class="sd">    The Pareto front is convex and quadratic, with the ideal points at (1, 1) for f1 and (0, 0) for f2.</span>
-<span class="sd">    The input domain is [0, 1]^2.</span>
+<span class="sd">    Properties:</span>
+<span class="sd">        - Domain: [0, 1]^2</span>
+<span class="sd">        - Objectives: maximize both f1 and f2</span>
+<span class="sd">        - Ideal points: (0, 0) for f1 (gives f1=2); (1, 1) for f2 (gives f2=2)</span>
+<span class="sd">        - Pareto set: line x = y in [0, 1]</span>
+<span class="sd">        - Pareto front: convex quadratic trade-off f1 = 2 - 2t^2, f2 = 2 - 2(1 - t)^2, t ∈ [0, 1]</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        X (array-like): Input points with shape (n_samples, n_features) or (n_features,).</span>
@@ -2977,15 +2999,21 @@ Must have exactly 2 dimensions.</p>
     <div class="doc doc-contents ">
 
         <p>Convex bi-objective minimization test function (2 objectives).</p>
+<p>A smooth, convex two-objective problem on [0, 1]^2:
+    f1(x, y) = x^2 + y^2
+    f2(x, y) = (x - 1)^2 + (y - 1)^2</p>
 
 
-<details class="this-function-provides-a-simple-convex-bi-objective-minimization-problem-with-two-objectives" open>
-  <summary>This function provides a simple convex bi-objective minimization problem with two objectives</summary>
-  <p>f1(x, y) = x^2 + y^2
-f2(x, y) = (x-1)^2 + (y-1)^2</p>
-</details>        <p>The Pareto front is convex and quadratic, with the ideal points at (0, 0) for f1 and (1, 1) for f2.
-The input domain is [0, 1]^2.</p>
-
+<details class="properties" open>
+  <summary>Properties</summary>
+  <ul>
+<li>Domain: [0, 1]^2</li>
+<li>Objectives: minimize both f1 and f2</li>
+<li>Ideal points: (0, 0) for f1; (1, 1) for f2</li>
+<li>Pareto set: line x = y in [0, 1]</li>
+<li>Pareto front: convex quadratic trade-off f1 = 2t^2, f2 = 2(1 - t)^2, t ∈ [0, 1]</li>
+</ul>
+</details>
 
 <p><span class="doc-section-title">Parameters:</span></p>
     <table>
@@ -3109,8 +3137,7 @@ Must have exactly 2 dimensions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/function/mo.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">618</span>
-<span class="normal">619</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">619</span>
 <span class="normal">620</span>
 <span class="normal">621</span>
 <span class="normal">622</span>
@@ -3183,15 +3210,24 @@ Must have exactly 2 dimensions.</p>
 <span class="normal">689</span>
 <span class="normal">690</span>
 <span class="normal">691</span>
-<span class="normal">692</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_conv2_min</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_conv2_min</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convex bi-objective minimization test function (2 objectives).</span>
 
-<span class="sd">    This function provides a simple convex bi-objective minimization problem with two objectives:</span>
+<span class="sd">    A smooth, convex two-objective problem on [0, 1]^2:</span>
 <span class="sd">        f1(x, y) = x^2 + y^2</span>
-<span class="sd">        f2(x, y) = (x-1)^2 + (y-1)^2</span>
+<span class="sd">        f2(x, y) = (x - 1)^2 + (y - 1)^2</span>
 
-<span class="sd">    The Pareto front is convex and quadratic, with the ideal points at (0, 0) for f1 and (1, 1) for f2.</span>
-<span class="sd">    The input domain is [0, 1]^2.</span>
+<span class="sd">    Properties:</span>
+<span class="sd">        - Domain: [0, 1]^2</span>
+<span class="sd">        - Objectives: minimize both f1 and f2</span>
+<span class="sd">        - Ideal points: (0, 0) for f1; (1, 1) for f2</span>
+<span class="sd">        - Pareto set: line x = y in [0, 1]</span>
+<span class="sd">        - Pareto front: convex quadratic trade-off f1 = 2t^2, f2 = 2(1 - t)^2, t ∈ [0, 1]</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        X (array-like): Input points with shape (n_samples, n_features) or (n_features,).</span>
