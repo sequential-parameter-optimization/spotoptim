@@ -5,7 +5,15 @@ from typing import Tuple, List, Any
 
 
 def mo_mm_desirability_function(
-    x, models, X_base, J_base, d_base, phi_base, D_overall, mm_objective=True
+    x,
+    models,
+    X_base,
+    J_base,
+    d_base,
+    phi_base,
+    D_overall,
+    mm_objective=True,
+    verbose=False,
 ) -> Tuple[float, List[float]]:
     """
     Calculates the negative combined desirability for a candidate point x. Can be used by the mo_mm_desirability_optimizer.
@@ -29,6 +37,8 @@ def mo_mm_desirability_function(
             The overall desirability function. Must include desirability functions for each objective and optionally for Morris-Mitchell.
         mm_objective (bool):
             Whether to include space-filling improvement as an objective. Defaults to True.
+        verbose (bool):
+            Whether to print Morris-Mitchell improvement values. Defaults to False.
 
     Returns:
         Tuple[float, List[float]]:
@@ -71,7 +81,7 @@ def mo_mm_desirability_function(
 
     # 2. Compute y_mm (Space-filling improvement) if requested
     if mm_objective:
-        y_mm = mm_improvement(x, X_base, phi_base, J_base, d_base)
+        y_mm = mm_improvement(x, X_base, phi_base, J_base, d_base, verbose=verbose)
         predictions.append(y_mm)
 
     # 3. Calculate combined desirability

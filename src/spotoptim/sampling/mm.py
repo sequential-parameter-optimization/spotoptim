@@ -884,7 +884,15 @@ def propose_mmphi_intensive_minimizing_point(
 
 
 def mm_improvement(
-    x, X_base, phi_base=None, J_base=None, d_base=None, q=2, p=2, normalize_flag=True
+    x,
+    X_base,
+    phi_base=None,
+    J_base=None,
+    d_base=None,
+    q=2,
+    p=2,
+    normalize_flag=True,
+    verbose=False,
 ) -> float:
     """
     Calculates the Morris-Mitchell improvement for a candidate point x.
@@ -919,6 +927,10 @@ def mm_improvement(
         X_base, x, J_base, d_base, q=q, p=p, normalize_flag=normalize_flag
     )
     y_mm = np.exp(phi_base - phi_new)
+    if verbose:
+        print(f"Morris-Mitchell base: {phi_base}")
+        print(f"Morris-Mitchell new: {phi_new}")
+        print(f"Morris-Mitchell improvement: {y_mm}")
     return float(y_mm)
 
 
