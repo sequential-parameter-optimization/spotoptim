@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 from spotoptim.utils.eval import mo_eval_models
 
+
 @pytest.fixture
 def data():
     np.random.seed(42)
@@ -77,3 +78,41 @@ def test_mo_eval_models_numpy_input(data):
     scores, models, preds = mo_eval_models(X_train, y_train, X_test, y_test, make_model)
     
     assert len(scores) == 3
+
+def test_mo_cv_models_basic(data):
+    X_train, y_train, _, _ = data
+    
+    from spotoptim.utils.eval import mo_cv_models
+    
+    # Test default (R2 usually)
+    cv_scores = mo_cv_models(X_train, y_train, make_model, cv=3)
+    
+    assert isinstance(cv_scores, list)
+    assert len(cv_scores) == 3 # 3 targets
+    assert len(cv_scores[0]) == 3 # 3 folds
+    assert all(isinstance(s, np.ndarray) for s in cv_scores)
+
+def test_mo_cv_models_single_score_str(data):
+    X_train, y_train, _, _ = data
+    from spotoptim.utils.eval import mo_cv_models
+    
+    # Test with string scorer
+    cv_scores = mo_cv_models(X_train, y_train, make_model, cv=3, scores='neg_mean_squared_error')
+    
+    assert isinstance(cv_scores, list)
+    assert len(cv_scores) == 3
+    assert len(cv_scores[0]) == 3
+    # NMSE should be negative
+    assert all(s.mean() < 0 for s in cv_scores)
+
+def test_mo_cv_models_dict_scores(data):
+    X_train, y_train, _, _ = data
+    from spotoptim.utils.eval import mo_cv_models
+    
+    my_scores = {'R2': 'r2', 'NMSE': 'neg_mean_squared_error'}
+    cv_scores = mo_cv_models(X_train, y_train, make_model, cv=3, scores=my_scores)
+    
+    assert isinstance(cv_scores, dict)
+    assert 'R2' in cv_scores
+    assert 'NMSE' in cv_scores
+    assert len(cv_scores['R2']) == 3
