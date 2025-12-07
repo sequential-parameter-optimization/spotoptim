@@ -11,7 +11,9 @@ def _get_target_column(y, i):
         return y[:, i]
 
 
-def mo_eval_models(X_train, y_train, X_test, y_test, model_define_func, scores=None):
+def mo_eval_models(
+    X_train, y_train, X_test, y_test, model_define_func, scores=None, verbose=False
+):
     """
     Trains and evaluates separate models for each target in a multi-output regression problem.
 
@@ -25,6 +27,7 @@ def mo_eval_models(X_train, y_train, X_test, y_test, model_define_func, scores=N
             - If None (default): Uses R2 score. Returns List[float].
             - If Callable: Single scoring function (e.g., mean_squared_error). Returns List[float].
             - If Dict: Dictionary of {name: scoring_func}. Returns Dict[str, List[float]].
+        verbose (bool): Whether to print verbose output.
 
     Returns:
         scores (Union[List[float], Dict[str, List[float]]]):
@@ -32,6 +35,7 @@ def mo_eval_models(X_train, y_train, X_test, y_test, model_define_func, scores=N
             - Dictionary of scores if `scores` is a dictionary.
         models (List): List of trained model instances, one per target.
         preds_stacked (np.ndarray): Array of stacked predictions for all targets, shape (n_samples, n_targets).
+
 
     Examples:
         >>> import pandas as pd
@@ -99,7 +103,8 @@ def mo_eval_models(X_train, y_train, X_test, y_test, model_define_func, scores=N
 
     for i in range(target_count):
         # Fit pipeline for this target
-        print(f"Training model for target {i+1}/{target_count}...")
+        if verbose:
+            print(f"Training model for target {i+1}/{target_count}...")
         model_pipeline = model_define_func()
 
         y_train_target = _get_target_column(y_train, i)
@@ -126,15 +131,18 @@ def mo_eval_models(X_train, y_train, X_test, y_test, model_define_func, scores=N
         # Return list of values for the single metric (backward compatibility)
         final_scores = list(results.values())[0]
         score_display = [f"{s:.2f}" for s in final_scores]
-        print(f"Model scores: {score_display}")
+        if verbose:
+            print(f"Model scores: {score_display}")
     else:
         final_scores = results
-        print("Model scores:")
-        for name, vals in final_scores.items():
-            score_display = [f"{s:.2f}" for s in vals]
-            print(f"  {name}: {score_display}")
+        if verbose:
+            print("Model scores:")
+            for name, vals in final_scores.items():
+                score_display = [f"{s:.2f}" for s in vals]
+                print(f"  {name}: {score_display}")
 
-    print(f"Predictions shape: {preds_stacked.shape}")
+    if verbose:
+        print(f"Predictions shape: {preds_stacked.shape}")
     return final_scores, models, preds_stacked
 
 
