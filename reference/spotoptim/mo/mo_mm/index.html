@@ -1038,6 +1038,8 @@
       
         
       
+        
+      
     
     
     
@@ -1416,7 +1418,7 @@
 
 
 <h2 id="spotoptim.mo.mo_mm.mo_mm_desirability_function" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">mo_mm_desirability_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">X_base</span><span class="p">,</span> <span class="n">J_base</span><span class="p">,</span> <span class="n">d_base</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">D_overall</span><span class="p">,</span> <span class="n">mm_objective</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">mo_mm_desirability_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">X_base</span><span class="p">,</span> <span class="n">J_base</span><span class="p">,</span> <span class="n">d_base</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">D_overall</span><span class="p">,</span> <span class="n">mm_objective</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 <a href="#spotoptim.mo.mo_mm.mo_mm_desirability_function" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -1567,6 +1569,22 @@ The combined desirability, which uses the predictions from the models and option
                   <code>True</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>verbose</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to print Morris-Mitchell improvement values. Defaults to False.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -1707,8 +1725,26 @@ A tuple containing:
 <span class="normal">81</span>
 <span class="normal">82</span>
 <span class="normal">83</span>
-<span class="normal">84</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_mm_desirability_function</span><span class="p">(</span>
-    <span class="n">x</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">X_base</span><span class="p">,</span> <span class="n">J_base</span><span class="p">,</span> <span class="n">d_base</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">D_overall</span><span class="p">,</span> <span class="n">mm_objective</span><span class="o">=</span><span class="kc">True</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_mm_desirability_function</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">models</span><span class="p">,</span>
+    <span class="n">X_base</span><span class="p">,</span>
+    <span class="n">J_base</span><span class="p">,</span>
+    <span class="n">d_base</span><span class="p">,</span>
+    <span class="n">phi_base</span><span class="p">,</span>
+    <span class="n">D_overall</span><span class="p">,</span>
+    <span class="n">mm_objective</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the negative combined desirability for a candidate point x. Can be used by the mo_mm_desirability_optimizer.</span>
@@ -1732,6 +1768,8 @@ A tuple containing:
 <span class="sd">            The overall desirability function. Must include desirability functions for each objective and optionally for Morris-Mitchell.</span>
 <span class="sd">        mm_objective (bool):</span>
 <span class="sd">            Whether to include space-filling improvement as an objective. Defaults to True.</span>
+<span class="sd">        verbose (bool):</span>
+<span class="sd">            Whether to print Morris-Mitchell improvement values. Defaults to False.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Tuple[float, List[float]]:</span>
@@ -1774,7 +1812,7 @@ A tuple containing:
 
     <span class="c1"># 2. Compute y_mm (Space-filling improvement) if requested</span>
     <span class="k">if</span> <span class="n">mm_objective</span><span class="p">:</span>
-        <span class="n">y_mm</span> <span class="o">=</span> <span class="n">mm_improvement</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">X_base</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">J_base</span><span class="p">,</span> <span class="n">d_base</span><span class="p">)</span>
+        <span class="n">y_mm</span> <span class="o">=</span> <span class="n">mm_improvement</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">X_base</span><span class="p">,</span> <span class="n">phi_base</span><span class="p">,</span> <span class="n">J_base</span><span class="p">,</span> <span class="n">d_base</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="n">predictions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_mm</span><span class="p">)</span>
 
     <span class="c1"># 3. Calculate combined desirability</span>
@@ -1930,17 +1968,7 @@ A tuple containing:
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/mo/mo_mm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
 <span class="normal">255</span>
 <span class="normal">256</span>
 <span class="normal">257</span>
@@ -1974,7 +2002,17 @@ A tuple containing:
 <span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
-<span class="normal">288</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_mm_desirability_optimizer</span><span class="p">(</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_mm_desirability_optimizer</span><span class="p">(</span>
     <span class="n">X_base</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">obj_func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2282,17 +2320,7 @@ For each pair of inputs, x_i and x_j (with i &lt; j), one plot is generated.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/mo/mo_mm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
@@ -2436,7 +2464,17 @@ For each pair of inputs, x_i and x_j (with i &lt; j), one plot is generated.</p>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_xy_desirability_plot</span><span class="p">(</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_xy_desirability_plot</span><span class="p">(</span>
     <span class="n">models</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">X_base</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">J_base</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>

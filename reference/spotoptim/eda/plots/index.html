@@ -999,6 +999,8 @@
       
         
       
+        
+      
     
     
     
@@ -1366,7 +1368,7 @@
 
 
 <h2 id="spotoptim.eda.plots.plot_ip_boxplots" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">plot_ip_boxplots</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">category_column_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figwidth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">box_width</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">both_names</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">height_per_subplot</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">plot_ip_boxplots</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">category_column_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figwidth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">box_width</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">both_names</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">height_per_subplot</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_points_col</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">])</span></code>
 
 <a href="#spotoptim.eda.plots.plot_ip_boxplots" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -1517,6 +1519,22 @@ Additional points can be added and highlighted in red.</p>
                   <code>None</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>add_points_col</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of colors for the additional points. Defaults to [&ldquo;red&rdquo;].</p>
+              </div>
+            </td>
+            <td>
+                  <code>[&#39;red&#39;]</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -1550,28 +1568,15 @@ Additional points can be added and highlighted in red.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot_ip_boxplots</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">num_cols</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example with multiple added points and colors</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_points</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">],</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_ip_boxplots</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="n">add_points</span><span class="p">,</span> <span class="n">add_points_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">])</span>
 </code></pre></div>
 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/eda/plots.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
 <span class="normal">101</span>
@@ -1660,7 +1665,40 @@ Additional points can be added and highlighted in red.</p>
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
-<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_ip_boxplots</span><span class="p">(</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_ip_boxplots</span><span class="p">(</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">category_column_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">num_cols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
@@ -1669,6 +1707,7 @@ Additional points can be added and highlighted in red.</p>
     <span class="n">both_names</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">height_per_subplot</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
     <span class="n">add_points</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">add_points_col</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;red&quot;</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid.</span>
@@ -1692,6 +1731,8 @@ Additional points can be added and highlighted in red.</p>
 <span class="sd">            Height per subplot row. Defaults to 2.0.</span>
 <span class="sd">        add_points (pd.DataFrame, optional):</span>
 <span class="sd">            DataFrame containing additional points to highlight. Defaults to None.</span>
+<span class="sd">        add_points_col (list, optional):</span>
+<span class="sd">            List of colors for the additional points. Defaults to [&quot;red&quot;].</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        None</span>
@@ -1702,6 +1743,9 @@ Additional points can be added and highlighted in red.</p>
 <span class="sd">        &gt;&gt;&gt; data = {&#39;A&#39;: [1, 2, 2, 3, 4, 5, 100], &#39;B&#39;: [10, 10, 10, 10, 10, 10, 10]}</span>
 <span class="sd">        &gt;&gt;&gt; df = pd.DataFrame(data)</span>
 <span class="sd">        &gt;&gt;&gt; plot_ip_boxplots(df, num_cols=1)</span>
+<span class="sd">        &gt;&gt;&gt; # Example with multiple added points and colors</span>
+<span class="sd">        &gt;&gt;&gt; add_points = pd.DataFrame({&#39;A&#39;: [1.5, 3.5], &#39;B&#39;: [10, 10]})</span>
+<span class="sd">        &gt;&gt;&gt; plot_ip_boxplots(df, add_points=add_points, add_points_col=[&quot;red&quot;, &quot;blue&quot;])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
@@ -1740,11 +1784,22 @@ Additional points can be added and highlighted in red.</p>
             <span class="n">widths</span><span class="o">=</span><span class="n">box_width</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">add_points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">add_points</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">points</span> <span class="o">=</span> <span class="n">add_points</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">add_points</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">add_points_col</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Length of add_points (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">add_points</span><span class="p">)</span><span class="si">}</span><span class="s2">) and add_points_col (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">add_points_col</span><span class="p">)</span><span class="si">}</span><span class="s2">) must be the same.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">points_data</span> <span class="o">=</span> <span class="n">add_points</span><span class="p">[[</span><span class="n">col</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">points_data</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_points_col</span>
+            <span class="n">points_data</span> <span class="o">=</span> <span class="n">points_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+
+            <span class="n">points</span> <span class="o">=</span> <span class="n">points_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="n">points_data</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span>
+
             <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
                 <span class="n">points</span><span class="p">,</span>
                 <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
-                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">c</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
                 <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">,</span>
                 <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span>
                 <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Additional Points&quot;</span><span class="p">,</span>
@@ -1776,7 +1831,7 @@ Additional points can be added and highlighted in red.</p>
 
 
 <h2 id="spotoptim.eda.plots.plot_ip_histograms" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">plot_ip_histograms</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">num_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figwith</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">thrs_unique</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">plot_ip_histograms</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">num_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figwidth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">thrs_unique</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_points_col</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">])</span></code>
 
 <a href="#spotoptim.eda.plots.plot_ip_histograms" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -1850,7 +1905,7 @@ Additional points can be added and highlighted in red.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>figwith</code>
+                <code>figwidth</code>
             </td>
             <td>
                   <code><span title="int">int</span></code>
@@ -1896,6 +1951,22 @@ Additional points can be added and highlighted in red.</p>
                   <code>None</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>add_points_col</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of colors for the additional points. Defaults to [&ldquo;red&rdquo;].</p>
+              </div>
+            </td>
+            <td>
+                  <code>[&#39;red&#39;]</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -1929,6 +2000,9 @@ Additional points can be added and highlighted in red.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">plot_ip_histograms</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">num_cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">thrs_unique</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example with multiple added points and colors</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_points</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">],</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_ip_histograms</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="n">add_points</span><span class="p">,</span> <span class="n">add_points_col</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">])</span>
 </code></pre></div>
 
 
@@ -2006,13 +2080,30 @@ Additional points can be added and highlighted in red.</p>
 <span class="normal">76</span>
 <span class="normal">77</span>
 <span class="normal">78</span>
-<span class="normal">79</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_ip_histograms</span><span class="p">(</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_ip_histograms</span><span class="p">(</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">num_cols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">figwith</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">figwidth</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">thrs_unique</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
     <span class="n">add_points</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">add_points_col</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;red&quot;</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure.</span>
@@ -2024,9 +2115,10 @@ Additional points can be added and highlighted in red.</p>
 <span class="sd">        df (pd.DataFrame): DataFrame containing the data to plot.</span>
 <span class="sd">        bins (int, optional): Number of bins for the histograms. Defaults to 10.</span>
 <span class="sd">        num_cols (int, optional): Number of columns in the subplot grid. Defaults to 2.</span>
-<span class="sd">        figwith (int, optional): Width of the entire figure. Defaults to 10.</span>
+<span class="sd">        figwidth (int, optional): Width of the entire figure. Defaults to 10.</span>
 <span class="sd">        thrs_unique (int, optional): Threshold for unique values to change histogram color. Defaults to 5.</span>
 <span class="sd">        add_points (pd.DataFrame, optional): DataFrame containing additional points to highlight. Defaults to None.</span>
+<span class="sd">        add_points_col (list, optional): List of colors for the additional points. Defaults to [&quot;red&quot;].</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        None</span>
@@ -2037,12 +2129,15 @@ Additional points can be added and highlighted in red.</p>
 <span class="sd">        &gt;&gt;&gt; data = {&#39;A&#39;: [1, 2, 2, 3, 4, 5, 100], &#39;B&#39;: [10, 10, 10, 10, 10, 10, 10]}</span>
 <span class="sd">        &gt;&gt;&gt; df = pd.DataFrame(data)</span>
 <span class="sd">        &gt;&gt;&gt; plot_ip_histograms(df, bins=5, num_cols=1, thrs_unique=3)</span>
+<span class="sd">        &gt;&gt;&gt; # Example with multiple added points and colors</span>
+<span class="sd">        &gt;&gt;&gt; add_points = pd.DataFrame({&#39;A&#39;: [1.5, 3.5], &#39;B&#39;: [10, 10]})</span>
+<span class="sd">        &gt;&gt;&gt; plot_ip_histograms(df, add_points=add_points, add_points_col=[&quot;red&quot;, &quot;blue&quot;])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">numerical_columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s2">&quot;number&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="n">num_plots</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">numerical_columns</span><span class="p">)</span>
     <span class="n">num_rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_plots</span> <span class="o">+</span> <span class="n">num_cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">num_cols</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span>
-        <span class="n">nrows</span><span class="o">=</span><span class="n">num_rows</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="n">num_cols</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">figwith</span><span class="p">,</span> <span class="n">num_rows</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">nrows</span><span class="o">=</span><span class="n">num_rows</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="n">num_cols</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">figwidth</span><span class="p">,</span> <span class="n">num_rows</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="c1"># Ensure axes is always an array</span>
     <span class="k">if</span> <span class="n">num_rows</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">num_cols</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -2059,13 +2154,24 @@ Additional points can be added and highlighted in red.</p>
         <span class="n">fill_color</span> <span class="o">=</span> <span class="s2">&quot;lightcoral&quot;</span> <span class="k">if</span> <span class="n">unique_values</span> <span class="o">&lt;</span> <span class="n">thrs_unique</span> <span class="k">else</span> <span class="s2">&quot;lightblue&quot;</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">fill_color</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">add_points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">add_points</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">points</span> <span class="o">=</span> <span class="n">add_points</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">add_points</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">add_points_col</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Length of add_points (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">add_points</span><span class="p">)</span><span class="si">}</span><span class="s2">) and add_points_col (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">add_points_col</span><span class="p">)</span><span class="si">}</span><span class="s2">) must be the same.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">points_data</span> <span class="o">=</span> <span class="n">add_points</span><span class="p">[[</span><span class="n">col</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">points_data</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">add_points_col</span>
+            <span class="n">points_data</span> <span class="o">=</span> <span class="n">points_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+
+            <span class="n">points</span> <span class="o">=</span> <span class="n">points_data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+            <span class="n">colors</span> <span class="o">=</span> <span class="n">points_data</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span>
+
             <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
                 <span class="n">points</span><span class="p">,</span>
                 <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span>
                 <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Additional Points&quot;</span><span class="p">,</span>
                 <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+                <span class="n">c</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
                 <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">,</span>
                 <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span>
             <span class="p">)</span>
