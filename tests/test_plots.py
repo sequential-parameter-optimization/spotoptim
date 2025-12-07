@@ -96,7 +96,7 @@ class TestPlotIpHistogramsBasic:
     @patch('matplotlib.pyplot.show')
     def test_with_custom_figure_width(self, mock_show, sample_df):
         """Test histogram with custom figure width."""
-        plot_ip_histograms(sample_df, figwith=15)
+        plot_ip_histograms(sample_df, figwidth=15)
         mock_show.assert_called_once()
         plt.close('all')
 
@@ -450,7 +450,7 @@ class TestPlotIpHistogramsIntegration:
             df=sample_df,
             bins=15,
             num_cols=2,
-            figwith=12,
+            figwidth=12,
             thrs_unique=7,
             add_points=additional_points_df,
             add_points_col=["red", "blue"]

@@ -8,7 +8,7 @@ def plot_ip_histograms(
     df: pd.DataFrame,
     bins=10,
     num_cols=2,
-    figwith=10,
+    figwidth=10,
     thrs_unique=5,
     add_points: pd.DataFrame = None,
     add_points_col: list = ["red"],
@@ -23,7 +23,7 @@ def plot_ip_histograms(
         df (pd.DataFrame): DataFrame containing the data to plot.
         bins (int, optional): Number of bins for the histograms. Defaults to 10.
         num_cols (int, optional): Number of columns in the subplot grid. Defaults to 2.
-        figwith (int, optional): Width of the entire figure. Defaults to 10.
+        figwidth (int, optional): Width of the entire figure. Defaults to 10.
         thrs_unique (int, optional): Threshold for unique values to change histogram color. Defaults to 5.
         add_points (pd.DataFrame, optional): DataFrame containing additional points to highlight. Defaults to None.
         add_points_col (list, optional): List of colors for the additional points. Defaults to ["red"].
@@ -45,7 +45,7 @@ def plot_ip_histograms(
     num_plots = len(numerical_columns)
     num_rows = (num_plots + num_cols - 1) // num_cols
     fig, axes = plt.subplots(
-        nrows=num_rows, ncols=num_cols, figsize=(figwith, num_rows * 5)
+        nrows=num_rows, ncols=num_cols, figsize=(figwidth, num_rows * 5)
     )
     # Ensure axes is always an array
     if num_rows == 1 and num_cols == 1:
