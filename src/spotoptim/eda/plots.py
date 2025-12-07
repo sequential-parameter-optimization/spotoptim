@@ -11,6 +11,7 @@ def plot_ip_histograms(
     figwith=10,
     thrs_unique=5,
     add_points: pd.DataFrame = None,
+    add_points_col: list = ["red"],
 ) -> None:
     """
     Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure.
@@ -25,6 +26,7 @@ def plot_ip_histograms(
         figwith (int, optional): Width of the entire figure. Defaults to 10.
         thrs_unique (int, optional): Threshold for unique values to change histogram color. Defaults to 5.
         add_points (pd.DataFrame, optional): DataFrame containing additional points to highlight. Defaults to None.
+        add_points_col (list, optional): List of colors for the additional points. Defaults to ["red"].
 
     Returns:
         None
@@ -35,6 +37,9 @@ def plot_ip_histograms(
         >>> data = {'A': [1, 2, 2, 3, 4, 5, 100], 'B': [10, 10, 10, 10, 10, 10, 10]}
         >>> df = pd.DataFrame(data)
         >>> plot_ip_histograms(df, bins=5, num_cols=1, thrs_unique=3)
+        >>> # Example with multiple added points and colors
+        >>> add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
+        >>> plot_ip_histograms(df, add_points=add_points, add_points_col=["red", "blue"])
     """
     numerical_columns = df.select_dtypes(include="number").columns.tolist()
     num_plots = len(numerical_columns)
@@ -57,13 +62,24 @@ def plot_ip_histograms(
         fill_color = "lightcoral" if unique_values < thrs_unique else "lightblue"
         ax.hist(data, bins=bins, alpha=0.7, color=fill_color, edgecolor="black")
         if add_points is not None and col in add_points.columns:
-            points = add_points[col].dropna()
+            if len(add_points) != len(add_points_col):
+                raise ValueError(
+                    f"Length of add_points ({len(add_points)}) and add_points_col ({len(add_points_col)}) must be the same."
+                )
+
+            points_data = add_points[[col]].copy()
+            points_data["color"] = add_points_col
+            points_data = points_data.dropna(subset=[col])
+
+            points = points_data[col]
+            colors = points_data["color"]
+
             ax.scatter(
                 points,
                 [0] * len(points),
                 label="Additional Points",
                 zorder=3,
-                color="red",
+                c=colors,
                 marker="D",
                 edgecolor="k",
             )
@@ -88,6 +104,7 @@ def plot_ip_boxplots(
     both_names=True,
     height_per_subplot: float = 2.0,
     add_points: pd.DataFrame = None,
+    add_points_col: list = ["red"],
 ) -> None:
     """
     Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid.
@@ -111,6 +128,8 @@ def plot_ip_boxplots(
             Height per subplot row. Defaults to 2.0.
         add_points (pd.DataFrame, optional):
             DataFrame containing additional points to highlight. Defaults to None.
+        add_points_col (list, optional):
+            List of colors for the additional points. Defaults to ["red"].
 
     Returns:
         None
@@ -121,6 +140,9 @@ def plot_ip_boxplots(
         >>> data = {'A': [1, 2, 2, 3, 4, 5, 100], 'B': [10, 10, 10, 10, 10, 10, 10]}
         >>> df = pd.DataFrame(data)
         >>> plot_ip_boxplots(df, num_cols=1)
+        >>> # Example with multiple added points and colors
+        >>> add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
+        >>> plot_ip_boxplots(df, add_points=add_points, add_points_col=["red", "blue"])
     """
     if df.ndim == 1:
         df = df.to_frame()
@@ -159,11 +181,22 @@ def plot_ip_boxplots(
             widths=box_width,
         )
         if add_points is not None and col in add_points.columns:
-            points = add_points[col].dropna()
+            if len(add_points) != len(add_points_col):
+                raise ValueError(
+                    f"Length of add_points ({len(add_points)}) and add_points_col ({len(add_points_col)}) must be the same."
+                )
+
+            points_data = add_points[[col]].copy()
+            points_data["color"] = add_points_col
+            points_data = points_data.dropna(subset=[col])
+
+            points = points_data[col]
+            colors = points_data["color"]
+
             ax.scatter(
                 points,
                 [1] * len(points),
-                color="red",
+                c=colors,
                 marker="D",
                 edgecolor="k",
                 label="Additional Points",

@@ -133,7 +133,7 @@ class TestPlotIpHistogramsAdditionalPoints:
     @patch('matplotlib.pyplot.show')
     def test_with_additional_points(self, mock_show, sample_df, additional_points_df):
         """Test histogram with additional points highlighted."""
-        plot_ip_histograms(sample_df, add_points=additional_points_df)
+        plot_ip_histograms(sample_df, add_points=additional_points_df, add_points_col=["red", "blue"])
         mock_show.assert_called_once()
         plt.close('all')
 
@@ -141,7 +141,7 @@ class TestPlotIpHistogramsAdditionalPoints:
     def test_with_partial_additional_points(self, mock_show, sample_df):
         """Test histogram with additional points for only some columns."""
         partial_points = pd.DataFrame({'A': [5, 6]})
-        plot_ip_histograms(sample_df, add_points=partial_points)
+        plot_ip_histograms(sample_df, add_points=partial_points, add_points_col=["red", "blue"])
         mock_show.assert_called_once()
         plt.close('all')
 
@@ -149,7 +149,7 @@ class TestPlotIpHistogramsAdditionalPoints:
     def test_with_additional_points_with_nans(self, mock_show, sample_df):
         """Test histogram with additional points containing NaN values."""
         points_with_nan = pd.DataFrame({'A': [5, np.nan], 'B': [50, 60]})
-        plot_ip_histograms(sample_df, add_points=points_with_nan)
+        plot_ip_histograms(sample_df, add_points=points_with_nan, add_points_col=["red", "blue"])
         mock_show.assert_called_once()
         plt.close('all')
 
@@ -312,7 +312,7 @@ class TestPlotIpBoxplotsAdditionalPoints:
     @patch('matplotlib.pyplot.show')
     def test_with_additional_points(self, mock_show, sample_df, additional_points_df):
         """Test boxplot with additional points highlighted."""
-        plot_ip_boxplots(sample_df, add_points=additional_points_df)
+        plot_ip_boxplots(sample_df, add_points=additional_points_df, add_points_col=["red", "blue"])
         mock_show.assert_called_once()
         plt.close('all')
 
@@ -320,7 +320,7 @@ class TestPlotIpBoxplotsAdditionalPoints:
     def test_with_partial_additional_points(self, mock_show, sample_df):
         """Test boxplot with additional points for only some columns."""
         partial_points = pd.DataFrame({'A': [5, 6]})
-        plot_ip_boxplots(sample_df, add_points=partial_points)
+        plot_ip_boxplots(sample_df, add_points=partial_points, add_points_col=["red", "blue"])
         mock_show.assert_called_once()
         plt.close('all')
 
@@ -328,7 +328,7 @@ class TestPlotIpBoxplotsAdditionalPoints:
     def test_with_additional_points_with_nans(self, mock_show, sample_df):
         """Test boxplot with additional points containing NaN values."""
         points_with_nan = pd.DataFrame({'A': [5, np.nan], 'B': [50, 60]})
-        plot_ip_boxplots(sample_df, add_points=points_with_nan)
+        plot_ip_boxplots(sample_df, add_points=points_with_nan, add_points_col=["red", "blue"])
         mock_show.assert_called_once()
         plt.close('all')
 
@@ -452,7 +452,8 @@ class TestPlotIpHistogramsIntegration:
             num_cols=2,
             figwith=12,
             thrs_unique=7,
-            add_points=additional_points_df
+            add_points=additional_points_df,
+            add_points_col=["red", "blue"]
         )
         mock_show.assert_called_once()
         plt.close('all')
@@ -474,7 +475,8 @@ class TestPlotIpBoxplotsIntegration:
             box_width=0.3,
             both_names=True,
             height_per_subplot=3.0,
-            add_points=add_pts
+            add_points=add_pts,
+            add_points_col=["red", "blue"]
         )
         mock_show.assert_called_once()
         plt.close('all')
