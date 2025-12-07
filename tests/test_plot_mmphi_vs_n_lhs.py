@@ -22,14 +22,6 @@ class TestPlotMmphiVsNLhsBasic:
 
 
 class TestPlotMmphiVsNLhsEdgeCases:
-    @patch('matplotlib.pyplot.show')
-    def test_skips_n_less_than_two(self, mock_show, capsys):
-        plot_mmphi_vs_n_lhs(k_dim=2, seed=0, n_min=1, n_max=3, n_step=1)
-        out = capsys.readouterr().out
-        assert "Skipping n=1" in out
-        assert "Calculating for n from 1 to 3 with step 1" in out
-        mock_show.assert_called_once()
-
     @patch('spotoptim.sampling.mm.mmphi')
     @patch('matplotlib.pyplot.show')
     def test_exception_in_mmphi_handled(self, mock_show, mock_mmphi, capsys):

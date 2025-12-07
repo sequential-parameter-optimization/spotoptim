@@ -1064,7 +1064,7 @@ def plot_mmphi_vs_n_lhs(
     mmphi_results = []
     mmphi_intensive_results = []
     lhs_sampler = LatinHypercube(d=k_dim, seed=seed)
-    print(f"Calculating for n from {n_min} to {n_max} with step {n_step}...")
+
     for n_points in n_values:
         if n_points < 2:  # mmphi requires at least 2 points to calculate distances
             print(f"Skipping n={n_points} as it's less than 2.")
