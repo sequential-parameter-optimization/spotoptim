@@ -2254,7 +2254,7 @@ class SpotOptim(BaseEstimator):
         """Round non-numeric values to integers based on variable type.
 
         This method applies rounding to variables that are not continuous:
-        - 'float' or 'num': No rounding (continuous values)
+        - 'float': No rounding (continuous values)
         - 'int': Rounded to integers
         - 'factor': Rounded to integers (representing categorical values)
 
@@ -2541,6 +2541,9 @@ class SpotOptim(BaseEstimator):
     def _acquisition_function(self, x: np.ndarray) -> float:
         """Compute acquisition function value.
         Used in the _suggest_next_point() method.
+
+        This implements "Infill Criteria" as described in Forrester et al. (2008),
+        Section 3 "Exploring and Exploiting".
 
         Args:
             x (ndarray): Point to evaluate, shape (n_features,).
@@ -3948,7 +3951,7 @@ class SpotOptim(BaseEstimator):
             >>> opt = SpotOptim(
             ...     fun=objective,
             ...     bounds=[(-5, 5), (-5, 5), (0, 2)],
-            ...     var_type=['num', 'num', 'factor'],
+            ...     var_type=['float', 'float', 'factor'],
             ...     var_name=['x1', 'x2', 'category'],
             ...     max_iter=20,
             ...     n_initial=10,
@@ -4128,7 +4131,7 @@ class SpotOptim(BaseEstimator):
             >>> opt = SpotOptim(
             ...     fun=objective,
             ...     bounds=[(-5, 5), (-5, 5), (0, 2)],
-            ...     var_type=['num', 'num', 'factor'],
+            ...     var_type=['float', 'float', 'factor'],
             ...     var_name=['x1', 'x2', 'category'],
             ...     max_iter=20,
             ...     n_initial=10,

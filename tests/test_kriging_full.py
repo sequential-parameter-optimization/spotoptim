@@ -13,7 +13,7 @@ class TestKrigingFull:
         """Test Kriging initialization with default parameters."""
         model = Kriging()
         assert model.method == "regression"
-        assert model.var_type == ["num"]
+        assert model.var_type == ["float"]
         assert model.n_theta is None
         assert model.min_theta == -3.0
         assert model.max_theta == 2.0
@@ -202,8 +202,8 @@ class TestKrigingFull:
 
         assert np.isfinite(y_pred[0])
 
-    def test_kriging_variable_type_num_compatibility(self):
-        """Test that 'num' and 'float' are treated equivalently."""
+    def test_kriging_variable_type_float_mask(self):
+        """Test that 'float' is correctly recognized as numeric."""
         X = np.random.rand(8, 2)
         y = np.sum(X**2, axis=1)
 
@@ -211,12 +211,7 @@ class TestKrigingFull:
         model_float = Kriging(var_type=["float", "float"], seed=42, model_fun_evals=30)
         model_float.fit(X, y)
 
-        # Model with 'num'
-        model_num = Kriging(var_type=["num", "num"], seed=42, model_fun_evals=30)
-        model_num.fit(X, y)
-
         # Both should recognize variables as numeric
-        assert np.all(model_float.num_mask == model_num.num_mask)
         assert np.all(model_float.num_mask == [True, True])
 
     def test_kriging_only_factor_variables(self):

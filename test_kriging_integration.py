@@ -77,27 +77,6 @@ print(f"  num_mask: {model_mixed.num_mask}")
 print(f"  int_mask: {model_mixed.int_mask}")
 print(f"  factor_mask: {model_mixed.factor_mask}")
 
-# Test 3: Variable type compatibility ('num' vs 'float')
-print("\n[Test 3] Variable type compatibility (num vs float)...")
-model_num = Kriging(
-    method='regression',
-    var_type=['num', 'num'],
-    seed=42,
-    model_fun_evals=20
-)
-model_num.fit(X_train, y_train)
-
-model_float = Kriging(
-    method='regression',
-    var_type=['float', 'float'],
-    seed=42,
-    model_fun_evals=20
-)
-model_float.fit(X_train, y_train)
-
-assert np.all(model_num.num_mask == model_float.num_mask), "num and float should be equivalent"
-print("✓ Both 'num' and 'float' recognized as continuous")
-
 # Test 4: Different methods
 print("\n[Test 4] Different fitting methods...")
 methods_tested = []
@@ -144,8 +123,6 @@ print("\nKriging class is ready for use with SpotOptim!")
 print("\nKey features verified:")
 print("  ✓ Gaussian correlation function")
 print("  ✓ Multiple methods (interpolation, regression, reinterpolation)")
-print("  ✓ Mixed variable types (float/num, int, factor)")
-print("  ✓ Variable type compatibility (num ≡ float)")
 print("  ✓ Isotropic/anisotropic options")
 print("  ✓ scikit-learn compatibility")
 print("\nUsage example:")

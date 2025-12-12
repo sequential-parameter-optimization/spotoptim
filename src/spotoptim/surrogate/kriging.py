@@ -3,6 +3,13 @@ Kriging (Gaussian Process) surrogate model for SpotOptim.
 
 Adapted from spotpython.surrogate.kriging_basic for compatibility with SpotOptim.
 This implementation follows Forrester et al. (2008) "Engineering Design via Surrogate Modelling".
+
+Specific references:
+- Section 2.4 "Kriging": Core implementation of the Kriging predictor and likelihood.
+- Section 6 "Surrogate Modeling of Noisy Data": Implementation of "regression" and "reinterpolation" methods.
+- Validated against the book's Matlab implementation:
+    - `likelihood.m`: Concentrated log-likelihood calculation.
+    - `pred.m`: Prediction and error estimation.
 """
 
 import numpy as np
@@ -21,11 +28,11 @@ class Kriging(BaseEstimator, RegressorMixin):
     This class provides Ordinary Kriging with support for:
     - Mixed variable types (continuous, integer, factor)
     - Gaussian/RBF correlation function
-    - Three fitting methods: interpolation, regression, and reinterpolation
+    - Three fitting methods (Forrester (2008), Section 6):
     - Isotropic or anisotropic length scales
 
     Compatible with SpotOptim's variable type conventions:
-    - 'float' or 'num': continuous numeric variables
+    - 'float': continuous numeric variables
     - 'int': integer variables
     - 'factor': categorical/unordered variables
 
@@ -36,14 +43,19 @@ class Kriging(BaseEstimator, RegressorMixin):
             Defaults to None.
         penalty (float, optional): Large negative log-likelihood assigned if correlation matrix
             is not positive-definite. Defaults to 1e4.
-        method (str, optional): Fitting method. Options:
-            - "interpolation": Pure interpolation with small nugget
-            - "regression": Regression with optimized Lambda (nugget)
-            - "reinterpolation": Regression with Lambda removed in variance calculation
+        method (str, optional): Fitting method (Forrester (2008), Section 6). Options:
+            - "interpolation": Pure Kriging interpolation (Eq 2.X). Fits exact data points.
+              Uses a small `noise` (nugget) for numerical stability.
+            - "regression": Regression Kriging (Section 6.2). Optimizes a regularization parameter
+              Lambda (nugget) along with theta. Suitable for noisy data.
+            - "reinterpolation": Re-interpolation (Section 6.3). Fits hyperparameters using
+              regression (with Lambda), but predicts using the "noise-free" correlation matrix
+              (removing Lambda). This creates a surrogate that glosses over noise but passes
+              closer to the underlying trend (interpolating the regression model).
             Defaults to "regression".
         var_type (List[str], optional): Variable types for each dimension.
-            SpotOptim uses: 'float'/'num' (continuous), 'int' (integer), 'factor' (categorical).
-            Defaults to ["num"].
+            SpotOptim uses: 'float' (continuous), 'int' (integer), 'factor' (categorical).
+            Defaults to ["float"].
         name (str, optional): Name of the Kriging instance. Defaults to "Kriging".
         seed (int, optional): Random seed for reproducibility. Defaults to 124.
         model_fun_evals (int, optional): Maximum function evaluations for hyperparameter
@@ -158,7 +170,7 @@ class Kriging(BaseEstimator, RegressorMixin):
             self.noise = noise
 
         self.penalty = penalty
-        self.var_type = var_type if var_type is not None else ["num"]
+        self.var_type = var_type if var_type is not None else ["float"]
         self.name = name
         self.seed = seed
         self.metric_factorial = metric_factorial
@@ -204,22 +216,22 @@ class Kriging(BaseEstimator, RegressorMixin):
         """Set variable type masks for different variable types.
 
         Creates boolean masks for:
-        - num_mask: 'float' or 'num' variables
+        - num_mask: 'float' variables
         - int_mask: 'int' variables
         - factor_mask: 'factor' variables
-        - ordered_mask: 'float', 'num', or 'int' variables (ordered/numeric)
+        - ordered_mask: 'float', or 'int' variables (ordered/numeric)
         """
         # Ensure var_type has appropriate length
         if len(self.var_type) < self.k:
-            self.var_type = ["num"] * self.k
+            self.var_type = ["float"] * self.k
 
         var_type_array = np.array(self.var_type)
-        # SpotOptim uses 'float' and 'num' interchangeably for continuous variables
-        self.num_mask = np.isin(var_type_array, ["num", "float"])
+        # SpotOptim uses 'float' for continuous variables
+        self.num_mask = np.isin(var_type_array, ["float"])
         self.int_mask = var_type_array == "int"
         self.factor_mask = var_type_array == "factor"
         # Ordered variables: numeric (float/num) and integer
-        self.ordered_mask = np.isin(var_type_array, ["int", "num", "float"])
+        self.ordered_mask = np.isin(var_type_array, ["int", "float"])
 
     def _set_theta(self) -> None:
         """Set number of theta parameters based on isotropic flag."""
@@ -366,6 +378,8 @@ class Kriging(BaseEstimator, RegressorMixin):
                 Psi += D_factor
 
             # Gaussian correlation: R = exp(-D)
+            # Eq 2.4 in Forrester (2008): \Psi = \exp(-\sum \theta_j |x_j^(i) - x_j^(l)|^p_j)
+            # Here implemented using vectorized distance calculations.
             Psi = np.exp(-Psi)
 
             self.inf_Psi = np.isinf(Psi).any()
@@ -385,6 +399,11 @@ class Kriging(BaseEstimator, RegressorMixin):
 
         Returns:
             tuple: (negLnLike, Psi, U) where U is Cholesky factor.
+
+        Reference:
+            Forrester et al. (2008), Section 2.4.
+            Matches implementation in `likelihood.m` from the book's code.
+            Concentrated Log-Likelihood approx: ln(L) ~ -(n/2)ln(sigma^2) - (1/2)ln|R|
         """
         # Extract parameters
         self.theta_ = params[: self.n_theta]
@@ -425,6 +444,9 @@ class Kriging(BaseEstimator, RegressorMixin):
         SigmaSqr = (resid @ tresid) / n
 
         # Concentrated negative log-likelihood
+        # Corresponds to `likelihood.m` line:
+        # NegLnLike=-1*(-(n/2)*log(SigmaSqr) - 0.5*LnDetPsi);
+        # We minimize positive NegLnLike, which is equivalent to maximizing likelihood.
         negLnLike = (n / 2.0) * np.log(SigmaSqr) + 0.5 * LnDetPsi
 
         return negLnLike, Psi, U
@@ -437,6 +459,9 @@ class Kriging(BaseEstimator, RegressorMixin):
 
         Returns:
             np.ndarray: Correlation vector, shape (n_samples,).
+
+        Reference:
+            Calculates the vector small psi from Eq 2.15 in Forrester (2008).
         """
         n = self.n
         theta10 = self._get_theta10_from_logtheta()
@@ -474,6 +499,10 @@ class Kriging(BaseEstimator, RegressorMixin):
 
         Returns:
             tuple: (prediction, std_dev).
+
+        Reference:
+            Forrester et al. (2008), Eq 2.15 (Predictor) and Eq 2.19 (Error).
+            Matches implementation in `pred.m` from the book's code.
         """
         if self.method in ["regression", "reinterpolation"]:
             lambda_ = 10.0**self.Lambda_
@@ -501,9 +530,12 @@ class Kriging(BaseEstimator, RegressorMixin):
         psi = self._build_psi_vector(x)
 
         # Prediction
+        # Eq 2.15: \hat{y} = \hat{\mu} + \psi^T \Psi^{-1} (y - \mathbf{1}\hat{\mu})
+        # Implemented using pre-computed Cholesky factors as in `pred.m`
         f = mu + psi @ resid_tilde
 
         # Variance
+        # Eq 2.19 (Mean Squared Error)
         if self.method in ["interpolation", "regression"]:
             SigmaSqr = (resid @ resid_tilde) / n
             psi_tilde = np.linalg.solve(U, psi)
