@@ -4221,7 +4221,7 @@ wheels = [
 
 [[package]]
 name = "spotoptim"
-version = "0.0.69"
+version = "0.0.70"
 source = { editable = "." }
 dependencies = [
     { name = "jupyter" },

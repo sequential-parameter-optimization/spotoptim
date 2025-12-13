@@ -301,7 +301,7 @@ class Kriging(BaseEstimator, RegressorMixin):
 
         # Optimize hyperparameters
         result = differential_evolution(
-            func=self._objective,
+            func=self.objective,
             bounds=bounds,
             seed=self.seed,
             maxiter=self.model_fun_evals,
@@ -316,13 +316,29 @@ class Kriging(BaseEstimator, RegressorMixin):
             self.Lambda_ = None
 
         # Store final likelihood and matrices
-        self.negLnLike, self.Psi_, self.U_ = self._likelihood(params)
+        self.negLnLike, self.Psi_, self.U_ = self.likelihood(params)
 
         return self
 
-    def _objective(self, params: np.ndarray) -> float:
-        """Objective function for hyperparameter optimization."""
-        negLnLike, _, _ = self._likelihood(params)
+    def objective(self, params: np.ndarray) -> float:
+        """Objective function for hyperparameter optimization.
+
+        Args:
+            params (np.ndarray): Hyperparameters to evaluate.
+
+        Returns:
+            float: Negative concentrated log-likelihood.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim.surrogate import Kriging
+            >>> X = np.array([[0.], [1.]])
+            >>> y = np.array([0., 1.])
+            >>> k = Kriging(seed=42).fit(X, y)
+            >>> # Evaluate objective at optimal parameters
+            >>> val = k.objective(np.concatenate([k.theta_, [k.Lambda_]]))
+        """
+        negLnLike, _, _ = self.likelihood(params)
         return negLnLike
 
     def predict(self, X: np.ndarray, return_std: bool = False) -> np.ndarray:
@@ -339,17 +355,27 @@ class Kriging(BaseEstimator, RegressorMixin):
         X = self._reshape_X(X)
 
         if return_std:
-            predictions, stds = zip(*[self._predict_single(x) for x in X])
+            predictions, stds = zip(*[self.predict_single(x) for x in X])
             return np.array(predictions), np.array(stds)
         else:
-            predictions = [self._predict_single(x)[0] for x in X]
+            predictions = [self.predict_single(x)[0] for x in X]
             return np.array(predictions)
 
-    def _build_correlation_matrix(self) -> np.ndarray:
+    def build_correlation_matrix(self) -> np.ndarray:
         """Build correlation matrix from training data.
 
         Returns:
             np.ndarray: Upper triangle of correlation matrix.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim.surrogate import Kriging
+            >>> X = np.array([[0.], [1.]])
+            >>> y = np.array([0., 1.])
+            >>> k = Kriging(seed=42).fit(X, y)
+            >>> Psi_upper = k.build_correlation_matrix()
+            >>> print(Psi_upper.shape)
+            (2, 2)
         """
         try:
             n = self.n
@@ -391,7 +417,7 @@ class Kriging(BaseEstimator, RegressorMixin):
             print(f"Building Psi failed: {err}")
             raise
 
-    def _likelihood(self, params: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
+    def likelihood(self, params: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
         """Compute negative concentrated log-likelihood.
 
         Args:
@@ -404,6 +430,15 @@ class Kriging(BaseEstimator, RegressorMixin):
             Forrester et al. (2008), Section 2.4.
             Matches implementation in `likelihood.m` from the book's code.
             Concentrated Log-Likelihood approx: ln(L) ~ -(n/2)ln(sigma^2) - (1/2)ln|R|
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim.surrogate import Kriging
+            >>> X = np.array([[0.], [1.]])
+            >>> y = np.array([0., 1.])
+            >>> k = Kriging(seed=42).fit(X, y)
+            >>> params = np.concatenate([k.theta_, [k.Lambda_]])
+            >>> nll, _, _ = k.likelihood(params)
         """
         # Extract parameters
         self.theta_ = params[: self.n_theta]
@@ -418,7 +453,7 @@ class Kriging(BaseEstimator, RegressorMixin):
         one = np.ones(n)
 
         # Build correlation matrix
-        Psi_upper = self._build_correlation_matrix()
+        Psi_upper = self.build_correlation_matrix()
         Psi = Psi_upper + Psi_upper.T + np.eye(n) * (1.0 + lambda_)
 
         # Cholesky factorization
@@ -451,7 +486,7 @@ class Kriging(BaseEstimator, RegressorMixin):
 
         return negLnLike, Psi, U
 
-    def _build_psi_vector(self, x: np.ndarray) -> np.ndarray:
+    def build_psi_vector(self, x: np.ndarray) -> np.ndarray:
         """Build correlation vector between x and training points.
 
         Args:
@@ -462,6 +497,17 @@ class Kriging(BaseEstimator, RegressorMixin):
 
         Reference:
             Calculates the vector small psi from Eq 2.15 in Forrester (2008).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim.surrogate import Kriging
+            >>> X = np.array([[0.], [1.]])
+            >>> y = np.array([0., 1.])
+            >>> k = Kriging(seed=42).fit(X, y)
+            >>> x_new = np.array([0.5])
+            >>> psi = k.build_psi_vector(x_new)
+            >>> print(psi.shape)
+            (2,)
         """
         n = self.n
         theta10 = self._get_theta10_from_logtheta()
@@ -491,7 +537,7 @@ class Kriging(BaseEstimator, RegressorMixin):
 
         return np.exp(-D)
 
-    def _predict_single(self, x: np.ndarray) -> Tuple[float, float]:
+    def predict_single(self, x: np.ndarray) -> Tuple[float, float]:
         """Predict at a single point.
 
         Args:
@@ -503,6 +549,15 @@ class Kriging(BaseEstimator, RegressorMixin):
         Reference:
             Forrester et al. (2008), Eq 2.15 (Predictor) and Eq 2.19 (Error).
             Matches implementation in `pred.m` from the book's code.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim.surrogate import Kriging
+            >>> X = np.array([[0.], [1.]])
+            >>> y = np.array([0., 1.])
+            >>> k = Kriging(seed=42).fit(X, y)
+            >>> x_new = np.array([0.5])
+            >>> y_pred, y_std = k.predict_single(x_new)
         """
         if self.method in ["regression", "reinterpolation"]:
             lambda_ = 10.0**self.Lambda_
@@ -527,7 +582,7 @@ class Kriging(BaseEstimator, RegressorMixin):
         resid_tilde = np.linalg.solve(U.T, resid_tilde)
 
         # Correlation vector
-        psi = self._build_psi_vector(x)
+        psi = self.build_psi_vector(x)
 
         # Prediction
         # Eq 2.15: \hat{y} = \hat{\mu} + \psi^T \Psi^{-1} (y - \mathbf{1}\hat{\mu})
