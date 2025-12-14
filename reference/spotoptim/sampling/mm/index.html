@@ -16,7 +16,7 @@
         <link rel="prev" href="../lhs/">
       
       
-        <link rel="next" href="../../surrogate/kriging/">
+        <link rel="next" href="../../surrogate/kernels/">
       
       
         
@@ -550,6 +550,8 @@
   
     
     
+      
+        
       
         
       
@@ -1124,6 +1126,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -1139,7 +1147,7 @@
   
   
   
-    <a href="../../surrogate/kriging/" class="md-nav__link">
+    <a href="../../surrogate/kernels/" class="md-nav__link">
       
   
   
@@ -5673,7 +5681,7 @@ and plots them against the number of samples (n).</p>
     <span class="n">mmphi_results</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">mmphi_intensive_results</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">lhs_sampler</span> <span class="o">=</span> <span class="n">LatinHypercube</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="n">k_dim</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calculating for n from </span><span class="si">{</span><span class="n">n_min</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">n_max</span><span class="si">}</span><span class="s2"> with step </span><span class="si">{</span><span class="n">n_step</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">n_points</span> <span class="ow">in</span> <span class="n">n_values</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">n_points</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># mmphi requires at least 2 points to calculate distances</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping n=</span><span class="si">{</span><span class="n">n_points</span><span class="si">}</span><span class="s2"> as it&#39;s less than 2.&quot;</span><span class="p">)</span>
