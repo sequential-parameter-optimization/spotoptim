@@ -4,8 +4,12 @@ import requests
 # --- (user_fun function from the previous section goes here) ---
 
 # Configuration for the server endpoint
-SERVER_URL = "http://139.6.66.69:8000/compute/"
 
+# maans12
+# SERVER_URL = "http://139.6.66.69:8000/compute/"
+
+# maans04
+SERVER_URL = "http://139.6.66.164:8000/compute/"
 def user_fun(X: np.ndarray, **kwargs) -> np.ndarray:
     """
     A client-side function that sends a NumPy array to a remote server

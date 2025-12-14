@@ -40,7 +40,7 @@ class Nystroem:
         self.component_indices_ = None
         self.normalization_ = None
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None) -> "Nystroem":
         """
         Fit estimator to data.
 
@@ -52,7 +52,7 @@ class Nystroem:
             y (np.ndarray, optional): Target values (ignored).
 
         Returns:
-            self: Returns the instance itself.
+            Nystroem: Returns the instance itself.
         """
         X = np.atleast_2d(X)
         rnd = check_random_state(self.random_state)
@@ -93,7 +93,7 @@ class Nystroem:
 
         return self
 
-    def transform(self, X):
+    def transform(self, X) -> np.ndarray:
         """
         Apply feature map to X.
 
@@ -114,7 +114,7 @@ class Nystroem:
 
         return np.dot(K_sum, self.normalization_.T)
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(self, X, y=None) -> np.ndarray:
         """
         Fit to data, then transform it.
 

@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class Pipeline:
     """
     Pipeline of transforms with a final estimator.
@@ -21,7 +24,7 @@ class Pipeline:
         """Returns the final estimator of the pipeline."""
         return self.steps[-1][1]
 
-    def fit(self, X, y=None, **fit_params):
+    def fit(self, X, y=None, **fit_params) -> "Pipeline":
         """
         Fit the model.
 
@@ -31,10 +34,10 @@ class Pipeline:
         Args:
             X (iterable): Training data. Must fulfill input requirements of first step of the pipeline.
             y (iterable, optional): Training targets. Must fulfill label requirements for all steps of the pipeline.
-            **fit_params: Additional parameters passed to the `fit` method of the final estimator.
+            **fit_params (Any): Additional parameters passed to the `fit` method of the final estimator.
 
         Returns:
-            self: Pipeline with fitted steps.
+            Pipeline: Pipeline with fitted steps.
         """
         Xt = X
         for name, transform in self.steps[:-1]:
@@ -48,16 +51,16 @@ class Pipeline:
 
         return self
 
-    def predict(self, X, **predict_params):
+    def predict(self, X, **predict_params) -> Any:
         """
         Transform the data, and apply `predict` with the final estimator.
 
         Args:
             X (iterable): Data to predict on. Must fulfill input requirements of first step of the pipeline.
-            **predict_params: Additional parameters passed to the `predict` method of the final estimator.
+            **predict_params (Any): Additional parameters passed to the `predict` method of the final estimator.
 
         Returns:
-            iterable: Result of calling `predict` on the final estimator.
+            Any: Result of calling `predict` on the final estimator.
         """
         Xt = X
         for name, transform in self.steps[:-1]:

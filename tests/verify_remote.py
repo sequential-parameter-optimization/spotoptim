@@ -1,4 +1,6 @@
 import numpy as np
+import requests
+import warnings
 from spotoptim.function.remote import objective_remote
 
 def verify_remote_function():
@@ -28,9 +30,13 @@ def verify_remote_function():
             print("\n✅ SUCCESS: Remote result matches expected values.")
         else:
             print("\n❌ FAILURE: Remote result does NOT match.")
+            raise AssertionError("Remote result does not match expected values.")
             
+    except requests.exceptions.RequestException as e:
+        print(f"\n⚠️ WARNING: Could not connect to remote server ({e}). Verification SKIPPED.")
     except Exception as e:
         print(f"\n❌ ERROR: {e}")
+        raise e
 
 if __name__ == "__main__":
     verify_remote_function()

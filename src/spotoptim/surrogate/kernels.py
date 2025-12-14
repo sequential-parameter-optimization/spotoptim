@@ -10,7 +10,7 @@ class Kernel(ABC):
     """
 
     @abstractmethod
-    def __call__(self, X, Y=None):
+    def __call__(self, X, Y=None) -> np.ndarray:
         """
         Evaluate the kernel.
 
@@ -25,7 +25,7 @@ class Kernel(ABC):
         pass
 
     @abstractmethod
-    def diag(self, X):
+    def diag(self, X) -> np.ndarray:
         """
         Returns the diagonal of the kernel k(X, X).
 

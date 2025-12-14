@@ -3,7 +3,7 @@ import requests
 
 
 # Default configuration for the server endpoint
-DEFAULT_SERVER_URL = "http://139.6.66.69:8000/compute/"
+DEFAULT_SERVER_URL = "http://139.6.66.164:8000/compute/"
 
 
 def objective_remote(
@@ -15,8 +15,8 @@ def objective_remote(
     Args:
         X (np.ndarray): Input data of shape (n_samples, n_features).
         url (str, optional): The URL of the remote computation server.
-            Defaults to "http://139.6.66.69:8000/compute/".
-        **kwargs: Additional arguments to include in the request payload (optional).
+            Defaults to "http://139.6.66.164:8000/compute/".
+        **kwargs (Any): Additional arguments to include in the request payload (optional).
 
     Returns:
         np.ndarray: The computed objective values of shape (n_samples,).
