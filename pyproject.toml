@@ -1,6 +1,6 @@
 [project]
 name = "spotoptim"
-version = "0.0.71"
+version = "0.0.74"
 description = "Sequential Parameter Optimization Toolbox"
 readme = "README.md"
 authors = [
@@ -46,3 +46,4 @@ filterwarnings = [
 [build-system]
 requires = ["uv_build>=0.9.8,<0.10.0"]
 build-backend = "uv_build"
+

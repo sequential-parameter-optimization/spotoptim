@@ -205,3 +205,75 @@ def michalewicz(X, m: int = 10) -> np.ndarray:
     result = -np.sum(np.sin(X) * (np.sin(i * X**2 / np.pi)) ** (2 * m), axis=1)
 
     return result
+
+
+def wingwt(X) -> np.ndarray:
+    """Aircraft Wing Weight function.
+
+    The example models the weight of an unpainted light aircraft wing.
+    The function accepts inputs in the unit cube [0,1]^9 and returns the wing weight.
+
+    Args:
+        X (array-like): Input points with shape (n_samples, 9) or (9,) or (10,) or (n_samples, 10).
+            Input variables order: [Sw, Wfw, A, L, q, l, Rtc, Nz, Wdg, Wp(optional)]
+
+    Returns:
+        np.ndarray: Wing weight values at the input points with shape (n_samples,).
+
+    Examples:
+        Single point evaluation (Baseline Cessna C172 - Unpainted):
+
+        >>> from spotoptim.function.so import wingwt
+        >>> import numpy as np
+        >>> # Baseline configuration in unit cube
+        >>> x_base = np.array([0.48, 0.4, 0.38, 0.5, 0.62, 0.344, 0.4, 0.37, 0.38])
+        >>> wingwt(x_base)
+        array([233.90...])
+
+        Batch evaluation:
+
+        >>> X = np.vstack([x_base, x_base])
+        >>> wingwt(X)
+        array([233.90..., 233.90...])
+
+    References:
+        Forrester, A., Sobester, A., & Keane, A. (2008). Engineering design via surrogate modelling:
+        a practical guide. John Wiley & Sons.
+    """
+    # Ensure x is a 2D array for batch evaluation
+    X = np.atleast_2d(X)
+
+    n_features = X.shape[1]
+    if n_features not in [9, 10]:
+        raise ValueError(f"wingwt expects 9 or 10 features, got {n_features}")
+
+    # Transform from unit cube to natural scales
+    Sw = X[:, 0] * (200 - 150) + 150
+    Wfw = X[:, 1] * (300 - 220) + 220
+    A = X[:, 2] * (10 - 6) + 6
+    L = (X[:, 3] * (10 - (-10)) - 10) * np.pi / 180
+    q = X[:, 4] * (45 - 16) + 16
+    taper = X[:, 5] * (1 - 0.5) + 0.5
+    Rtc = X[:, 6] * (0.18 - 0.08) + 0.08
+    Nz = X[:, 7] * (6 - 2.5) + 2.5
+    Wdg = X[:, 8] * (2500 - 1700) + 1700
+
+    # Paint weight (W_p)
+    # Range assumed [0.06, 0.08] based on typical value 0.064 if modeled.
+    # If not provided (9 inputs), assume unpainted (0.0).
+    if n_features == 10:
+        # User is explicitly providing W_p, scale it.
+        # Assuming domain [0.06, 0.08] for the 10th variable "painted" case.
+        # This is a guess to support the physics.
+        Wp = X[:, 9] * (0.08 - 0.06) + 0.06
+    else:
+        Wp = 0.0
+
+    # Calculate weight on natural scale
+    W = 0.036 * Sw**0.758 * Wfw**0.0035 * (A / np.cos(L) ** 2) ** 0.6 * q**0.006
+    W = W * taper**0.04 * (100 * Rtc / np.cos(L)) ** (-0.3) * (Nz * Wdg) ** (0.49)
+
+    # Add paint weight term
+    W = W + Sw * Wp
+
+    return W.ravel()

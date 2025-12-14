@@ -5,23 +5,10 @@ This script can be run standalone to verify the Kriging surrogate:
     python test_kriging_integration.py
 """
 
-import importlib.util
 import numpy as np
 import sys
+from spotoptim.surrogate.kriging import Kriging
 
-# Load modules directly without full import chain
-def load_module(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-# Load Kriging
-kriging_module = load_module(
-    'kriging',
-    'src/spotoptim/surrogate/kriging.py'
-)
-Kriging = kriging_module.Kriging
 
 print("=" * 60)
 print("SpotOptim Kriging Integration Tests")

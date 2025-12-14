@@ -1,6 +1,7 @@
 """
 Kriging (Gaussian Process) surrogate model for SpotOptim.
 
+
 Adapted from spotpython.surrogate.kriging_basic for compatibility with SpotOptim.
 This implementation follows Forrester et al. (2008) "Engineering Design via Surrogate Modelling".
 
@@ -18,7 +19,8 @@ from typing import Dict, Tuple, List, Optional
 import typing
 from scipy.optimize import differential_evolution
 from sklearn.base import BaseEstimator, RegressorMixin
-from scipy.spatial.distance import cdist, pdist, squareform
+
+from .kernels import SpotOptimKernel
 
 
 class Kriging(BaseEstimator, RegressorMixin):
@@ -378,35 +380,19 @@ class Kriging(BaseEstimator, RegressorMixin):
             (2, 2)
         """
         try:
-            n = self.n
             theta10 = self._get_theta10_from_logtheta()
 
-            Psi = np.zeros((n, n), dtype=np.float64)
+            # Use the new SpotOptimKernel to compute the correlation matrix
+            # Note: We create it on the fly here to use current parameters
+            kernel = SpotOptimKernel(
+                theta=theta10,
+                var_type=self.var_type,
+                p_val=self.p_val,
+                metric_factorial=self.metric_factorial,
+            )
 
-            # Ordered/numeric variables: weighted squared Euclidean distance
-            if self.ordered_mask.any():
-                X_ordered = self.X_[:, self.ordered_mask]
-                D_ordered = squareform(
-                    pdist(X_ordered, metric="sqeuclidean", w=theta10[self.ordered_mask])
-                )
-                Psi += D_ordered
-
-            # Factor variables: categorical distance
-            if self.factor_mask.any():
-                X_factor = self.X_[:, self.factor_mask]
-                D_factor = squareform(
-                    pdist(
-                        X_factor,
-                        metric=self.metric_factorial,
-                        w=theta10[self.factor_mask],
-                    )
-                )
-                Psi += D_factor
-
-            # Gaussian correlation: R = exp(-D)
-            # Eq 2.4 in Forrester (2008): \Psi = \exp(-\sum \theta_j |x_j^(i) - x_j^(l)|^p_j)
-            # Here implemented using vectorized distance calculations.
-            Psi = np.exp(-Psi)
+            # Compute full correlation matrix
+            Psi = kernel(self.X_)
 
             self.inf_Psi = np.isinf(Psi).any()
             self.cnd_Psi = cond(Psi)
@@ -509,33 +495,23 @@ class Kriging(BaseEstimator, RegressorMixin):
             >>> print(psi.shape)
             (2,)
         """
-        n = self.n
         theta10 = self._get_theta10_from_logtheta()
-        D = np.zeros(n)
 
-        # Ordered distance
-        if self.ordered_mask.any():
-            X_ordered = self.X_[:, self.ordered_mask]
-            x_ordered = x[self.ordered_mask]
-            D += cdist(
-                x_ordered.reshape(1, -1),
-                X_ordered,
-                metric="sqeuclidean",
-                w=theta10[self.ordered_mask],
-            ).ravel()
+        kernel = SpotOptimKernel(
+            theta=theta10,
+            var_type=self.var_type,
+            p_val=self.p_val,
+            metric_factorial=self.metric_factorial,
+        )
 
-        # Factor distance
-        if self.factor_mask.any():
-            X_factor = self.X_[:, self.factor_mask]
-            x_factor = x[self.factor_mask]
-            D += cdist(
-                x_factor.reshape(1, -1),
-                X_factor,
-                metric=self.metric_factorial,
-                w=theta10[self.factor_mask],
-            ).ravel()
+        # Calculate correlation between X_ (training) and x (new point)
+        # kernel(X, Y) returns matrix of shape (n_X, n_Y)
+        # We need vector of shape (n,).
+        # kernel(self.X_, x.reshape(1, -1)) returns (n, 1)
+        # flatten to get (n,)
+        psi = kernel(self.X_, x.reshape(1, -1)).flatten()
 
-        return np.exp(-D)
+        return psi
 
     def predict_single(self, x: np.ndarray) -> Tuple[float, float]:
         """Predict at a single point.
