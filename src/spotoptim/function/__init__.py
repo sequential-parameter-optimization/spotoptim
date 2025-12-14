@@ -4,6 +4,7 @@ Analytical test functions for optimization.
 
 from .so import rosenbrock, ackley, michalewicz
 from .mo import mo_conv2_min, fonseca_fleming, kursawe, mo_conv2_max
+from .mohyperlight import MoHyperLight
 
 __all__ = [
     "rosenbrock",
@@ -13,4 +14,5 @@ __all__ = [
     "fonseca_fleming",
     "kursawe",
     "mo_conv2_max",
+    "MoHyperLight",
 ]

@@ -5807,3 +5807,46 @@ class SpotOptim(BaseEstimator):
             else:
                 stars.append("")
         return stars
+
+    def plot_importance(
+        self, threshold: float = 0.0, figsize: Tuple[int, int] = (10, 6)
+    ) -> None:
+        """Plot variable importance.
+
+        Args:
+            threshold (float): Minimum importance percentage to include in plot.
+            figsize (tuple): Figure size.
+        """
+        importance = self.get_importance()
+        names = (
+            self.all_var_name
+            if self.all_var_name
+            else [f"x{i}" for i in range(len(importance))]
+        )
+
+        # Filter by threshold
+        filtered_data = [(n, i) for n, i in zip(names, importance) if i >= threshold]
+        filtered_data.sort(key=lambda x: x[1], reverse=True)
+
+        if not filtered_data:
+            print("No variables met the importance threshold.")
+            return
+
+        names, values = zip(*filtered_data)
+
+        plt.figure(figsize=figsize)
+        y_pos = np.arange(len(names))
+        plt.barh(y_pos, values, align="center")
+        plt.yticks(y_pos, names)
+        plt.xlabel("Importance (%)")
+        plt.title("Variable Importance")
+        plt.gca().invert_yaxis()  # Best on top
+        plt.show()
+
+    def print_results(self, *args, **kwargs) -> str:
+        """Alias for print_results_table for compatibility.
+        Prints the table and returns it.
+        """
+        table = self.print_results_table(*args, **kwargs)
+        print(table)
+        return table
