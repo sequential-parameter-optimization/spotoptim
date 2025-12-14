@@ -2941,6 +2941,13 @@ class SpotOptim(BaseEstimator):
             2
         """
         # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
+
+        # If y0 contains None (object dtype), convert None to NaN and ensure float dtype
+        if y0.dtype == object:
+            # Create a float array, replacing None with NaN
+            # Use list comprehension for safe conversion of None
+            y0 = np.array([np.nan if v is None else v for v in y0], dtype=float)
+
         finite_mask = np.isfinite(y0)
         n_non_finite = np.sum(~finite_mask)
 
