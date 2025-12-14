@@ -8556,7 +8556,14 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="normal">5799</span>
 <span class="normal">5800</span>
 <span class="normal">5801</span>
-<span class="normal">5802</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SpotOptim</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="normal">5802</span>
+<span class="normal">5803</span>
+<span class="normal">5804</span>
+<span class="normal">5805</span>
+<span class="normal">5806</span>
+<span class="normal">5807</span>
+<span class="normal">5808</span>
+<span class="normal">5809</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SpotOptim</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SPOT optimizer compatible with scipy.optimize interface.</span>
 
 <span class="sd">    Args:</span>
@@ -11481,6 +11488,13 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            2</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Handle NaN/inf values in initial design - REMOVE them instead of applying penalty</span>
+
+        <span class="c1"># If y0 contains None (object dtype), convert None to NaN and ensure float dtype</span>
+        <span class="k">if</span> <span class="n">y0</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
+            <span class="c1"># Create a float array, replacing None with NaN</span>
+            <span class="c1"># Use list comprehension for safe conversion of None</span>
+            <span class="n">y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">y0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
         <span class="n">finite_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">y0</span><span class="p">)</span>
         <span class="n">n_non_finite</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">~</span><span class="n">finite_mask</span><span class="p">)</span>
 
@@ -14537,14 +14551,7 @@ Higher scores indicate parameters that have more influence on the objective.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5670</span>
-<span class="normal">5671</span>
-<span class="normal">5672</span>
-<span class="normal">5673</span>
-<span class="normal">5674</span>
-<span class="normal">5675</span>
-<span class="normal">5676</span>
-<span class="normal">5677</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5677</span>
 <span class="normal">5678</span>
 <span class="normal">5679</span>
 <span class="normal">5680</span>
@@ -14636,7 +14643,14 @@ Higher scores indicate parameters that have more influence on the objective.</p>
 <span class="normal">5766</span>
 <span class="normal">5767</span>
 <span class="normal">5768</span>
-<span class="normal">5769</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_importance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="normal">5769</span>
+<span class="normal">5770</span>
+<span class="normal">5771</span>
+<span class="normal">5772</span>
+<span class="normal">5773</span>
+<span class="normal">5774</span>
+<span class="normal">5775</span>
+<span class="normal">5776</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_importance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate variable importance scores.</span>
 
 <span class="sd">    Importance is computed as the normalized sensitivity of each parameter</span>
@@ -15415,14 +15429,7 @@ re-attached) or results.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4924</span>
-<span class="normal">4925</span>
-<span class="normal">4926</span>
-<span class="normal">4927</span>
-<span class="normal">4928</span>
-<span class="normal">4929</span>
-<span class="normal">4930</span>
-<span class="normal">4931</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4931</span>
 <span class="normal">4932</span>
 <span class="normal">4933</span>
 <span class="normal">4934</span>
@@ -15460,7 +15467,14 @@ re-attached) or results.</p>
 <span class="normal">4966</span>
 <span class="normal">4967</span>
 <span class="normal">4968</span>
-<span class="normal">4969</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">4969</span>
+<span class="normal">4970</span>
+<span class="normal">4971</span>
+<span class="normal">4972</span>
+<span class="normal">4973</span>
+<span class="normal">4974</span>
+<span class="normal">4975</span>
+<span class="normal">4976</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_experiment</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SpotOptim&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load an experiment configuration from a pickle file.</span>
 
@@ -15632,14 +15646,7 @@ will have both configuration and all optimization results.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4971</span>
-<span class="normal">4972</span>
-<span class="normal">4973</span>
-<span class="normal">4974</span>
-<span class="normal">4975</span>
-<span class="normal">4976</span>
-<span class="normal">4977</span>
-<span class="normal">4978</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4978</span>
 <span class="normal">4979</span>
 <span class="normal">4980</span>
 <span class="normal">4981</span>
@@ -15681,7 +15688,14 @@ will have both configuration and all optimization results.</p>
 <span class="normal">5017</span>
 <span class="normal">5018</span>
 <span class="normal">5019</span>
-<span class="normal">5020</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">5020</span>
+<span class="normal">5021</span>
+<span class="normal">5022</span>
+<span class="normal">5023</span>
+<span class="normal">5024</span>
+<span class="normal">5025</span>
+<span class="normal">5026</span>
+<span class="normal">5027</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_result</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SpotOptim&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load complete optimization results from a pickle file.</span>
 
@@ -15984,14 +15998,7 @@ If None, generates space-filling design. Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3366</span>
-<span class="normal">3367</span>
-<span class="normal">3368</span>
-<span class="normal">3369</span>
-<span class="normal">3370</span>
-<span class="normal">3371</span>
-<span class="normal">3372</span>
-<span class="normal">3373</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3373</span>
 <span class="normal">3374</span>
 <span class="normal">3375</span>
 <span class="normal">3376</span>
@@ -16134,7 +16141,14 @@ If None, generates space-filling design. Defaults to None.</p>
 <span class="normal">3513</span>
 <span class="normal">3514</span>
 <span class="normal">3515</span>
-<span class="normal">3516</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizeResult</span><span class="p">:</span>
+<span class="normal">3516</span>
+<span class="normal">3517</span>
+<span class="normal">3518</span>
+<span class="normal">3519</span>
+<span class="normal">3520</span>
+<span class="normal">3521</span>
+<span class="normal">3522</span>
+<span class="normal">3523</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizeResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the optimization process.</span>
 
 <span class="sd">    The optimization terminates when either:</span>
@@ -16525,14 +16539,7 @@ Defaults to (12, 10).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3791</span>
-<span class="normal">3792</span>
-<span class="normal">3793</span>
-<span class="normal">3794</span>
-<span class="normal">3795</span>
-<span class="normal">3796</span>
-<span class="normal">3797</span>
-<span class="normal">3798</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3798</span>
 <span class="normal">3799</span>
 <span class="normal">3800</span>
 <span class="normal">3801</span>
@@ -16644,7 +16651,14 @@ Defaults to (12, 10).</p>
 <span class="normal">3907</span>
 <span class="normal">3908</span>
 <span class="normal">3909</span>
-<span class="normal">3910</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_important_hyperparameter_contour</span><span class="p">(</span>
+<span class="normal">3910</span>
+<span class="normal">3911</span>
+<span class="normal">3912</span>
+<span class="normal">3913</span>
+<span class="normal">3914</span>
+<span class="normal">3915</span>
+<span class="normal">3916</span>
+<span class="normal">3917</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_important_hyperparameter_contour</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">max_imp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -16967,14 +16981,7 @@ Defaults to False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4233</span>
-<span class="normal">4234</span>
-<span class="normal">4235</span>
-<span class="normal">4236</span>
-<span class="normal">4237</span>
-<span class="normal">4238</span>
-<span class="normal">4239</span>
-<span class="normal">4240</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4240</span>
 <span class="normal">4241</span>
 <span class="normal">4242</span>
 <span class="normal">4243</span>
@@ -17197,7 +17204,14 @@ Defaults to False.</p>
 <span class="normal">4460</span>
 <span class="normal">4461</span>
 <span class="normal">4462</span>
-<span class="normal">4463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_parameter_scatter</span><span class="p">(</span>
+<span class="normal">4463</span>
+<span class="normal">4464</span>
+<span class="normal">4465</span>
+<span class="normal">4466</span>
+<span class="normal">4467</span>
+<span class="normal">4468</span>
+<span class="normal">4469</span>
+<span class="normal">4470</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_parameter_scatter</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OptimizeResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -17553,14 +17567,7 @@ while sequential optimization iterations are connected with lines.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3666</span>
-<span class="normal">3667</span>
-<span class="normal">3668</span>
-<span class="normal">3669</span>
-<span class="normal">3670</span>
-<span class="normal">3671</span>
-<span class="normal">3672</span>
-<span class="normal">3673</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3673</span>
 <span class="normal">3674</span>
 <span class="normal">3675</span>
 <span class="normal">3676</span>
@@ -17676,7 +17683,14 @@ while sequential optimization iterations are connected with lines.</p>
 <span class="normal">3786</span>
 <span class="normal">3787</span>
 <span class="normal">3788</span>
-<span class="normal">3789</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_progress</span><span class="p">(</span>
+<span class="normal">3789</span>
+<span class="normal">3790</span>
+<span class="normal">3791</span>
+<span class="normal">3792</span>
+<span class="normal">3793</span>
+<span class="normal">3794</span>
+<span class="normal">3795</span>
+<span class="normal">3796</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_progress</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">log_y</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -18093,14 +18107,7 @@ Defaults to True.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3518</span>
-<span class="normal">3519</span>
-<span class="normal">3520</span>
-<span class="normal">3521</span>
-<span class="normal">3522</span>
-<span class="normal">3523</span>
-<span class="normal">3524</span>
-<span class="normal">3525</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3525</span>
 <span class="normal">3526</span>
 <span class="normal">3527</span>
 <span class="normal">3528</span>
@@ -18239,7 +18246,14 @@ Defaults to True.</p>
 <span class="normal">3661</span>
 <span class="normal">3662</span>
 <span class="normal">3663</span>
-<span class="normal">3664</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_surrogate</span><span class="p">(</span>
+<span class="normal">3664</span>
+<span class="normal">3665</span>
+<span class="normal">3666</span>
+<span class="normal">3667</span>
+<span class="normal">3668</span>
+<span class="normal">3669</span>
+<span class="normal">3670</span>
+<span class="normal">3671</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_surrogate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">i</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">j</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -18568,14 +18582,7 @@ Defaults to 4.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5022</span>
-<span class="normal">5023</span>
-<span class="normal">5024</span>
-<span class="normal">5025</span>
-<span class="normal">5026</span>
-<span class="normal">5027</span>
-<span class="normal">5028</span>
-<span class="normal">5029</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5029</span>
 <span class="normal">5030</span>
 <span class="normal">5031</span>
 <span class="normal">5032</span>
@@ -18731,7 +18738,14 @@ Defaults to 4.</p>
 <span class="normal">5182</span>
 <span class="normal">5183</span>
 <span class="normal">5184</span>
-<span class="normal">5185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_best</span><span class="p">(</span>
+<span class="normal">5185</span>
+<span class="normal">5186</span>
+<span class="normal">5187</span>
+<span class="normal">5188</span>
+<span class="normal">5189</span>
+<span class="normal">5190</span>
+<span class="normal">5191</span>
+<span class="normal">5192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_best</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OptimizeResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">transformations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -19055,14 +19069,7 @@ Defaults to 4.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5513</span>
-<span class="normal">5514</span>
-<span class="normal">5515</span>
-<span class="normal">5516</span>
-<span class="normal">5517</span>
-<span class="normal">5518</span>
-<span class="normal">5519</span>
-<span class="normal">5520</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5520</span>
 <span class="normal">5521</span>
 <span class="normal">5522</span>
 <span class="normal">5523</span>
@@ -19210,7 +19217,14 @@ Defaults to 4.</p>
 <span class="normal">5665</span>
 <span class="normal">5666</span>
 <span class="normal">5667</span>
-<span class="normal">5668</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_design_table</span><span class="p">(</span>
+<span class="normal">5668</span>
+<span class="normal">5669</span>
+<span class="normal">5670</span>
+<span class="normal">5671</span>
+<span class="normal">5672</span>
+<span class="normal">5673</span>
+<span class="normal">5674</span>
+<span class="normal">5675</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_design_table</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">tablefmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;github&quot;</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
@@ -19563,14 +19577,7 @@ Defaults to 0.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5304</span>
-<span class="normal">5305</span>
-<span class="normal">5306</span>
-<span class="normal">5307</span>
-<span class="normal">5308</span>
-<span class="normal">5309</span>
-<span class="normal">5310</span>
-<span class="normal">5311</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5311</span>
 <span class="normal">5312</span>
 <span class="normal">5313</span>
 <span class="normal">5314</span>
@@ -19770,7 +19777,14 @@ Defaults to 0.0.</p>
 <span class="normal">5508</span>
 <span class="normal">5509</span>
 <span class="normal">5510</span>
-<span class="normal">5511</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_results_table</span><span class="p">(</span>
+<span class="normal">5511</span>
+<span class="normal">5512</span>
+<span class="normal">5513</span>
+<span class="normal">5514</span>
+<span class="normal">5515</span>
+<span class="normal">5516</span>
+<span class="normal">5517</span>
+<span class="normal">5518</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_results_table</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">tablefmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;github&quot;</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
@@ -20345,14 +20359,7 @@ Defaults to &ldquo;all&rdquo;.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4713</span>
-<span class="normal">4714</span>
-<span class="normal">4715</span>
-<span class="normal">4716</span>
-<span class="normal">4717</span>
-<span class="normal">4718</span>
-<span class="normal">4719</span>
-<span class="normal">4720</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4720</span>
 <span class="normal">4721</span>
 <span class="normal">4722</span>
 <span class="normal">4723</span>
@@ -20442,7 +20449,14 @@ Defaults to &ldquo;all&rdquo;.</p>
 <span class="normal">4807</span>
 <span class="normal">4808</span>
 <span class="normal">4809</span>
-<span class="normal">4810</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_experiment</span><span class="p">(</span>
+<span class="normal">4810</span>
+<span class="normal">4811</span>
+<span class="normal">4812</span>
+<span class="normal">4813</span>
+<span class="normal">4814</span>
+<span class="normal">4815</span>
+<span class="normal">4816</span>
+<span class="normal">4817</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_experiment</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
@@ -20718,14 +20732,7 @@ file exists. Defaults to True.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4812</span>
-<span class="normal">4813</span>
-<span class="normal">4814</span>
-<span class="normal">4815</span>
-<span class="normal">4816</span>
-<span class="normal">4817</span>
-<span class="normal">4818</span>
-<span class="normal">4819</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4819</span>
 <span class="normal">4820</span>
 <span class="normal">4821</span>
 <span class="normal">4822</span>
@@ -20793,7 +20800,14 @@ file exists. Defaults to True.</p>
 <span class="normal">4884</span>
 <span class="normal">4885</span>
 <span class="normal">4886</span>
-<span class="normal">4887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span>
+<span class="normal">4887</span>
+<span class="normal">4888</span>
+<span class="normal">4889</span>
+<span class="normal">4890</span>
+<span class="normal">4891</span>
+<span class="normal">4892</span>
+<span class="normal">4893</span>
+<span class="normal">4894</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;result&quot;</span><span class="p">,</span>
@@ -20927,14 +20941,7 @@ Only meaningful after optimize() has been called with sufficient evaluations.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5187</span>
-<span class="normal">5188</span>
-<span class="normal">5189</span>
-<span class="normal">5190</span>
-<span class="normal">5191</span>
-<span class="normal">5192</span>
-<span class="normal">5193</span>
-<span class="normal">5194</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5194</span>
 <span class="normal">5195</span>
 <span class="normal">5196</span>
 <span class="normal">5197</span>
@@ -21042,7 +21049,14 @@ Only meaningful after optimize() has been called with sufficient evaluations.</p
 <span class="normal">5299</span>
 <span class="normal">5300</span>
 <span class="normal">5301</span>
-<span class="normal">5302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sensitivity_spearman</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">5302</span>
+<span class="normal">5303</span>
+<span class="normal">5304</span>
+<span class="normal">5305</span>
+<span class="normal">5306</span>
+<span class="normal">5307</span>
+<span class="normal">5308</span>
+<span class="normal">5309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sensitivity_spearman</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute and print Spearman correlation between parameters and objective values.</span>
 
 <span class="sd">    This method analyzes the sensitivity of the objective function to each</span>
