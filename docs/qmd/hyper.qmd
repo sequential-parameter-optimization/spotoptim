@@ -1,0 +1,166 @@
+---
+title: "SpotOptim Hyperparameter Interface Tutorial"
+format:
+  html:
+    code-fold: false
+jupyter: python3
+---
+
+# Introduction
+
+`SpotOptim` has introduced a new, modular set of tools for defining experiments, handling data, and managing hyperparameters. This tutorial walks you through these new components:
+
+1.  **`SpotDataSet`**: For unified data handling.
+2.  **`ParameterSet`**: For user-friendly hyperparameter definition.
+3.  **`ExperimentControl`**: For organizing experiment configuration.
+4.  **`TorchObjective`**: For seamless integration with PyTorch models.
+
+## 1. Data Handling with `SpotDataSet`
+
+The `SpotDataSet` class provides a unified interface for your data, whether it's in numpy arrays or PyTorch Datasets.
+
+### From Numpy Arrays
+
+```{python}
+import numpy as np
+from spotoptim.core.data import SpotDataFromArray
+
+# Create dummy data
+X = np.random.randn(100, 5).astype(np.float32)
+y = np.random.randn(100, 1).astype(np.float32)
+
+# Create dataset (automatically handles train/val split if provided)
+data = SpotDataFromArray(x_train=X, y_train=y)
+
+print(f"Input Dim: {data.input_dim}, Output Dim: {data.output_dim}")
+```
+
+### From PyTorch Datasets
+
+```{python}
+import torch
+from torch.utils.data import TensorDataset
+from spotoptim.core.data import SpotDataFromTorchDataset
+
+# Create PyTorch datasets
+train_ds = TensorDataset(torch.randn(100, 5), torch.randn(100, 1))
+val_ds = TensorDataset(torch.randn(20, 5), torch.randn(20, 1))
+
+data = SpotDataFromTorchDataset(
+    train_dataset=train_ds,
+    val_dataset=val_ds,
+    input_dim=5,
+    output_dim=1
+)
+```
+
+## 2. Defining Hyperparameters with `ParameterSet`
+
+The `ParameterSet` class replaces complex dictionary configurations with a fluent, readable API.
+
+```{python}
+from spotoptim.hyperparameters.parameters import ParameterSet
+
+params = ParameterSet() \
+    .add_float("lr", 1e-4, 1e-1, log=True) \
+    .add_int("num_layers", 1, 3) \
+    .add_categorical("optimizer", ["Adam", "SGD"]) \
+    .add_categorical("activation", ["ReLU", "Tanh"])
+
+print("Variable Names:", params.var_name)
+print("Variable Types:", params.var_type)
+print("Bounds:", params.bounds)
+```
+
+## 3. Configuring Experiments with `ExperimentControl`
+
+`ExperimentControl` brings everything together. It replaces the old `fun_control` dictionary.
+
+```{python}
+from spotoptim.core.experiment import ExperimentControl
+from spotoptim.nn.linear_regressor import LinearRegressor
+
+exp = ExperimentControl(
+    dataset=data,
+    model_class=LinearRegressor,
+    hyperparameters=params,
+    epochs=10,
+    batch_size=32,
+    metrics=["mse"]
+)
+```
+
+## 4. Running Optimization with `TorchObjective`
+
+The `TorchObjective` class automatically handles model instantiation, training, and evaluation.
+
+```{python}
+from spotoptim.function.torch_objective import TorchObjective
+from spotoptim.SpotOptim import SpotOptim
+
+# Create the objective function
+objective = TorchObjective(exp)
+
+# Initialize SpotOptim
+optimizer = SpotOptim(
+    fun=objective,
+    bounds=params.bounds,
+    var_type=params.var_type,
+    var_name=params.var_name,
+    max_iter=20,
+    n_initial=5
+)
+
+# Run optimization
+result = optimizer.optimize()
+
+print("Best Parameters:", optimizer.best_x_)
+print("Best Loss:", optimizer.best_y_)
+```
+
+## Complete Example
+
+Here is a complete, runnable example combining all components.
+
+```{python}
+import numpy as np
+from spotoptim.core.data import SpotDataFromArray
+from spotoptim.core.experiment import ExperimentControl
+from spotoptim.hyperparameters.parameters import ParameterSet
+from spotoptim.nn.linear_regressor import LinearRegressor
+from spotoptim.function.torch_objective import TorchObjective
+from spotoptim.SpotOptim import SpotOptim
+
+# 1. Data
+X = np.random.randn(100, 10).astype(np.float32)
+y = 3*X[:, 0:1] + np.random.randn(100, 1).astype(np.float32) * 0.1
+data = SpotDataFromArray(X, y)
+
+# 2. Hyperparameters
+params = ParameterSet() \
+    .add_float("lr", 1e-4, 1e-1, log=True) \
+    .add_int("l1", 16, 64) \
+    .add_categorical("activation", ["ReLU", "Tanh"])
+
+# 3. Experiment
+exp = ExperimentControl(
+    dataset=data,
+    model_class=LinearRegressor,
+    hyperparameters=params,
+    epochs=5
+)
+
+# 4. Optimization
+objective = TorchObjective(exp)
+optimizer = SpotOptim(
+    fun=objective,
+    bounds=params.bounds,
+    var_type=params.var_type,
+    var_name=params.var_name,
+    max_iter=10,
+    n_initial=3
+)
+
+optimizer.optimize()
+print(f"Best Config: {objective._get_hyperparameters(optimizer.best_x_)}")
+```

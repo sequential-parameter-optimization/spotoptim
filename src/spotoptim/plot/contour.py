@@ -380,9 +380,12 @@ def mo_generate_plot_grid(variables, resolutions, functions) -> pd.DataFrame:
     # Create a DataFrame for the grid
     plot_grid = pd.DataFrame(grid, columns=variables.keys())
 
+    input_cols = list(variables.keys())
     # Apply each function to the grid
     for func_name, func in functions.items():
-        plot_grid[func_name] = plot_grid.apply(lambda row: func(row.values), axis=1)
+        plot_grid[func_name] = plot_grid[input_cols].apply(
+            lambda row: func(row.values), axis=1
+        )
 
     return plot_grid
 

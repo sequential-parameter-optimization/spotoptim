@@ -2,7 +2,10 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from spotoptim.hyperparameters.parameters import ParameterSet
 
 
 class LinearRegressor(nn.Module):
@@ -465,3 +468,87 @@ class LinearRegressor(nn.Module):
                 f"Optimizer '{optimizer_name}' not found in torch.optim. "
                 f"Please use a valid PyTorch optimizer name like 'Adam', 'SGD', 'AdamW', etc."
             )
+
+    @staticmethod
+    def get_default_parameters() -> "ParameterSet":
+        """
+        Returns a ParameterSet populated with default hyperparameters for this model.
+        Users can modify bounds and defaults as needed.
+
+        Returns:
+            ParameterSet: Default hyperparameters.
+
+        Examples:
+            >>> params = LinearRegressor.get_default_parameters()
+            >>> print(params)
+            ParameterSet(
+                l1=Parameter(
+                    name='l1',
+                    var_name='l1',
+                    bounds=Bounds(low=16, high=128),
+                    default=64,
+                    log=False,
+                    type='int'
+                ),
+                num_hidden_layers=Parameter(
+                    name='num_hidden_layers',
+                    var_name='num_hidden_layers',
+                    bounds=Bounds(low=0, high=3),
+                    default=0,
+                    log=False,
+                    type='int'
+                ),
+                activation=Parameter(
+                    name='activation',
+                    var_name='activation',
+                    bounds=Bounds(low='ReLU', high='Tanh'),
+                    default='ReLU',
+                    log=False,
+                    type='str'
+                ),
+                lr=Parameter(
+                    name='lr',
+                    var_name='lr',
+                    bounds=Bounds(low=1e-4, high=1e-1),
+                    default=1e-3,
+                    log=True,
+                    type='float'
+                ),
+                optimizer=Parameter(
+                    name='optimizer',
+                    var_name='optimizer',
+                    bounds=Bounds(low='Adam', high='SGD'),
+                    default='Adam',
+                    log=False,
+                    type='str'
+                )
+            )
+        """
+        from spotoptim.hyperparameters.parameters import ParameterSet
+
+        params = ParameterSet()
+
+        # l1: neurons in hidden layer
+        params.add_int(name="l1", low=16, high=128, default=64)
+
+        # num_hidden_layers: depth
+        params.add_int(name="num_hidden_layers", low=0, high=3, default=0)
+
+        # activation: function name
+        params.add_categorical(
+            name="activation",
+            choices=["ReLU", "Tanh", "Sigmoid", "LeakyReLU", "ELU"],
+            default="ReLU",
+        )
+
+        # lr: Unified learning rate
+        params.add_float(name="lr", low=1e-4, high=10.0, default=1.0, log=True)
+
+        # optimizer
+        params.add_categorical(
+            name="optimizer",
+            choices=["Adam", "SGD", "RMSprop", "AdamW"],
+            default="Adam",
+        )
+
+        return params
