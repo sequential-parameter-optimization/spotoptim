@@ -542,7 +542,7 @@ class LinearRegressor(nn.Module):
         )
 
         # lr: Unified learning rate
-        params.add_float(name="lr", low=1e-4, high=10.0, default=1.0, log=True)
+        params.add_float(name="lr", low=1e-4, high=10.0, default=1.0, transform="log")
 
         # optimizer
         params.add_categorical(

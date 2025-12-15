@@ -6,7 +6,7 @@ from spotoptim.hyperparameters.parameters import ParameterSet
 
 def test_parameter_set():
     p = ParameterSet()
-    p.add_float("lr", 1e-4, 1e-1, log=True)
+    p.add_float("lr", 1e-4, 1e-1, transform="log")
     p.add_int("layers", 1, 3)
     p.add_categorical("optimizer", ["Adam", "SGD"])
     

@@ -638,6 +638,7 @@ class SpotOptim(BaseEstimator):
             x: Value to transform
             trans: Transformation name. Can be one of 'id', 'log10', 'log', 'ln', 'sqrt',
                    'exp', 'square', 'cube', 'inv', 'reciprocal', or None.
+                   Also supports dynamic strings like 'log(x)', 'sqrt(x)', 'pow(x, p)'.
 
         Returns:
             Transformed value
@@ -651,20 +652,17 @@ class SpotOptim(BaseEstimator):
             >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
             >>> spot.transform_value(10, 'log10')
             1.0
-            >>> spot.transform_value(100, 'log')
+            >>> spot.transform_value(100, 'log(x)')
             4.605170185988092
-            >>> spot.transform_value(4, 'sqrt')
-            2.0
-            >>> spot.transform_value(2, 'exp')
-            7.38905609893065
-            >>> spot.transform_value(3, 'square')
-            9
         """
         # Ensure x is a float
         if not isinstance(x, float):
-            raise TypeError(
-                f"transform_value expects a float, got {type(x).__name__} (value: {x})"
-            )
+            try:
+                x = float(x)
+            except (ValueError, TypeError):
+                raise TypeError(
+                    f"transform_value expects a float, got {type(x).__name__} (value: {x})"
+                )
         if trans is None or trans == "id":
             return x
         elif trans == "log10":
@@ -681,35 +679,45 @@ class SpotOptim(BaseEstimator):
             return x**3
         elif trans == "inv" or trans == "reciprocal":
             return 1.0 / x
-        else:
-            raise ValueError(f"Unknown transformation: {trans}")
+
+        # Dynamic Transformations
+        import re
+
+        if trans == "log(x)":
+            return np.log(x)
+        if trans == "sqrt(x)":
+            return np.sqrt(x)
+
+        m = re.match(r"pow\(x,\s*([0-9.]+)\)", trans)
+        if m:
+            p = float(m.group(1))
+            return x**p
+
+        m = re.match(r"log\(x,\s*([0-9.]+)\)", trans)
+        if m:
+            base = float(m.group(1))
+            return np.log(x) / np.log(base)
+
+        raise ValueError(f"Unknown transformation: {trans}")
 
     def inverse_transform_value(self, x: float, trans: Optional[str]) -> float:
         """Apply inverse transformation to a single float value.
 
         Args:
             x: Transformed value
-            trans: Transformation name. Can be one of 'id', 'log10', 'log', 'ln', 'sqrt',
-                   'exp', 'square', 'cube', 'inv', 'reciprocal', or None.
+            trans: Transformation name.
 
         Returns:
             Original value
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
-            >>> spot.inverse_transform_value(1.0, 'log10')
-            10.0
-            >>> spot.inverse_transform_value(4.605170185988092, 'log')
-            100.0
-            >>> spot.inverse_transform_value(2.0, 'sqrt')
-            4.0
         """
         # Ensure x is a float
         if not isinstance(x, float):
-            raise TypeError(
-                f"transform_value expects a float, got {type(x).__name__} (value: {x})"
-            )
+            try:
+                x = float(x)
+            except (ValueError, TypeError):
+                raise TypeError(
+                    f"transform_value expects a float, got {type(x).__name__} (value: {x})"
+                )
         if trans is None or trans == "id":
             return x
         elif trans == "log10":
@@ -726,8 +734,26 @@ class SpotOptim(BaseEstimator):
             return np.power(x, 1.0 / 3.0)
         elif trans == "inv" or trans == "reciprocal":
             return 1.0 / x
-        else:
-            raise ValueError(f"Unknown transformation: {trans}")
+
+        # Dynamic Transformations (Inverses)
+        import re
+
+        if trans == "log(x)":
+            return np.exp(x)
+        if trans == "sqrt(x)":
+            return x**2
+
+        m = re.match(r"pow\(x,\s*([0-9.]+)\)", trans)
+        if m:
+            p = float(m.group(1))
+            return x ** (1.0 / p)
+
+        m = re.match(r"log\(x,\s*([0-9.]+)\)", trans)
+        if m:
+            base = float(m.group(1))
+            return base**x
+
+        raise ValueError(f"Unknown transformation: {trans}")
 
     def _transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from original to internal scale.

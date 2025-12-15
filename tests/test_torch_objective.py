@@ -15,7 +15,7 @@ def test_torch_objective_linear_regressor():
     
     # Setup hyperparameters
     params = ParameterSet()
-    params.add_float("lr", 1e-3, 1e-1, log=True)
+    params.add_float("lr", 1e-3, 1e-1, transform="log")
     params.add_int("l1", 16, 32)
     params.add_int("num_hidden_layers", 1, 2)
     params.add_categorical("activation", ["ReLU", "Tanh"])

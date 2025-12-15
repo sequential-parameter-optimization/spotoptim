@@ -39,7 +39,7 @@ data = SpotDataFromArray(x_train=X, y_train=y)
 print(f"Data shape: {X.shape} -> {y.shape}")
 ```
 
-## 2. Define Hyperparameters
+### Define Hyperparameters
 
 The `ParameterSet` class allows for a fluid definition of the search space.
 

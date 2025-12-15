@@ -145,31 +145,34 @@ class TorchObjective:
         train_loader: DataLoader,
         val_loader: Optional[DataLoader],
         params: Dict[str, Any],
-    ) -> float:
+    ) -> Dict[str, float]:
         """
-        Trains the model and returns the validation metric (loss).
+        Trains the model and returns a dictionary of metrics.
+        Keys matches experiment.metrics if possible.
         """
         # Optimizer
-        # Check if model has get_optimizer method (like LinearRegressor)
-        lr = params.get("lr", 1e-3)  # Default LR if not in params
+        lr = params.get("lr", 1e-3)
         optimizer_name = params.get("optimizer", "Adam")
 
         if hasattr(model, "get_optimizer"):
             optimizer = model.get_optimizer(optimizer_name, lr=lr)
         else:
-            # Fallback
             opt_class = getattr(optim, optimizer_name, optim.Adam)
             optimizer = opt_class(model.parameters(), lr=lr)
 
         criterion = self.experiment.loss_function or nn.MSELoss()
 
-        epochs = self.experiment.epochs
-        # Allow params to override epochs?
-        epochs = params.get("epochs", epochs)
+        base_epochs = self.experiment.epochs
+        epochs = int(params.get("epochs", base_epochs))
 
         model.to(self.device)
 
         min_val_loss = float("inf")
+        final_train_loss = 0.0
+
+        # Track actual epochs trained (if early stopping implementation added later)
+        # For now, we train for exact 'epochs'
+        trained_epochs = epochs
 
         for epoch in range(epochs):
             model.train()
@@ -186,6 +189,8 @@ class TorchObjective:
 
                 train_loss += loss.item()
                 steps += 1
+
+            final_train_loss = train_loss / (steps if steps > 0 else 1)
 
             # Validation
             if val_loader:
@@ -207,17 +212,26 @@ class TorchObjective:
                     if val_loss < min_val_loss:
                         min_val_loss = val_loss
             else:
-                # If no validation set, use training loss? Or return 0?
-                # Usually we want to minimize something.
-                pass
+                # If no validation set, min_val_loss tracks train loss
+                if final_train_loss < min_val_loss:
+                    min_val_loss = final_train_loss
 
-        return min_val_loss if val_loader else train_loss / (steps if steps > 0 else 1)
+        # Collect metrics
+        metrics_out = {}
+
+        # Default MSE / val_loss
+        metrics_out["val_loss"] = min_val_loss
+        metrics_out["train_loss"] = final_train_loss
+        metrics_out["mse"] = min_val_loss  # Alias
+        metrics_out["epochs"] = float(trained_epochs)
+
+        return metrics_out
 
     def __call__(self, X: np.ndarray) -> np.ndarray:
         """
         The function called by SpotOptim.
         X is shape (n_samples, n_params) or (n_params,).
-        Returns y shape (n_samples, 1).
+        Returns y shape (n_samples, n_metrics).
         """
         X = np.atleast_2d(X)
         n_samples = X.shape[0]
@@ -225,18 +239,21 @@ class TorchObjective:
 
         train_loader, val_loader = self._prepare_data()
 
+        # metrics to return
+        requested_metrics = (
+            self.experiment.metrics if self.experiment.metrics else ["val_loss"]
+        )
+
         for i in range(n_samples):
             # Decode hyperparameters
             params = self._get_hyperparameters(X[i])
 
             # Instantiate model
-            # We assume model_class takes input_dim/output_dim + kwargs matching params
             dataset = self.experiment.dataset
             model_kwargs = {
                 "input_dim": dataset.input_dim,
                 "output_dim": dataset.output_dim,
             }
-            # Add hyperparams to kwargs
             model_kwargs.update(params)
 
             # Filter kwargs based on model signature
@@ -253,17 +270,26 @@ class TorchObjective:
                 }
 
             try:
-                # Try passing filtered params.
                 model = self.experiment.model_class(**filtered_kwargs)
             except TypeError as e:
-                # If unexpected argument, we might want to filter or warn.
-                # For now, let's assume valid setup.
-                # Re-raise with context
                 raise TypeError(
                     f"Failed to instantiate model {self.experiment.model_class.__name__}: {e}"
                 )
 
-            loss = self.train_model(model, train_loader, val_loader, params)
-            results.append(loss)
+            metrics_out = self.train_model(model, train_loader, val_loader, params)
 
-        return np.array(results).reshape(-1, 1)
+            # Extract requested metrics
+            row = []
+            for m in requested_metrics:
+                # Fuzzy match for common names
+                if m.lower() in ["val_loss", "mse", "loss"]:
+                    row.append(metrics_out.get("val_loss", float("inf")))
+                elif m.lower() in ["epochs", "epoch"]:
+                    row.append(metrics_out.get("epochs", 0.0))
+                else:
+                    # Generic lookup
+                    row.append(metrics_out.get(m, float("nan")))
+
+            results.append(row)
+
+        return np.array(results)

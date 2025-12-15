@@ -20,7 +20,7 @@ def demo_optimization():
     # 2. Define Hyperparameters (User Friendly API)
     print("2. Defining Hyperparameters...")
     params = ParameterSet() \
-        .add_float("lr", 1e-4, 1e-1, log=True) \
+        .add_float("lr", 1e-4, 1e-1, transform="log") \
         .add_int("l1", 16, 64) \
         .add_int("num_hidden_layers", 0, 2) \
         .add_categorical("activation", ["ReLU", "Tanh"]) \

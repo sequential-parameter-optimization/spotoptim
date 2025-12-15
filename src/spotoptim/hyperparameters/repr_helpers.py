@@ -1,4 +1,4 @@
-from typing import Any, Union, List
+from typing import Any, Union, List, Optional
 from dataclasses import dataclass
 
 
@@ -17,7 +17,7 @@ class Parameter:
     var_name: str
     bounds: Union[Bounds, List[str], tuple]
     default: Any
-    log: bool
+    transform: Optional[str]
     type: str
 
     def __repr__(self):
@@ -27,7 +27,7 @@ class Parameter:
             f"        var_name={self.var_name!r},\n"
             f"        bounds={self.bounds!r},\n"
             f"        default={self.default!r},\n"
-            f"        log={self.log!r},\n"
+            f"        transform={self.transform!r},\n"
             f"        type={self.type!r}\n"
             f"    )"
         )

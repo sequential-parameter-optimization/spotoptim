@@ -13,6 +13,7 @@ class ParameterSet:
         self._var_types = []
         self._bounds = []
         self._defaults = {}
+        self._var_trans = []
 
     def add_float(
         self,
@@ -20,9 +21,17 @@ class ParameterSet:
         low: float,
         high: float,
         default: Optional[float] = None,
-        log: bool = False,
+        transform: Optional[str] = None,
     ):
-        """Add a float hyperparameter."""
+        """Add a float hyperparameter.
+
+        Args:
+            name: Name of the parameter.
+            low: Lower bound.
+            high: Upper bound.
+            default: Default value.
+            transform: Transformation string, e.g., "log", "log(x)", "pow(x, 2)".
+        """
         self._parameters.append(
             {
                 "name": name,
@@ -30,12 +39,13 @@ class ParameterSet:
                 "low": low,
                 "high": high,
                 "default": default,
-                "log": log,
+                "transform": transform,
             }
         )
         self._var_names.append(name)
         self._var_types.append("float")
         self._bounds.append((low, high))
+        self._var_trans.append(transform)
         if default is not None:
             self._defaults[name] = default
         return self
@@ -48,6 +58,7 @@ class ParameterSet:
         self._var_names.append(name)
         self._var_types.append("int")
         self._bounds.append((low, high))
+        self._var_trans.append(None)
         if default is not None:
             self._defaults[name] = default
         return self
@@ -64,6 +75,7 @@ class ParameterSet:
         # For SpotOptim, categorical bounds are the list of choices (for factor detection)
         # SpotOptim checks if bound is tuple/list of strings.
         self._bounds.append(choices)
+        self._var_trans.append(None)
         if default is not None:
             self._defaults[name] = default
         return self
@@ -84,6 +96,11 @@ class ParameterSet:
     def var_name(self) -> List[str]:
         """Returns variable names."""
         return self._var_names
+
+    @property
+    def var_trans(self) -> List[Optional[str]]:
+        """Returns variable transformations."""
+        return self._var_trans
 
     def sample_default(self) -> Dict[str, Any]:
         """Returns the default configuration."""
@@ -111,7 +128,7 @@ class ParameterSet:
                 var_name=name,
                 bounds=bounds,
                 default=p.get("default"),
-                log=p.get("log", False),
+                transform=p.get("transform"),
                 type=p["type"],
             )
 
