@@ -29,7 +29,8 @@ def jd(X: np.ndarray, p: float = 1.0) -> Tuple[np.ndarray, np.ndarray]:
               of each distance in distinct_d.
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -101,7 +102,8 @@ def mm(X1: np.ndarray, X2: np.ndarray, p: Optional[float] = 1.0) -> int:
             - 2 if X2 is more space-filling
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -193,7 +195,8 @@ def mmphi(
             space-filling plan according to the Morris-Mitchell criterion.
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -258,7 +261,8 @@ def mmsort(X3D: np.ndarray, p: Optional[float] = 1.0) -> np.ndarray:
             returned array corresponds to the most space-filling plan.
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -328,7 +332,8 @@ def perturb(X: np.ndarray, PertNum: Optional[int] = 1) -> np.ndarray:
             one or more random column swaps executed.
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -420,7 +425,8 @@ def mmlhs(
             after all iterations, of the same shape as X_start.
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -520,7 +526,8 @@ def phisort(
             to the numerically lowest mmphi value.
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -589,7 +596,8 @@ def subset(X: np.ndarray, ns: int) -> Tuple[np.ndarray, np.ndarray]:
             - Xr is the remainder (X \\ Xs).
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code
+        under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
@@ -896,7 +904,8 @@ def mm_improvement(
 ) -> float:
     """
     Calculates the Morris-Mitchell improvement for a candidate point x.
-    This is the exponential of the difference between the Morris-Mitchell intensive metric of the base design and the Morris-Mitchell intensive metric of the new design.
+    This is the exponential of the difference between the Morris-Mitchell intensive metric of the base design
+    and the Morris-Mitchell intensive metric of the new design.
 
     Args:
         x (np.ndarray): Candidate point (1D array).

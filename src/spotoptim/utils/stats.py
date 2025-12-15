@@ -126,7 +126,8 @@ def get_combinations(ind_list: list, type="indices") -> list:
         type (str): The type of output, either 'values' or 'indices'. Default is 'indices'.
 
     Returns:
-        list: A list of tuples, where each tuple contains a combination of two values. The order of the values within a tuple is not important, and each combination appears only once.
+        list: A list of tuples, where each tuple contains a combination of two values.
+            The order of the values within a tuple is not important, and each combination appears only once.
 
     Examples:
         >>> from spotoptim.utils import get_combinations

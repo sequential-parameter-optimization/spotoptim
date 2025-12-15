@@ -71,10 +71,12 @@ def fun_myer16a(X, fun_control=None) -> np.ndarray:
     Compute both conversion and activity predictions for each row in the input array.
 
     Notes:
-        Implements a response surface experiment described by Myers, Montgomery, and Anderson-Cook (2016). The function computes two objectives: conversion and activity.
+        Implements a response surface experiment described by Myers, Montgomery, and Anderson-Cook (2016).
+        The function computes two objectives: conversion and activity.
 
     References:
-        - Myers, R. H., Montgomery, D. C., and Anderson-Cook, C. M. Response surface methodology: process and product optimization using designed experiments. John Wiley & Sons, 2016.
+        - Myers, R. H., Montgomery, D. C., and Anderson-Cook, C. M. Response surface methodology:
+          process and product optimization using designed experiments. John Wiley & Sons, 2016.
         - Kuhn, M. desirability: Function optimization and ranking via desirability functions. Tech. rep., 9 2016.
 
     Args:

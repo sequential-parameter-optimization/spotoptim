@@ -17,8 +17,10 @@ def mo_mm_desirability_function(
 ) -> Tuple[float, List[float]]:
     """
     Calculates the negative combined desirability for a candidate point x. Can be used by the mo_mm_desirability_optimizer.
-    For each objective, a model is used to predict the objective value at x. If mm_objective is True, the Morris-Mitchell improvement is also calculated and included as an additional objective.
-    The combined desirability, which uses the predictions from the models and optionally the Morris-Mitchell improvement, is then computed using the provided DOverall object.
+    For each objective, a model is used to predict the objective value at x.
+    If mm_objective is True, the Morris-Mitchell improvement is also calculated and included as an additional objective.
+    The combined desirability, which uses the predictions from the models and optionally the Morris-Mitchell improvement,
+    is then computed using the provided DOverall object.
 
     Args:
         x (np.ndarray):

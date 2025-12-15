@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import gridspec
 
 
 def simple_contour(
@@ -412,7 +411,7 @@ def contourf_plot(
 ) -> None:
     """
     Creates contour plots (single or faceted) using matplotlib.
-    
+
     Args:
         data (pd.DataFrame): Data for plotting.
         x_col (str): Column name for x-axis.
@@ -488,7 +487,7 @@ def contourf_plot(
                         marker=highlight_marker,
                         s=highlight_size,
                         zorder=10,
-                        label="Best"
+                        label="Best",
                     )
 
             # Set labels and title
@@ -534,14 +533,14 @@ def contourf_plot(
 
         # Highlight point
         if highlight_point is not None:
-             ax.scatter(
+            ax.scatter(
                 highlight_point[x_col],
                 highlight_point[y_col],
                 color=highlight_color,
                 marker=highlight_marker,
                 s=highlight_size,
                 zorder=10,
-                label="Best"
+                label="Best",
             )
 
         # Set labels and title
