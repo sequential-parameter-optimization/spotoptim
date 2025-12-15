@@ -16,7 +16,7 @@
         <link rel="prev" href="../../..">
       
       
-        <link rel="next" href="../data/diabetes/">
+        <link rel="next" href="../data/base/">
       
       
         
@@ -366,6 +366,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
     
     
@@ -593,6 +599,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#spotoptim.SpotOptim.SpotOptim.plot_importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plot_importance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#spotoptim.SpotOptim.SpotOptim.plot_important_hyperparameter_contour" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -652,6 +669,17 @@
     <span class="md-ellipsis">
       
         print_design_table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spotoptim.SpotOptim.SpotOptim.print_results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        print_results
       
     </span>
   </a>
@@ -793,6 +821,8 @@
       
         
       
+        
+      
     
     
     
@@ -808,7 +838,7 @@
   
   
   
-    <a href="../data/diabetes/" class="md-nav__link">
+    <a href="../data/base/" class="md-nav__link">
       
   
   
@@ -903,6 +933,8 @@
       
         
       
+        
+      
     
     
     
@@ -918,7 +950,11 @@
   
   
   
-    <a href="../function/mo/" class="md-nav__link">
+    
+  
+  
+  
+    <a href="../function/mo/myer/" class="md-nav__link">
       
   
   
@@ -926,6 +962,61 @@
     
   
     function
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../hyperdict/light_hyper_dict/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hyperdict
   
 
     
@@ -1136,6 +1227,61 @@
   
   
   
+    <a href="../plot/contour/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    plot
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
     <a href="../sampling/lhs/" class="md-nav__link">
       
   
@@ -1232,6 +1378,65 @@
   
     
     
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../tests/test_mohyperlight/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    tests
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
       
         
       
@@ -1553,6 +1758,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#spotoptim.SpotOptim.SpotOptim.plot_importance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plot_importance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#spotoptim.SpotOptim.SpotOptim.plot_important_hyperparameter_contour" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1612,6 +1828,17 @@
     <span class="md-ellipsis">
       
         print_design_table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spotoptim.SpotOptim.SpotOptim.print_results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        print_results
       
     </span>
   </a>
@@ -8563,7 +8790,50 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="normal">5806</span>
 <span class="normal">5807</span>
 <span class="normal">5808</span>
-<span class="normal">5809</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SpotOptim</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="normal">5809</span>
+<span class="normal">5810</span>
+<span class="normal">5811</span>
+<span class="normal">5812</span>
+<span class="normal">5813</span>
+<span class="normal">5814</span>
+<span class="normal">5815</span>
+<span class="normal">5816</span>
+<span class="normal">5817</span>
+<span class="normal">5818</span>
+<span class="normal">5819</span>
+<span class="normal">5820</span>
+<span class="normal">5821</span>
+<span class="normal">5822</span>
+<span class="normal">5823</span>
+<span class="normal">5824</span>
+<span class="normal">5825</span>
+<span class="normal">5826</span>
+<span class="normal">5827</span>
+<span class="normal">5828</span>
+<span class="normal">5829</span>
+<span class="normal">5830</span>
+<span class="normal">5831</span>
+<span class="normal">5832</span>
+<span class="normal">5833</span>
+<span class="normal">5834</span>
+<span class="normal">5835</span>
+<span class="normal">5836</span>
+<span class="normal">5837</span>
+<span class="normal">5838</span>
+<span class="normal">5839</span>
+<span class="normal">5840</span>
+<span class="normal">5841</span>
+<span class="normal">5842</span>
+<span class="normal">5843</span>
+<span class="normal">5844</span>
+<span class="normal">5845</span>
+<span class="normal">5846</span>
+<span class="normal">5847</span>
+<span class="normal">5848</span>
+<span class="normal">5849</span>
+<span class="normal">5850</span>
+<span class="normal">5851</span>
+<span class="normal">5852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SpotOptim</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SPOT optimizer compatible with scipy.optimize interface.</span>
 
 <span class="sd">    Args:</span>
@@ -14354,6 +14624,49 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">stars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">stars</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_importance</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot variable importance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            threshold (float): Minimum importance percentage to include in plot.</span>
+<span class="sd">            figsize (tuple): Figure size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">importance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_importance</span><span class="p">()</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">all_var_name</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_name</span>
+            <span class="k">else</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">importance</span><span class="p">))]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Filter by threshold</span>
+        <span class="n">filtered_data</span> <span class="o">=</span> <span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">importance</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">]</span>
+        <span class="n">filtered_data</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filtered_data</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No variables met the importance threshold.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">names</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">filtered_data</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="n">y_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">y_pos</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">y_pos</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Importance (%)&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Variable Importance&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>  <span class="c1"># Best on top</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Alias for print_results_table for compatibility.</span>
+<span class="sd">        Prints the table and returns it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_results_table</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">table</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -16299,6 +16612,142 @@ If None, generates space-filling design. Defaults to None.</p>
         <span class="n">X</span><span class="o">=</span><span class="n">X_result</span><span class="p">,</span>
         <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_</span><span class="p">,</span>
     <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="spotoptim.SpotOptim.SpotOptim.plot_importance" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plot_importance</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span></code>
+
+<a href="#spotoptim.SpotOptim.SpotOptim.plot_importance" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Plot variable importance.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>threshold</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Minimum importance percentage to include in plot.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>figsize</code>
+            </td>
+            <td>
+                  <code><span title="tuple">tuple</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Figure size.</p>
+              </div>
+            </td>
+            <td>
+                  <code>(10, 6)</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5811</span>
+<span class="normal">5812</span>
+<span class="normal">5813</span>
+<span class="normal">5814</span>
+<span class="normal">5815</span>
+<span class="normal">5816</span>
+<span class="normal">5817</span>
+<span class="normal">5818</span>
+<span class="normal">5819</span>
+<span class="normal">5820</span>
+<span class="normal">5821</span>
+<span class="normal">5822</span>
+<span class="normal">5823</span>
+<span class="normal">5824</span>
+<span class="normal">5825</span>
+<span class="normal">5826</span>
+<span class="normal">5827</span>
+<span class="normal">5828</span>
+<span class="normal">5829</span>
+<span class="normal">5830</span>
+<span class="normal">5831</span>
+<span class="normal">5832</span>
+<span class="normal">5833</span>
+<span class="normal">5834</span>
+<span class="normal">5835</span>
+<span class="normal">5836</span>
+<span class="normal">5837</span>
+<span class="normal">5838</span>
+<span class="normal">5839</span>
+<span class="normal">5840</span>
+<span class="normal">5841</span>
+<span class="normal">5842</span>
+<span class="normal">5843</span>
+<span class="normal">5844</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_importance</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot variable importance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        threshold (float): Minimum importance percentage to include in plot.</span>
+<span class="sd">        figsize (tuple): Figure size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">importance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_importance</span><span class="p">()</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_var_name</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_var_name</span>
+        <span class="k">else</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;x</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">importance</span><span class="p">))]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Filter by threshold</span>
+    <span class="n">filtered_data</span> <span class="o">=</span> <span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">importance</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">]</span>
+    <span class="n">filtered_data</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filtered_data</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No variables met the importance threshold.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">names</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">filtered_data</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">y_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">y_pos</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">y_pos</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Importance (%)&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Variable Importance&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>  <span class="c1"># Best on top</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -19379,6 +19828,42 @@ Defaults to 4.</p>
         <span class="n">floatfmt</span><span class="o">=</span><span class="n">floatfmt</span><span class="p">,</span>
     <span class="p">)</span>
 
+    <span class="k">return</span> <span class="n">table</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="spotoptim.SpotOptim.SpotOptim.print_results" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">print_results</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+<a href="#spotoptim.SpotOptim.SpotOptim.print_results" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Alias for print_results_table for compatibility.
+Prints the table and returns it.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5846</span>
+<span class="normal">5847</span>
+<span class="normal">5848</span>
+<span class="normal">5849</span>
+<span class="normal">5850</span>
+<span class="normal">5851</span>
+<span class="normal">5852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Alias for print_results_table for compatibility.</span>
+<span class="sd">    Prints the table and returns it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_results_table</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">table</span>
 </code></pre></div></td></tr></table></div>
             </details>
