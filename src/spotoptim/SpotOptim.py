@@ -2324,7 +2324,16 @@ class SpotOptim(BaseEstimator):
             >>> y_clean[1] > 5.0  # Should be larger than max finite value in history
             True
         """
-        y = np.copy(y)
+
+        # Ensure y is a float array (maps non-convertible values like "error" or None to nan)
+        def _safe_float(v):
+            try:
+                return float(v)
+            except (ValueError, TypeError):
+                return np.nan
+
+        y_flat = np.array(y).flatten()
+        y = np.array([_safe_float(v) for v in y_flat])
         # Identify NaN and inf values in y
         mask = ~np.isfinite(y)
 
