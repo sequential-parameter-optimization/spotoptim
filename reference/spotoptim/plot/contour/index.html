@@ -372,6 +372,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -437,6 +441,61 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../core/data/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    core
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
     </li>
   
 
@@ -567,6 +626,8 @@
       
         
       
+        
+      
     
     
     
@@ -649,6 +710,61 @@
     
   
     hyperdict
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../hyperparameters/parameters/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hyperparameters
   
 
     
@@ -856,10 +972,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_9" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_11" checked>
         
           
-          <label class="md-nav__link" for="__nav_2_1_9" id="__nav_2_1_9_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_1_11" id="__nav_2_1_11_label" tabindex="0">
             
   
   
@@ -877,8 +993,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_9_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2_1_9">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_11_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1_11">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1979,10 +2095,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/plot/contour.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
@@ -2144,7 +2257,10 @@
 <span class="normal">552</span>
 <span class="normal">553</span>
 <span class="normal">554</span>
-<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">contourf_plot</span><span class="p">(</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">contourf_plot</span><span class="p">(</span>
     <span class="n">data</span><span class="p">,</span>
     <span class="n">x_col</span><span class="p">,</span>
     <span class="n">y_col</span><span class="p">,</span>
@@ -2446,7 +2562,10 @@
 <span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
-<span class="normal">387</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_generate_plot_grid</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">resolutions</span><span class="p">,</span> <span class="n">functions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mo_generate_plot_grid</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">resolutions</span><span class="p">,</span> <span class="n">functions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate a grid of input variables and apply objective functions.</span>
 
@@ -2469,9 +2588,12 @@
     <span class="c1"># Create a DataFrame for the grid</span>
     <span class="n">plot_grid</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">variables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
+    <span class="n">input_cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="c1"># Apply each function to the grid</span>
     <span class="k">for</span> <span class="n">func_name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">plot_grid</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">plot_grid</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">plot_grid</span><span class="p">[</span><span class="n">func_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">plot_grid</span><span class="p">[</span><span class="n">input_cols</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">plot_grid</span>
 </code></pre></div></td></tr></table></div>

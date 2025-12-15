@@ -16,7 +16,7 @@
         <link rel="prev" href="../../..">
       
       
-        <link rel="next" href="../data/base/">
+        <link rel="next" href="../core/data/">
       
       
         
@@ -345,6 +345,10 @@
   
     
     
+      
+        
+      
+        
       
         
       
@@ -838,6 +842,61 @@
   
   
   
+    <a href="../core/data/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    core
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
     <a href="../data/base/" class="md-nav__link">
       
   
@@ -935,6 +994,8 @@
       
         
       
+        
+      
     
     
     
@@ -1017,6 +1078,61 @@
     
   
     hyperdict
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../hyperparameters/parameters/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hyperparameters
   
 
     
@@ -8833,7 +8949,42 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="normal">5849</span>
 <span class="normal">5850</span>
 <span class="normal">5851</span>
-<span class="normal">5852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SpotOptim</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+<span class="normal">5852</span>
+<span class="normal">5853</span>
+<span class="normal">5854</span>
+<span class="normal">5855</span>
+<span class="normal">5856</span>
+<span class="normal">5857</span>
+<span class="normal">5858</span>
+<span class="normal">5859</span>
+<span class="normal">5860</span>
+<span class="normal">5861</span>
+<span class="normal">5862</span>
+<span class="normal">5863</span>
+<span class="normal">5864</span>
+<span class="normal">5865</span>
+<span class="normal">5866</span>
+<span class="normal">5867</span>
+<span class="normal">5868</span>
+<span class="normal">5869</span>
+<span class="normal">5870</span>
+<span class="normal">5871</span>
+<span class="normal">5872</span>
+<span class="normal">5873</span>
+<span class="normal">5874</span>
+<span class="normal">5875</span>
+<span class="normal">5876</span>
+<span class="normal">5877</span>
+<span class="normal">5878</span>
+<span class="normal">5879</span>
+<span class="normal">5880</span>
+<span class="normal">5881</span>
+<span class="normal">5882</span>
+<span class="normal">5883</span>
+<span class="normal">5884</span>
+<span class="normal">5885</span>
+<span class="normal">5886</span>
+<span class="normal">5887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SpotOptim</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;SPOT optimizer compatible with scipy.optimize interface.</span>
 
 <span class="sd">    Args:</span>
@@ -9455,6 +9606,7 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            x: Value to transform</span>
 <span class="sd">            trans: Transformation name. Can be one of &#39;id&#39;, &#39;log10&#39;, &#39;log&#39;, &#39;ln&#39;, &#39;sqrt&#39;,</span>
 <span class="sd">                   &#39;exp&#39;, &#39;square&#39;, &#39;cube&#39;, &#39;inv&#39;, &#39;reciprocal&#39;, or None.</span>
+<span class="sd">                   Also supports dynamic strings like &#39;log(x)&#39;, &#39;sqrt(x)&#39;, &#39;pow(x, p)&#39;.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Transformed value</span>
@@ -9468,20 +9620,17 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            &gt;&gt;&gt; spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])</span>
 <span class="sd">            &gt;&gt;&gt; spot.transform_value(10, &#39;log10&#39;)</span>
 <span class="sd">            1.0</span>
-<span class="sd">            &gt;&gt;&gt; spot.transform_value(100, &#39;log&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; spot.transform_value(100, &#39;log(x)&#39;)</span>
 <span class="sd">            4.605170185988092</span>
-<span class="sd">            &gt;&gt;&gt; spot.transform_value(4, &#39;sqrt&#39;)</span>
-<span class="sd">            2.0</span>
-<span class="sd">            &gt;&gt;&gt; spot.transform_value(2, &#39;exp&#39;)</span>
-<span class="sd">            7.38905609893065</span>
-<span class="sd">            &gt;&gt;&gt; spot.transform_value(3, &#39;square&#39;)</span>
-<span class="sd">            9</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Ensure x is a float</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
-            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">)</span>
         <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">x</span>
         <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log10&quot;</span><span class="p">:</span>
@@ -9498,35 +9647,45 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">3</span>
         <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;inv&quot;</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">x</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Dynamic Transformations</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+        <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log(x)&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;sqrt(x)&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;pow\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="n">p</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;log\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">inverse_transform_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">trans</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply inverse transformation to a single float value.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            x: Transformed value</span>
-<span class="sd">            trans: Transformation name. Can be one of &#39;id&#39;, &#39;log10&#39;, &#39;log&#39;, &#39;ln&#39;, &#39;sqrt&#39;,</span>
-<span class="sd">                   &#39;exp&#39;, &#39;square&#39;, &#39;cube&#39;, &#39;inv&#39;, &#39;reciprocal&#39;, or None.</span>
+<span class="sd">            trans: Transformation name.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Original value</span>
-
-<span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; from spotoptim import SpotOptim</span>
-<span class="sd">            &gt;&gt;&gt; spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])</span>
-<span class="sd">            &gt;&gt;&gt; spot.inverse_transform_value(1.0, &#39;log10&#39;)</span>
-<span class="sd">            10.0</span>
-<span class="sd">            &gt;&gt;&gt; spot.inverse_transform_value(4.605170185988092, &#39;log&#39;)</span>
-<span class="sd">            100.0</span>
-<span class="sd">            &gt;&gt;&gt; spot.inverse_transform_value(2.0, &#39;sqrt&#39;)</span>
-<span class="sd">            4.0</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Ensure x is a float</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
-            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">)</span>
         <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">x</span>
         <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log10&quot;</span><span class="p">:</span>
@@ -9543,8 +9702,26 @@ A success is counted when a new evaluation improves upon the best value found so
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;inv&quot;</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">x</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Dynamic Transformations (Inverses)</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+        <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log(x)&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;sqrt(x)&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;pow\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">x</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;log\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">base</span><span class="o">**</span><span class="n">x</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_transform_X</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform parameter array from original to internal scale.</span>
@@ -11141,7 +11318,16 @@ A success is counted when a new evaluation improves upon the best value found so
 <span class="sd">            &gt;&gt;&gt; y_clean[1] &gt; 5.0  # Should be larger than max finite value in history</span>
 <span class="sd">            True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># Ensure y is a float array (maps non-convertible values like &quot;error&quot; or None to nan)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_safe_float</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">y_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">_safe_float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">y_flat</span><span class="p">])</span>
         <span class="c1"># Identify NaN and inf values in y</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
@@ -14864,42 +15050,7 @@ Higher scores indicate parameters that have more influence on the objective.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5677</span>
-<span class="normal">5678</span>
-<span class="normal">5679</span>
-<span class="normal">5680</span>
-<span class="normal">5681</span>
-<span class="normal">5682</span>
-<span class="normal">5683</span>
-<span class="normal">5684</span>
-<span class="normal">5685</span>
-<span class="normal">5686</span>
-<span class="normal">5687</span>
-<span class="normal">5688</span>
-<span class="normal">5689</span>
-<span class="normal">5690</span>
-<span class="normal">5691</span>
-<span class="normal">5692</span>
-<span class="normal">5693</span>
-<span class="normal">5694</span>
-<span class="normal">5695</span>
-<span class="normal">5696</span>
-<span class="normal">5697</span>
-<span class="normal">5698</span>
-<span class="normal">5699</span>
-<span class="normal">5700</span>
-<span class="normal">5701</span>
-<span class="normal">5702</span>
-<span class="normal">5703</span>
-<span class="normal">5704</span>
-<span class="normal">5705</span>
-<span class="normal">5706</span>
-<span class="normal">5707</span>
-<span class="normal">5708</span>
-<span class="normal">5709</span>
-<span class="normal">5710</span>
-<span class="normal">5711</span>
-<span class="normal">5712</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5712</span>
 <span class="normal">5713</span>
 <span class="normal">5714</span>
 <span class="normal">5715</span>
@@ -14963,7 +15114,42 @@ Higher scores indicate parameters that have more influence on the objective.</p>
 <span class="normal">5773</span>
 <span class="normal">5774</span>
 <span class="normal">5775</span>
-<span class="normal">5776</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_importance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="normal">5776</span>
+<span class="normal">5777</span>
+<span class="normal">5778</span>
+<span class="normal">5779</span>
+<span class="normal">5780</span>
+<span class="normal">5781</span>
+<span class="normal">5782</span>
+<span class="normal">5783</span>
+<span class="normal">5784</span>
+<span class="normal">5785</span>
+<span class="normal">5786</span>
+<span class="normal">5787</span>
+<span class="normal">5788</span>
+<span class="normal">5789</span>
+<span class="normal">5790</span>
+<span class="normal">5791</span>
+<span class="normal">5792</span>
+<span class="normal">5793</span>
+<span class="normal">5794</span>
+<span class="normal">5795</span>
+<span class="normal">5796</span>
+<span class="normal">5797</span>
+<span class="normal">5798</span>
+<span class="normal">5799</span>
+<span class="normal">5800</span>
+<span class="normal">5801</span>
+<span class="normal">5802</span>
+<span class="normal">5803</span>
+<span class="normal">5804</span>
+<span class="normal">5805</span>
+<span class="normal">5806</span>
+<span class="normal">5807</span>
+<span class="normal">5808</span>
+<span class="normal">5809</span>
+<span class="normal">5810</span>
+<span class="normal">5811</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_importance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate variable importance scores.</span>
 
 <span class="sd">    Importance is computed as the normalized sensitivity of each parameter</span>
@@ -15167,42 +15353,7 @@ shape (n_initial, n_features_reduced).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2743</span>
-<span class="normal">2744</span>
-<span class="normal">2745</span>
-<span class="normal">2746</span>
-<span class="normal">2747</span>
-<span class="normal">2748</span>
-<span class="normal">2749</span>
-<span class="normal">2750</span>
-<span class="normal">2751</span>
-<span class="normal">2752</span>
-<span class="normal">2753</span>
-<span class="normal">2754</span>
-<span class="normal">2755</span>
-<span class="normal">2756</span>
-<span class="normal">2757</span>
-<span class="normal">2758</span>
-<span class="normal">2759</span>
-<span class="normal">2760</span>
-<span class="normal">2761</span>
-<span class="normal">2762</span>
-<span class="normal">2763</span>
-<span class="normal">2764</span>
-<span class="normal">2765</span>
-<span class="normal">2766</span>
-<span class="normal">2767</span>
-<span class="normal">2768</span>
-<span class="normal">2769</span>
-<span class="normal">2770</span>
-<span class="normal">2771</span>
-<span class="normal">2772</span>
-<span class="normal">2773</span>
-<span class="normal">2774</span>
-<span class="normal">2775</span>
-<span class="normal">2776</span>
-<span class="normal">2777</span>
-<span class="normal">2778</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2778</span>
 <span class="normal">2779</span>
 <span class="normal">2780</span>
 <span class="normal">2781</span>
@@ -15226,7 +15377,42 @@ shape (n_initial, n_features_reduced).</p>
 <span class="normal">2799</span>
 <span class="normal">2800</span>
 <span class="normal">2801</span>
-<span class="normal">2802</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_initial_design</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">2802</span>
+<span class="normal">2803</span>
+<span class="normal">2804</span>
+<span class="normal">2805</span>
+<span class="normal">2806</span>
+<span class="normal">2807</span>
+<span class="normal">2808</span>
+<span class="normal">2809</span>
+<span class="normal">2810</span>
+<span class="normal">2811</span>
+<span class="normal">2812</span>
+<span class="normal">2813</span>
+<span class="normal">2814</span>
+<span class="normal">2815</span>
+<span class="normal">2816</span>
+<span class="normal">2817</span>
+<span class="normal">2818</span>
+<span class="normal">2819</span>
+<span class="normal">2820</span>
+<span class="normal">2821</span>
+<span class="normal">2822</span>
+<span class="normal">2823</span>
+<span class="normal">2824</span>
+<span class="normal">2825</span>
+<span class="normal">2826</span>
+<span class="normal">2827</span>
+<span class="normal">2828</span>
+<span class="normal">2829</span>
+<span class="normal">2830</span>
+<span class="normal">2831</span>
+<span class="normal">2832</span>
+<span class="normal">2833</span>
+<span class="normal">2834</span>
+<span class="normal">2835</span>
+<span class="normal">2836</span>
+<span class="normal">2837</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_initial_design</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate or process initial design points.</span>
 
 <span class="sd">    Handles three scenarios:</span>
@@ -15484,8 +15670,7 @@ transformation names by converting &lsquo;id&rsquo;, &lsquo;None&rsquo;, or None
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Transformation name. Can be one of &lsquo;id&rsquo;, &lsquo;log10&rsquo;, &lsquo;log&rsquo;, &lsquo;ln&rsquo;, &lsquo;sqrt&rsquo;,
-   &lsquo;exp&rsquo;, &lsquo;square&rsquo;, &lsquo;cube&rsquo;, &lsquo;inv&rsquo;, &lsquo;reciprocal&rsquo;, or None.</p>
+                <p>Transformation name.</p>
               </div>
             </td>
             <td>
@@ -15519,37 +15704,9 @@ transformation names by converting &lsquo;id&rsquo;, &lsquo;None&rsquo;, or None
     </table>
 
 
-<p><span class="doc-section-title">Examples:</span></p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpotOptim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span> <span class="o">=</span> <span class="n">SpotOptim</span><span class="p">(</span><span class="n">fun</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">inverse_transform_value</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;log10&#39;</span><span class="p">)</span>
-<span class="go">10.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">inverse_transform_value</span><span class="p">(</span><span class="mf">4.605170185988092</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">)</span>
-<span class="go">100.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">inverse_transform_value</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;sqrt&#39;</span><span class="p">)</span>
-<span class="go">4.0</span>
-</code></pre></div>
-
-
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span>
-<span class="normal">695</span>
-<span class="normal">696</span>
-<span class="normal">697</span>
-<span class="normal">698</span>
-<span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">703</span>
 <span class="normal">704</span>
 <span class="normal">705</span>
 <span class="normal">706</span>
@@ -15576,32 +15733,50 @@ transformation names by converting &lsquo;id&rsquo;, &lsquo;None&rsquo;, or None
 <span class="normal">727</span>
 <span class="normal">728</span>
 <span class="normal">729</span>
-<span class="normal">730</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inverse_transform_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">trans</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inverse_transform_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">trans</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply inverse transformation to a single float value.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x: Transformed value</span>
-<span class="sd">        trans: Transformation name. Can be one of &#39;id&#39;, &#39;log10&#39;, &#39;log&#39;, &#39;ln&#39;, &#39;sqrt&#39;,</span>
-<span class="sd">               &#39;exp&#39;, &#39;square&#39;, &#39;cube&#39;, &#39;inv&#39;, &#39;reciprocal&#39;, or None.</span>
+<span class="sd">        trans: Transformation name.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Original value</span>
-
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; from spotoptim import SpotOptim</span>
-<span class="sd">        &gt;&gt;&gt; spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])</span>
-<span class="sd">        &gt;&gt;&gt; spot.inverse_transform_value(1.0, &#39;log10&#39;)</span>
-<span class="sd">        10.0</span>
-<span class="sd">        &gt;&gt;&gt; spot.inverse_transform_value(4.605170185988092, &#39;log&#39;)</span>
-<span class="sd">        100.0</span>
-<span class="sd">        &gt;&gt;&gt; spot.inverse_transform_value(2.0, &#39;sqrt&#39;)</span>
-<span class="sd">        4.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Ensure x is a float</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
     <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">x</span>
     <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log10&quot;</span><span class="p">:</span>
@@ -15618,8 +15793,26 @@ transformation names by converting &lsquo;id&rsquo;, &lsquo;None&rsquo;, or None
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;inv&quot;</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">x</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Dynamic Transformations (Inverses)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+    <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log(x)&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;sqrt(x)&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;pow\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;log\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">base</span><span class="o">**</span><span class="n">x</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -15742,42 +15935,7 @@ re-attached) or results.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4931</span>
-<span class="normal">4932</span>
-<span class="normal">4933</span>
-<span class="normal">4934</span>
-<span class="normal">4935</span>
-<span class="normal">4936</span>
-<span class="normal">4937</span>
-<span class="normal">4938</span>
-<span class="normal">4939</span>
-<span class="normal">4940</span>
-<span class="normal">4941</span>
-<span class="normal">4942</span>
-<span class="normal">4943</span>
-<span class="normal">4944</span>
-<span class="normal">4945</span>
-<span class="normal">4946</span>
-<span class="normal">4947</span>
-<span class="normal">4948</span>
-<span class="normal">4949</span>
-<span class="normal">4950</span>
-<span class="normal">4951</span>
-<span class="normal">4952</span>
-<span class="normal">4953</span>
-<span class="normal">4954</span>
-<span class="normal">4955</span>
-<span class="normal">4956</span>
-<span class="normal">4957</span>
-<span class="normal">4958</span>
-<span class="normal">4959</span>
-<span class="normal">4960</span>
-<span class="normal">4961</span>
-<span class="normal">4962</span>
-<span class="normal">4963</span>
-<span class="normal">4964</span>
-<span class="normal">4965</span>
-<span class="normal">4966</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4966</span>
 <span class="normal">4967</span>
 <span class="normal">4968</span>
 <span class="normal">4969</span>
@@ -15787,7 +15945,42 @@ re-attached) or results.</p>
 <span class="normal">4973</span>
 <span class="normal">4974</span>
 <span class="normal">4975</span>
-<span class="normal">4976</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">4976</span>
+<span class="normal">4977</span>
+<span class="normal">4978</span>
+<span class="normal">4979</span>
+<span class="normal">4980</span>
+<span class="normal">4981</span>
+<span class="normal">4982</span>
+<span class="normal">4983</span>
+<span class="normal">4984</span>
+<span class="normal">4985</span>
+<span class="normal">4986</span>
+<span class="normal">4987</span>
+<span class="normal">4988</span>
+<span class="normal">4989</span>
+<span class="normal">4990</span>
+<span class="normal">4991</span>
+<span class="normal">4992</span>
+<span class="normal">4993</span>
+<span class="normal">4994</span>
+<span class="normal">4995</span>
+<span class="normal">4996</span>
+<span class="normal">4997</span>
+<span class="normal">4998</span>
+<span class="normal">4999</span>
+<span class="normal">5000</span>
+<span class="normal">5001</span>
+<span class="normal">5002</span>
+<span class="normal">5003</span>
+<span class="normal">5004</span>
+<span class="normal">5005</span>
+<span class="normal">5006</span>
+<span class="normal">5007</span>
+<span class="normal">5008</span>
+<span class="normal">5009</span>
+<span class="normal">5010</span>
+<span class="normal">5011</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_experiment</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SpotOptim&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load an experiment configuration from a pickle file.</span>
 
@@ -15959,42 +16152,7 @@ will have both configuration and all optimization results.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4978</span>
-<span class="normal">4979</span>
-<span class="normal">4980</span>
-<span class="normal">4981</span>
-<span class="normal">4982</span>
-<span class="normal">4983</span>
-<span class="normal">4984</span>
-<span class="normal">4985</span>
-<span class="normal">4986</span>
-<span class="normal">4987</span>
-<span class="normal">4988</span>
-<span class="normal">4989</span>
-<span class="normal">4990</span>
-<span class="normal">4991</span>
-<span class="normal">4992</span>
-<span class="normal">4993</span>
-<span class="normal">4994</span>
-<span class="normal">4995</span>
-<span class="normal">4996</span>
-<span class="normal">4997</span>
-<span class="normal">4998</span>
-<span class="normal">4999</span>
-<span class="normal">5000</span>
-<span class="normal">5001</span>
-<span class="normal">5002</span>
-<span class="normal">5003</span>
-<span class="normal">5004</span>
-<span class="normal">5005</span>
-<span class="normal">5006</span>
-<span class="normal">5007</span>
-<span class="normal">5008</span>
-<span class="normal">5009</span>
-<span class="normal">5010</span>
-<span class="normal">5011</span>
-<span class="normal">5012</span>
-<span class="normal">5013</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5013</span>
 <span class="normal">5014</span>
 <span class="normal">5015</span>
 <span class="normal">5016</span>
@@ -16008,7 +16166,42 @@ will have both configuration and all optimization results.</p>
 <span class="normal">5024</span>
 <span class="normal">5025</span>
 <span class="normal">5026</span>
-<span class="normal">5027</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="normal">5027</span>
+<span class="normal">5028</span>
+<span class="normal">5029</span>
+<span class="normal">5030</span>
+<span class="normal">5031</span>
+<span class="normal">5032</span>
+<span class="normal">5033</span>
+<span class="normal">5034</span>
+<span class="normal">5035</span>
+<span class="normal">5036</span>
+<span class="normal">5037</span>
+<span class="normal">5038</span>
+<span class="normal">5039</span>
+<span class="normal">5040</span>
+<span class="normal">5041</span>
+<span class="normal">5042</span>
+<span class="normal">5043</span>
+<span class="normal">5044</span>
+<span class="normal">5045</span>
+<span class="normal">5046</span>
+<span class="normal">5047</span>
+<span class="normal">5048</span>
+<span class="normal">5049</span>
+<span class="normal">5050</span>
+<span class="normal">5051</span>
+<span class="normal">5052</span>
+<span class="normal">5053</span>
+<span class="normal">5054</span>
+<span class="normal">5055</span>
+<span class="normal">5056</span>
+<span class="normal">5057</span>
+<span class="normal">5058</span>
+<span class="normal">5059</span>
+<span class="normal">5060</span>
+<span class="normal">5061</span>
+<span class="normal">5062</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@staticmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_result</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SpotOptim&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load complete optimization results from a pickle file.</span>
 
@@ -16311,42 +16504,7 @@ If None, generates space-filling design. Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3373</span>
-<span class="normal">3374</span>
-<span class="normal">3375</span>
-<span class="normal">3376</span>
-<span class="normal">3377</span>
-<span class="normal">3378</span>
-<span class="normal">3379</span>
-<span class="normal">3380</span>
-<span class="normal">3381</span>
-<span class="normal">3382</span>
-<span class="normal">3383</span>
-<span class="normal">3384</span>
-<span class="normal">3385</span>
-<span class="normal">3386</span>
-<span class="normal">3387</span>
-<span class="normal">3388</span>
-<span class="normal">3389</span>
-<span class="normal">3390</span>
-<span class="normal">3391</span>
-<span class="normal">3392</span>
-<span class="normal">3393</span>
-<span class="normal">3394</span>
-<span class="normal">3395</span>
-<span class="normal">3396</span>
-<span class="normal">3397</span>
-<span class="normal">3398</span>
-<span class="normal">3399</span>
-<span class="normal">3400</span>
-<span class="normal">3401</span>
-<span class="normal">3402</span>
-<span class="normal">3403</span>
-<span class="normal">3404</span>
-<span class="normal">3405</span>
-<span class="normal">3406</span>
-<span class="normal">3407</span>
-<span class="normal">3408</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3408</span>
 <span class="normal">3409</span>
 <span class="normal">3410</span>
 <span class="normal">3411</span>
@@ -16461,7 +16619,42 @@ If None, generates space-filling design. Defaults to None.</p>
 <span class="normal">3520</span>
 <span class="normal">3521</span>
 <span class="normal">3522</span>
-<span class="normal">3523</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizeResult</span><span class="p">:</span>
+<span class="normal">3523</span>
+<span class="normal">3524</span>
+<span class="normal">3525</span>
+<span class="normal">3526</span>
+<span class="normal">3527</span>
+<span class="normal">3528</span>
+<span class="normal">3529</span>
+<span class="normal">3530</span>
+<span class="normal">3531</span>
+<span class="normal">3532</span>
+<span class="normal">3533</span>
+<span class="normal">3534</span>
+<span class="normal">3535</span>
+<span class="normal">3536</span>
+<span class="normal">3537</span>
+<span class="normal">3538</span>
+<span class="normal">3539</span>
+<span class="normal">3540</span>
+<span class="normal">3541</span>
+<span class="normal">3542</span>
+<span class="normal">3543</span>
+<span class="normal">3544</span>
+<span class="normal">3545</span>
+<span class="normal">3546</span>
+<span class="normal">3547</span>
+<span class="normal">3548</span>
+<span class="normal">3549</span>
+<span class="normal">3550</span>
+<span class="normal">3551</span>
+<span class="normal">3552</span>
+<span class="normal">3553</span>
+<span class="normal">3554</span>
+<span class="normal">3555</span>
+<span class="normal">3556</span>
+<span class="normal">3557</span>
+<span class="normal">3558</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X0</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">OptimizeResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the optimization process.</span>
 
 <span class="sd">    The optimization terminates when either:</span>
@@ -16681,40 +16874,40 @@ If None, generates space-filling design. Defaults to None.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5811</span>
-<span class="normal">5812</span>
-<span class="normal">5813</span>
-<span class="normal">5814</span>
-<span class="normal">5815</span>
-<span class="normal">5816</span>
-<span class="normal">5817</span>
-<span class="normal">5818</span>
-<span class="normal">5819</span>
-<span class="normal">5820</span>
-<span class="normal">5821</span>
-<span class="normal">5822</span>
-<span class="normal">5823</span>
-<span class="normal">5824</span>
-<span class="normal">5825</span>
-<span class="normal">5826</span>
-<span class="normal">5827</span>
-<span class="normal">5828</span>
-<span class="normal">5829</span>
-<span class="normal">5830</span>
-<span class="normal">5831</span>
-<span class="normal">5832</span>
-<span class="normal">5833</span>
-<span class="normal">5834</span>
-<span class="normal">5835</span>
-<span class="normal">5836</span>
-<span class="normal">5837</span>
-<span class="normal">5838</span>
-<span class="normal">5839</span>
-<span class="normal">5840</span>
-<span class="normal">5841</span>
-<span class="normal">5842</span>
-<span class="normal">5843</span>
-<span class="normal">5844</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_importance</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5846</span>
+<span class="normal">5847</span>
+<span class="normal">5848</span>
+<span class="normal">5849</span>
+<span class="normal">5850</span>
+<span class="normal">5851</span>
+<span class="normal">5852</span>
+<span class="normal">5853</span>
+<span class="normal">5854</span>
+<span class="normal">5855</span>
+<span class="normal">5856</span>
+<span class="normal">5857</span>
+<span class="normal">5858</span>
+<span class="normal">5859</span>
+<span class="normal">5860</span>
+<span class="normal">5861</span>
+<span class="normal">5862</span>
+<span class="normal">5863</span>
+<span class="normal">5864</span>
+<span class="normal">5865</span>
+<span class="normal">5866</span>
+<span class="normal">5867</span>
+<span class="normal">5868</span>
+<span class="normal">5869</span>
+<span class="normal">5870</span>
+<span class="normal">5871</span>
+<span class="normal">5872</span>
+<span class="normal">5873</span>
+<span class="normal">5874</span>
+<span class="normal">5875</span>
+<span class="normal">5876</span>
+<span class="normal">5877</span>
+<span class="normal">5878</span>
+<span class="normal">5879</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_importance</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">figsize</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot variable importance.</span>
@@ -16988,42 +17181,7 @@ Defaults to (12, 10).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3798</span>
-<span class="normal">3799</span>
-<span class="normal">3800</span>
-<span class="normal">3801</span>
-<span class="normal">3802</span>
-<span class="normal">3803</span>
-<span class="normal">3804</span>
-<span class="normal">3805</span>
-<span class="normal">3806</span>
-<span class="normal">3807</span>
-<span class="normal">3808</span>
-<span class="normal">3809</span>
-<span class="normal">3810</span>
-<span class="normal">3811</span>
-<span class="normal">3812</span>
-<span class="normal">3813</span>
-<span class="normal">3814</span>
-<span class="normal">3815</span>
-<span class="normal">3816</span>
-<span class="normal">3817</span>
-<span class="normal">3818</span>
-<span class="normal">3819</span>
-<span class="normal">3820</span>
-<span class="normal">3821</span>
-<span class="normal">3822</span>
-<span class="normal">3823</span>
-<span class="normal">3824</span>
-<span class="normal">3825</span>
-<span class="normal">3826</span>
-<span class="normal">3827</span>
-<span class="normal">3828</span>
-<span class="normal">3829</span>
-<span class="normal">3830</span>
-<span class="normal">3831</span>
-<span class="normal">3832</span>
-<span class="normal">3833</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3833</span>
 <span class="normal">3834</span>
 <span class="normal">3835</span>
 <span class="normal">3836</span>
@@ -17107,7 +17265,42 @@ Defaults to (12, 10).</p>
 <span class="normal">3914</span>
 <span class="normal">3915</span>
 <span class="normal">3916</span>
-<span class="normal">3917</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_important_hyperparameter_contour</span><span class="p">(</span>
+<span class="normal">3917</span>
+<span class="normal">3918</span>
+<span class="normal">3919</span>
+<span class="normal">3920</span>
+<span class="normal">3921</span>
+<span class="normal">3922</span>
+<span class="normal">3923</span>
+<span class="normal">3924</span>
+<span class="normal">3925</span>
+<span class="normal">3926</span>
+<span class="normal">3927</span>
+<span class="normal">3928</span>
+<span class="normal">3929</span>
+<span class="normal">3930</span>
+<span class="normal">3931</span>
+<span class="normal">3932</span>
+<span class="normal">3933</span>
+<span class="normal">3934</span>
+<span class="normal">3935</span>
+<span class="normal">3936</span>
+<span class="normal">3937</span>
+<span class="normal">3938</span>
+<span class="normal">3939</span>
+<span class="normal">3940</span>
+<span class="normal">3941</span>
+<span class="normal">3942</span>
+<span class="normal">3943</span>
+<span class="normal">3944</span>
+<span class="normal">3945</span>
+<span class="normal">3946</span>
+<span class="normal">3947</span>
+<span class="normal">3948</span>
+<span class="normal">3949</span>
+<span class="normal">3950</span>
+<span class="normal">3951</span>
+<span class="normal">3952</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_important_hyperparameter_contour</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">max_imp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -17430,42 +17623,7 @@ Defaults to False.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4240</span>
-<span class="normal">4241</span>
-<span class="normal">4242</span>
-<span class="normal">4243</span>
-<span class="normal">4244</span>
-<span class="normal">4245</span>
-<span class="normal">4246</span>
-<span class="normal">4247</span>
-<span class="normal">4248</span>
-<span class="normal">4249</span>
-<span class="normal">4250</span>
-<span class="normal">4251</span>
-<span class="normal">4252</span>
-<span class="normal">4253</span>
-<span class="normal">4254</span>
-<span class="normal">4255</span>
-<span class="normal">4256</span>
-<span class="normal">4257</span>
-<span class="normal">4258</span>
-<span class="normal">4259</span>
-<span class="normal">4260</span>
-<span class="normal">4261</span>
-<span class="normal">4262</span>
-<span class="normal">4263</span>
-<span class="normal">4264</span>
-<span class="normal">4265</span>
-<span class="normal">4266</span>
-<span class="normal">4267</span>
-<span class="normal">4268</span>
-<span class="normal">4269</span>
-<span class="normal">4270</span>
-<span class="normal">4271</span>
-<span class="normal">4272</span>
-<span class="normal">4273</span>
-<span class="normal">4274</span>
-<span class="normal">4275</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4275</span>
 <span class="normal">4276</span>
 <span class="normal">4277</span>
 <span class="normal">4278</span>
@@ -17660,7 +17818,42 @@ Defaults to False.</p>
 <span class="normal">4467</span>
 <span class="normal">4468</span>
 <span class="normal">4469</span>
-<span class="normal">4470</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_parameter_scatter</span><span class="p">(</span>
+<span class="normal">4470</span>
+<span class="normal">4471</span>
+<span class="normal">4472</span>
+<span class="normal">4473</span>
+<span class="normal">4474</span>
+<span class="normal">4475</span>
+<span class="normal">4476</span>
+<span class="normal">4477</span>
+<span class="normal">4478</span>
+<span class="normal">4479</span>
+<span class="normal">4480</span>
+<span class="normal">4481</span>
+<span class="normal">4482</span>
+<span class="normal">4483</span>
+<span class="normal">4484</span>
+<span class="normal">4485</span>
+<span class="normal">4486</span>
+<span class="normal">4487</span>
+<span class="normal">4488</span>
+<span class="normal">4489</span>
+<span class="normal">4490</span>
+<span class="normal">4491</span>
+<span class="normal">4492</span>
+<span class="normal">4493</span>
+<span class="normal">4494</span>
+<span class="normal">4495</span>
+<span class="normal">4496</span>
+<span class="normal">4497</span>
+<span class="normal">4498</span>
+<span class="normal">4499</span>
+<span class="normal">4500</span>
+<span class="normal">4501</span>
+<span class="normal">4502</span>
+<span class="normal">4503</span>
+<span class="normal">4504</span>
+<span class="normal">4505</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_parameter_scatter</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OptimizeResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -18016,42 +18209,7 @@ while sequential optimization iterations are connected with lines.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3673</span>
-<span class="normal">3674</span>
-<span class="normal">3675</span>
-<span class="normal">3676</span>
-<span class="normal">3677</span>
-<span class="normal">3678</span>
-<span class="normal">3679</span>
-<span class="normal">3680</span>
-<span class="normal">3681</span>
-<span class="normal">3682</span>
-<span class="normal">3683</span>
-<span class="normal">3684</span>
-<span class="normal">3685</span>
-<span class="normal">3686</span>
-<span class="normal">3687</span>
-<span class="normal">3688</span>
-<span class="normal">3689</span>
-<span class="normal">3690</span>
-<span class="normal">3691</span>
-<span class="normal">3692</span>
-<span class="normal">3693</span>
-<span class="normal">3694</span>
-<span class="normal">3695</span>
-<span class="normal">3696</span>
-<span class="normal">3697</span>
-<span class="normal">3698</span>
-<span class="normal">3699</span>
-<span class="normal">3700</span>
-<span class="normal">3701</span>
-<span class="normal">3702</span>
-<span class="normal">3703</span>
-<span class="normal">3704</span>
-<span class="normal">3705</span>
-<span class="normal">3706</span>
-<span class="normal">3707</span>
-<span class="normal">3708</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3708</span>
 <span class="normal">3709</span>
 <span class="normal">3710</span>
 <span class="normal">3711</span>
@@ -18139,7 +18297,42 @@ while sequential optimization iterations are connected with lines.</p>
 <span class="normal">3793</span>
 <span class="normal">3794</span>
 <span class="normal">3795</span>
-<span class="normal">3796</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_progress</span><span class="p">(</span>
+<span class="normal">3796</span>
+<span class="normal">3797</span>
+<span class="normal">3798</span>
+<span class="normal">3799</span>
+<span class="normal">3800</span>
+<span class="normal">3801</span>
+<span class="normal">3802</span>
+<span class="normal">3803</span>
+<span class="normal">3804</span>
+<span class="normal">3805</span>
+<span class="normal">3806</span>
+<span class="normal">3807</span>
+<span class="normal">3808</span>
+<span class="normal">3809</span>
+<span class="normal">3810</span>
+<span class="normal">3811</span>
+<span class="normal">3812</span>
+<span class="normal">3813</span>
+<span class="normal">3814</span>
+<span class="normal">3815</span>
+<span class="normal">3816</span>
+<span class="normal">3817</span>
+<span class="normal">3818</span>
+<span class="normal">3819</span>
+<span class="normal">3820</span>
+<span class="normal">3821</span>
+<span class="normal">3822</span>
+<span class="normal">3823</span>
+<span class="normal">3824</span>
+<span class="normal">3825</span>
+<span class="normal">3826</span>
+<span class="normal">3827</span>
+<span class="normal">3828</span>
+<span class="normal">3829</span>
+<span class="normal">3830</span>
+<span class="normal">3831</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_progress</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">log_y</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -18556,42 +18749,7 @@ Defaults to True.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3525</span>
-<span class="normal">3526</span>
-<span class="normal">3527</span>
-<span class="normal">3528</span>
-<span class="normal">3529</span>
-<span class="normal">3530</span>
-<span class="normal">3531</span>
-<span class="normal">3532</span>
-<span class="normal">3533</span>
-<span class="normal">3534</span>
-<span class="normal">3535</span>
-<span class="normal">3536</span>
-<span class="normal">3537</span>
-<span class="normal">3538</span>
-<span class="normal">3539</span>
-<span class="normal">3540</span>
-<span class="normal">3541</span>
-<span class="normal">3542</span>
-<span class="normal">3543</span>
-<span class="normal">3544</span>
-<span class="normal">3545</span>
-<span class="normal">3546</span>
-<span class="normal">3547</span>
-<span class="normal">3548</span>
-<span class="normal">3549</span>
-<span class="normal">3550</span>
-<span class="normal">3551</span>
-<span class="normal">3552</span>
-<span class="normal">3553</span>
-<span class="normal">3554</span>
-<span class="normal">3555</span>
-<span class="normal">3556</span>
-<span class="normal">3557</span>
-<span class="normal">3558</span>
-<span class="normal">3559</span>
-<span class="normal">3560</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">3560</span>
 <span class="normal">3561</span>
 <span class="normal">3562</span>
 <span class="normal">3563</span>
@@ -18702,7 +18860,42 @@ Defaults to True.</p>
 <span class="normal">3668</span>
 <span class="normal">3669</span>
 <span class="normal">3670</span>
-<span class="normal">3671</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_surrogate</span><span class="p">(</span>
+<span class="normal">3671</span>
+<span class="normal">3672</span>
+<span class="normal">3673</span>
+<span class="normal">3674</span>
+<span class="normal">3675</span>
+<span class="normal">3676</span>
+<span class="normal">3677</span>
+<span class="normal">3678</span>
+<span class="normal">3679</span>
+<span class="normal">3680</span>
+<span class="normal">3681</span>
+<span class="normal">3682</span>
+<span class="normal">3683</span>
+<span class="normal">3684</span>
+<span class="normal">3685</span>
+<span class="normal">3686</span>
+<span class="normal">3687</span>
+<span class="normal">3688</span>
+<span class="normal">3689</span>
+<span class="normal">3690</span>
+<span class="normal">3691</span>
+<span class="normal">3692</span>
+<span class="normal">3693</span>
+<span class="normal">3694</span>
+<span class="normal">3695</span>
+<span class="normal">3696</span>
+<span class="normal">3697</span>
+<span class="normal">3698</span>
+<span class="normal">3699</span>
+<span class="normal">3700</span>
+<span class="normal">3701</span>
+<span class="normal">3702</span>
+<span class="normal">3703</span>
+<span class="normal">3704</span>
+<span class="normal">3705</span>
+<span class="normal">3706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_surrogate</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">i</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">j</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -19031,42 +19224,7 @@ Defaults to 4.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5029</span>
-<span class="normal">5030</span>
-<span class="normal">5031</span>
-<span class="normal">5032</span>
-<span class="normal">5033</span>
-<span class="normal">5034</span>
-<span class="normal">5035</span>
-<span class="normal">5036</span>
-<span class="normal">5037</span>
-<span class="normal">5038</span>
-<span class="normal">5039</span>
-<span class="normal">5040</span>
-<span class="normal">5041</span>
-<span class="normal">5042</span>
-<span class="normal">5043</span>
-<span class="normal">5044</span>
-<span class="normal">5045</span>
-<span class="normal">5046</span>
-<span class="normal">5047</span>
-<span class="normal">5048</span>
-<span class="normal">5049</span>
-<span class="normal">5050</span>
-<span class="normal">5051</span>
-<span class="normal">5052</span>
-<span class="normal">5053</span>
-<span class="normal">5054</span>
-<span class="normal">5055</span>
-<span class="normal">5056</span>
-<span class="normal">5057</span>
-<span class="normal">5058</span>
-<span class="normal">5059</span>
-<span class="normal">5060</span>
-<span class="normal">5061</span>
-<span class="normal">5062</span>
-<span class="normal">5063</span>
-<span class="normal">5064</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5064</span>
 <span class="normal">5065</span>
 <span class="normal">5066</span>
 <span class="normal">5067</span>
@@ -19194,7 +19352,42 @@ Defaults to 4.</p>
 <span class="normal">5189</span>
 <span class="normal">5190</span>
 <span class="normal">5191</span>
-<span class="normal">5192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_best</span><span class="p">(</span>
+<span class="normal">5192</span>
+<span class="normal">5193</span>
+<span class="normal">5194</span>
+<span class="normal">5195</span>
+<span class="normal">5196</span>
+<span class="normal">5197</span>
+<span class="normal">5198</span>
+<span class="normal">5199</span>
+<span class="normal">5200</span>
+<span class="normal">5201</span>
+<span class="normal">5202</span>
+<span class="normal">5203</span>
+<span class="normal">5204</span>
+<span class="normal">5205</span>
+<span class="normal">5206</span>
+<span class="normal">5207</span>
+<span class="normal">5208</span>
+<span class="normal">5209</span>
+<span class="normal">5210</span>
+<span class="normal">5211</span>
+<span class="normal">5212</span>
+<span class="normal">5213</span>
+<span class="normal">5214</span>
+<span class="normal">5215</span>
+<span class="normal">5216</span>
+<span class="normal">5217</span>
+<span class="normal">5218</span>
+<span class="normal">5219</span>
+<span class="normal">5220</span>
+<span class="normal">5221</span>
+<span class="normal">5222</span>
+<span class="normal">5223</span>
+<span class="normal">5224</span>
+<span class="normal">5225</span>
+<span class="normal">5226</span>
+<span class="normal">5227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_best</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OptimizeResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">transformations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -19518,42 +19711,7 @@ Defaults to 4.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5520</span>
-<span class="normal">5521</span>
-<span class="normal">5522</span>
-<span class="normal">5523</span>
-<span class="normal">5524</span>
-<span class="normal">5525</span>
-<span class="normal">5526</span>
-<span class="normal">5527</span>
-<span class="normal">5528</span>
-<span class="normal">5529</span>
-<span class="normal">5530</span>
-<span class="normal">5531</span>
-<span class="normal">5532</span>
-<span class="normal">5533</span>
-<span class="normal">5534</span>
-<span class="normal">5535</span>
-<span class="normal">5536</span>
-<span class="normal">5537</span>
-<span class="normal">5538</span>
-<span class="normal">5539</span>
-<span class="normal">5540</span>
-<span class="normal">5541</span>
-<span class="normal">5542</span>
-<span class="normal">5543</span>
-<span class="normal">5544</span>
-<span class="normal">5545</span>
-<span class="normal">5546</span>
-<span class="normal">5547</span>
-<span class="normal">5548</span>
-<span class="normal">5549</span>
-<span class="normal">5550</span>
-<span class="normal">5551</span>
-<span class="normal">5552</span>
-<span class="normal">5553</span>
-<span class="normal">5554</span>
-<span class="normal">5555</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5555</span>
 <span class="normal">5556</span>
 <span class="normal">5557</span>
 <span class="normal">5558</span>
@@ -19673,7 +19831,42 @@ Defaults to 4.</p>
 <span class="normal">5672</span>
 <span class="normal">5673</span>
 <span class="normal">5674</span>
-<span class="normal">5675</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_design_table</span><span class="p">(</span>
+<span class="normal">5675</span>
+<span class="normal">5676</span>
+<span class="normal">5677</span>
+<span class="normal">5678</span>
+<span class="normal">5679</span>
+<span class="normal">5680</span>
+<span class="normal">5681</span>
+<span class="normal">5682</span>
+<span class="normal">5683</span>
+<span class="normal">5684</span>
+<span class="normal">5685</span>
+<span class="normal">5686</span>
+<span class="normal">5687</span>
+<span class="normal">5688</span>
+<span class="normal">5689</span>
+<span class="normal">5690</span>
+<span class="normal">5691</span>
+<span class="normal">5692</span>
+<span class="normal">5693</span>
+<span class="normal">5694</span>
+<span class="normal">5695</span>
+<span class="normal">5696</span>
+<span class="normal">5697</span>
+<span class="normal">5698</span>
+<span class="normal">5699</span>
+<span class="normal">5700</span>
+<span class="normal">5701</span>
+<span class="normal">5702</span>
+<span class="normal">5703</span>
+<span class="normal">5704</span>
+<span class="normal">5705</span>
+<span class="normal">5706</span>
+<span class="normal">5707</span>
+<span class="normal">5708</span>
+<span class="normal">5709</span>
+<span class="normal">5710</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_design_table</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">tablefmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;github&quot;</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
@@ -19852,13 +20045,13 @@ Prints the table and returns it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5846</span>
-<span class="normal">5847</span>
-<span class="normal">5848</span>
-<span class="normal">5849</span>
-<span class="normal">5850</span>
-<span class="normal">5851</span>
-<span class="normal">5852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5881</span>
+<span class="normal">5882</span>
+<span class="normal">5883</span>
+<span class="normal">5884</span>
+<span class="normal">5885</span>
+<span class="normal">5886</span>
+<span class="normal">5887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Alias for print_results_table for compatibility.</span>
 <span class="sd">    Prints the table and returns it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -20062,42 +20255,7 @@ Defaults to 0.0.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5311</span>
-<span class="normal">5312</span>
-<span class="normal">5313</span>
-<span class="normal">5314</span>
-<span class="normal">5315</span>
-<span class="normal">5316</span>
-<span class="normal">5317</span>
-<span class="normal">5318</span>
-<span class="normal">5319</span>
-<span class="normal">5320</span>
-<span class="normal">5321</span>
-<span class="normal">5322</span>
-<span class="normal">5323</span>
-<span class="normal">5324</span>
-<span class="normal">5325</span>
-<span class="normal">5326</span>
-<span class="normal">5327</span>
-<span class="normal">5328</span>
-<span class="normal">5329</span>
-<span class="normal">5330</span>
-<span class="normal">5331</span>
-<span class="normal">5332</span>
-<span class="normal">5333</span>
-<span class="normal">5334</span>
-<span class="normal">5335</span>
-<span class="normal">5336</span>
-<span class="normal">5337</span>
-<span class="normal">5338</span>
-<span class="normal">5339</span>
-<span class="normal">5340</span>
-<span class="normal">5341</span>
-<span class="normal">5342</span>
-<span class="normal">5343</span>
-<span class="normal">5344</span>
-<span class="normal">5345</span>
-<span class="normal">5346</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5346</span>
 <span class="normal">5347</span>
 <span class="normal">5348</span>
 <span class="normal">5349</span>
@@ -20269,7 +20427,42 @@ Defaults to 0.0.</p>
 <span class="normal">5515</span>
 <span class="normal">5516</span>
 <span class="normal">5517</span>
-<span class="normal">5518</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_results_table</span><span class="p">(</span>
+<span class="normal">5518</span>
+<span class="normal">5519</span>
+<span class="normal">5520</span>
+<span class="normal">5521</span>
+<span class="normal">5522</span>
+<span class="normal">5523</span>
+<span class="normal">5524</span>
+<span class="normal">5525</span>
+<span class="normal">5526</span>
+<span class="normal">5527</span>
+<span class="normal">5528</span>
+<span class="normal">5529</span>
+<span class="normal">5530</span>
+<span class="normal">5531</span>
+<span class="normal">5532</span>
+<span class="normal">5533</span>
+<span class="normal">5534</span>
+<span class="normal">5535</span>
+<span class="normal">5536</span>
+<span class="normal">5537</span>
+<span class="normal">5538</span>
+<span class="normal">5539</span>
+<span class="normal">5540</span>
+<span class="normal">5541</span>
+<span class="normal">5542</span>
+<span class="normal">5543</span>
+<span class="normal">5544</span>
+<span class="normal">5545</span>
+<span class="normal">5546</span>
+<span class="normal">5547</span>
+<span class="normal">5548</span>
+<span class="normal">5549</span>
+<span class="normal">5550</span>
+<span class="normal">5551</span>
+<span class="normal">5552</span>
+<span class="normal">5553</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">print_results_table</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">tablefmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;github&quot;</span><span class="p">,</span>
     <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
@@ -20844,42 +21037,7 @@ Defaults to &ldquo;all&rdquo;.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4720</span>
-<span class="normal">4721</span>
-<span class="normal">4722</span>
-<span class="normal">4723</span>
-<span class="normal">4724</span>
-<span class="normal">4725</span>
-<span class="normal">4726</span>
-<span class="normal">4727</span>
-<span class="normal">4728</span>
-<span class="normal">4729</span>
-<span class="normal">4730</span>
-<span class="normal">4731</span>
-<span class="normal">4732</span>
-<span class="normal">4733</span>
-<span class="normal">4734</span>
-<span class="normal">4735</span>
-<span class="normal">4736</span>
-<span class="normal">4737</span>
-<span class="normal">4738</span>
-<span class="normal">4739</span>
-<span class="normal">4740</span>
-<span class="normal">4741</span>
-<span class="normal">4742</span>
-<span class="normal">4743</span>
-<span class="normal">4744</span>
-<span class="normal">4745</span>
-<span class="normal">4746</span>
-<span class="normal">4747</span>
-<span class="normal">4748</span>
-<span class="normal">4749</span>
-<span class="normal">4750</span>
-<span class="normal">4751</span>
-<span class="normal">4752</span>
-<span class="normal">4753</span>
-<span class="normal">4754</span>
-<span class="normal">4755</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4755</span>
 <span class="normal">4756</span>
 <span class="normal">4757</span>
 <span class="normal">4758</span>
@@ -20941,7 +21099,42 @@ Defaults to &ldquo;all&rdquo;.</p>
 <span class="normal">4814</span>
 <span class="normal">4815</span>
 <span class="normal">4816</span>
-<span class="normal">4817</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_experiment</span><span class="p">(</span>
+<span class="normal">4817</span>
+<span class="normal">4818</span>
+<span class="normal">4819</span>
+<span class="normal">4820</span>
+<span class="normal">4821</span>
+<span class="normal">4822</span>
+<span class="normal">4823</span>
+<span class="normal">4824</span>
+<span class="normal">4825</span>
+<span class="normal">4826</span>
+<span class="normal">4827</span>
+<span class="normal">4828</span>
+<span class="normal">4829</span>
+<span class="normal">4830</span>
+<span class="normal">4831</span>
+<span class="normal">4832</span>
+<span class="normal">4833</span>
+<span class="normal">4834</span>
+<span class="normal">4835</span>
+<span class="normal">4836</span>
+<span class="normal">4837</span>
+<span class="normal">4838</span>
+<span class="normal">4839</span>
+<span class="normal">4840</span>
+<span class="normal">4841</span>
+<span class="normal">4842</span>
+<span class="normal">4843</span>
+<span class="normal">4844</span>
+<span class="normal">4845</span>
+<span class="normal">4846</span>
+<span class="normal">4847</span>
+<span class="normal">4848</span>
+<span class="normal">4849</span>
+<span class="normal">4850</span>
+<span class="normal">4851</span>
+<span class="normal">4852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_experiment</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;experiment&quot;</span><span class="p">,</span>
@@ -21217,42 +21410,7 @@ file exists. Defaults to True.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4819</span>
-<span class="normal">4820</span>
-<span class="normal">4821</span>
-<span class="normal">4822</span>
-<span class="normal">4823</span>
-<span class="normal">4824</span>
-<span class="normal">4825</span>
-<span class="normal">4826</span>
-<span class="normal">4827</span>
-<span class="normal">4828</span>
-<span class="normal">4829</span>
-<span class="normal">4830</span>
-<span class="normal">4831</span>
-<span class="normal">4832</span>
-<span class="normal">4833</span>
-<span class="normal">4834</span>
-<span class="normal">4835</span>
-<span class="normal">4836</span>
-<span class="normal">4837</span>
-<span class="normal">4838</span>
-<span class="normal">4839</span>
-<span class="normal">4840</span>
-<span class="normal">4841</span>
-<span class="normal">4842</span>
-<span class="normal">4843</span>
-<span class="normal">4844</span>
-<span class="normal">4845</span>
-<span class="normal">4846</span>
-<span class="normal">4847</span>
-<span class="normal">4848</span>
-<span class="normal">4849</span>
-<span class="normal">4850</span>
-<span class="normal">4851</span>
-<span class="normal">4852</span>
-<span class="normal">4853</span>
-<span class="normal">4854</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">4854</span>
 <span class="normal">4855</span>
 <span class="normal">4856</span>
 <span class="normal">4857</span>
@@ -21292,7 +21450,42 @@ file exists. Defaults to True.</p>
 <span class="normal">4891</span>
 <span class="normal">4892</span>
 <span class="normal">4893</span>
-<span class="normal">4894</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span>
+<span class="normal">4894</span>
+<span class="normal">4895</span>
+<span class="normal">4896</span>
+<span class="normal">4897</span>
+<span class="normal">4898</span>
+<span class="normal">4899</span>
+<span class="normal">4900</span>
+<span class="normal">4901</span>
+<span class="normal">4902</span>
+<span class="normal">4903</span>
+<span class="normal">4904</span>
+<span class="normal">4905</span>
+<span class="normal">4906</span>
+<span class="normal">4907</span>
+<span class="normal">4908</span>
+<span class="normal">4909</span>
+<span class="normal">4910</span>
+<span class="normal">4911</span>
+<span class="normal">4912</span>
+<span class="normal">4913</span>
+<span class="normal">4914</span>
+<span class="normal">4915</span>
+<span class="normal">4916</span>
+<span class="normal">4917</span>
+<span class="normal">4918</span>
+<span class="normal">4919</span>
+<span class="normal">4920</span>
+<span class="normal">4921</span>
+<span class="normal">4922</span>
+<span class="normal">4923</span>
+<span class="normal">4924</span>
+<span class="normal">4925</span>
+<span class="normal">4926</span>
+<span class="normal">4927</span>
+<span class="normal">4928</span>
+<span class="normal">4929</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">save_result</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;result&quot;</span><span class="p">,</span>
@@ -21426,42 +21619,7 @@ Only meaningful after optimize() has been called with sufficient evaluations.</p
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5194</span>
-<span class="normal">5195</span>
-<span class="normal">5196</span>
-<span class="normal">5197</span>
-<span class="normal">5198</span>
-<span class="normal">5199</span>
-<span class="normal">5200</span>
-<span class="normal">5201</span>
-<span class="normal">5202</span>
-<span class="normal">5203</span>
-<span class="normal">5204</span>
-<span class="normal">5205</span>
-<span class="normal">5206</span>
-<span class="normal">5207</span>
-<span class="normal">5208</span>
-<span class="normal">5209</span>
-<span class="normal">5210</span>
-<span class="normal">5211</span>
-<span class="normal">5212</span>
-<span class="normal">5213</span>
-<span class="normal">5214</span>
-<span class="normal">5215</span>
-<span class="normal">5216</span>
-<span class="normal">5217</span>
-<span class="normal">5218</span>
-<span class="normal">5219</span>
-<span class="normal">5220</span>
-<span class="normal">5221</span>
-<span class="normal">5222</span>
-<span class="normal">5223</span>
-<span class="normal">5224</span>
-<span class="normal">5225</span>
-<span class="normal">5226</span>
-<span class="normal">5227</span>
-<span class="normal">5228</span>
-<span class="normal">5229</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">5229</span>
 <span class="normal">5230</span>
 <span class="normal">5231</span>
 <span class="normal">5232</span>
@@ -21541,7 +21699,42 @@ Only meaningful after optimize() has been called with sufficient evaluations.</p
 <span class="normal">5306</span>
 <span class="normal">5307</span>
 <span class="normal">5308</span>
-<span class="normal">5309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sensitivity_spearman</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">5309</span>
+<span class="normal">5310</span>
+<span class="normal">5311</span>
+<span class="normal">5312</span>
+<span class="normal">5313</span>
+<span class="normal">5314</span>
+<span class="normal">5315</span>
+<span class="normal">5316</span>
+<span class="normal">5317</span>
+<span class="normal">5318</span>
+<span class="normal">5319</span>
+<span class="normal">5320</span>
+<span class="normal">5321</span>
+<span class="normal">5322</span>
+<span class="normal">5323</span>
+<span class="normal">5324</span>
+<span class="normal">5325</span>
+<span class="normal">5326</span>
+<span class="normal">5327</span>
+<span class="normal">5328</span>
+<span class="normal">5329</span>
+<span class="normal">5330</span>
+<span class="normal">5331</span>
+<span class="normal">5332</span>
+<span class="normal">5333</span>
+<span class="normal">5334</span>
+<span class="normal">5335</span>
+<span class="normal">5336</span>
+<span class="normal">5337</span>
+<span class="normal">5338</span>
+<span class="normal">5339</span>
+<span class="normal">5340</span>
+<span class="normal">5341</span>
+<span class="normal">5342</span>
+<span class="normal">5343</span>
+<span class="normal">5344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sensitivity_spearman</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute and print Spearman correlation between parameters and objective values.</span>
 
 <span class="sd">    This method analyzes the sensitivity of the objective function to each</span>
@@ -21754,33 +21947,7 @@ full-dimensional space by inserting fixed values for constant dimensions.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 997</span>
-<span class="normal"> 998</span>
-<span class="normal"> 999</span>
-<span class="normal">1000</span>
-<span class="normal">1001</span>
-<span class="normal">1002</span>
-<span class="normal">1003</span>
-<span class="normal">1004</span>
-<span class="normal">1005</span>
-<span class="normal">1006</span>
-<span class="normal">1007</span>
-<span class="normal">1008</span>
-<span class="normal">1009</span>
-<span class="normal">1010</span>
-<span class="normal">1011</span>
-<span class="normal">1012</span>
-<span class="normal">1013</span>
-<span class="normal">1014</span>
-<span class="normal">1015</span>
-<span class="normal">1016</span>
-<span class="normal">1017</span>
-<span class="normal">1018</span>
-<span class="normal">1019</span>
-<span class="normal">1020</span>
-<span class="normal">1021</span>
-<span class="normal">1022</span>
-<span class="normal">1023</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1023</span>
 <span class="normal">1024</span>
 <span class="normal">1025</span>
 <span class="normal">1026</span>
@@ -21807,7 +21974,33 @@ full-dimensional space by inserting fixed values for constant dimensions.</p>
 <span class="normal">1047</span>
 <span class="normal">1048</span>
 <span class="normal">1049</span>
-<span class="normal">1050</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_all_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_red</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">1050</span>
+<span class="normal">1051</span>
+<span class="normal">1052</span>
+<span class="normal">1053</span>
+<span class="normal">1054</span>
+<span class="normal">1055</span>
+<span class="normal">1056</span>
+<span class="normal">1057</span>
+<span class="normal">1058</span>
+<span class="normal">1059</span>
+<span class="normal">1060</span>
+<span class="normal">1061</span>
+<span class="normal">1062</span>
+<span class="normal">1063</span>
+<span class="normal">1064</span>
+<span class="normal">1065</span>
+<span class="normal">1066</span>
+<span class="normal">1067</span>
+<span class="normal">1068</span>
+<span class="normal">1069</span>
+<span class="normal">1070</span>
+<span class="normal">1071</span>
+<span class="normal">1072</span>
+<span class="normal">1073</span>
+<span class="normal">1074</span>
+<span class="normal">1075</span>
+<span class="normal">1076</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_all_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_red</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Expand reduced-dimensional points to full-dimensional representation.</span>
 
 <span class="sd">    This method restores points from the reduced optimization space to the</span>
@@ -21958,33 +22151,7 @@ extracting only the varying dimensions used in optimization.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1052</span>
-<span class="normal">1053</span>
-<span class="normal">1054</span>
-<span class="normal">1055</span>
-<span class="normal">1056</span>
-<span class="normal">1057</span>
-<span class="normal">1058</span>
-<span class="normal">1059</span>
-<span class="normal">1060</span>
-<span class="normal">1061</span>
-<span class="normal">1062</span>
-<span class="normal">1063</span>
-<span class="normal">1064</span>
-<span class="normal">1065</span>
-<span class="normal">1066</span>
-<span class="normal">1067</span>
-<span class="normal">1068</span>
-<span class="normal">1069</span>
-<span class="normal">1070</span>
-<span class="normal">1071</span>
-<span class="normal">1072</span>
-<span class="normal">1073</span>
-<span class="normal">1074</span>
-<span class="normal">1075</span>
-<span class="normal">1076</span>
-<span class="normal">1077</span>
-<span class="normal">1078</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1078</span>
 <span class="normal">1079</span>
 <span class="normal">1080</span>
 <span class="normal">1081</span>
@@ -21992,7 +22159,33 @@ extracting only the varying dimensions used in optimization.</p>
 <span class="normal">1083</span>
 <span class="normal">1084</span>
 <span class="normal">1085</span>
-<span class="normal">1086</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_red_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_full</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">1086</span>
+<span class="normal">1087</span>
+<span class="normal">1088</span>
+<span class="normal">1089</span>
+<span class="normal">1090</span>
+<span class="normal">1091</span>
+<span class="normal">1092</span>
+<span class="normal">1093</span>
+<span class="normal">1094</span>
+<span class="normal">1095</span>
+<span class="normal">1096</span>
+<span class="normal">1097</span>
+<span class="normal">1098</span>
+<span class="normal">1099</span>
+<span class="normal">1100</span>
+<span class="normal">1101</span>
+<span class="normal">1102</span>
+<span class="normal">1103</span>
+<span class="normal">1104</span>
+<span class="normal">1105</span>
+<span class="normal">1106</span>
+<span class="normal">1107</span>
+<span class="normal">1108</span>
+<span class="normal">1109</span>
+<span class="normal">1110</span>
+<span class="normal">1111</span>
+<span class="normal">1112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to_red_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_full</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reduce full-dimensional points to optimization space.</span>
 
 <span class="sd">    This method removes fixed dimensions from full-dimensional points,</span>
@@ -22059,40 +22252,40 @@ extracting only the varying dimensions used in optimization.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
-<span class="normal">806</span>
-<span class="normal">807</span>
-<span class="normal">808</span>
-<span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">812</span>
 <span class="normal">813</span>
 <span class="normal">814</span>
 <span class="normal">815</span>
 <span class="normal">816</span>
 <span class="normal">817</span>
 <span class="normal">818</span>
-<span class="normal">819</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform bounds from original to internal scale.</span>
 
 <span class="sd">    Examples:</span>
@@ -22183,7 +22376,8 @@ extracting only the varying dimensions used in optimization.</p>
             <td>
               <div class="doc-md-description">
                 <p>Transformation name. Can be one of &lsquo;id&rsquo;, &lsquo;log10&rsquo;, &lsquo;log&rsquo;, &lsquo;ln&rsquo;, &lsquo;sqrt&rsquo;,
-   &lsquo;exp&rsquo;, &lsquo;square&rsquo;, &lsquo;cube&rsquo;, &lsquo;inv&rsquo;, &lsquo;reciprocal&rsquo;, or None.</p>
+   &lsquo;exp&rsquo;, &lsquo;square&rsquo;, &lsquo;cube&rsquo;, &lsquo;inv&rsquo;, &lsquo;reciprocal&rsquo;, or None.
+   Also supports dynamic strings like &lsquo;log(x)&rsquo;, &lsquo;sqrt(x)&rsquo;, &lsquo;pow(x, p)&rsquo;.</p>
               </div>
             </td>
             <td>
@@ -22255,14 +22449,8 @@ extracting only the varying dimensions used in optimization.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span> <span class="o">=</span> <span class="n">SpotOptim</span><span class="p">(</span><span class="n">fun</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">)])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">transform_value</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;log10&#39;</span><span class="p">)</span>
 <span class="go">1.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">transform_value</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">transform_value</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;log(x)&#39;</span><span class="p">)</span>
 <span class="go">4.605170185988092</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">transform_value</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;sqrt&#39;</span><span class="p">)</span>
-<span class="go">2.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">transform_value</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;exp&#39;</span><span class="p">)</span>
-<span class="go">7.38905609893065</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">spot</span><span class="o">.</span><span class="n">transform_value</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;square&#39;</span><span class="p">)</span>
-<span class="go">9</span>
 </code></pre></div>
 
 
@@ -22319,13 +22507,30 @@ extracting only the varying dimensions used in optimization.</p>
 <span class="normal">682</span>
 <span class="normal">683</span>
 <span class="normal">684</span>
-<span class="normal">685</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">trans</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">trans</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply transformation to a single float value.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x: Value to transform</span>
 <span class="sd">        trans: Transformation name. Can be one of &#39;id&#39;, &#39;log10&#39;, &#39;log&#39;, &#39;ln&#39;, &#39;sqrt&#39;,</span>
 <span class="sd">               &#39;exp&#39;, &#39;square&#39;, &#39;cube&#39;, &#39;inv&#39;, &#39;reciprocal&#39;, or None.</span>
+<span class="sd">               Also supports dynamic strings like &#39;log(x)&#39;, &#39;sqrt(x)&#39;, &#39;pow(x, p)&#39;.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Transformed value</span>
@@ -22339,20 +22544,17 @@ extracting only the varying dimensions used in optimization.</p>
 <span class="sd">        &gt;&gt;&gt; spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])</span>
 <span class="sd">        &gt;&gt;&gt; spot.transform_value(10, &#39;log10&#39;)</span>
 <span class="sd">        1.0</span>
-<span class="sd">        &gt;&gt;&gt; spot.transform_value(100, &#39;log&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; spot.transform_value(100, &#39;log(x)&#39;)</span>
 <span class="sd">        4.605170185988092</span>
-<span class="sd">        &gt;&gt;&gt; spot.transform_value(4, &#39;sqrt&#39;)</span>
-<span class="sd">        2.0</span>
-<span class="sd">        &gt;&gt;&gt; spot.transform_value(2, &#39;exp&#39;)</span>
-<span class="sd">        7.38905609893065</span>
-<span class="sd">        &gt;&gt;&gt; spot.transform_value(3, &#39;square&#39;)</span>
-<span class="sd">        9</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Ensure x is a float</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
-        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;transform_value expects a float, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (value: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
     <span class="k">if</span> <span class="n">trans</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;id&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">x</span>
     <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log10&quot;</span><span class="p">:</span>
@@ -22369,8 +22571,26 @@ extracting only the varying dimensions used in optimization.</p>
         <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">3</span>
     <span class="k">elif</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;inv&quot;</span> <span class="ow">or</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;reciprocal&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">x</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Dynamic Transformations</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+    <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;log(x)&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">trans</span> <span class="o">==</span> <span class="s2">&quot;sqrt(x)&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;pow\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="n">p</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;log\(x,\s*([0-9.]+)\)&quot;</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown transformation: </span><span class="si">{</span><span class="n">trans</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -22439,33 +22659,7 @@ which is called after each batch of function evaluations.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/SpotOptim.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1222</span>
-<span class="normal">1223</span>
-<span class="normal">1224</span>
-<span class="normal">1225</span>
-<span class="normal">1226</span>
-<span class="normal">1227</span>
-<span class="normal">1228</span>
-<span class="normal">1229</span>
-<span class="normal">1230</span>
-<span class="normal">1231</span>
-<span class="normal">1232</span>
-<span class="normal">1233</span>
-<span class="normal">1234</span>
-<span class="normal">1235</span>
-<span class="normal">1236</span>
-<span class="normal">1237</span>
-<span class="normal">1238</span>
-<span class="normal">1239</span>
-<span class="normal">1240</span>
-<span class="normal">1241</span>
-<span class="normal">1242</span>
-<span class="normal">1243</span>
-<span class="normal">1244</span>
-<span class="normal">1245</span>
-<span class="normal">1246</span>
-<span class="normal">1247</span>
-<span class="normal">1248</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1248</span>
 <span class="normal">1249</span>
 <span class="normal">1250</span>
 <span class="normal">1251</span>
@@ -22508,7 +22702,33 @@ which is called after each batch of function evaluations.</p>
 <span class="normal">1288</span>
 <span class="normal">1289</span>
 <span class="normal">1290</span>
-<span class="normal">1291</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">1291</span>
+<span class="normal">1292</span>
+<span class="normal">1293</span>
+<span class="normal">1294</span>
+<span class="normal">1295</span>
+<span class="normal">1296</span>
+<span class="normal">1297</span>
+<span class="normal">1298</span>
+<span class="normal">1299</span>
+<span class="normal">1300</span>
+<span class="normal">1301</span>
+<span class="normal">1302</span>
+<span class="normal">1303</span>
+<span class="normal">1304</span>
+<span class="normal">1305</span>
+<span class="normal">1306</span>
+<span class="normal">1307</span>
+<span class="normal">1308</span>
+<span class="normal">1309</span>
+<span class="normal">1310</span>
+<span class="normal">1311</span>
+<span class="normal">1312</span>
+<span class="normal">1313</span>
+<span class="normal">1314</span>
+<span class="normal">1315</span>
+<span class="normal">1316</span>
+<span class="normal">1317</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Update optimization statistics.</span>
 
 <span class="sd">    Updates:</span>
