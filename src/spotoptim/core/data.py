@@ -53,7 +53,6 @@ class SpotDataFromArray(SpotDataSet):
         y_test: Optional[Union[np.ndarray, torch.Tensor]] = None,
         target_column: Optional[str] = None,
     ):
-
         # Determine dimensions
         input_dim = x_train.shape[1] if hasattr(x_train, "shape") else 0
         output_dim = (
@@ -109,7 +108,6 @@ class SpotDataFromTorchDataset(SpotDataSet):
         test_dataset: Optional[Dataset] = None,
         target_column: Optional[str] = None,
     ):
-
         super().__init__(input_dim, output_dim, target_column)
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset

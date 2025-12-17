@@ -277,3 +277,228 @@ def wingwt(X) -> np.ndarray:
     W = W + Sw * Wp
 
     return W.ravel()
+
+
+def lennard_jones(X: np.ndarray, n_atoms: int = 13) -> np.ndarray:
+    """Lennard-Jones Atomic Cluster Potential Energy.
+
+    Calculates the potential energy of a cluster of N atoms interacting via the
+    Lennard-Jones potential. The optimization problem involves finding the atomic
+    coordinates that minimize the total potential energy. This is a classic
+    benchmark problem known for its high difficulty due to the exponential growth
+    of local minima with N.
+
+    Input Domain Handling:
+        The function accepts inputs in the range [0, 1] and internally maps them
+        to the search domain [-2, 2] for each coordinate.
+
+    Args:
+        X (np.ndarray): Input points.
+            - Shape (n_samples, 3 * n_atoms) for batch evaluation.
+            - Shape (3 * n_atoms,) for single evaluation.
+            The input represents the flattened [x1, y1, z1, x2, y2, z2, ...] coordinates.
+        n_atoms (int, optional): Number of atoms in the cluster. Defaults to 13.
+
+    Returns:
+        np.ndarray: Potential energy values. Shape (n_samples,).
+
+    Raises:
+        ValueError: If input dimensions do not match 3 * n_atoms.
+
+    Note:
+        - Global minimum for N=13: E ≈ -44.3268
+        - Search domain: [-2, 2]^(3N) (mapped from [0, 1])
+        - Characteristics: Extremely rugged landscape, non-convex, many local minima.
+
+    Examples:
+        Single point evaluation (random configuration):
+
+        >>> from spotoptim.function import lennard_jones
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(42)
+        >>> X = rng.random(39)  # 13 atoms * 3 coords, in [0, 1]
+        >>> lennard_jones(X)
+        array([9.5...e+...])
+
+        Batch evaluation:
+
+        >>> X = rng.random((5, 39))
+        >>> lennard_jones(X).shape
+        (5,)
+
+    References:
+        Wales, D. J., & Doye, J. P. (1997). Global optimization by basin-hopping and
+        the lowest energy structures of Lennard-Jones clusters containing up to 110 atoms.
+        The Journal of Physical Chemistry A, 101(28), 5111-5116.
+    """
+    X = np.atleast_2d(X).astype(float)
+    n_samples = X.shape[0]
+    expected_dim = 3 * n_atoms
+
+    if X.shape[1] != expected_dim:
+        raise ValueError(
+            f"Input dimension must be 3 * n_atoms ({expected_dim}). Got {X.shape[1]}."
+        )
+
+    # Scale from [0, 1] to [-2, 2]
+    # [-2, 2] range has length 4.
+    # val_scaled = val_01 * (max - min) + min
+    coords_flattened = X * 4.0 - 2.0
+
+    # Reshape to (n_samples, n_atoms, 3)
+    coords = coords_flattened.reshape(n_samples, n_atoms, 3)
+
+    potential = np.zeros(n_samples)
+
+    # Calculate pairwise interactions
+    # Simple double loop over atoms is often sufficient for typical N (N < ~150)
+    # vectorized along samples.
+    # Potential formula: 4*epsilon * sum_{i<j} [ (sigma/r_ij)^12 - (sigma/r_ij)^6 ]
+    # We use reduced units: epsilon=1, sigma=1.
+
+    for i in range(n_atoms):
+        for j in range(i + 1, n_atoms):
+            # Difference vectors: (n_samples, 3)
+            d_vec = coords[:, i, :] - coords[:, j, :]
+
+            # Squared Euclidean distances: (n_samples,)
+            r2 = np.sum(d_vec**2, axis=1)
+
+            # Avoid division by zero / singularities by setting a lower bound
+            # In optimization, particles can overlap leading to infinity.
+            # We clip at a small value.
+            r2 = np.maximum(r2, 1e-12)
+
+            inv_r2 = 1.0 / r2
+            inv_r6 = inv_r2**3
+            inv_r12 = inv_r6**2
+
+            potential += inv_r12 - inv_r6
+
+    return 4.0 * potential
+
+
+def robot_arm_obstacle(X: np.ndarray) -> np.ndarray:
+    """10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.
+
+    The goal is to minimize the distance of the end-effector to a target point
+    while avoiding collision with a set of circular obstacles. This problem mimics
+    a real-world inverse kinematics solver for a redundant manipulator.
+
+    Input Domain Handling:
+        The function accepts inputs in the range [0, 1] and internally maps them
+        to the search domain [-pi, pi] for each joint angle (radians).
+
+    Args:
+        X (np.ndarray): Input angles (normalized).
+            - Shape (n_samples, 10).
+            The input contains the normalized relative angles for the 10 links.
+
+    Returns:
+        np.ndarray: Cost values (Weighted sum of Distance + Penalty). Shape (n_samples,).
+
+    Raises:
+        ValueError: If input dimensions do not match 10.
+
+    Note:
+        - Target: (5.0, 5.0)
+        - Obstacles:
+            - Order 1: (2,2), r=1
+            - Order 2: (4,3), r=1.5
+            - Order 3: (3,6), r=1
+        - Dimensions: 10 (fixed)
+        - Search domain: [-pi, pi]^10 (mapped from [0, 1])
+        - Characteristics: Multimodal, disjoint feasible regions, constrained.
+
+    Examples:
+        Single point evaluation:
+
+        >>> from spotoptim.function.so import robot_arm_obstacle
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(42)
+        >>> X = rng.random(10)  # Random angles in [0, 1]
+        >>> robot_arm_obstacle(X)
+        array([2547...])
+
+        Batch evaluation:
+
+        >>> X = rng.random((5, 10))
+        >>> robot_arm_obstacle(X).shape
+        (5,)
+    """
+    X = np.atleast_2d(X).astype(float)
+    n_samples = X.shape[0]
+    n_dims = X.shape[1]
+
+    if n_dims != 10:
+        raise ValueError(
+            f"This function requires exactly 10 dimensions (joint angles), got {n_dims}."
+        )
+
+    # Scale from [0, 1] to [-pi, pi]
+    # [-pi, pi] range length is 2*pi
+    X_scaled = X * (2 * np.pi) - np.pi
+
+    # --- Problem Configuration ---
+    # Length of each arm link
+    L = np.ones(10) * 1.0
+
+    # Target coordinates (reachable within total length of 10)
+    target = np.array([5.0, 5.0])
+
+    # Obstacles: centers (x,y) and radii (r)
+    obstacles = [
+        {"center": np.array([2.0, 2.0]), "radius": 1.0},
+        {"center": np.array([4.0, 3.0]), "radius": 1.5},
+        {"center": np.array([3.0, 6.0]), "radius": 1.0},
+    ]
+
+    # --- Forward Kinematics ---
+    # X contains relative angles (theta).
+    # Absolute angles (cumulative sum of relative angles)
+    # shape: (n_samples, 10)
+    abs_angles = np.cumsum(X_scaled, axis=1)
+
+    # Calculate (dx, dy) for each link
+    dx = L * np.cos(abs_angles)
+    dy = L * np.sin(abs_angles)
+
+    # Calculate joint coordinates (cumulative sum of dx, dy)
+    # Positions shape: (n_samples, 10) for x and y separately
+    joint_positions_x = np.cumsum(dx, axis=1)
+    joint_positions_y = np.cumsum(dy, axis=1)
+
+    # --- Cost Calculation ---
+
+    # 1. Distance to Target (End-effector only)
+    end_effector_x = joint_positions_x[:, -1]
+    end_effector_y = joint_positions_y[:, -1]
+
+    dist_sq = (end_effector_x - target[0]) ** 2 + (end_effector_y - target[1]) ** 2
+
+    # 2. Obstacle Penalty
+    penalty = np.zeros(n_samples)
+
+    # Check every joint against obstacles
+    # (Simplified: checking joints only, not full link segments)
+    for obs in obstacles:
+        ox, oy = obs["center"]
+        r = obs["radius"]
+
+        # Check all 10 joints for this obstacle
+        for j in range(10):
+            jx = joint_positions_x[:, j]
+            jy = joint_positions_y[:, j]
+
+            # Distance from joint to obstacle center
+            d_obs = np.sqrt((jx - ox) ** 2 + (jy - oy) ** 2)
+
+            # If inside radius + buffer, add large penalty
+            # Using violation metric: max(0, r - d + buffer)
+            # Buffer = 0.1 to discourage grazing
+            violation = np.maximum(0, r - d_obs + 0.1)
+
+            # Penalty weight 1000
+            penalty += 1000 * violation**2
+
+    return dist_sq + penalty
