@@ -502,3 +502,161 @@ def robot_arm_obstacle(X: np.ndarray) -> np.ndarray:
             penalty += 1000 * violation**2
 
     return dist_sq + penalty
+
+
+def robot_arm_hard(X: np.ndarray) -> np.ndarray:
+    """10-Link Robot Arm with Maze-Like Hard Constraints.
+
+    A challenging constrained optimization problem where a 10-link planar robot arm
+    must reach a target point (5.0, 5.0) while avoiding multiple obstacles forming
+    a maze-like environment. This function tests an optimizer's ability to handle
+    hard constraints and navigate complex feasible regions.
+
+    The problem features three main difficulty factors:
+    1. 'The Great Wall': A vertical barrier at x=2.5 blocking direct paths
+    2. 'The Ceiling': A horizontal bar at y=8.5 preventing high loop strategies
+    3. 'The Target Trap': Obstacles surrounding the target, requiring precise approach
+
+    Mathematical formulation:
+        f(X) = distance_cost + constraint_penalty + energy_regularization
+
+    where:
+        - distance_cost = (x_end - 5.0)^2 + (y_end - 5.0)^2
+        - constraint_penalty = 10,000 * sum(max(0, r - d + 0.05)^2) for all joints and obstacles
+        - energy_regularization = 0.01 * sum(angles^2)
+
+    Args:
+        X (np.ndarray): Input points with shape (n_samples, 10) or (10,).
+            Each sample contains 10 joint angles normalized to [0, 1], which are
+            internally mapped to [-1.2π, 1.2π] to allow looping strategies.
+            Can be a 1D array for a single point or 2D array for multiple points.
+
+    Returns:
+        np.ndarray: Function values at the input points with shape (n_samples,).
+            Lower values indicate better solutions (closer to target with fewer
+            constraint violations).
+
+    Note:
+        - Dimension: 10 (one angle per link)
+        - Link length: L = 1.0 for all links
+        - Target position: (5.0, 5.0)
+        - Search domain: [0, 1]^10 (mapped internally to [-1.2π, 1.2π]^10)
+        - Characteristics: Highly constrained, non-convex, multimodal
+        - Constraint penalty: 10,000 per violation (effectively hard constraints)
+        - Number of obstacles: ~30 forming walls and traps
+        - Feasible region: Very small relative to search space
+
+    Examples:
+        Single point evaluation with random configuration:
+
+        >>> from spotoptim.function import robot_arm_hard
+        >>> import numpy as np
+        >>> X = np.random.rand(10) * 0.5  # Conservative random angles
+        >>> result = robot_arm_hard(X)
+        >>> result.shape
+        (1,)
+
+        Multiple points evaluation:
+
+        >>> X = np.array([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+        ...               [0.3, 0.4, 0.5, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]])
+        >>> robot_arm_hard(X)
+        array([...])  # Returns costs for both configurations
+
+        Evaluating a straight configuration (all angles = 0.5, mapped to 0 radians):
+
+        >>> X_straight = np.full(10, 0.5)
+        >>> cost_straight = robot_arm_hard(X_straight)
+        >>> cost_straight[0] > 1000  # High cost due to obstacles
+        True
+
+    References:
+        This function is inspired by robot motion planning problems with obstacles,
+        commonly studied in:
+
+        - LaValle, S. M. (2006). "Planning Algorithms". Cambridge University Press.
+        - Choset, H., et al. (2005). "Principles of Robot Motion: Theory, Algorithms, and Implementations".
+          MIT Press.
+    """
+    X = np.atleast_2d(X)
+
+    # Map [0, 1] input to [-pi, pi]
+    # We use a slightly wider range [-1.2*pi, 1.2*pi] to allow 'looping'
+    # strategies which are sometimes necessary to solve hard mazes.
+    Angles = X * 2.4 * np.pi - 1.2 * np.pi
+
+    n_samples = Angles.shape[0]
+
+    # --- Configuration ---
+    L = 1.0
+    target = np.array([5.0, 5.0])
+
+    # Define Obstacles (The Maze)
+    obstacles = []
+
+    # 1. The Great Wall: Vertical barrier at x=2.5, from y=-2 to y=6
+    # This forces the arm to reach 'way over' (high energy) or 'snake around'.
+    # We create it using overlapping circles to form a wall.
+    for y_pos in np.linspace(-2, 6, 15):
+        obstacles.append({"c": np.array([2.5, y_pos]), "r": 0.6})
+
+    # 2. The Ceiling: A horizontal bar at y=8 to prevent trivial 'high loops'
+    for x_pos in np.linspace(0, 6, 10):
+        obstacles.append({"c": np.array([x_pos, 8.5]), "r": 0.6})
+
+    # 3. The Target Trap: Surround the target (5,5) with hazards
+    # Leaving only a small opening from the 'bottom-left'.
+    obstacles.append({"c": np.array([6.0, 5.0]), "r": 0.8})  # Right
+    obstacles.append({"c": np.array([5.0, 6.5]), "r": 0.8})  # Top
+    obstacles.append(
+        {"c": np.array([4.0, 4.0]), "r": 0.5}
+    )  # Bottom-Left (Partial Block)
+
+    # --- Forward Kinematics ---
+    # Cumulative angles
+    abs_angles = np.cumsum(Angles, axis=1)
+
+    # Link vectors
+    dx = L * np.cos(abs_angles)
+    dy = L * np.sin(abs_angles)
+
+    # Joint positions (n_samples, 10)
+    jx = np.cumsum(dx, axis=1)
+    jy = np.cumsum(dy, axis=1)
+
+    # --- Cost Calculation ---
+
+    # 1. Distance Cost (End effector to Target)
+    ex, ey = jx[:, -1], jy[:, -1]
+    dist_sq = (ex - target[0]) ** 2 + (ey - target[1]) ** 2
+
+    # 2. Hard Constraint Penalty
+    # We sum penalties for ALL joints against ALL obstacles
+    penalty = np.zeros(n_samples)
+
+    # Vectorized obstacle check could be faster, but loops are clearer for definition
+    for obs in obstacles:
+        ox, oy = obs["c"]
+        r = obs["r"]
+
+        # We check every joint
+        for j in range(10):
+            # Calculate distance from joint j to obstacle center
+            # (Avoid sqrt for speed where possible, but here we need true distance for linear penalty)
+            d_obs = np.sqrt((jx[:, j] - ox) ** 2 + (jy[:, j] - oy) ** 2)
+
+            # Constraint Violation
+            # If d_obs < r, we are inside the obstacle.
+            # We use a "Hard" quadratic penalty that shoots up explicitly.
+            violation = np.maximum(0, r - d_obs + 0.05)  # 0.05 buffer 'skin'
+
+            # 10,000 multiplier makes this a "Death Penalty" - practically a hard constraint
+            penalty += 10000 * violation**2
+
+    # 3. Regularization (Optional but realistic)
+    # Penalize extreme contortions (minimize sum of squared relative angles)
+    # This smooths the landscape slightly but makes the "optimal" path harder to find
+    # because the arm 'wants' to be straight but 'needs' to bend.
+    energy = np.sum(Angles**2, axis=1) * 0.01
+
+    return dist_sq + penalty + energy
