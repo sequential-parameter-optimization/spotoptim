@@ -868,10 +868,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#spotoptim.function.so.lennard_jones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lennard_jones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#spotoptim.function.so.michalewicz" class="md-nav__link">
     <span class="md-ellipsis">
       
         michalewicz
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.robot_arm_obstacle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robot_arm_obstacle
       
     </span>
   </a>
@@ -1675,10 +1697,32 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#spotoptim.function.so.lennard_jones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lennard_jones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#spotoptim.function.so.michalewicz" class="md-nav__link">
     <span class="md-ellipsis">
       
         michalewicz
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.robot_arm_obstacle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robot_arm_obstacle
       
     </span>
   </a>
@@ -2120,6 +2164,360 @@ Kluwer Academic Publishers.</p>
 <div class="doc doc-object doc-function">
 
 
+<h2 id="spotoptim.function.so.lennard_jones" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.lennard_jones" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Lennard-Jones Atomic Cluster Potential Energy.</p>
+<p>Calculates the potential energy of a cluster of N atoms interacting via the
+Lennard-Jones potential. The optimization problem involves finding the atomic
+coordinates that minimize the total potential energy. This is a classic
+benchmark problem known for its high difficulty due to the exponential growth
+of local minima with N.</p>
+
+
+<details class="input-domain-handling" open>
+  <summary>Input Domain Handling</summary>
+  <p>The function accepts inputs in the range [0, 1] and internally maps them
+to the search domain [-2, 2] for each coordinate.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input points.
+- Shape (n_samples, 3 * n_atoms) for batch evaluation.
+- Shape (3 * n_atoms,) for single evaluation.
+The input represents the flattened [x1, y1, z1, x2, y2, z2, &hellip;] coordinates.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_atoms</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of atoms in the cluster. Defaults to 13.</p>
+              </div>
+            </td>
+            <td>
+                  <code>13</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Potential energy values. Shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input dimensions do not match 3 * n_atoms.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Global minimum for N=13: E ≈ -44.3268</li>
+<li>Search domain: [-2, 2]^(3N) (mapped from [0, 1])</li>
+<li>Characteristics: Extremely rugged landscape, non-convex, many local minima.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation (random configuration):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function</span><span class="w"> </span><span class="kn">import</span> <span class="n">lennard_jones</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">39</span><span class="p">)</span>  <span class="c1"># 13 atoms * 3 coords, in [0, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([9.5...e+...])</span>
+</code></pre></div>
+    <p>Batch evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">39</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(5,)</span>
+</code></pre></div>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Wales, D. J., &amp; Doye, J. P. (1997). Global optimization by basin-hopping and
+the lowest energy structures of Lennard-Jones clusters containing up to 110 atoms.
+The Journal of Physical Chemistry A, 101(28), 5111-5116.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lennard-Jones Atomic Cluster Potential Energy.</span>
+
+<span class="sd">    Calculates the potential energy of a cluster of N atoms interacting via the</span>
+<span class="sd">    Lennard-Jones potential. The optimization problem involves finding the atomic</span>
+<span class="sd">    coordinates that minimize the total potential energy. This is a classic</span>
+<span class="sd">    benchmark problem known for its high difficulty due to the exponential growth</span>
+<span class="sd">    of local minima with N.</span>
+
+<span class="sd">    Input Domain Handling:</span>
+<span class="sd">        The function accepts inputs in the range [0, 1] and internally maps them</span>
+<span class="sd">        to the search domain [-2, 2] for each coordinate.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (np.ndarray): Input points.</span>
+<span class="sd">            - Shape (n_samples, 3 * n_atoms) for batch evaluation.</span>
+<span class="sd">            - Shape (3 * n_atoms,) for single evaluation.</span>
+<span class="sd">            The input represents the flattened [x1, y1, z1, x2, y2, z2, ...] coordinates.</span>
+<span class="sd">        n_atoms (int, optional): Number of atoms in the cluster. Defaults to 13.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Potential energy values. Shape (n_samples,).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If input dimensions do not match 3 * n_atoms.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Global minimum for N=13: E ≈ -44.3268</span>
+<span class="sd">        - Search domain: [-2, 2]^(3N) (mapped from [0, 1])</span>
+<span class="sd">        - Characteristics: Extremely rugged landscape, non-convex, many local minima.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation (random configuration):</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function import lennard_jones</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(42)</span>
+<span class="sd">        &gt;&gt;&gt; X = rng.random(39)  # 13 atoms * 3 coords, in [0, 1]</span>
+<span class="sd">        &gt;&gt;&gt; lennard_jones(X)</span>
+<span class="sd">        array([9.5...e+...])</span>
+
+<span class="sd">        Batch evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = rng.random((5, 39))</span>
+<span class="sd">        &gt;&gt;&gt; lennard_jones(X).shape</span>
+<span class="sd">        (5,)</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        Wales, D. J., &amp; Doye, J. P. (1997). Global optimization by basin-hopping and</span>
+<span class="sd">        the lowest energy structures of Lennard-Jones clusters containing up to 110 atoms.</span>
+<span class="sd">        The Journal of Physical Chemistry A, 101(28), 5111-5116.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_dim</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_atoms</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_dim</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Input dimension must be 3 * n_atoms (</span><span class="si">{</span><span class="n">expected_dim</span><span class="si">}</span><span class="s2">). Got </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Scale from [0, 1] to [-2, 2]</span>
+    <span class="c1"># [-2, 2] range has length 4.</span>
+    <span class="c1"># val_scaled = val_01 * (max - min) + min</span>
+    <span class="n">coords_flattened</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="mf">4.0</span> <span class="o">-</span> <span class="mf">2.0</span>
+
+    <span class="c1"># Reshape to (n_samples, n_atoms, 3)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">coords_flattened</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+    <span class="c1"># Calculate pairwise interactions</span>
+    <span class="c1"># Simple double loop over atoms is often sufficient for typical N (N &lt; ~150)</span>
+    <span class="c1"># vectorized along samples.</span>
+    <span class="c1"># Potential formula: 4*epsilon * sum_{i&lt;j} [ (sigma/r_ij)^12 - (sigma/r_ij)^6 ]</span>
+    <span class="c1"># We use reduced units: epsilon=1, sigma=1.</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">):</span>
+            <span class="c1"># Difference vectors: (n_samples, 3)</span>
+            <span class="n">d_vec</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[:,</span> <span class="n">j</span><span class="p">,</span> <span class="p">:]</span>
+
+            <span class="c1"># Squared Euclidean distances: (n_samples,)</span>
+            <span class="n">r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d_vec</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Avoid division by zero / singularities by setting a lower bound</span>
+            <span class="c1"># In optimization, particles can overlap leading to infinity.</span>
+            <span class="c1"># We clip at a small value.</span>
+            <span class="n">r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
+
+            <span class="n">inv_r2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">r2</span>
+            <span class="n">inv_r6</span> <span class="o">=</span> <span class="n">inv_r2</span><span class="o">**</span><span class="mi">3</span>
+            <span class="n">inv_r12</span> <span class="o">=</span> <span class="n">inv_r6</span><span class="o">**</span><span class="mi">2</span>
+
+            <span class="n">potential</span> <span class="o">+=</span> <span class="n">inv_r12</span> <span class="o">-</span> <span class="n">inv_r6</span>
+
+    <span class="k">return</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">potential</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="spotoptim.function.so.michalewicz" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">michalewicz</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code>
 
@@ -2376,6 +2774,395 @@ Springer-Verlag.</p>
     <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">X</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.robot_arm_obstacle" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.robot_arm_obstacle" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</p>
+<p>The goal is to minimize the distance of the end-effector to a target point
+while avoiding collision with a set of circular obstacles. This problem mimics
+a real-world inverse kinematics solver for a redundant manipulator.</p>
+
+
+<details class="input-domain-handling" open>
+  <summary>Input Domain Handling</summary>
+  <p>The function accepts inputs in the range [0, 1] and internally maps them
+to the search domain [-pi, pi] for each joint angle (radians).</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input angles (normalized).
+- Shape (n_samples, 10).
+The input contains the normalized relative angles for the 10 links.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Cost values (Weighted sum of Distance + Penalty). Shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input dimensions do not match 10.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Target: (5.0, 5.0)</li>
+<li>Obstacles:<ul>
+<li>Order 1: (2,2), r=1</li>
+<li>Order 2: (4,3), r=1.5</li>
+<li>Order 3: (3,6), r=1</li>
+</ul>
+</li>
+<li>Dimensions: 10 (fixed)</li>
+<li>Search domain: [-pi, pi]^10 (mapped from [0, 1])</li>
+<li>Characteristics: Multimodal, disjoint feasible regions, constrained.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function.so</span><span class="w"> </span><span class="kn">import</span> <span class="n">robot_arm_obstacle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># Random angles in [0, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([2547...])</span>
+</code></pre></div>
+    <p>Batch evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(5,)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</span>
+
+<span class="sd">    The goal is to minimize the distance of the end-effector to a target point</span>
+<span class="sd">    while avoiding collision with a set of circular obstacles. This problem mimics</span>
+<span class="sd">    a real-world inverse kinematics solver for a redundant manipulator.</span>
+
+<span class="sd">    Input Domain Handling:</span>
+<span class="sd">        The function accepts inputs in the range [0, 1] and internally maps them</span>
+<span class="sd">        to the search domain [-pi, pi] for each joint angle (radians).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (np.ndarray): Input angles (normalized).</span>
+<span class="sd">            - Shape (n_samples, 10).</span>
+<span class="sd">            The input contains the normalized relative angles for the 10 links.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Cost values (Weighted sum of Distance + Penalty). Shape (n_samples,).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If input dimensions do not match 10.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Target: (5.0, 5.0)</span>
+<span class="sd">        - Obstacles:</span>
+<span class="sd">            - Order 1: (2,2), r=1</span>
+<span class="sd">            - Order 2: (4,3), r=1.5</span>
+<span class="sd">            - Order 3: (3,6), r=1</span>
+<span class="sd">        - Dimensions: 10 (fixed)</span>
+<span class="sd">        - Search domain: [-pi, pi]^10 (mapped from [0, 1])</span>
+<span class="sd">        - Characteristics: Multimodal, disjoint feasible regions, constrained.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function.so import robot_arm_obstacle</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(42)</span>
+<span class="sd">        &gt;&gt;&gt; X = rng.random(10)  # Random angles in [0, 1]</span>
+<span class="sd">        &gt;&gt;&gt; robot_arm_obstacle(X)</span>
+<span class="sd">        array([2547...])</span>
+
+<span class="sd">        Batch evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = rng.random((5, 10))</span>
+<span class="sd">        &gt;&gt;&gt; robot_arm_obstacle(X).shape</span>
+<span class="sd">        (5,)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_dims</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">n_dims</span> <span class="o">!=</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;This function requires exactly 10 dimensions (joint angles), got </span><span class="si">{</span><span class="n">n_dims</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Scale from [0, 1] to [-pi, pi]</span>
+    <span class="c1"># [-pi, pi] range length is 2*pi</span>
+    <span class="n">X_scaled</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="c1"># --- Problem Configuration ---</span>
+    <span class="c1"># Length of each arm link</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span>
+
+    <span class="c1"># Target coordinates (reachable within total length of 10)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+
+    <span class="c1"># Obstacles: centers (x,y) and radii (r)</span>
+    <span class="n">obstacles</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]),</span> <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]),</span> <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">]),</span> <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="p">]</span>
+
+    <span class="c1"># --- Forward Kinematics ---</span>
+    <span class="c1"># X contains relative angles (theta).</span>
+    <span class="c1"># Absolute angles (cumulative sum of relative angles)</span>
+    <span class="c1"># shape: (n_samples, 10)</span>
+    <span class="n">abs_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Calculate (dx, dy) for each link</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">abs_angles</span><span class="p">)</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">abs_angles</span><span class="p">)</span>
+
+    <span class="c1"># Calculate joint coordinates (cumulative sum of dx, dy)</span>
+    <span class="c1"># Positions shape: (n_samples, 10) for x and y separately</span>
+    <span class="n">joint_positions_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">joint_positions_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># --- Cost Calculation ---</span>
+
+    <span class="c1"># 1. Distance to Target (End-effector only)</span>
+    <span class="n">end_effector_x</span> <span class="o">=</span> <span class="n">joint_positions_x</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">end_effector_y</span> <span class="o">=</span> <span class="n">joint_positions_y</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">dist_sq</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_effector_x</span> <span class="o">-</span> <span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">end_effector_y</span> <span class="o">-</span> <span class="n">target</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># 2. Obstacle Penalty</span>
+    <span class="n">penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+    <span class="c1"># Check every joint against obstacles</span>
+    <span class="c1"># (Simplified: checking joints only, not full link segments)</span>
+    <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="n">obstacles</span><span class="p">:</span>
+        <span class="n">ox</span><span class="p">,</span> <span class="n">oy</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;radius&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Check all 10 joints for this obstacle</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+            <span class="n">jx</span> <span class="o">=</span> <span class="n">joint_positions_x</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+            <span class="n">jy</span> <span class="o">=</span> <span class="n">joint_positions_y</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+
+            <span class="c1"># Distance from joint to obstacle center</span>
+            <span class="n">d_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">jx</span> <span class="o">-</span> <span class="n">ox</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">jy</span> <span class="o">-</span> <span class="n">oy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># If inside radius + buffer, add large penalty</span>
+            <span class="c1"># Using violation metric: max(0, r - d + buffer)</span>
+            <span class="c1"># Buffer = 0.1 to discourage grazing</span>
+            <span class="n">violation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">r</span> <span class="o">-</span> <span class="n">d_obs</span> <span class="o">+</span> <span class="mf">0.1</span><span class="p">)</span>
+
+            <span class="c1"># Penalty weight 1000</span>
+            <span class="n">penalty</span> <span class="o">+=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">violation</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">dist_sq</span> <span class="o">+</span> <span class="n">penalty</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
