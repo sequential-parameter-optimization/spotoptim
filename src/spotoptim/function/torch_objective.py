@@ -21,6 +21,26 @@ class TorchObjective:
         self.experiment = experiment
         self.device = experiment.torch_device
 
+    @property
+    def bounds(self):
+        """Returns the bounds of the hyperparameters."""
+        return self.experiment.hyperparameters.bounds
+
+    @property
+    def var_type(self):
+        """Returns the types of the hyperparameters."""
+        return self.experiment.hyperparameters.var_type
+
+    @property
+    def var_name(self):
+        """Returns the names of the hyperparameters."""
+        return self.experiment.hyperparameters.var_name
+
+    @property
+    def var_trans(self):
+        """Returns the transformations of the hyperparameters."""
+        return self.experiment.hyperparameters.var_trans
+
     def _get_hyperparameters(self, X: np.ndarray) -> Dict[str, Any]:
         """
         Converts the input vector X into a dictionary of hyperparameters

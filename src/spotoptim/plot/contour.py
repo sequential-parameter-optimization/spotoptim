@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 def simple_contour(
@@ -509,6 +510,7 @@ def contourf_plot(
             ax=axes.ravel().tolist(),
             orientation=colorbar_orientation,
             shrink=0.8,
+            pad=0.05,
         )
 
         fig.subplots_adjust(wspace=wspace, hspace=hspace)
@@ -552,7 +554,17 @@ def contourf_plot(
         ax.set_title(f"Contour Plot of {z_col}")
         ax.set_aspect(aspect)
 
-        # Add colorbar
-        fig.colorbar(contour, ax=ax, orientation=colorbar_orientation)
+        # Add colorbar using make_axes_locatable to ensure it's outside
+        divider = make_axes_locatable(ax)
+        if colorbar_orientation == "vertical":
+            cax = divider.append_axes("right", size="5%", pad=0.1)
+        else:
+            cax = divider.append_axes("bottom", size="5%", pad=0.1)
+
+        fig.colorbar(
+            contour,
+            cax=cax,
+            orientation=colorbar_orientation,
+        )
 
         plt.show()

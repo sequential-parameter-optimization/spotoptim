@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Callable, Optional, Tuple, List
+from typing import Callable, Optional, Tuple, List, Any
 from scipy.optimize import OptimizeResult, differential_evolution
 from scipy.stats.qmc import LatinHypercube
 from sklearn.base import BaseEstimator
@@ -14,6 +14,7 @@ from datetime import datetime
 import os
 import shutil
 import pickle
+from tabulate import tabulate
 
 
 class SpotOptim(BaseEstimator):
@@ -307,7 +308,7 @@ class SpotOptim(BaseEstimator):
     def __init__(
         self,
         fun: Callable,
-        bounds: list,
+        bounds: Optional[list] = None,
         max_iter: int = 20,
         n_initial: int = 10,
         surrogate: Optional[object] = None,
@@ -332,7 +333,6 @@ class SpotOptim(BaseEstimator):
         acquisition_failure_strategy: str = "random",
         penalty: Optional[float] = None,
         x0: Optional[np.ndarray] = None,
-        var_transform: Optional[list] = None,
     ):
         warnings.filterwarnings(warnings_filter)
 
@@ -344,9 +344,22 @@ class SpotOptim(BaseEstimator):
         else:
             self.tolerance_x = tolerance_x
 
-        # Handle var_transform alias
-        if var_trans is None and var_transform is not None:
-            var_trans = var_transform
+        # Infer parameters from objective function if not provided
+        if bounds is None:
+            bounds = getattr(fun, "bounds", None)
+            if bounds is None:
+                raise ValueError(
+                    "Bounds must be provided either as an argument or via the objective function."
+                )
+
+        if var_type is None:
+            var_type = getattr(fun, "var_type", None)
+
+        if var_name is None:
+            var_name = getattr(fun, "var_name", None)
+
+        if var_trans is None:
+            var_trans = getattr(fun, "var_trans", None)
 
         # Validate parameters
         if max_iter < n_initial:
@@ -5363,7 +5376,6 @@ class SpotOptim(BaseEstimator):
         tablefmt: str = "github",
         precision: int = 4,
         show_importance: bool = False,
-        importance_threshold: float = 0.0,
     ) -> str:
         """Get a comprehensive table string of optimization results.
 
@@ -5380,9 +5392,6 @@ class SpotOptim(BaseEstimator):
                 Importance is calculated as the normalized standard deviation of each
                 parameter's effect on the objective. Requires multiple evaluations.
                 Defaults to False.
-            importance_threshold (float, optional): Minimum importance percentage to display
-                significance stars. Values > 95: '***', > 50: '**', > 1: '*', > 0.1: '.'.
-                Defaults to 0.0.
 
         Returns:
             str: Formatted table string that can be printed or saved.
@@ -5447,14 +5456,6 @@ class SpotOptim(BaseEstimator):
             | size   | num    | -5.0    | 5.0     | 0.0123  |
             | color  | factor | red     | blue    | green   |
         """
-        try:
-            from tabulate import tabulate
-        except ImportError:
-            raise ImportError(
-                "tabulate is required for get_results_table(). "
-                "Install it with: pip install tabulate"
-            )
-
         if self.best_x_ is None or self.best_y_ is None:
             return "No optimization results available. Run optimize() first."
 
@@ -5486,31 +5487,44 @@ class SpotOptim(BaseEstimator):
                 if self.all_var_type
                 else ["float"] * len(best_x_display)
             ),
+            "default": [],
             "lower": [],
             "upper": [],
             "tuned": [],
-            "trans": [t if t is not None else "-" for t in all_var_trans],
+            "transform": [t if t is not None else "-" for t in all_var_trans],
         }
 
-        # Process bounds and tuned values (use original bounds for display)
+        # Process bounds, defaults, and tuned values
         for i in range(len(best_x_display)):
             var_type = table_data["type"][i]
 
-            # Handle bounds based on variable type
+            # Handle bounds and defaults based on variable type
             if var_type == "factor":
                 # For factors, show original string values
                 if i in self._factor_maps:
                     factor_map = self._factor_maps[i]
                     lower_str = factor_map[0]  # First level
                     upper_str = factor_map[len(factor_map) - 1]  # Last level
+                    # Default is middle level logic (matching get_design_table)
+                    mid_idx = len(factor_map) // 2
+                    default_str = factor_map[mid_idx]
+
                     table_data["lower"].append(lower_str)
                     table_data["upper"].append(upper_str)
+                    table_data["default"].append(default_str)
                 else:
                     table_data["lower"].append(str(self._original_lower[i]))
                     table_data["upper"].append(str(self._original_upper[i]))
+                    table_data["default"].append("N/A")
             else:
                 table_data["lower"].append(self._original_lower[i])
                 table_data["upper"].append(self._original_upper[i])
+                # Default is midpoint logic
+                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
+                if var_type == "int":
+                    table_data["default"].append(int(default_val))
+                else:
+                    table_data["default"].append(default_val)
 
             # Format tuned value
             tuned_val = best_x_display[i]
@@ -5525,15 +5539,16 @@ class SpotOptim(BaseEstimator):
         if show_importance:
             importance = self.get_importance()
             table_data["importance"] = importance
-            table_data["stars"] = self._get_significance_stars(
-                importance, importance_threshold
-            )
+            table_data["stars"] = self.get_stars(importance)
 
         # Format float precision
+        # Columns: name, type, default, lower, upper, tuned, transform, (importance, stars)
+        # Type: str, str, val, val, val, val, str, (val, str)
         if show_importance:
             floatfmt = (
                 "",
                 "",
+                f".{precision}f",
                 f".{precision}f",
                 f".{precision}f",
                 f".{precision}f",
@@ -5545,6 +5560,7 @@ class SpotOptim(BaseEstimator):
             floatfmt = (
                 "",
                 "",
+                f".{precision}f",
                 f".{precision}f",
                 f".{precision}f",
                 f".{precision}f",
@@ -5562,14 +5578,17 @@ class SpotOptim(BaseEstimator):
 
         # Add interpretation if importance is shown
         if show_importance:
-            table += "\n\nInterpretation: ***: >95%, **: >50%, *: >1%, .: >0.1%"
+            table += "\n\nInterpretation: ***: >99%, **: >75%, *: >50%, .: >10%"
 
         return table
 
     def print_results_table(
         self,
-        *args,
-        **kwargs,
+        tablefmt: str = "github",
+        precision: int = 4,
+        show_importance: bool = False,
+        *args: Any,
+        **kwargs: Any,
     ) -> str:
         """Print (and return) a comprehensive table of optimization results.
 
@@ -5577,17 +5596,26 @@ class SpotOptim(BaseEstimator):
         and then returns it.
 
         Args:
+            tablefmt (str, optional): Table format. Defaults to 'github'.
+            precision (int, optional): Decimal precision. Defaults to 4.
+            show_importance (bool, optional): Show importance column. Defaults to False.
             *args: Arguments passed to get_results_table.
             **kwargs: Keyword arguments passed to get_results_table.
 
         Returns:
             str: Formatted table string.
         """
-        table = self.get_results_table(*args, **kwargs)
+        table = self.get_results_table(
+            tablefmt=tablefmt,
+            precision=precision,
+            show_importance=show_importance,
+            *args,
+            **kwargs,
+        )
         print(table)
         return table
 
-    def print_results(self, *args, **kwargs) -> str:
+    def print_results(self, *args: Any, **kwargs: Any) -> str:
         """Alias for print_results_table for compatibility.
         Prints the table and returns it.
         """
@@ -5674,14 +5702,6 @@ class SpotOptim(BaseEstimator):
             | neurons | int    |    16.0 |   256.0 |     136.0 |
             | dropout | num    |     0.0 |     0.5 |      0.25 |
         """
-        try:
-            from tabulate import tabulate
-        except ImportError:
-            raise ImportError(
-                "tabulate is required for get_design_table(). "
-                "Install it with: pip install tabulate"
-            )
-
         # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
         if self.red_dim and hasattr(self, "all_var_trans"):
             all_var_trans = self.all_var_trans
@@ -5703,7 +5723,7 @@ class SpotOptim(BaseEstimator):
             "lower": [],
             "upper": [],
             "default": [],
-            "trans": [t if t is not None else "-" for t in all_var_trans],
+            "transform": [t if t is not None else "-" for t in all_var_trans],
         }
 
         # Process bounds and compute defaults (use original bounds for display)
@@ -5772,6 +5792,51 @@ class SpotOptim(BaseEstimator):
         table = self.get_design_table(tablefmt=tablefmt, precision=precision)
         print(table)
         return table
+
+    def gen_design_table(self, precision: int = 4, tablefmt: str = "github") -> str:
+        """Generate a table of the design or results.
+
+        If optimization has been run (results available), returns the results table.
+        Otherwise, returns the design table (search space configuration).
+
+        Args:
+            tablefmt (str, optional): Table format. Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+
+        Returns:
+            str: Formatted table string.
+        """
+        if self.best_x_ is not None:
+            return self.get_results_table(precision=precision, tablefmt=tablefmt)
+        else:
+            return self.get_design_table(precision=precision, tablefmt=tablefmt)
+
+    def get_stars(self, input_list: list) -> list:
+        """Converts a list of values to a list of stars.
+
+        Used to visualize the importance of a variable.
+        Thresholds: >99: ***, >75: **, >50: *, >10: .
+
+        Args:
+            input_list (list): A list of importance scores (0-100).
+
+        Returns:
+            list: A list of star strings.
+        """
+        output_list = []
+        for value in input_list:
+            if value > 99:
+                output_list.append("***")
+            elif value > 75:
+                output_list.append("**")
+            elif value > 50:
+                output_list.append("*")
+            elif value > 10:
+                output_list.append(".")
+            else:
+                output_list.append("")
+        return output_list
 
     def get_importance(self) -> List[float]:
         """Calculate variable importance scores.
@@ -5873,39 +5938,6 @@ class SpotOptim(BaseEstimator):
             importance = [0.0] * len(sensitivities)
 
         return importance
-
-    def _get_significance_stars(
-        self, importance: List[float], threshold: float = 0.0
-    ) -> List[str]:
-        """Convert importance scores to significance stars.
-
-        Args:
-            importance (List[float]): Importance scores (0-100 scale).
-            threshold (float): Minimum threshold for displaying stars.
-
-        Returns:
-            List[str]: Star symbols for each importance score.
-
-        Examples:
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)])
-            >>> stars = opt._get_significance_stars([100, 75, 15, 2, 0.5, 0.01])
-            >>> stars
-            ['***', '**', '*', '*', '.', '']
-        """
-        stars = []
-        for imp in importance:
-            if imp > 95:
-                stars.append("***")
-            elif imp > 50:
-                stars.append("**")
-            elif imp > 1:
-                stars.append("*")
-            elif imp > threshold:
-                stars.append(".")
-            else:
-                stars.append("")
-        return stars
 
     def plot_importance(
         self, threshold: float = 0.0, figsize: Tuple[int, int] = (10, 6)

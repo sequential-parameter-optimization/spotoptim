@@ -193,11 +193,6 @@ class ParameterSet:
         """
         return self._var_trans
 
-    @property
-    def var_transform(self) -> List[Optional[str]]:
-        """Alias for var_trans. Returns variable transformations."""
-        return self._var_trans
-
     def sample_default(self) -> Dict[str, Any]:
         """Returns the default configuration.
 
