@@ -23,6 +23,13 @@ def objective_remote(
 
     Raises:
         requests.exceptions.RequestException: If the remote request fails.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.function.remote import objective_remote
+        >>> X = np.array([[1, 2], [3, 4]])
+        >>> y = objective_remote(X)
+        >>> print(y)
     """
     # Prepare the payload
     # X needs to be converted to a list for JSON serialization

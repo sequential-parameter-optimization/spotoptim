@@ -24,7 +24,7 @@ class ExperimentControl:
     num_workers: int = 0
 
     # Model Training Settings
-    epochs: int = 100
+    epochs: Optional[int] = None
     batch_size: int = 32
     optimizer_class: Optional[Any] = None  # Torch optimizer class
     loss_function: Optional[Any] = None  # Torch loss function

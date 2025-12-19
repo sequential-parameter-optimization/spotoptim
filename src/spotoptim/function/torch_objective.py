@@ -163,7 +163,12 @@ class TorchObjective:
         criterion = self.experiment.loss_function or nn.MSELoss()
 
         base_epochs = self.experiment.epochs
-        epochs = int(params.get("epochs", base_epochs))
+        if "epochs" in params:
+            epochs = int(params["epochs"])
+        elif base_epochs is not None:
+            epochs = int(base_epochs)
+        else:
+            epochs = 100
 
         model.to(self.device)
 
@@ -252,6 +257,7 @@ class TorchObjective:
             dataset = self.experiment.dataset
             model_kwargs = {
                 "input_dim": dataset.input_dim,
+                "in_channels": dataset.input_dim,
                 "output_dim": dataset.output_dim,
             }
             model_kwargs.update(params)

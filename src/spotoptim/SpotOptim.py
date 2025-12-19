@@ -332,6 +332,7 @@ class SpotOptim(BaseEstimator):
         acquisition_failure_strategy: str = "random",
         penalty: Optional[float] = None,
         x0: Optional[np.ndarray] = None,
+        var_transform: Optional[list] = None,
     ):
         warnings.filterwarnings(warnings_filter)
 
@@ -342,6 +343,10 @@ class SpotOptim(BaseEstimator):
             self.tolerance_x = self.eps
         else:
             self.tolerance_x = tolerance_x
+
+        # Handle var_transform alias
+        if var_trans is None and var_transform is not None:
+            var_trans = var_transform
 
         # Validate parameters
         if max_iter < n_initial:
@@ -693,6 +698,11 @@ class SpotOptim(BaseEstimator):
             p = float(m.group(1))
             return x**p
 
+        m = re.match(r"pow\(([0-9.]+),\s*x\)", trans)
+        if m:
+            base = float(m.group(1))
+            return base**x
+
         m = re.match(r"log\(x,\s*([0-9.]+)\)", trans)
         if m:
             base = float(m.group(1))
@@ -747,6 +757,11 @@ class SpotOptim(BaseEstimator):
         if m:
             p = float(m.group(1))
             return x ** (1.0 / p)
+
+        m = re.match(r"pow\(([0-9.]+),\s*x\)", trans)
+        if m:
+            base = float(m.group(1))
+            return np.log(x) / np.log(base)
 
         m = re.match(r"log\(x,\s*([0-9.]+)\)", trans)
         if m:
@@ -5343,18 +5358,17 @@ class SpotOptim(BaseEstimator):
 
             print(f"  {name:20s}: {corr:+.3f} (p={p_value:.3f}){significance}")
 
-    def print_results_table(
+    def get_results_table(
         self,
         tablefmt: str = "github",
         precision: int = 4,
         show_importance: bool = False,
         importance_threshold: float = 0.0,
     ) -> str:
-        """Print a comprehensive table of optimization results.
+        """Get a comprehensive table string of optimization results.
 
-        This method displays the search space configuration, best values found,
-        and optionally variable importance scores in a formatted table similar
-        to spotPython's print_res_table().
+        This method generates a formatted table of the search space configuration,
+        best values found, and optionally variable importance scores.
 
         Args:
             tablefmt (str, optional): Table format for tabulate library. Options include:
@@ -5389,7 +5403,7 @@ class SpotOptim(BaseEstimator):
             ...     n_initial=10
             ... )
             >>> result = opt.optimize()
-            >>> table = opt.print_results_table()
+            >>> table = opt.get_results_table()
             >>> print(table)
             | name   | type   |   lower |   upper |   tuned |
             |--------|--------|---------|---------|---------|
@@ -5398,7 +5412,7 @@ class SpotOptim(BaseEstimator):
             | x3     | num    |    -5.0 |     5.0 |  0.0345 |
             >>>
             >>> # Example 2: With importance scores
-            >>> table = opt.print_results_table(show_importance=True)
+            >>> table = opt.get_results_table(show_importance=True)
             >>> print(table)
             | name   | type   |   lower |   upper |   tuned |   importance | stars   |
             |--------|--------|---------|---------|---------|--------------|---------|
@@ -5407,7 +5421,7 @@ class SpotOptim(BaseEstimator):
             | x3     | num    |    -5.0 |     5.0 |  0.0345 |        22.60 | *       |
             >>>
             >>> # Example 3: Different table format
-            >>> table = opt.print_results_table(tablefmt="grid")
+            >>> table = opt.get_results_table(tablefmt="grid")
             >>> print(table)
             +--------+--------+---------+---------+---------+
             | name   | type   |   lower |   upper |   tuned |
@@ -5426,7 +5440,7 @@ class SpotOptim(BaseEstimator):
             ...     n_initial=10
             ... )
             >>> result = opt.optimize()
-            >>> table = opt.print_results_table()
+            >>> table = opt.get_results_table()
             >>> print(table)
             | name   | type   | lower   | upper   | tuned   |
             |--------|--------|---------|---------|---------|
@@ -5437,7 +5451,7 @@ class SpotOptim(BaseEstimator):
             from tabulate import tabulate
         except ImportError:
             raise ImportError(
-                "tabulate is required for print_results_table(). "
+                "tabulate is required for get_results_table(). "
                 "Install it with: pip install tabulate"
             )
 
@@ -5552,16 +5566,43 @@ class SpotOptim(BaseEstimator):
 
         return table
 
-    def print_design_table(
+    def print_results_table(
+        self,
+        *args,
+        **kwargs,
+    ) -> str:
+        """Print (and return) a comprehensive table of optimization results.
+
+        This method calls `get_results_table` to generate the table string, prints it,
+        and then returns it.
+
+        Args:
+            *args: Arguments passed to get_results_table.
+            **kwargs: Keyword arguments passed to get_results_table.
+
+        Returns:
+            str: Formatted table string.
+        """
+        table = self.get_results_table(*args, **kwargs)
+        print(table)
+        return table
+
+    def print_results(self, *args, **kwargs) -> str:
+        """Alias for print_results_table for compatibility.
+        Prints the table and returns it.
+        """
+        return self.print_results_table(*args, **kwargs)
+
+    def get_design_table(
         self,
         tablefmt: str = "github",
         precision: int = 4,
     ) -> str:
-        """Print a table showing the search space design before optimization.
+        """Get a table string showing the search space design before optimization.
 
-        This method displays the variable names, types, bounds, and defaults
-        without requiring an optimization run. Useful for inspecting and
-        documenting the search space configuration.
+        This method generates a table displaying the variable names, types, bounds,
+        and defaults without requiring an optimization run. Useful for inspecting
+        and documenting the search space configuration.
 
         Args:
             tablefmt (str, optional): Table format for tabulate library.
@@ -5585,7 +5626,7 @@ class SpotOptim(BaseEstimator):
             ...     max_iter=20,
             ...     n_initial=10
             ... )
-            >>> table = opt.print_design_table()
+            >>> table = opt.get_design_table()
             >>> print(table)
             | name   | type   |   lower |   upper |   default |
             |--------|--------|---------|---------|-----------|
@@ -5602,7 +5643,7 @@ class SpotOptim(BaseEstimator):
             ...     max_iter=30,
             ...     n_initial=10
             ... )
-            >>> table = opt.print_design_table()
+            >>> table = opt.get_design_table()
             >>> print(table)
             | name      | type   | lower   | upper   | default   |
             |-----------|--------|---------|---------|-----------|
@@ -5622,9 +5663,9 @@ class SpotOptim(BaseEstimator):
             ...     max_iter=50,
             ...     n_initial=15
             ... )
-            >>> # Print design table before optimization
+            >>> # Get design table before optimization
             >>> print("Search Space Configuration:")
-            >>> table = opt.print_design_table()
+            >>> table = opt.get_design_table()
             >>> print(table)
             Search Space Configuration:
             | name    | type   |   lower |   upper |   default |
@@ -5637,7 +5678,7 @@ class SpotOptim(BaseEstimator):
             from tabulate import tabulate
         except ImportError:
             raise ImportError(
-                "tabulate is required for print_design_table(). "
+                "tabulate is required for get_design_table(). "
                 "Install it with: pip install tabulate"
             )
 
@@ -5707,6 +5748,29 @@ class SpotOptim(BaseEstimator):
             floatfmt=floatfmt,
         )
 
+        return table
+
+    def print_design_table(
+        self,
+        tablefmt: str = "github",
+        precision: int = 4,
+    ) -> str:
+        """Print (and return) a table showing the search space design before optimization.
+
+        This method calls `get_design_table` to generate the table string, prints it,
+        and then returns it.
+
+        Args:
+            tablefmt (str, optional): Table format for tabulate library.
+                Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+
+        Returns:
+            str: Formatted table string.
+        """
+        table = self.get_design_table(tablefmt=tablefmt, precision=precision)
+        print(table)
         return table
 
     def get_importance(self) -> List[float]:
@@ -5877,11 +5941,3 @@ class SpotOptim(BaseEstimator):
         plt.title("Variable Importance")
         plt.gca().invert_yaxis()  # Best on top
         plt.show()
-
-    def print_results(self, *args, **kwargs) -> str:
-        """Alias for print_results_table for compatibility.
-        Prints the table and returns it.
-        """
-        table = self.print_results_table(*args, **kwargs)
-        print(table)
-        return table
