@@ -369,6 +369,9 @@ class SpotOptim(BaseEstimator):
             )
 
         self.fun = fun
+        self.objective_names = getattr(
+            fun, "objective_names", getattr(fun, "metrics", None)
+        )
         self.bounds = bounds
         self.max_iter = max_iter
         self.n_initial = n_initial
@@ -3028,6 +3031,18 @@ class SpotOptim(BaseEstimator):
             X0 = X0[finite_mask]
             y0 = y0[finite_mask]
 
+            # Also filter y_mo if it exists (must match y0 size)
+            if self.y_mo is not None:
+                if len(self.y_mo) == len(finite_mask):  # Safety check
+                    self.y_mo = self.y_mo[finite_mask]
+                else:
+                    # Fallback or warning if sizes already mismatched (shouldn't happen here normally)
+                    if self.verbose:
+                        print(
+                            f"Warning: y_mo size ({len(self.y_mo)}) != mask size ({len(finite_mask)}) in initial design filtering"
+                        )
+                    # Try to filter only if sizes match, otherwise we might be in inconsistent state
+
         return X0, y0, len(finite_mask)
 
     def _check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
@@ -3284,19 +3299,53 @@ class SpotOptim(BaseEstimator):
         # Handle NaN/inf values in new evaluations
         # Use historical y values (self.y_) for computing penalty statistics
         y_next = self._apply_penalty_NA(y_next, y_history=self.y_)
-        x_next_repeated, y_next = self._remove_nan(
+
+        # Identify which points are valid (finite) BEFORE removing them
+        # Note: _remove_nan filters based on y_next finite values
+        finite_mask = np.isfinite(y_next)
+
+        X_next_clean, y_next_clean = self._remove_nan(
             x_next, y_next, stop_on_zero_return=False
         )
 
+        # If we have multi-objective values, we need to filter them too
+        # The new MO values were appended to self.y_mo in _evaluate_function -> _mo2so -> _store_mo
+        # So self.y_mo currently contains the INVALID points at the end.
+        if self.y_mo is not None:
+            n_new = len(y_next)
+            # Check if y_mo has the new points appended
+            if len(self.y_mo) >= n_new:
+                # The new points are at the end of y_mo
+                y_mo_new = self.y_mo[-n_new:]
+                y_mo_old = self.y_mo[:-n_new]
+
+                # Filter the new MO points using the mask from y_next
+                y_mo_new_clean = y_mo_new[finite_mask]
+
+                # Reconstruct y_mo
+                if len(y_mo_old) > 0:
+                    self.y_mo = (
+                        np.vstack([y_mo_old, y_mo_new_clean])
+                        if len(y_mo_new_clean) > 0
+                        else y_mo_old
+                    )
+                else:
+                    self.y_mo = y_mo_new_clean
+            else:
+                if self.verbose:
+                    print(
+                        "Warning: y_mo size inconsistent with new points in _handle_NA_new_points"
+                    )
+
         # Skip this iteration if all new points were NaN/inf
-        if len(y_next) == 0:
+        if len(y_next_clean) == 0:
             if self.verbose:
                 print(
                     f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}"
                 )
             return None, None
 
-        return x_next_repeated, y_next
+        return X_next_clean, y_next_clean
 
     def _update_best_main_loop(
         self, x_next_repeated: np.ndarray, y_next: np.ndarray
@@ -3748,6 +3797,7 @@ class SpotOptim(BaseEstimator):
         log_y: bool = False,
         figsize: Tuple[int, int] = (10, 6),
         ylabel: str = "Objective Value",
+        mo: bool = False,
     ) -> None:
         """Plot optimization progress showing all evaluations and best-so-far curve.
 
@@ -3761,6 +3811,7 @@ class SpotOptim(BaseEstimator):
             log_y (bool, optional): Whether to use log scale for y-axis. Defaults to False.
             figsize (tuple, optional): Figure size as (width, height). Defaults to (10, 6).
             ylabel (str, optional): Label for y-axis. Defaults to "Objective Value".
+            mo (bool, optional): Whether to plot individual objectives if available. Defaults to False.
 
         Examples:
             >>> import numpy as np
@@ -3779,6 +3830,8 @@ class SpotOptim(BaseEstimator):
             >>> opt.plot_progress()
             >>> # Plot with log y-axis for better visibility of small improvements
             >>> opt.plot_progress(log_y=True)
+            >>> # Plot with multi-objective values (if available)
+            >>> opt.plot_progress(mo=True, log_y=True)
         """
         try:
             import matplotlib.pyplot as plt
@@ -3798,6 +3851,38 @@ class SpotOptim(BaseEstimator):
         # Separate initial design points from sequential evaluations
         n_initial = min(self.n_initial, len(history))
         initial_y = history[:n_initial]
+        sequential_y = history[n_initial:]
+
+        # Add light grey background for initial design region
+        if n_initial > 0:
+            plt.axvspan(0, n_initial, alpha=0.15, color="gray", zorder=0)
+
+        # Plot multi-objective values if requested and available
+        if mo and self.y_mo is not None:
+            n_samples, n_obj = self.y_mo.shape
+            x_all = np.arange(1, n_samples + 1)
+
+            # Determine names
+            names = self.objective_names
+            if names is None or len(names) != n_obj:
+                names = [f"Objective {i+1}" for i in range(n_obj)]
+
+            # Basic colors (excluding gray/red used for main plot)
+            # Use a colormap or a set list
+            colors = plt.cm.viridis(np.linspace(0, 1, n_obj))
+
+            for i in range(n_obj):
+                plt.plot(
+                    x_all,
+                    self.y_mo[:, i],
+                    linestyle="--",
+                    marker="x",
+                    alpha=0.7,
+                    label=f"{names[i]}",
+                    zorder=1,
+                )
+
+        # Plot initial design points as scatter (not connected)
         sequential_y = history[n_initial:]
 
         # Add light grey background for initial design region
@@ -5624,11 +5709,11 @@ class SpotOptim(BaseEstimator):
         print(table)
         return table
 
-    def print_results(self, *args: Any, **kwargs: Any) -> str:
+    def print_results(self, *args: Any, **kwargs: Any) -> None:
         """Alias for print_results_table for compatibility.
-        Prints the table and returns it.
+        Prints the table.
         """
-        return self.print_results_table(*args, **kwargs)
+        self.print_results_table(*args, **kwargs)
 
     def get_design_table(
         self,

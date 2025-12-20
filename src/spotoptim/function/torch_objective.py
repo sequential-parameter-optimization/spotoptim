@@ -41,6 +41,11 @@ class TorchObjective:
         """Returns the transformations of the hyperparameters."""
         return self.experiment.hyperparameters.var_trans
 
+    @property
+    def objective_names(self):
+        """Returns the names of the objectives."""
+        return self.experiment.metrics
+
     def _get_hyperparameters(self, X: np.ndarray) -> Dict[str, Any]:
         """
         Converts the input vector X into a dictionary of hyperparameters
