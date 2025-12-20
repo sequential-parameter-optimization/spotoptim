@@ -1847,7 +1847,12 @@ class SpotOptim(BaseEstimator):
                     budget -= (add_budget * ~more_runs).sum()
 
             t_budget = add_budget.sum()
-            add_budget[best] += allocations.sum() + delta - t_budget
+
+            # Adjust the best design to match the exact delta
+            # Ensure we don't go below current allocations
+            adjustment = allocations.sum() + delta - t_budget
+            add_budget[best] = max(allocations[best], add_budget[best] + adjustment)
+
             return add_budget - allocations
         else:
             return None
@@ -3215,7 +3220,11 @@ class SpotOptim(BaseEstimator):
             elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
                 # Get OCBA allocation
                 X_ocba = self._get_ocba_X(
-                    self.mean_X, self.mean_y, self.var_y, self.ocba_delta
+                    self.mean_X,
+                    self.mean_y,
+                    self.var_y,
+                    self.ocba_delta,
+                    verbose=self.verbose,
                 )
                 if self.verbose and X_ocba is not None:
                     print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")

@@ -452,7 +452,10 @@ def contourf_plot(
             num_rows = 1
 
         fig, axes = plt.subplots(
-            num_rows, num_cols, figsize=(figsize[0] * num_cols, figsize[1] * num_rows)
+            num_rows,
+            num_cols,
+            figsize=(figsize[0] * num_cols, figsize[1] * num_rows),
+            layout="constrained",
         )
         axes = np.array(axes).flatten()  # Flatten the axes array for easy indexing
 
@@ -513,7 +516,7 @@ def contourf_plot(
             pad=0.05,
         )
 
-        fig.subplots_adjust(wspace=wspace, hspace=hspace)
+        # fig.subplots_adjust(wspace=wspace, hspace=hspace)  # Incompatible with constrained_layout
         plt.show()
 
     else:
