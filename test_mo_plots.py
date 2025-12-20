@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from spotoptim.mo.pareto import mo_xy_surface, mo_xy_contour
 
 class MockModel:

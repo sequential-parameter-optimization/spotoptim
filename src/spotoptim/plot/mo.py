@@ -80,6 +80,17 @@ def plot_mo(
     if isinstance(y_orig, pd.DataFrame):
         y_orig = y_orig.values
 
+    # Ensure y_best, y_add, and y_add2 are 2D arrays (n_samples, n_targets)
+    # If they are 1D (n_targets,), assume they represent a single sample.
+    if y_best is not None and y_best.ndim == 1:
+        y_best = y_best.reshape(1, -1)
+
+    if y_add is not None and y_add.ndim == 1:
+        y_add = y_add.reshape(1, -1)
+
+    if y_add2 is not None and y_add2.ndim == 1:
+        y_add2 = y_add2.reshape(1, -1)
+
     for i, j in combinations:
         # Create figure with specified size
         plt.figure(figsize=figsize)
