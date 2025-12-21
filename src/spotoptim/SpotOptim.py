@@ -3869,7 +3869,7 @@ class SpotOptim(BaseEstimator):
 
             # Basic colors (excluding gray/red used for main plot)
             # Use a colormap or a set list
-            colors = plt.cm.viridis(np.linspace(0, 1, n_obj))
+            _ = plt.cm.viridis(np.linspace(0, 1, n_obj))
 
             for i in range(n_obj):
                 plt.plot(

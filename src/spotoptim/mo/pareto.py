@@ -1,6 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from typing import Any
+import itertools
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 
 def is_pareto_efficient(costs: np.ndarray, minimize: bool = True) -> np.ndarray:
@@ -126,10 +128,6 @@ def mo_xy_surface(
         >>> # Plot
         >>> mo_xy_surface([m1, m2], bounds=[(0, 1), (0, 1)], target_names=["Sum", "Prod"])
     """
-    import itertools
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-
     # Validate bounds
     for i, b in enumerate(bounds):
         if not (np.isscalar(b[0]) and np.isscalar(b[1])):
@@ -249,9 +247,6 @@ def mo_xy_contour(
         >>> # Plot
         >>> mo_xy_contour([m1, m2], bounds=[(0, 1), (0, 1)], target_names=["Sum", "Prod"])
     """
-    import itertools
-    import matplotlib.pyplot as plt
-
     # Validate bounds
     for i, b in enumerate(bounds):
         if not (np.isscalar(b[0]) and np.isscalar(b[1])):
@@ -371,9 +366,6 @@ def mo_pareto_optx_plot(
         >>> Y = np.array([[1, 2], [3, 4], [5, 6]])
         >>> mo_pareto_optx_plot(X, Y)
     """
-    import itertools
-    import matplotlib.pyplot as plt
-
     n_points, n_features = X.shape
     _, n_objectives = Y.shape
 
