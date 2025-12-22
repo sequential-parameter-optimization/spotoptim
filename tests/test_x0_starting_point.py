@@ -100,18 +100,20 @@ def test_x0_2d_array_single_point():
     assert result.success is True
 
 
-def test_x0_2d_array_multiple_points_error():
-    """Test that x0 cannot have multiple points."""
+def test_x0_2d_array_multiple_points_success():
+    """Test that x0 can have multiple points."""
 
     def objective(X):
         return np.sum(X**2, axis=1)
 
     x0 = np.array([[1.0, 2.0], [3.0, 4.0]])  # 2D array, shape (2, 2)
 
-    with pytest.raises(ValueError, match="must be a single point"):
-        SpotOptim(
+    opt = SpotOptim(
             fun=objective, bounds=[(-5, 5), (-5, 5)], x0=x0, max_iter=10, n_initial=5
-        )
+    )
+    result = opt.optimize()
+    assert result.success is True
+
 
 
 def test_x0_improves_optimization():
@@ -278,7 +280,7 @@ def test_x0_verbose_output(capsys):
     opt.optimize()
 
     captured = capsys.readouterr()
-    assert "Including starting point x0" in captured.out
+    assert "Including 1 starting points from x0" in captured.out
 
 
 def test_x0_none_default():

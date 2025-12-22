@@ -1006,43 +1006,51 @@ class SpotOptim(BaseEstimator):
                 f"Expected shape: ({len(self.all_lower)},)"
             )
         elif x0.ndim == 2:
-            if x0.shape[0] != 1:
-                raise ValueError(
-                    f"x0 must be a single point (1D array), got shape {x0.shape}. "
-                    f"Expected shape: ({len(self.all_lower)},) or (1, {len(self.all_lower)})"
-                )
-            x0 = x0.ravel()
+            pass  # 2D array is allowed now for x0
+            if x0.shape[0] == 1:
+                x0 = x0.ravel()
 
         # Check number of dimensions (compare with original full dimensions before reduction)
+        # Check number of dimensions
         expected_dim = len(self.all_lower)
-        if len(x0) != expected_dim:
-            raise ValueError(
-                f"x0 has {len(x0)} dimensions, but expected {expected_dim} dimensions. "
-                f"Bounds specify {expected_dim} parameters: {self.all_var_name}"
-            )
+        if x0.ndim == 1:
+            if len(x0) != expected_dim:
+                raise ValueError(
+                    f"x0 has {len(x0)} dimensions, but expected {expected_dim} dimensions. "
+                    f"Bounds specify {expected_dim} parameters: {self.all_var_name}"
+                )
+        else:
+            if x0.shape[1] != expected_dim:
+                raise ValueError(
+                    f"x0 has {x0.shape[1]} dimensions, but expected {expected_dim} dimensions. "
+                    f"Bounds specify {expected_dim} parameters: {self.all_var_name}"
+                )
 
-        # Check bounds (in original scale, before transformations)
-        # Use _original_lower/_original_upper which are before transformations
-        for i, (val, low, high, name) in enumerate(
-            zip(x0, self._original_lower, self._original_upper, self.all_var_name)
-        ):
-            # For fixed dimensions, check if x0 matches the fixed value
-            if self.red_dim and self.ident[i]:
-                if not np.isclose(val, low, atol=self.eps):
-                    raise ValueError(
-                        f"x0[{i}] ({name}) = {val} is a fixed dimension and must equal {low}. "
-                        f"Dimension {i} has bounds ({low}, {high}) indicating a fixed value."
-                    )
-            else:
-                # For non-fixed dimensions, check bounds
-                if not (low <= val <= high):
-                    raise ValueError(
-                        f"x0[{i}] ({name}) = {val} is outside bounds [{low}, {high}]. "
-                        f"All values must be within their respective bounds."
-                    )
+        # Helper to validate a single point
+        def check_point(pt):
+            for i, (val, low, high, name) in enumerate(
+                zip(pt, self._original_lower, self._original_upper, self.all_var_name)
+            ):
+                # Ensure val is scalar for comparison (zip iterates elements, but be safe)
+                if self.red_dim and self.ident[i]:
+                    if not np.isclose(val, low, atol=self.eps):
+                        raise ValueError(
+                            f"x0 ({name}) = {val} is a fixed dimension and must equal {low}. "
+                        )
+                else:
+                    if not (low <= val <= high):
+                        raise ValueError(
+                            f"x0 ({name}) = {val} is outside bounds [{low}, {high}]. "
+                        )
 
-        # Apply transformations to x0 (from original to internal scale)
-        x0_transformed = self._transform_X(x0.reshape(1, -1)).ravel()
+        if x0.ndim == 1:
+            check_point(x0)
+            # Apply transformations to x0 (from original to internal scale)
+            x0_transformed = self._transform_X(x0.reshape(1, -1)).ravel()
+        else:  # 2D case
+            for idx, pt in enumerate(x0):
+                check_point(pt)
+            x0_transformed = self._transform_X(x0)
 
         # If dimension reduction is active, reduce x0 to non-fixed dimensions
         if self.red_dim:
@@ -2858,13 +2866,26 @@ class SpotOptim(BaseEstimator):
             # If starting point x0 was provided, include it in initial design
             if self.x0 is not None:
                 # x0 is already validated and in internal scale
-                x0_point = self.x0.reshape(1, -1)
-                # Add x0 as the first point in the initial design
-                X0 = np.vstack([x0_point, X0[:-1]])  # Keep total n_initial points
-                if self.verbose:
-                    print(
-                        "Including starting point x0 in initial design as first evaluation."
-                    )
+                # Check if x0 is 1D or 2D
+                if self.x0.ndim == 1:
+                    x0_points = self.x0.reshape(1, -1)
+                else:
+                    x0_points = self.x0
+
+                n_x0 = x0_points.shape[0]
+
+                # If we have more x0 points than n_initial, use all x0 points
+                if n_x0 >= self.n_initial:
+                    X0 = x0_points
+                    if self.verbose:
+                        print(f"Using provided x0 points ({n_x0}) as initial design.")
+                else:
+                    # Replace the first n_x0 points of LHS with x0 points
+                    X0 = np.vstack([x0_points, X0[:-n_x0]])
+                    if self.verbose:
+                        print(
+                            f"Including {n_x0} starting points from x0 in initial design."
+                        )
         else:
             X0 = np.atleast_2d(X0)
             # If user provided X0, it's in original scale - transform it
