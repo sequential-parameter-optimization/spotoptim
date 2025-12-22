@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Callable, Optional, Tuple, List, Any
+from typing import Callable, Optional, Tuple, List, Any, Dict
 from scipy.optimize import OptimizeResult, differential_evolution
 from scipy.stats.qmc import LatinHypercube
 from sklearn.base import BaseEstimator
@@ -333,6 +333,8 @@ class SpotOptim(BaseEstimator):
         acquisition_failure_strategy: str = "random",
         penalty: Optional[float] = None,
         x0: Optional[np.ndarray] = None,
+        args: Tuple = (),
+        kwargs: Optional[Dict[str, Any]] = None,
     ):
         warnings.filterwarnings(warnings_filter)
 
@@ -395,6 +397,8 @@ class SpotOptim(BaseEstimator):
         self.acquisition_failure_strategy = acquisition_failure_strategy
         self.penalty = penalty
         self.x0 = x0
+        self.args = args
+        self.kwargs = kwargs if kwargs is not None else {}
 
         # Determine if noise handling is active
         self.noise = (repeats_initial > 1) or (repeats_surrogate > 1)
@@ -1954,7 +1958,7 @@ class SpotOptim(BaseEstimator):
         X_for_eval = self._map_to_factor_values(X_original)
 
         # Evaluate function
-        y_raw = self.fun(X_for_eval)
+        y_raw = self.fun(X_for_eval, *self.args, **self.kwargs)
 
         # Convert to numpy array if needed
         if not isinstance(y_raw, np.ndarray):

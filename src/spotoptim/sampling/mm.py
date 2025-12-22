@@ -667,7 +667,7 @@ def mmphi_intensive(
     X: np.ndarray,
     q: Optional[float] = 2.0,
     p: Optional[float] = 2.0,
-    normalize_flag: bool = True,
+    normalize_flag: bool = False,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Calculates a size-invariant Morris-Mitchell criterion.
@@ -687,7 +687,7 @@ def mmphi_intensive(
             Defaults to 2.0.
         normalize_flag (bool, optional):
             If True, normalizes the X array before computing distances.
-            Defaults to True.
+            Defaults to False.
 
     Returns:
         tuple[float, np.ndarray, np.ndarray]:
@@ -755,7 +755,7 @@ def mmphi_intensive_update(
     d: np.ndarray,
     q: float = 2.0,
     p: float = 2.0,
-    normalize_flag: bool = True,
+    normalize_flag: bool = False,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.
@@ -769,7 +769,7 @@ def mmphi_intensive_update(
         d (np.ndarray): Unique distances for the existing design.
         q (float): Exponent used in the computation of the Morris-Mitchell metric. Defaults to 2.0.
         p (float): Distance norm to use (e.g., p=1 for Manhattan, p=2 for Euclidean). Defaults to 2.0.
-        normalize_flag (bool): If True, normalizes the X array and the new_point before computing distances. Defaults to True.
+        normalize_flag (bool): If True, normalizes the X array and the new_point before computing distances. Defaults to False.
 
     Returns:
         tuple[float, np.ndarray, np.ndarray]: Updated intensive_phiq, updated_J, updated_d.
@@ -829,7 +829,7 @@ def propose_mmphi_intensive_minimizing_point(
     seed: Optional[int] = None,
     lower: Optional[np.ndarray] = None,
     upper: Optional[np.ndarray] = None,
-    normalize_flag: bool = True,
+    normalize_flag: bool = False,
 ) -> np.ndarray:
     """
     Propose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion.
@@ -842,7 +842,7 @@ def propose_mmphi_intensive_minimizing_point(
         seed (int, optional): Random seed.
         lower (np.ndarray, optional): Lower bounds for each dimension (default: 0).
         upper (np.ndarray, optional): Upper bounds for each dimension (default: 1).
-        normalize_flag (bool): If True, normalizes the X array and candidate points before computing distances. Defaults to True.
+        normalize_flag (bool): If True, normalizes the X array and candidate points before computing distances. Defaults to False.
 
     Returns:
         np.ndarray: Proposed new point, shape (1, n_dim).
@@ -899,13 +899,12 @@ def mm_improvement(
     d_base=None,
     q=2,
     p=2,
-    normalize_flag=True,
+    normalize_flag=False,
     verbose=False,
+    exponential=True,
 ) -> float:
     """
     Calculates the Morris-Mitchell improvement for a candidate point x.
-    This is the exponential of the difference between the Morris-Mitchell intensive metric of the base design
-    and the Morris-Mitchell intensive metric of the new design.
 
     Args:
         x (np.ndarray): Candidate point (1D array).
@@ -914,7 +913,8 @@ def mm_improvement(
         d_base (np.ndarray): Unique distances for X_base.
         q (int): Number of nearest neighbors for MM metric.
         p (int): Power for MM metric.
-        normalize_flag (bool): If True, normalizes the X array and candidate point before computing distances. Defaults to True.
+        normalize_flag (bool): If True, normalizes the X array and candidate point before computing distances. Defaults to False.
+        exponential (bool): If True, the exponential is applied.
 
     Returns:
         float: Morris-Mitchell improvement.
@@ -935,7 +935,10 @@ def mm_improvement(
     phi_new, _, _ = mmphi_intensive_update(
         X_base, x, J_base, d_base, q=q, p=p, normalize_flag=normalize_flag
     )
-    y_mm = np.exp(phi_base - phi_new)
+    if exponential:
+        y_mm = np.exp(phi_base - phi_new)
+    else:
+        y_mm = phi_base - phi_new
     if verbose:
         print(f"Morris-Mitchell base: {phi_base}")
         print(f"Morris-Mitchell new: {phi_new}")
