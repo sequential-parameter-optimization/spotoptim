@@ -219,10 +219,10 @@ class MLP(torch.nn.Sequential):
         params = ParameterSet()
 
         # l1: neurons in hidden layer
-        params.add_int(name="l1", low=16, high=128, default=64)
+        params.add_int(name="l1", low=16, high=128, default=64, transform="log(x, 2)")
 
         # num_hidden_layers: depth
-        params.add_int(name="num_hidden_layers", low=0, high=3, default=0)
+        params.add_int(name="num_hidden_layers", low=1, high=5, default=3)
 
         # activation: function name
         params.add_categorical(
@@ -232,7 +232,7 @@ class MLP(torch.nn.Sequential):
         )
 
         # lr: Unified learning rate
-        params.add_float(name="lr", low=1e-4, high=10.0, default=1.0, transform="log")
+        params.add_float(name="lr", low=1e-4, high=100.0, default=10.0, transform="log")
 
         # optimizer
         params.add_categorical(

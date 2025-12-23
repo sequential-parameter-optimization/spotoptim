@@ -18,38 +18,148 @@ class TorchObjective:
     """
 
     def __init__(self, experiment: ExperimentControl):
+        """
+        Initialize the TorchObjective.
+
+        Args:
+            experiment (ExperimentControl): The experiment control object containing configuration,
+                dataset, and hyperparameters.
+
+        Examples:
+            >>> import torch
+            >>> import torch.nn as nn
+            >>> import numpy as np
+            >>> from spotoptim.core.experiment import ExperimentControl
+            >>> from spotoptim.function.torch_objective import TorchObjective
+            >>> from spotoptim.hyperparameters import ParameterSet
+            >>> from spotoptim.core.data import SpotDataFromArray
+            >>>
+            >>> # 1. Define a simple model
+            >>> class SimpleModel(nn.Module):
+            ...     def __init__(self, input_dim, output_dim, **kwargs):
+            ...         super().__init__()
+            ...         self.fc = nn.Linear(input_dim, output_dim)
+            ...     def forward(self, x):
+            ...         return self.fc(x)
+            >>>
+            >>> # 2. Prepare data
+            >>> X = np.random.rand(10, 2)
+            >>> y = np.random.rand(10, 1)
+            >>> dataset = SpotDataFromArray(X, y)
+            >>>
+            >>> # 3. Define hyperparameters
+            >>> params = ParameterSet()
+            >>> params.add_float("lr", 1e-4, 1e-2, default=1e-3)
+            >>>
+            >>> # 4. Setup Experiment
+            >>> exp = ExperimentControl(
+            ...     name="test_exp",
+            ...     model_class=SimpleModel,
+            ...     dataset=dataset,
+            ...     hyperparameters=params,
+            ...     metrics=["val_loss"],
+            ...     epochs=2,
+            ...     batch_size=2
+            ... )
+            >>>
+            >>> # 5. Initialize/Instantiate Objective
+            >>> objective = TorchObjective(exp)
+            >>> print(isinstance(objective, TorchObjective))
+            True
+        """
         self.experiment = experiment
         self.device = experiment.torch_device
 
     @property
     def bounds(self):
-        """Returns the bounds of the hyperparameters."""
+        """
+        Returns the bounds of the hyperparameters.
+
+        Returns:
+            List[Tuple[float, float]]: A list of tuples defining the (min, max) bounds for each parameter.
+        """
         return self.experiment.hyperparameters.bounds
 
     @property
     def var_type(self):
-        """Returns the types of the hyperparameters."""
+        """
+        Returns the types of the hyperparameters.
+
+        Returns:
+            List[str]: A list of strings indicating the type of each parameter (e.g., 'float', 'int', 'factor').
+        """
         return self.experiment.hyperparameters.var_type
 
     @property
     def var_name(self):
-        """Returns the names of the hyperparameters."""
+        """
+        Returns the names of the hyperparameters.
+
+        Returns:
+            List[str]: A list of parameter names.
+        """
         return self.experiment.hyperparameters.var_name
 
     @property
     def var_trans(self):
-        """Returns the transformations of the hyperparameters."""
+        """
+        Returns the transformations of the hyperparameters.
+
+        Returns:
+            List[str]: A list of transformation strings (e.g., 'log', 'linear').
+        """
         return self.experiment.hyperparameters.var_trans
 
     @property
     def objective_names(self):
-        """Returns the names of the objectives."""
+        """
+        Returns the names of the objectives.
+
+        Returns:
+            List[str]: A list of objective metric names.
+        """
         return self.experiment.metrics
 
     def _get_hyperparameters(self, X: np.ndarray) -> Dict[str, Any]:
         """
-        Converts the input vector X into a dictionary of hyperparameters
-        using the names defined in the experiment's parameter set.
+        Converts the input vector X into a dictionary of hyperparameters.
+
+        This method handles mapping numeric values from the optimization process back to
+        parameter names and types defined in the experiment, including integer and
+        categorical (factor) handling.
+
+        Args:
+            X (np.ndarray): Input parameter vector from the optimizer. Can be 1D or 2D.
+
+        Returns:
+            Dict[str, Any]: A dictionary where keys are parameter names and values are
+                the corresponding values to be passed to the model.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim.core.experiment import ExperimentControl
+            >>> from spotoptim.function.torch_objective import TorchObjective
+            >>> from spotoptim.hyperparameters import ParameterSet
+            >>>
+            >>> # Setup parameters
+            >>> params = ParameterSet()
+            >>> params.add_float("lr", 0.001, 0.1)
+            >>> params.add_int("batch_size", 16, 128)
+            >>>
+            >>> # Mock experiment for context (minimal setup)
+            >>> class MockExp:
+            ...     hyperparameters = params
+            ...     torch_device = "cpu"
+            >>>
+            >>> objective = TorchObjective(MockExp())
+            >>>
+            >>> # Input vector matching parameter order (lr, batch_size)
+            >>> X = np.array([0.01, 64.2])
+            >>>
+            >>> # Convert to dict
+            >>> hyp = objective._get_hyperparameters(X)
+            >>> print(hyp)
+            {'lr': 0.01, 'batch_size': 64}
         """
         names = self.experiment.hyperparameters.names()
         # Handle case where X is (1, n) or (n,)
@@ -95,7 +205,16 @@ class TorchObjective:
         return params
 
     def _prepare_data(self) -> tuple[DataLoader, DataLoader]:
-        """Prepares DataLoaders from the experiment dataset."""
+        """
+        Prepares DataLoaders from the experiment dataset.
+
+        Based on the data type (Array or TorchDataset), creates appropriate DataLoaders
+        using the batch size and worker count specified in the experiment.
+
+        Returns:
+            tuple[DataLoader, DataLoader]: A tuple containing (train_loader, val_loader).
+                val_loader may be None if no validation data is available.
+        """
         data = self.experiment.dataset
         batch_size = self.experiment.batch_size
         num_workers = self.experiment.num_workers
@@ -173,7 +292,48 @@ class TorchObjective:
     ) -> Dict[str, float]:
         """
         Trains the model and returns a dictionary of metrics.
-        Keys matches experiment.metrics if possible.
+
+        Executes the training loop for the specified number of epochs. Handles optimizer
+        creation, loss calculation, backward pass, and validation evaluation.
+
+        Args:
+            model (nn.Module): The PyTorch model to train.
+            train_loader (DataLoader): DataLoader for training data.
+            val_loader (Optional[DataLoader]): DataLoader for validation data (can be None).
+            params (Dict[str, Any]): Hyperparameters dictionary containing 'epochs', 'lr',
+                'optimizer' name, etc.
+
+        Returns:
+            Dict[str, float]: Dictionary containing computed metrics, e.g.,
+                {'val_loss': ..., 'train_loss': ..., 'mse': ..., 'epochs': ...}.
+
+        Examples:
+            >>> import torch
+            >>> import torch.nn as nn
+            >>> from torch.utils.data import DataLoader, TensorDataset
+            >>> from spotoptim.function.torch_objective import TorchObjective
+            >>> from unittest.mock import MagicMock
+            >>>
+            >>> # 1. Create dataset and loader
+            >>> X = torch.randn(10, 2)
+            >>> y = torch.randn(10, 1)
+            >>> loader = DataLoader(TensorDataset(X, y), batch_size=2)
+            >>>
+            >>> # 2. Create model
+            >>> model = nn.Linear(2, 1)
+            >>>
+            >>> # 3. Mock Objective context
+            >>> exp = MagicMock()
+            >>> exp.loss_function = nn.MSELoss()
+            >>> exp.epochs = 1
+            >>> exp.torch_device = "cpu"
+            >>> objective = TorchObjective(exp)
+            >>>
+            >>> # 4. Train
+            >>> params = {'lr': 1e-2, 'optimizer': 'Adam'}
+            >>> metrics = objective.train_model(model, loader, None, params)
+            >>> print(f"Train Loss: {metrics['train_loss']:.4f}")
+            >>> print(f"Epochs: {metrics['epochs']}")
         """
         # Optimizer
         lr = params.get("lr", 1e-3)
@@ -259,9 +419,65 @@ class TorchObjective:
 
     def __call__(self, X: np.ndarray) -> np.ndarray:
         """
-        The function called by SpotOptim.
-        X is shape (n_samples, n_params) or (n_params,).
-        Returns y shape (n_samples, n_metrics).
+        Evaluate the objective function for a given set of parameters.
+
+        This is the main entry point called by the optimizer. It iterates over the
+        samples in X, instantiates and trains a model for each sample, and collects
+        the requested metrics.
+
+        Args:
+            X (np.ndarray): Input array of shape (n_samples, n_params) or (n_params,).
+                Contains the hyperparameter configurations to evaluate.
+
+        Returns:
+            np.ndarray: Array of shape (n_samples, n_metrics) containing the evaluation results.
+
+        Raises:
+            TypeError: If the model class cannot be instantiated with the provided parameters.
+
+        Examples:
+            >>> import torch
+            >>> import torch.nn as nn
+            >>> import numpy as np
+            >>> from spotoptim.core.experiment import ExperimentControl
+            >>> from spotoptim.function.torch_objective import TorchObjective
+            >>> from spotoptim.hyperparameters import ParameterSet
+            >>> from spotoptim.core.data import SpotDataFromArray
+            >>>
+            >>> # 1. Define Model
+            >>> class SimpleModel(nn.Module):
+            ...     def __init__(self, input_dim, output_dim, **kwargs):
+            ...         super().__init__()
+            ...         self.fc = nn.Linear(input_dim, output_dim)
+            ...     def forward(self, x):
+            ...         return self.fc(x)
+            >>>
+            >>> # 2. Setup Data & Experiment
+            >>> X_data = np.random.rand(10, 2)
+            >>> y_data = np.random.rand(10, 1)
+            >>> params = ParameterSet().add_float("lr", 1e-4, 1e-2)
+            >>>
+            >>> exp = ExperimentControl(
+            ...     name="test_call",
+            ...     model_class=SimpleModel,
+            ...     dataset=SpotDataFromArray(X_data, y_data),
+            ...     hyperparameters=params,
+            ...     metrics=["val_loss"],
+            ...     epochs=1,
+            ...     batch_size=5
+            ... )
+            >>>
+            >>> # 3. Initialize Objective
+            >>> objective = TorchObjective(exp)
+            >>>
+            >>> # 4. Define input parameters to evaluate (e.g., lr=0.005)
+            >>> X_eval = np.array([[0.005]])
+            >>>
+            >>> # 5. Evaluate
+            >>> results = objective(X_eval)
+            >>> print(f"Results shape: {results.shape}")
+            Results shape: (1, 1)
+            >>> print(f"Val Loss: {results[0, 0]:.4f}")
         """
         X = np.atleast_2d(X)
         n_samples = X.shape[0]

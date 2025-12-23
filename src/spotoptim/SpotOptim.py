@@ -5613,6 +5613,12 @@ class SpotOptim(BaseEstimator):
             "transform": [t if t is not None else "-" for t in all_var_trans],
         }
 
+        # Helper to format values
+        def fmt_val(v):
+            if isinstance(v, (float, np.floating)):
+                return f"{v:.{precision}f}"
+            return v
+
         # Process bounds, defaults, and tuned values
         for i in range(len(best_x_display)):
             var_type = table_data["type"][i]
@@ -5636,14 +5642,14 @@ class SpotOptim(BaseEstimator):
                     table_data["upper"].append(str(self._original_upper[i]))
                     table_data["default"].append("N/A")
             else:
-                table_data["lower"].append(self._original_lower[i])
-                table_data["upper"].append(self._original_upper[i])
+                table_data["lower"].append(fmt_val(self._original_lower[i]))
+                table_data["upper"].append(fmt_val(self._original_upper[i]))
                 # Default is midpoint logic
                 default_val = (self._original_lower[i] + self._original_upper[i]) / 2
                 if var_type == "int":
                     table_data["default"].append(int(default_val))
                 else:
-                    table_data["default"].append(default_val)
+                    table_data["default"].append(fmt_val(default_val))
 
             # Format tuned value
             tuned_val = best_x_display[i]
@@ -5652,39 +5658,13 @@ class SpotOptim(BaseEstimator):
             elif var_type == "factor":
                 table_data["tuned"].append(str(tuned_val))
             else:
-                table_data["tuned"].append(tuned_val)
+                table_data["tuned"].append(fmt_val(tuned_val))
 
         # Add importance if requested
         if show_importance:
             importance = self.get_importance()
-            table_data["importance"] = importance
+            table_data["importance"] = [f"{x:.2f}" for x in importance]
             table_data["stars"] = self.get_stars(importance)
-
-        # Format float precision
-        # Columns: name, type, default, lower, upper, tuned, transform, (importance, stars)
-        # Type: str, str, val, val, val, val, str, (val, str)
-        if show_importance:
-            floatfmt = (
-                "",
-                "",
-                f".{precision}f",
-                f".{precision}f",
-                f".{precision}f",
-                f".{precision}f",
-                "",
-                ".2f",
-                "",
-            )
-        else:
-            floatfmt = (
-                "",
-                "",
-                f".{precision}f",
-                f".{precision}f",
-                f".{precision}f",
-                f".{precision}f",
-                "",
-            )
 
         # Generate table
         table = tabulate(
@@ -5692,7 +5672,7 @@ class SpotOptim(BaseEstimator):
             headers="keys",
             tablefmt=tablefmt,
             numalign="right",
-            floatfmt=floatfmt,
+            stralign="right",
         )
 
         # Add interpretation if importance is shown
@@ -5845,6 +5825,12 @@ class SpotOptim(BaseEstimator):
             "transform": [t if t is not None else "-" for t in all_var_trans],
         }
 
+        # Helper to format values
+        def fmt_val(v):
+            if isinstance(v, (float, np.floating)):
+                return f"{v:.{precision}f}"
+            return v
+
         # Process bounds and compute defaults (use original bounds for display)
         for i in range(len(self._original_lower)):
             var_type = table_data["type"][i]
@@ -5866,17 +5852,14 @@ class SpotOptim(BaseEstimator):
                     table_data["upper"].append(str(self._original_upper[i]))
                     table_data["default"].append("N/A")
             else:
-                table_data["lower"].append(self._original_lower[i])
-                table_data["upper"].append(self._original_upper[i])
+                table_data["lower"].append(fmt_val(self._original_lower[i]))
+                table_data["upper"].append(fmt_val(self._original_upper[i]))
                 # Default is midpoint
                 default_val = (self._original_lower[i] + self._original_upper[i]) / 2
                 if var_type == "int":
                     table_data["default"].append(int(default_val))
                 else:
-                    table_data["default"].append(default_val)
-
-        # Format float precision
-        floatfmt = ("", "", f".{precision}f", f".{precision}f", f".{precision}f", "")
+                    table_data["default"].append(fmt_val(default_val))
 
         # Generate table
         table = tabulate(
@@ -5884,7 +5867,7 @@ class SpotOptim(BaseEstimator):
             headers="keys",
             tablefmt=tablefmt,
             numalign="right",
-            floatfmt=floatfmt,
+            stralign="right",
         )
 
         return table
