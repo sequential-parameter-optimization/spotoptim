@@ -1,4 +1,6 @@
 import numpy as np
+import random
+import torch
 from typing import Callable, Optional, Tuple, List, Any, Dict
 from scipy.optimize import OptimizeResult, differential_evolution
 from scipy.stats.qmc import LatinHypercube
@@ -391,6 +393,10 @@ class SpotOptim(BaseEstimator):
         self.tensorboard_clean = tensorboard_clean
         self.fun_mo2so = fun_mo2so
         self.seed = seed
+
+        # Set global seeds if provided
+        self._set_seed()
+
         self.verbose = verbose
         self.max_surrogate_points = max_surrogate_points
         self.selection_method = selection_method
@@ -485,6 +491,23 @@ class SpotOptim(BaseEstimator):
 
         # Initialize TensorBoard writer
         self._init_tensorboard_writer()
+
+    def _set_seed(self) -> None:
+        """Set global random seeds for reproducibility.
+
+        Sets seeds for:
+        - random
+        - numpy.random
+        - torch (cpu and cuda)
+
+        Only performs actions if self.seed is not None.
+        """
+        if self.seed is not None:
+            random.seed(self.seed)
+            np.random.seed(self.seed)
+            torch.manual_seed(self.seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(self.seed)
 
     def detect_var_type(self) -> list:
         """Auto-detect variable types based on factor mappings.
