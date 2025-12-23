@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
 from spotoptim.core.experiment import ExperimentControl
 from spotoptim.core.data import SpotDataFromArray, SpotDataFromTorchDataset
 import logging
@@ -71,7 +71,7 @@ class TorchObjective:
         self.device = experiment.torch_device
 
     @property
-    def bounds(self):
+    def bounds(self) -> List[Tuple[float, float]]:
         """
         Returns the bounds of the hyperparameters.
 
@@ -81,7 +81,7 @@ class TorchObjective:
         return self.experiment.hyperparameters.bounds
 
     @property
-    def var_type(self):
+    def var_type(self) -> List[str]:
         """
         Returns the types of the hyperparameters.
 
@@ -91,7 +91,7 @@ class TorchObjective:
         return self.experiment.hyperparameters.var_type
 
     @property
-    def var_name(self):
+    def var_name(self) -> List[str]:
         """
         Returns the names of the hyperparameters.
 
@@ -101,7 +101,7 @@ class TorchObjective:
         return self.experiment.hyperparameters.var_name
 
     @property
-    def var_trans(self):
+    def var_trans(self) -> List[str]:
         """
         Returns the transformations of the hyperparameters.
 
@@ -111,7 +111,7 @@ class TorchObjective:
         return self.experiment.hyperparameters.var_trans
 
     @property
-    def objective_names(self):
+    def objective_names(self) -> List[str]:
         """
         Returns the names of the objectives.
 

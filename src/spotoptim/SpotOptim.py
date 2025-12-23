@@ -5628,18 +5628,16 @@ class SpotOptim(BaseEstimator):
                 # For factors, show original string values
                 if i in self._factor_maps:
                     factor_map = self._factor_maps[i]
-                    lower_str = factor_map[0]  # First level
-                    upper_str = factor_map[len(factor_map) - 1]  # Last level
                     # Default is middle level logic (matching get_design_table)
                     mid_idx = len(factor_map) // 2
                     default_str = factor_map[mid_idx]
 
-                    table_data["lower"].append(lower_str)
-                    table_data["upper"].append(upper_str)
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
                     table_data["default"].append(default_str)
                 else:
-                    table_data["lower"].append(str(self._original_lower[i]))
-                    table_data["upper"].append(str(self._original_upper[i]))
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
                     table_data["default"].append("N/A")
             else:
                 table_data["lower"].append(fmt_val(self._original_lower[i]))
@@ -5839,17 +5837,15 @@ class SpotOptim(BaseEstimator):
                 # For factors, show original string values
                 if i in self._factor_maps:
                     factor_map = self._factor_maps[i]
-                    lower_str = factor_map[0]
-                    upper_str = factor_map[len(factor_map) - 1]
                     # Default is middle level
                     mid_idx = len(factor_map) // 2
                     default_str = factor_map[mid_idx]
-                    table_data["lower"].append(lower_str)
-                    table_data["upper"].append(upper_str)
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
                     table_data["default"].append(default_str)
                 else:
-                    table_data["lower"].append(str(self._original_lower[i]))
-                    table_data["upper"].append(str(self._original_upper[i]))
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
                     table_data["default"].append("N/A")
             else:
                 table_data["lower"].append(fmt_val(self._original_lower[i]))

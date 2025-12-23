@@ -4262,7 +4262,7 @@ wheels = [
 
 [[package]]
 name = "spotoptim"
-version = "0.0.100"
+version = "0.0.101"
 source = { editable = "." }
 dependencies = [
     { name = "flake8" },

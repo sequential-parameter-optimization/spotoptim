@@ -18,15 +18,18 @@ class MLP(torch.nn.Sequential):
         norm_layer (Callable[..., torch.nn.Module], optional):
             Norm layer that will be stacked on top of the linear layer. If ``None`` this layer won't be used. Default: ``None``
         activation_layer (Callable[..., torch.nn.Module], optional):
-            Activation function which will be stacked on top of the normalization layer (if not None), otherwise on top of the linear layer. If ``None`` this layer won't be used. Default: ``torch.nn.ReLU``
+            Activation function which will be stacked on top of the normalization layer (if not None),
+            otherwise on top of the linear layer. If ``None`` this layer won't be used. Default: ``torch.nn.ReLU``
         inplace (bool, optional):
-            Parameter for the activation layer, which can optionally do the operation in-place. Default is ``None``, which uses the respective default values of the ``activation_layer`` and Dropout layer.
+            Parameter for the activation layer, which can optionally do the operation in-place.
+            Default is ``None``, which uses the respective default values of the ``activation_layer`` and Dropout layer.
         bias (bool):
             Whether to use bias in the linear layer. Default ``True``
         dropout (float):
             The probability for the dropout layer. Default: 0.0
         lr (float, optional):
-            Unified learning rate multiplier. This value is automatically scaled to optimizer-specific learning rates using the map_lr() function. A value of 1.0 corresponds to the optimizer's default learning rate. Default: 1.0.
+            Unified learning rate multiplier. This value is automatically scaled to optimizer-specific learning rates using the map_lr() function.
+            A value of 1.0 corresponds to the optimizer's default learning rate. Default: 1.0.
         l1 (int, optional):
             Number of neurons in each hidden layer. Will only be used if hidden_channels is None. Default: 64
         num_hidden_layers (int, optional):
@@ -35,10 +38,12 @@ class MLP(torch.nn.Sequential):
     Note:
         **Parameter Definitions:**
 
-        *   **hidden_channels**: This defines the explicit architecture of the MLP. It is a list where each element is the size of a layer. The last element is the output dimension.
+        *   **hidden_channels**: This defines the explicit architecture of the MLP. It is a list where each element is the size of a layer.
+            The last element is the output dimension.
             Example: ``[32, 32, 1]`` means two hidden layers of size 32 and an output layer of size 1.
 
-        *   **l1** and **num_hidden_layers**: These are helper parameters often used in hyperparameter optimization (see ``get_default_parameters()``). They will only be used if hidden_channels is None.
+        *   **l1** and **num_hidden_layers**: These are helper parameters often used in hyperparameter optimization (see ``get_default_parameters()``).
+            They will only be used if hidden_channels is None.
             *   ``l1``: The number of neurons in each hidden layer.
             *   ``num_hidden_layers``: The number of hidden layers *before* the output layer.
 
