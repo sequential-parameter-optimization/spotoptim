@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from typing import Union
+from scipy.stats import norm
 
 
 def normalize_X(X: np.ndarray, eps: float = 1e-12) -> np.ndarray:
@@ -151,3 +152,35 @@ def get_combinations(ind_list: list, type="indices") -> list:
     else:
         raise ValueError("type must be either 'values' or 'indices'.")
     return combinations
+
+
+def get_sample_size(alpha: float, beta: float, sigma: float, delta: float) -> float:
+    """
+    Calculate sample size n for comparing two means.
+
+    Formula: n = 2 * sigma^2 * (z_{1-alpha/2} + z_{1-beta})^2 / delta^2
+    This corresponds to a two-sided test with equal variance.
+
+    Args:
+        alpha (float): Significance level (Type I error probability).
+        beta (float): Type II error probability (1 - Power).
+        sigma (float): Standard deviation of the population (assumed equal for both groups).
+        delta (float): Minimum detectable difference (effect size to detect).
+
+    Returns:
+        float: The required sample size n per group.
+
+    Examples:
+        >>> from spotoptim.utils.stats import get_sample_size
+        >>> alpha = 0.05
+        >>> beta = 0.2  # Power = 80%
+        >>> sigma = 1.0
+        >>> delta = 1.0
+        >>> n = get_sample_size(alpha, beta, sigma, delta)
+        >>> print(f"{n:.4f}")
+        15.6978
+    """
+    z_alpha = norm.ppf(1 - alpha / 2)
+    z_beta = norm.ppf(1 - beta)
+    n = 2 * sigma**2 * (z_alpha + z_beta) ** 2 / delta**2
+    return n
