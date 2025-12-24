@@ -140,8 +140,8 @@ class TestSaveLoadExperiment:
             opt_loaded = SpotOptim.load_experiment(filename)
             assert opt_loaded.max_iter == 20
 
-    def test_experiment_excludes_function(self):
-        """Test that saved experiment excludes the objective function."""
+    def test_experiment_includes_function(self):
+        """Test that saved experiment includes the objective function."""
         with tempfile.TemporaryDirectory() as tmpdir:
             opt = SpotOptim(
                 fun=simple_func,
@@ -157,9 +157,11 @@ class TestSaveLoadExperiment:
             # Load experiment
             opt_loaded = SpotOptim.load_experiment(filename)
 
-            # Function should not be preserved (set to None or not exist properly)
-            # The loaded optimizer needs fun re-attached
-            assert opt_loaded.fun is None or not callable(opt_loaded.fun)
+            # Function should be preserved and callable
+            assert opt_loaded.fun is not None
+            assert callable(opt_loaded.fun)
+            # Test that it works
+            assert opt_loaded.fun(np.array([[1.0, 1.0]]))[0] == 2.0
 
     def test_load_and_run_experiment(self):
         """Test loading experiment, attaching function, and running optimization."""
@@ -180,8 +182,8 @@ class TestSaveLoadExperiment:
             # Load experiment
             opt_loaded = SpotOptim.load_experiment(filename)
 
-            # Re-attach function
-            opt_loaded.fun = simple_func
+            # Function is already attached via dill
+            # opt_loaded.fun = simple_func
 
             # Run optimization
             result = opt_loaded.optimize()
@@ -517,11 +519,11 @@ class TestEdgeCases:
 
             # Load and run twice
             opt2 = SpotOptim.load_experiment(filename)
-            opt2.fun = simple_func
+            # Function persisted
             result2 = opt2.optimize()
 
             opt3 = SpotOptim.load_experiment(filename)
-            opt3.fun = simple_func
+            # Function persisted
             result3 = opt3.optimize()
 
             # Results should be identical

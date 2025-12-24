@@ -204,19 +204,25 @@ class TorchObjective:
 
         return params
 
-    def _prepare_data(self) -> tuple[DataLoader, DataLoader]:
+    def _prepare_data(
+        self, batch_size: Optional[int] = None
+    ) -> tuple[DataLoader, DataLoader]:
         """
         Prepares DataLoaders from the experiment dataset.
 
         Based on the data type (Array or TorchDataset), creates appropriate DataLoaders
-        using the batch size and worker count specified in the experiment.
+        using the provided batch size or the one specified in the experiment.
+
+        Args:
+            batch_size (Optional[int]): Batch size to use. If None, uses self.experiment.batch_size.
 
         Returns:
             tuple[DataLoader, DataLoader]: A tuple containing (train_loader, val_loader).
                 val_loader may be None if no validation data is available.
         """
         data = self.experiment.dataset
-        batch_size = self.experiment.batch_size
+        if batch_size is None:
+            batch_size = self.experiment.batch_size
         num_workers = self.experiment.num_workers
 
         train_loader = None
@@ -485,6 +491,13 @@ class TorchObjective:
 
         train_loader, val_loader = self._prepare_data()
 
+        # Check if batch_size is a tunable parameter
+        batch_size_tunable = "batch_size" in self.experiment.hyperparameters.names()
+
+        # If batch_size is NOT tunable, we can reuse the initial loaders for all samples
+        # to avoid overhead. If it IS tunable, we must recreate loaders per sample.
+        recreate_loaders = batch_size_tunable
+
         # metrics to return
         requested_metrics = (
             self.experiment.metrics if self.experiment.metrics else ["val_loss"]
@@ -493,6 +506,13 @@ class TorchObjective:
         for i in range(n_samples):
             # Decode hyperparameters
             params = self._get_hyperparameters(X[i])
+
+            # Handle batch_size if it's being tuned
+            if recreate_loaders and "batch_size" in params:
+                current_batch_size = int(params["batch_size"])
+                train_loader, val_loader = self._prepare_data(
+                    batch_size=current_batch_size
+                )
 
             # Instantiate model
             dataset = self.experiment.dataset

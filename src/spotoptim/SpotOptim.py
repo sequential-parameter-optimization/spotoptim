@@ -1,5 +1,7 @@
 import numpy as np
 import random
+import dill
+
 import torch
 from typing import Callable, Optional, Tuple, List, Any, Dict
 from scipy.optimize import OptimizeResult, differential_evolution
@@ -15,7 +17,6 @@ from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 import os
 import shutil
-import pickle
 from tabulate import tabulate
 
 
@@ -35,9 +36,8 @@ class SpotOptim(BaseEstimator):
                 from sklearn.gaussian_process import GaussianProcessRegressor
                 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
 
-                kernel = ConstantKernel(constant_value=1.0, constant_value_bounds=(1e-3, 1e3)) * Matern(
-                    length_scale=1.0, length_scale_bounds=(1e-2, 1e2), nu=2.5
-                )
+                kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5)
+                surrogate = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=100)
                 surrogate = GaussianProcessRegressor(
                     kernel=kernel,
                     n_restarts_optimizer=10,
@@ -448,12 +448,12 @@ class SpotOptim(BaseEstimator):
 
         # Initialize surrogate if not provided
         if self.surrogate is None:
-            kernel = ConstantKernel(
-                constant_value=1.0, constant_value_bounds=(1e-3, 1e3)
-            ) * Matern(length_scale=1.0, length_scale_bounds=(1e-2, 1e2), nu=2.5)
+            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
+                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
+            )
             self.surrogate = GaussianProcessRegressor(
                 kernel=kernel,
-                n_restarts_optimizer=10,
+                n_restarts_optimizer=100,
                 normalize_y=True,
                 random_state=self.seed,
             )
@@ -4883,12 +4883,13 @@ class SpotOptim(BaseEstimator):
             >>> opt_safe = opt._get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
 
         """
-        # Always exclude fun and tb_writer (can't reliably pickle lambda/local functions)
+        # Always exclude tb_writer (can't reliably pickle file handles)
         # Determine which additional attributes to exclude
         if unpickleables == "file_io":
-            unpickleable_attrs = ["tb_writer", "fun"]
+            unpickleable_attrs = ["tb_writer"]
         else:
-            unpickleable_attrs = ["tb_writer", "fun", "surrogate", "lhs_sampler"]
+            # "all" or specific exclusions
+            unpickleable_attrs = ["tb_writer", "surrogate", "lhs_sampler"]
 
         # Prepare picklable state dictionary
         picklable_state = {}
@@ -4897,7 +4898,7 @@ class SpotOptim(BaseEstimator):
             if key not in unpickleable_attrs:
                 try:
                     # Test if attribute can be pickled
-                    pickle.dumps(value, protocol=pickle.HIGHEST_PROTOCOL)
+                    dill.dumps(value, protocol=dill.HIGHEST_PROTOCOL)
                     picklable_state[key] = value
                     if verbosity > 1:
                         print(f"Attribute '{key}' is picklable and will be included.")
@@ -4946,7 +4947,7 @@ class SpotOptim(BaseEstimator):
         The experiment excludes:
         - Function evaluations (X_, y_)
         - Optimization results
-        - Objective function (must be re-attached after loading)
+
 
         Args:
             filename (str, optional): Filename for the experiment file. If None, generates
@@ -4957,7 +4958,7 @@ class SpotOptim(BaseEstimator):
             overwrite (bool): If True, overwrites existing file. If False, raises error if
                 file exists. Defaults to True.
             unpickleables (str): Components to exclude for pickling:
-                - "all": Excludes fun, surrogate, lhs_sampler, tb_writer (experiment only)
+                - "all": Excludes surrogate, lhs_sampler, tb_writer (experiment only)
                 - "file_io": Excludes only tb_writer (lighter exclusion)
                 Defaults to "all".
             verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
@@ -4984,7 +4985,6 @@ class SpotOptim(BaseEstimator):
             >>>
             >>> # On remote machine: load and run
             >>> # opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
-            >>> # opt_remote.fun = objective_function  # Re-attach function
             >>> # result = opt_remote.optimize()
             >>> # opt_remote.save_result(prefix="sphere_opt")  # Save results
         """
@@ -5015,7 +5015,7 @@ class SpotOptim(BaseEstimator):
         # Save to pickle file
         try:
             with open(filename, "wb") as handle:
-                pickle.dump(optimizer_copy, handle, protocol=pickle.HIGHEST_PROTOCOL)
+                dill.dump(optimizer_copy, handle, protocol=dill.HIGHEST_PROTOCOL)
             print(f"Experiment saved to {filename}")
         except Exception as e:
             print(f"Error during pickling: {e}")
@@ -5121,14 +5121,12 @@ class SpotOptim(BaseEstimator):
 
         # Reinitialize surrogate if needed
         if not hasattr(self, "surrogate") or self.surrogate is None:
-            kernel = ConstantKernel(1.0) * Matern(
-                length_scale=np.ones(self.n_dim),
-                length_scale_bounds=(1e-2, 1e2),
-                nu=2.5,
+            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
+                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
             )
             self.surrogate = GaussianProcessRegressor(
                 kernel=kernel,
-                n_restarts_optimizer=10,
+                n_restarts_optimizer=100,
                 random_state=self.seed,
                 normalize_y=True,
             )
@@ -5138,8 +5136,8 @@ class SpotOptim(BaseEstimator):
         """Load an experiment configuration from a pickle file.
 
         Loads an experiment that was saved with save_experiment(). The loaded optimizer
-        will have the configuration but not the objective function (which must be
-        re-attached) or results.
+        will have the configuration and the objective function (thanks to dill).
+
 
         Args:
             filename (str): Path to the experiment pickle file.
@@ -5169,7 +5167,7 @@ class SpotOptim(BaseEstimator):
 
         try:
             with open(filename, "rb") as handle:
-                optimizer = pickle.load(handle)
+                optimizer = dill.load(handle)
             print(f"Loaded experiment from {filename}")
 
             # Reinitialize components that were excluded
@@ -5220,7 +5218,7 @@ class SpotOptim(BaseEstimator):
 
         try:
             with open(filename, "rb") as handle:
-                optimizer = pickle.load(handle)
+                optimizer = dill.load(handle)
             print(f"Loaded result from {filename}")
 
             # Reinitialize components that were excluded
