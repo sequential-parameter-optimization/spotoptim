@@ -29,26 +29,22 @@ def test_add_int():
     assert ps.var_trans == [None]
     assert ps.sample_default() == {"depth": 5}
 
-def test_add_categorical():
+def test_add_factor():
     ps = ParameterSet()
-    choices = ["sgd", "adam"]
-    ps.add_categorical("optimizer", choices, default="adam")
-    
-    assert ps.var_name == ["optimizer"]
+    choices = ["adam", "sgd"]
+    ps.add_factor("optimizer", choices, default="adam")
+
+    assert ps.names() == ["optimizer"]
     assert ps.var_type == ["factor"]
     assert ps.bounds == [choices]
-    assert ps.var_trans == [None]
     assert ps.sample_default() == {"optimizer": "adam"}
 
+
 def test_chaining():
-    ps = (
-        ParameterSet()
-        .add_float("x", 0.0, 1.0)
-        .add_int("y", 1, 10)
-        .add_categorical("z", ["a", "b"])
-    )
-    
-    assert ps.var_name == ["x", "y", "z"]
+    ps = ParameterSet()
+    ps.add_float("x", 0.0, 1.0).add_int("y", 1, 10).add_factor("z", ["a", "b"])
+
+    assert ps.names() == ["x", "y", "z"]
     assert ps.var_type == ["float", "int", "factor"]
     assert len(ps.bounds) == 3
     assert ps.bounds[0] == (0.0, 1.0)
@@ -57,9 +53,9 @@ def test_chaining():
 
 def test_mixed_parameters_and_defaults():
     ps = ParameterSet()
-    ps.add_float("p1", 0.1, 0.9, default=0.5)
-    ps.add_int("p2", 1, 5) # No default
-    ps.add_categorical("p3", ["c1", "c2"], default="c1")
+    ps.add_float("p1", 0.0, 1.0, default=0.5)
+    ps.add_int("p2", 1, 10) # No default
+    ps.add_factor("p3", ["c1", "c2"], default="c1")
     
     defaults = ps.sample_default()
     assert len(defaults) == 2

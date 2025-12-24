@@ -230,7 +230,7 @@ class MLP(torch.nn.Sequential):
         params.add_int(name="num_hidden_layers", low=1, high=5, default=3)
 
         # activation: function name
-        params.add_categorical(
+        params.add_factor(
             name="activation",
             choices=["ReLU", "Tanh", "Sigmoid", "LeakyReLU", "ELU"],
             default="ReLU",
@@ -240,10 +240,8 @@ class MLP(torch.nn.Sequential):
         params.add_float(name="lr", low=1e-4, high=100.0, default=10.0, transform="log")
 
         # optimizer
-        params.add_categorical(
-            name="optimizer",
-            choices=["Adam", "SGD", "RMSprop", "AdamW"],
-            default="Adam",
+        params.add_factor(
+            "optimizer", ["Adam", "SGD", "RMSprop", "AdamW"], default="Adam"
         )
 
         return params

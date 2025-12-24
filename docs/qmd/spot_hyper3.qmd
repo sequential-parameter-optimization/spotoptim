@@ -48,8 +48,8 @@ params = ParameterSet() \
     .add_float("lr", 1e-4, 1e-1, transform="log") \
     .add_int("l1", 8, 64) \
     .add_int("num_hidden_layers", 0, 2) \
-    .add_categorical("activation", ["ReLU", "Tanh", "Sigmoid"]) \
-    .add_categorical("optimizer", ["Adam", "SGD"]) \
+    .add_factor("activation", ["ReLU", "Tanh", "Sigmoid"]) \
+    .add_factor("optimizer", ["Adam", "SGD"]) \
     .add_int("epochs", 3, 30) # Epochs as a parameter
 
 print("Variables:", params.var_name)

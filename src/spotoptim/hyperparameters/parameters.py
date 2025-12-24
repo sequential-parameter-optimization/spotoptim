@@ -121,10 +121,10 @@ class ParameterSet:
             self._defaults[name] = default
         return self
 
-    def add_categorical(
+    def add_factor(
         self, name: str, choices: List[str], default: Optional[str] = None
     ) -> "ParameterSet":
-        """Add a categorical hyperparameter.
+        """Add a factor (categorical) hyperparameter.
 
         Args:
             name: Name of the parameter.
@@ -138,7 +138,7 @@ class ParameterSet:
         Examples:
             >>> from spotoptim.hyperparameters import ParameterSet
             >>> ps = ParameterSet()
-            >>> ps.add_categorical("optimizer", ["adam", "sgd"], default="adam")
+            >>> ps.add_factor("optimizer", ["adam", "sgd"], default="adam")
         """
         self._parameters.append(
             {"name": name, "type": "factor", "choices": choices, "default": default}

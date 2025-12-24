@@ -6,13 +6,13 @@ from spotoptim.hyperparameters.parameters import ParameterSet
 
 def test_parameter_set():
     p = ParameterSet()
-    p.add_float("lr", 1e-4, 1e-1, transform="log")
-    p.add_int("layers", 1, 3)
-    p.add_categorical("optimizer", ["Adam", "SGD"])
+    p.add_float("lr", 0.001, 0.1, default=0.01)
+    p.add_int("epochs", 1, 10, default=5)
+    p.add_factor("optimizer", ["Adam", "SGD"])
     
     assert len(p.bounds) == 3
     assert p.var_type == ["float", "int", "factor"]
-    assert p.var_name == ["lr", "layers", "optimizer"]
+    assert p.var_name == ["lr", "epochs", "optimizer"]
     assert p.bounds[2] == ["Adam", "SGD"]
 
 def test_spot_data_from_array():

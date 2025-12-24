@@ -23,8 +23,8 @@ def demo_optimization():
         .add_float("lr", 1e-4, 1e-1, transform="log") \
         .add_int("l1", 16, 64) \
         .add_int("num_hidden_layers", 0, 2) \
-        .add_categorical("activation", ["ReLU", "Tanh"]) \
-        .add_categorical("optimizer", ["Adam", "SGD"])
+        .add_factor("activation", ["ReLU", "Tanh"]) \
+        .add_factor("optimizer", ["Adam", "SGD"])
     
     # 3. Setup Experiment Control
     print("3. Setting up ExperimentControl...")
