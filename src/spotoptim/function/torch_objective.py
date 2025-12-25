@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
+import random
 from typing import Optional, Dict, Any, List, Tuple
 from spotoptim.core.experiment import ExperimentControl
 from spotoptim.core.data import SpotDataFromArray, SpotDataFromTorchDataset
@@ -17,13 +18,15 @@ class TorchObjective:
     A callable objective function for SpotOptim that trains and evaluates a PyTorch model.
     """
 
-    def __init__(self, experiment: ExperimentControl):
+    def __init__(self, experiment: ExperimentControl, seed: Optional[int] = None):
         """
         Initialize the TorchObjective.
 
         Args:
             experiment (ExperimentControl): The experiment control object containing configuration,
                 dataset, and hyperparameters.
+            seed (Optional[int]): Random seed for reproducibility. If None, attempst to use
+                experiment.seed. Defaults to None.
 
         Examples:
             >>> import torch
@@ -68,7 +71,19 @@ class TorchObjective:
             True
         """
         self.experiment = experiment
+        self.experiment = experiment
         self.device = experiment.torch_device
+
+        # Use provided seed, or fall back to experiment seed, or None
+        if seed is not None:
+            self.seed = seed
+        else:
+            exp_seed = getattr(experiment, "seed", None)
+            # Ensure it's a valid seed type (int) to avoid issues with Mocks in testing
+            if isinstance(exp_seed, int):
+                self.seed = exp_seed
+            else:
+                self.seed = None
 
     @property
     def bounds(self) -> List[Tuple[float, float]]:
@@ -504,6 +519,10 @@ class TorchObjective:
         )
 
         for i in range(n_samples):
+            # Set seed if available to ensure reproducibility for each evaluation
+            if self.seed is not None:
+                self._set_seed(self.seed)
+
             # Decode hyperparameters
             params = self._get_hyperparameters(X[i])
 
@@ -560,3 +579,20 @@ class TorchObjective:
             results.append(row)
 
         return np.array(results)
+
+    def _set_seed(self, seed: int):
+        """
+        Sets the seed for random number generators.
+
+        Args:
+            seed (int): The seed value.
+        """
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
+            # Ensure deterministic behavior
+            # torch.backends.cudnn.deterministic = True
+            # torch.backends.cudnn.benchmark = False

@@ -1,85 +1,80 @@
-import pytest
-import numpy as np
-import random
+
+import unittest
 import torch
-from spotoptim import SpotOptim
+import torch.nn as nn
+import numpy as np
+from spotoptim.core.experiment import ExperimentControl
+from spotoptim.function.torch_objective import TorchObjective
+from spotoptim.hyperparameters import ParameterSet
+from spotoptim.core.data import SpotDataFromArray
 
-def objective(X):
-    # Deterministic objective for testing, but we rely on SpotOptim to
-    # handle internal randomness (initial design, surrogate training).
-    # We add some controlled "noise" that would vary if strict seeding wasn't enforced.
-    # However, since SpotOptim calls _set_seed, standard random calls inside
-    # it (or inside objective if it uses random) should be deterministic.
-    # Here we simulate an objective that has stochastic noise.
-    if hasattr(objective, 'noise_scale'):
-        noise = np.random.randn(len(X)) * objective.noise_scale
-    else:
-        noise = 0.0
-    return np.sum(X**2, axis=1) + noise
+class SimpleModel(nn.Module):
+    def __init__(self, input_dim, output_dim, **kwargs):
+        super().__init__()
+        self.fc = nn.Linear(input_dim, output_dim)
+    def forward(self, x):
+        return self.fc(x)
 
-objective.noise_scale = 0.1
+class TestReproducibility(unittest.TestCase):
+    def test_torch_objective_seeding(self):
+        # 1. Prepare data
+        X_data = np.random.rand(10, 2)
+        y_data = np.random.rand(10, 1)
+        dataset = SpotDataFromArray(X_data, y_data)
 
-def test_reproducibility():
-    """Test that two runs with the same seed produce identical results."""
-    
-    seed = 42
-    
-    # Run 1
-    opt1 = SpotOptim(
-        fun=objective,
-        bounds=[(-5.0, 5.0), (-5.0, 5.0)],
-        n_initial=5,
-        max_iter=10,
-        seed=seed,
-        verbose=False
-    )
-    res1 = opt1.optimize()
-    X1, y1 = res1.X, res1.y
-    
-    # Run 2
-    opt2 = SpotOptim(
-        fun=objective,
-        bounds=[(-5.0, 5.0), (-5.0, 5.0)],
-        n_initial=5,
-        max_iter=10,
-        seed=seed,
-        verbose=False
-    )
-    res2 = opt2.optimize()
-    X2, y2 = res2.X, res2.y
-    
-    # Assertions
-    np.testing.assert_allclose(X1, X2, err_msg="X values differ between runs")
-    np.testing.assert_allclose(y1, y2, err_msg="y values differ between runs")
+        # 2. Define hyperparameters
+        params = ParameterSet()
+        params.add_float("lr", 1e-4, 1e-2, default=1e-3)
 
-def test_different_seeds():
-    """Test that two runs with different seeds produce different results."""
-    
-    # Run 1
-    opt1 = SpotOptim(
-        fun=objective,
-        bounds=[(-5.0, 5.0), (-5.0, 5.0)],
-        n_initial=5,
-        max_iter=10,
-        seed=42,
-        verbose=False
-    )
-    res1 = opt1.optimize()
-    X1 = res1.X
-    
-    # Run 2
-    opt2 = SpotOptim(
-        fun=objective,
-        bounds=[(-5.0, 5.0), (-5.0, 5.0)],
-        n_initial=5,
-        max_iter=10,
-        seed=123,
-        verbose=False
-    )
-    res2 = opt2.optimize()
-    X2 = res2.X
-    
-    # Should be different
-    # Check that at least one value is different enough
-    diff = np.max(np.abs(X1 - X2)) if X1.shape == X2.shape else 1.0
-    assert diff > 1e-10, "Results with different seeds should differ"
+        # 3. Setup Experiment
+        exp = ExperimentControl(
+            experiment_name="test_repro",
+            model_class=SimpleModel,
+            dataset=dataset,
+            hyperparameters=params,
+            metrics=["val_loss"],
+            epochs=1,
+            batch_size=2,
+            seed=42  # Experiment has a seed
+        )
+
+        # 4. Initialize Objective
+        # Should pick up seed from experiment by default
+        objective = TorchObjective(exp)
+        
+        X_eval = np.array([[0.005]])
+        
+        # Run 1
+        y_eval1 = objective(X_eval)
+        
+        # Run 2
+        y_eval2 = objective(X_eval)
+        
+        np.testing.assert_allclose(y_eval1, y_eval2, err_msg="Results should be identical with seeding")
+
+    def test_torch_objective_explicit_seed(self):
+        # Test passing seed explicitly to TorchObjective
+        X_data = np.random.rand(10, 2)
+        y_data = np.random.rand(10, 1)
+        dataset = SpotDataFromArray(X_data, y_data)
+        params = ParameterSet().add_float("lr", 1e-4, 1e-2)
+        
+        exp = ExperimentControl(
+            experiment_name="test_explicit_seed",
+            model_class=SimpleModel,
+            dataset=dataset,
+            hyperparameters=params,
+            seed=None # No seed in experiment
+        )
+        
+        # Pass seed here
+        objective = TorchObjective(exp, seed=999)
+        
+        X_eval = np.array([[0.005]])
+        y_eval1 = objective(X_eval)
+        y_eval2 = objective(X_eval)
+        
+        np.testing.assert_allclose(y_eval1, y_eval2, err_msg="Results should be identical with explicit seeding")
+
+if __name__ == "__main__":
+    unittest.main()

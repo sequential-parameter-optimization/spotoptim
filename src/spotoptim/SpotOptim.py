@@ -3,7 +3,7 @@ import random
 import dill
 
 import torch
-from typing import Callable, Optional, Tuple, List, Any, Dict
+from typing import Callable, Optional, Tuple, List, Any, Dict, Union
 from scipy.optimize import OptimizeResult, differential_evolution
 from scipy.stats.qmc import LatinHypercube
 from sklearn.base import BaseEstimator
@@ -3538,6 +3538,67 @@ class SpotOptim(BaseEstimator):
             message = "Optimization finished successfully"
 
         return message
+
+    def get_best_hyperparameters(
+        self, as_dict: bool = True
+    ) -> Union[Dict[str, Any], np.ndarray, None]:
+        """
+        Get the best hyperparameter configuration found during optimization.
+
+        If noise handling is active (repeats_initial > 1 or OCBA), this returns the parameter
+        configuration associated with the best *mean* objective value. Otherwise, it returns
+        the configuration associated with the absolute best observed value.
+
+        Args:
+            as_dict (bool, optional): If True, returns a dictionary mapping parameter names
+                to their values. If False, returns the raw numpy array. Defaults to True.
+
+        Returns:
+            Union[Dict[str, Any], np.ndarray, None]: The best hyperparameter configuration.
+                Returns None if optimization hasn't started (no data).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: np.sum(x**2), bounds=[(-5, 5)], var_name=["x"])
+            >>> opt.optimize()
+            >>> best_params = opt.get_best_hyperparameters()
+            >>> print(best_params['x']) # Should be close to 0
+        """
+        if self.X_ is None or len(self.X_) == 0:
+            return None
+
+        # Determine which "best" to use
+        if self.noise and hasattr(self, "min_mean_X"):
+            best_x = self.min_mean_X
+        else:
+            best_x = self.best_x_
+
+        if not as_dict:
+            return best_x
+
+        # Map factors using existing method (handles 2D, returns 2D)
+        # We pass best_x as (1, D) and get (1, D) back
+        mapped_x = self._map_to_factor_values(best_x.reshape(1, -1))[0]
+
+        # Convert to dictionary with types
+        params = {}
+        names = (
+            self.var_name if self.var_name else [f"p{i}" for i in range(len(best_x))]
+        )
+
+        for i, name in enumerate(names):
+            val = mapped_x[i]
+
+            # Handle types if available (specifically int, as factors are already mapped)
+            if self.var_type:
+                v_type = self.var_type[i]
+                if v_type == "int":
+                    val = int(round(val))
+
+            params[name] = val
+
+        return params
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
         """Run the optimization process.
