@@ -3557,7 +3557,8 @@ class SpotOptim(BaseEstimator):
                 - nfev: number of function evaluations (including initial design)
                 - nit: number of sequential optimization iterations (after initial design)
                 - success: whether optimization succeeded
-                - message: termination message indicating reason for stopping
+                - message: termination message indicating reason for stopping, including
+                  statistics (function value, iterations, evaluations)
                 - X: all evaluated points
                 - y: all function values
 
@@ -3572,6 +3573,11 @@ class SpotOptim(BaseEstimator):
             ...     verbose=True
             ... )
             >>> result = opt.optimize()
+            >>> print(result.message)
+            Optimization finished successfully
+                     Current function value: ...
+                     Iterations: ...
+                     Function evaluations: ...
             >>> print("Best point:", result.x)
             Best point: [some point close to [0, 0]]
             >>> print("Best value:", result.fun)
@@ -3670,7 +3676,15 @@ class SpotOptim(BaseEstimator):
         X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
 
         # Determine termination reason
-        message = self._determine_termination(timeout_start)
+        status_message = self._determine_termination(timeout_start)
+
+        # Append statistics to match scipy.optimize.minimize format
+        message = (
+            f"{status_message}\n"
+            f"         Current function value: {float(self.best_y_):.6f}\n"
+            f"         Iterations: {self.n_iter_}\n"
+            f"         Function evaluations: {len(self.y_)}"
+        )
 
         # Close TensorBoard writer
         self._close_tensorboard_writer()
