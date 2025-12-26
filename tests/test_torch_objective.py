@@ -135,3 +135,57 @@ def test_call_integration(mock_experiment):
         assert results[0, 0] == 0.1 # val_loss
         assert results[0, 1] == 5.0 # epochs
         assert results[1, 0] == 0.2
+
+def test_seed_initialization(mock_experiment):
+    """Test seed initialization logic."""
+    # 1. Explicit seed provided
+    obj = TorchObjective(mock_experiment, seed=42)
+    assert obj.seed == 42
+    
+    # 2. Seed from experiment
+    mock_experiment.seed = 123
+    obj = TorchObjective(mock_experiment)
+    assert obj.seed == 123
+    
+    # 3. No seed provided or in experiment
+    # Ensure experiment.seed access returns something that isn't an int (e.g. MagicMock default)
+    # or explicitly None
+    del mock_experiment.seed
+    
+    # When getattr retrieves 'seed' from MagicMock, it creates a new MagicMock object.
+    # The code checks isinstance(seed, int). MagicMock is not int.
+    # So it should result in None.
+    obj = TorchObjective(mock_experiment)
+    assert obj.seed is None
+
+def test_seed_setting_in_call(mock_experiment):
+    """Test that seed is set during __call__."""
+    mock_experiment.seed = 42
+    obj = TorchObjective(mock_experiment)
+    
+    X = np.array([[0.1, 5]])
+    
+    with patch.object(obj, '_set_seed') as mock_set_seed:
+        # Patch train_model to avoid execution
+        with patch.object(obj, 'train_model', return_value={"val_loss": 0.1, "epochs": 5}):
+             obj(X)
+             
+        mock_set_seed.assert_called_with(42)
+
+def test_manual_seed_function():
+    """Test the _set_seed method actually calls the libraries."""
+    with patch('spotoptim.function.torch_objective.random') as mock_random, \
+         patch('spotoptim.function.torch_objective.np.random') as mock_np_random, \
+         patch('spotoptim.function.torch_objective.torch') as mock_torch:
+         
+        # Basic mock setup enough to instantiate
+        exp = MagicMock(spec=ExperimentControl)
+        # exp needs hyperparameters.seed check to pass init cleanly if we don't provide seed arg
+        # or we just provide seed arg.
+        
+        obj = TorchObjective(exp, seed=10)
+        obj._set_seed(10)
+        
+        mock_random.seed.assert_called_with(10)
+        mock_np_random.seed.assert_called_with(10)
+        mock_torch.manual_seed.assert_called_with(10)
