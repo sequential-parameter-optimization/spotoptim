@@ -6,6 +6,7 @@ import torch
 from typing import Callable, Optional, Tuple, List, Any, Dict, Union
 from scipy.optimize import OptimizeResult, differential_evolution
 from scipy.stats.qmc import LatinHypercube
+from scipy.stats import norm
 from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
@@ -101,8 +102,7 @@ class SpotOptim(BaseEstimator):
             'best' (Select all points from the cluster with the best mean objective value).
             Defaults to 'distant'.
         acquisition_failure_strategy (str, optional): Strategy for handling acquisition function failures.
-            Options: 'random' (space-filling design via Latin Hypercube Sampling) or
-            'mm' (Morris-Mitchell phi minimizing point for maximal distance from existing points).
+            Options: 'random' (space-filling design via Latin Hypercube Sampling)
             Defaults to 'random'.
         penalty (bool, optional): Whether to use penalty for handling NaN/inf values in objective function evaluations.
             Defaults to False.
@@ -111,6 +111,8 @@ class SpotOptim(BaseEstimator):
             a small random noise (sampled from N(0, 0.1)) to avoid identical penalty values.
             This allows optimization to continue despite occasional function evaluation failures.
             Defaults to None.
+        acquisition_fun_return_size (int, optional): Number of top candidates to return from acquisition function optimization.
+            Defaults to 3.
         x0 (array-like, optional): Starting point for optimization, shape (n_features,).
             If provided, this point will be evaluated first and included in the initial design.
             The point should be within the bounds and will be validated before use.
@@ -131,7 +133,7 @@ class SpotOptim(BaseEstimator):
         warnings_filter (str): Filter for warnings during optimization.
         max_surrogate_points (int or None): Maximum number of points for surrogate fitting.
         selection_method (str): Point selection method.
-        acquisition_failure_strategy (str): Strategy for handling acquisition failures ('random' or 'mm').
+        acquisition_failure_strategy (str): Strategy for handling acquisition failures ('random').
         noise (bool): True if noise handling is active (repeats > 1).
         mean_X (ndarray or None): Aggregated unique design points (if noise=True).
         mean_y (ndarray or None): Mean y values per design point (if noise=True).
@@ -337,6 +339,7 @@ class SpotOptim(BaseEstimator):
         acquisition_failure_strategy: str = "random",
         penalty: bool = False,
         penalty_val: Optional[float] = None,
+        acquisition_fun_return_size: int = 3,
         x0: Optional[np.ndarray] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
@@ -404,6 +407,7 @@ class SpotOptim(BaseEstimator):
         self.max_surrogate_points = max_surrogate_points
         self.selection_method = selection_method
         self.acquisition_failure_strategy = acquisition_failure_strategy
+        self.acquisition_fun_return_size = acquisition_fun_return_size
         self.penalty = penalty
         self.penalty_val = penalty_val
         self.x0 = x0
@@ -2263,7 +2267,7 @@ class SpotOptim(BaseEstimator):
             X_for_surrogate = self._transform_X(self.X_)
             self._fit_surrogate(X_for_surrogate, self.y_)
 
-    def _select_new(
+    def select_new(
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Select rows from A that are not in X.
@@ -2285,7 +2289,7 @@ class SpotOptim(BaseEstimator):
             >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
             >>> A = np.array([[1, 2], [3, 4], [5, 6]])
             >>> X = np.array([[3, 4], [7, 8]])
-            >>> new_A, is_new = opt._select_new(A, X)
+            >>> new_A, is_new = opt.select_new(A, X)
             >>> print("New A:", new_A)
             New A: [[1 2]
              [5 6]]
@@ -2547,9 +2551,7 @@ class SpotOptim(BaseEstimator):
 
         This method is called when no new design points can be suggested
         by the surrogate model (e.g., when the proposed point is too close
-        to existing points). Depending on the specified strategy, it either
-        proposes a Morris-Mitchell minimizing point or generates a new
-        space-filling design as a fallback.
+        to existing points). It proposes a random space-filling design as a fallback.
 
         Returns:
             ndarray: New design point as a fallback, shape (n_features,).
@@ -2570,33 +2572,7 @@ class SpotOptim(BaseEstimator):
             >>> print(x_fallback)
             [some new point within bounds]
         """
-        if self.acquisition_failure_strategy == "mm":
-            # Morris-Mitchell phi minimizing point
-            # This strategy finds a point that maximizes the minimum distance
-            # to all existing points, providing good space-filling properties
-            if self.verbose:
-                print(
-                    "Acquisition failure: Using Morris-Mitchell minimizing point as fallback."
-                )
-
-            # Calculate distances from all possible candidates to existing points
-            # We'll use a simple approach: generate many random candidates and pick the one
-            # with maximum minimum distance to existing points
-            n_candidates = 100
-            candidates_unit = self.lhs_sampler.random(n=n_candidates)
-            candidates = self.lower + candidates_unit * (self.upper - self.lower)
-
-            # Calculate minimum distance from each candidate to existing points
-            min_distances = np.zeros(n_candidates)
-            for i, candidate in enumerate(candidates):
-                distances = np.linalg.norm(self.X_ - candidate, axis=1)
-                min_distances[i] = np.min(distances)
-
-            # Select candidate with maximum minimum distance
-            best_idx = np.argmax(min_distances)
-            x_new = candidates[best_idx]
-
-        else:
+        if self.acquisition_failure_strategy == "random":
             # Default: random space-filling design (Latin Hypercube Sampling)
             if self.verbose:
                 print(
@@ -2697,9 +2673,6 @@ class SpotOptim(BaseEstimator):
             y_best = np.min(self.y_)
             improvement = y_best - mu
             Z = improvement / sigma
-
-            from scipy.stats import norm
-
             ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
             return -ei  # Minimize negative EI
 
@@ -2714,14 +2687,79 @@ class SpotOptim(BaseEstimator):
 
             y_best = np.min(self.y_)
             Z = (y_best - mu) / sigma
-
-            from scipy.stats import norm
-
             pi = norm.cdf(Z)
             return -pi  # Minimize negative PI
 
-        else:
             raise ValueError(f"Unknown acquisition function: {self.acquisition}")
+
+    def optimize_acquisition_func(self) -> np.ndarray:
+        """Optimize the acquisition function to find the next point to evaluate.
+
+        Returns:
+            ndarray: The optimized point(s).
+                If acquisition_fun_return_size == 1, returns 1D array of shape (n_features,).
+                If acquisition_fun_return_size > 1, returns 2D array of shape (N, n_features),
+                where N is min(acquisition_fun_return_size, population_size).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     acquisition='ei'
+            ... )
+            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> y_train = np.array([0, 2, 8])
+            >>> opt._fit_surrogate(X_train, y_train)
+            >>> x_next = opt.optimize_acquisition_func()
+            >>> print("Next point to evaluate:", x_next)
+            Next point to evaluate: [some float values]
+        """
+        # Variables to capture population from callback
+        population = None
+        population_energies = None
+
+        def callback(intermediate_result: OptimizeResult):
+            nonlocal population, population_energies
+            # Capture population if available (requires scipy >= 1.10.0)
+            if hasattr(intermediate_result, "population"):
+                population = intermediate_result.population
+                population_energies = intermediate_result.population_energies
+
+        result = differential_evolution(
+            func=self._acquisition_function,
+            bounds=self.bounds,
+            seed=self.seed,
+            maxiter=1000,
+            callback=callback,
+        )
+
+        if self.acquisition_fun_return_size > 1:
+            if population is not None and population_energies is not None:
+                # Sort by energy (ascending, since DE minimizes)
+                sorted_indices = np.argsort(population_energies)
+                
+                # Determine how many to take
+                top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
+                
+                # First candidate is always the polished result (best)
+                candidates = [result.x]
+                
+                # Add remaining candidates from population (skipping the best unpolished one which corresponds to result.x)
+                if top_n > 1:
+                    # Take next (top_n - 1) indices
+                    # Start from 1 because 0 is the best unpolished
+                    next_indices = sorted_indices[1:top_n]
+                    candidates.extend(population[next_indices])
+                
+                return np.array(candidates)
+            else:
+                # Fallback if population not available (e.g. very fast convergence or old scipy)
+                # Just return the best point as 2D array
+                return result.x.reshape(1, -1)
+        
+        return result.x
 
     def _suggest_next_point(self) -> np.ndarray:
         """Suggest next point to evaluate using acquisition function optimization.
@@ -2752,50 +2790,67 @@ class SpotOptim(BaseEstimator):
             >>> print("Next point to evaluate:", x_next)
             Next point to evaluate: [some point within bounds]
         """
-        # Try multiple times to find a unique point (after rounding)
-        max_attempts = 10
+        # Phase 1: Try candidates from acquisition function optimizer
+        # These can be multiple if acquisition_fun_return_size > 1
+        x_next_candidates = self.optimize_acquisition_func()
 
-        for attempt in range(max_attempts):
-            if attempt == 0:
-                # First attempt: use acquisition function
-                result = differential_evolution(
-                    func=self._acquisition_function,
-                    bounds=self.bounds,
-                    seed=self.seed,
-                    maxiter=1000,
-                )
-                x_next = result.x
-            else:
-                # Subsequent attempts: use fallback strategy
-                if self.verbose:
-                    print(
-                        f"  Attempt {attempt + 1}/{max_attempts}: Previous point was duplicate after rounding, trying fallback"
-                    )
-                x_next = self._handle_acquisition_failure()
+        # Ensure iterable of 1D arrays
+        if x_next_candidates.ndim == 1:
+            obs_candidates = [x_next_candidates]
+        else:
+            obs_candidates = [
+                x_next_candidates[i] for i in range(x_next_candidates.shape[0])
+            ]
 
+        for i, x_next in enumerate(obs_candidates):
             # Apply rounding BEFORE checking tolerance
-            # This is critical for integer/factor variables where rounding can cause
-            # duplicate points (e.g., [12.3, 2.7] and [12.4, 2.8] both round to [12, 3])
             x_next_rounded = self._repair_non_numeric(
                 x_next.reshape(1, -1), self.var_type
             )[0]
 
-            # Ensure minimum distance to existing points (compare in transformed space, after rounding)
+            # Ensure minimum distance to existing points
             x_next_2d = x_next_rounded.reshape(1, -1)
             X_transformed = self._transform_X(self.X_)
-            x_new, _ = self._select_new(
+            x_new, _ = self.select_new(
                 A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
             )
 
             if x_new.shape[0] > 0:
                 # Found a unique point!
                 return x_next_rounded
+            elif self.verbose:
+                print(
+                    f"  Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate after rounding."
+                )
 
-        # If we get here, we failed to find a unique point after max_attempts
-        # Return the last attempt anyway (this allows optimization to continue even if stuck)
+        # Phase 2: Fallback attempts if optimizer candidates failed
+        max_attempts = 10
+
+        for attempt in range(max_attempts):
+            if self.verbose:
+                print(
+                    f"  Fallback attempt {attempt + 1}/{max_attempts}: Using fallback strategy"
+                )
+            x_next = self._handle_acquisition_failure()
+
+            x_next_rounded = self._repair_non_numeric(
+                x_next.reshape(1, -1), self.var_type
+            )[0]
+
+            x_next_2d = x_next_rounded.reshape(1, -1)
+            X_transformed = self._transform_X(self.X_)
+            x_new, _ = self.select_new(
+                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+            )
+
+            if x_new.shape[0] > 0:
+                return x_next_rounded
+
+        # If we get here, we failed to find a unique point after all attempts
+        # Return the last attempt anyway
         if self.verbose:
             print(
-                f"Warning: Could not find unique point after {max_attempts} attempts. "
+                f"Warning: Could not find unique point after optimization candidates and {max_attempts} fallback attempts. "
                 "Returning last candidate (may be duplicate)."
             )
         return x_next_rounded

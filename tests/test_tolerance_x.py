@@ -605,10 +605,10 @@ class TestToleranceXEdgeCases:
 
 
 class TestSelectNewMethod:
-    """Test the _select_new method directly."""
+    """Test the select_new method directly."""
 
     def test_select_new_exact_match(self):
-        """Test _select_new with exact matches."""
+        """Test select_new with exact matches."""
 
         def func(X):
             return np.sum(X**2, axis=1)
@@ -624,13 +624,13 @@ class TestSelectNewMethod:
         X_existing = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         X_new = np.array([[1.0, 2.0], [7.0, 8.0]])  # First is duplicate
 
-        selected, mask = optimizer._select_new(X_new, X_existing, tolerance=0.0)
+        selected, mask = optimizer.select_new(X_new, X_existing, tolerance=0.0)
 
         assert len(selected) == 1
         assert np.allclose(selected[0], [7.0, 8.0])
 
     def test_select_new_with_tolerance(self):
-        """Test _select_new with tolerance."""
+        """Test select_new with tolerance."""
 
         def func(X):
             return np.sum(X**2, axis=1)
@@ -646,14 +646,14 @@ class TestSelectNewMethod:
         X_existing = np.array([[1.0, 2.0], [3.0, 4.0]])
         X_new = np.array([[1.01, 2.01], [7.0, 8.0]])  # First is within tolerance
 
-        selected, mask = optimizer._select_new(X_new, X_existing, tolerance=0.1)
+        selected, mask = optimizer.select_new(X_new, X_existing, tolerance=0.1)
 
         # First point should be rejected as too close
         assert len(selected) == 1
         assert np.allclose(selected[0], [7.0, 8.0])
 
     def test_select_new_with_integers(self):
-        """Test _select_new detects points that round to same integer.
+        """Test select_new detects points that round to same integer.
 
         The key insight: we must round BOTH arrays before comparing, otherwise
         [12.4, 2.7] looks different from [12.0, 3.0] even though both round to [12, 3].
@@ -678,7 +678,7 @@ class TestSelectNewMethod:
         # Apply the same rounding that _suggest_next_point does
         X_new = optimizer._repair_non_numeric(X_new_raw, optimizer.var_type)
 
-        selected, mask = optimizer._select_new(X_new, X_existing, tolerance=0.1)
+        selected, mask = optimizer.select_new(X_new, X_existing, tolerance=0.1)
 
         # After rounding [12.4, 2.7] -> [12, 3], should match [12, 3] exactly
         assert len(selected) == 0, "Point that rounds to existing should be rejected"
