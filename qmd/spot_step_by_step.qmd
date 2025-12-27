@@ -1052,7 +1052,7 @@ print(f"  Actual penalty = {penalty_base:.2f} + noise")
 
 - `_generate_initial_design()` - LHS generation
 - `_repair_non_numeric()` - Round integer/factor variables
-- `_select_new()` - Check for duplicate points
+- `select_new()` - Check for duplicate points
 - `_handle_acquisition_failure()` - Fallback strategies
 - `to_red_dim()` - Dimension reduction (if enabled)
 - `_selection_dispatcher()` - Subset selection for large datasets
