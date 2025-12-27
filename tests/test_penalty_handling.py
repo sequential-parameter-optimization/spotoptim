@@ -204,7 +204,8 @@ class TestApplyPenaltyNAFallback:
             bounds=[(-5, 5)],
             max_iter=10,
             n_initial=5,
-            penalty=1000.0,
+            penalty=True,
+            penalty_val=1000.0,
             seed=42,
             verbose=False,
         )
@@ -226,7 +227,8 @@ class TestApplyPenaltyNAFallback:
             bounds=[(-5, 5)],
             max_iter=10,
             n_initial=5,
-            penalty=500.0,
+            penalty=True,
+            penalty_val=500.0,
             seed=42,
             verbose=False,
         )
@@ -251,7 +253,8 @@ class TestApplyPenaltyNAFallback:
             bounds=[(-5, 5)],
             max_iter=10,
             n_initial=5,
-            penalty=np.inf,  # Default penalty
+            penalty=True,
+            penalty_val=np.inf,  # Default penalty
             seed=42,
             verbose=False,
         )
@@ -336,7 +339,8 @@ class TestApplyPenaltyNARandomNoise:
             bounds=[(-5, 5)],
             max_iter=10,
             n_initial=5,
-            penalty=100.0,  # Set finite penalty for test
+            penalty=True,
+            penalty_val=100.0,  # Set finite penalty for test
             seed=42,
             verbose=False,
         )
@@ -544,7 +548,8 @@ class TestApplyPenaltyNAVerboseOutput:
             bounds=[(-5, 5)],
             max_iter=10,
             n_initial=5,
-            penalty=500.0,
+            penalty=True,
+            penalty_val=500.0,
             seed=42,
             verbose=True,
         )
@@ -613,7 +618,8 @@ class TestApplyPenaltyNAEdgeCases:
             bounds=[(-5, 5)],
             max_iter=10,
             n_initial=5,
-            penalty=100.0,
+            penalty=True,
+            penalty_val=100.0,
             seed=42,
             verbose=False,
         )

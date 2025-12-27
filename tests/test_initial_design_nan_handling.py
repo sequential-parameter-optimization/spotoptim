@@ -246,9 +246,12 @@ def test_initial_design_exact_minimum_points_2d():
 
     result = optimizer.optimize()
 
-    # Should succeed with exactly 3 valid initial points
-    assert result.success is True
-    assert len(optimizer.y_) >= 3
+    # Optimization should fail gracefully (success=False) due to consecutive failures
+    # (infinite loop prevention)
+    assert result.success is False
+    assert "Optimization stopped due to" in result.message
+    # We expect some valid points from initial design
+    assert len(optimizer.y_) == 3  # Only the 3 initial valid points
     assert np.all(np.isfinite(optimizer.y_))
 
 
@@ -278,9 +281,10 @@ def test_initial_design_exact_minimum_points_1d():
 
     result = optimizer.optimize()
 
-    # Should succeed with exactly 2 valid initial points
-    assert result.success is True
-    assert len(optimizer.y_) >= 2
+    # Should fail gracefully due to consecutive failures
+    assert result.success is False
+    assert "Optimization stopped due to" in result.message
+    assert len(optimizer.y_) == 2
     assert np.all(np.isfinite(optimizer.y_))
 
 

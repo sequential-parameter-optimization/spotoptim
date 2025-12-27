@@ -223,7 +223,8 @@ def test_apply_penalty_with_self_penalty_attribute():
     opt = SpotOptim(
         fun=lambda X: np.sum(X**2, axis=1),
         bounds=[(-5, 5), (-5, 5)],
-        penalty=999.0,
+        penalty=True,
+        penalty_val=999.0,
         verbose=False,
     )
 
@@ -280,6 +281,7 @@ def test_apply_penalty_integration_with_optimize():
         max_iter=20,
         n_initial=10,
         seed=42,
+        penalty=True,
         verbose=False,
     )
 
