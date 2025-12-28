@@ -1,12 +1,12 @@
 [project]
 name = "spotoptim"
-version = "0.0.125"
+version = "0.0.126"
 description = "Sequential Parameter Optimization Toolbox"
 readme = "README.md"
 authors = [
     { name = "bartzbeielstein", email = "32470350+bartzbeielstein@users.noreply.github.com" }
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 dependencies = [
     "numpy>=1.24.3",
     "scipy>=1.10.1",
@@ -47,6 +47,6 @@ filterwarnings = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.9.8,<0.10.0"]
+requires = ["uv_build>=0.9.8"]
 build-backend = "uv_build"
 

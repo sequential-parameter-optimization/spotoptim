@@ -351,6 +351,7 @@ class SpotOptim(BaseEstimator):
         acquisition_optimizer: Union[str, Callable] = "differential_evolution",
         x0: Optional[np.ndarray] = None,
         de_x0_prob: float = 0.1,
+        prob_de_tricands: float = 0.8,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
@@ -411,6 +412,9 @@ class SpotOptim(BaseEstimator):
         self.fun_mo2so = fun_mo2so
         self.seed = seed
 
+        # Initialize persistent RNG
+        self.rng = np.random.RandomState(self.seed)
+
         # Set global seeds if provided
         self._set_seed()
 
@@ -424,6 +428,7 @@ class SpotOptim(BaseEstimator):
         self.penalty_val = penalty_val
         self.x0 = x0
         self.de_x0_prob = de_x0_prob
+        self.prob_de_tricands = prob_de_tricands
         self.args = args
         self.kwargs = kwargs if kwargs is not None else {}
 
@@ -2525,7 +2530,7 @@ class SpotOptim(BaseEstimator):
                     )
 
             # Generate random noise and add to penalty
-            random_noise = np.random.normal(0, sd, y.shape)
+            random_noise = self.rng.normal(0, sd, y.shape)
             penalty_values = penalty_value + random_noise
 
             # Replace NaN/inf with penalty + noise
@@ -2753,176 +2758,179 @@ class SpotOptim(BaseEstimator):
             Next point to evaluate: [some float values]
         """
         if self.acquisition_optimizer == "tricands":
-            # Use geometric infill strategy via triangulation candidates
+            return self._optimize_acquisition_tricands()
+        elif self.acquisition_optimizer == "differential_evolution":
+            return self._optimize_acquisition_de()
+        elif self.acquisition_optimizer == "de_tricands":
+            val = self.rng.rand()
 
-            # Use X_ (all evaluated points) as basis for triangulation
-            # If no points yet (e.g. before initial design), fallback to LHS or random
-            if (
-                not hasattr(self, "X_")
-                or self.X_ is None
-                or len(self.X_) < self.n_dim + 1
-            ):
-                # Not enough points for valid triangulation (need n >= m + 1)
-                # Fallback to random search using existing logic logic in 'else' block or explicit call
-                pass  # Will fall through to 'else' block which handles generic minimize/random x0
-                # BUT 'tricands' isn't a valid minimize method, so we should handle this fallback specifically.
-                # Actually, let's just use random sampling here for fallback.
-
-                low = np.array([b[0] for b in self.bounds])
-                high = np.array([b[1] for b in self.bounds])
-                if self.seed is not None:
-                    rng = np.random.RandomState(self.seed)
-                    x0 = rng.uniform(low, high).reshape(1, -1)
-                else:
-                    x0 = np.random.uniform(low, high).reshape(1, -1)
-
-                # If we need multiple points, generate them
-                if self.acquisition_fun_return_size > 1:
-                    # Generate n random points
-                    if self.seed is not None:
-                        x0 = rng.uniform(
-                            low,
-                            high,
-                            size=(self.acquisition_fun_return_size, self.n_dim),
-                        )
-                    else:
-                        x0 = np.random.uniform(
-                            low,
-                            high,
-                            size=(self.acquisition_fun_return_size, self.n_dim),
-                        )
-                    return x0
-                return x0.flatten()
-
-            # Generate candidates
-            # Default nmax to a reasonable multiple of desired return size, or just large enough
-            # tricands handles nmax internally (default 100*m).
-            # We pass nmax as max(100*m, acquisition_fun_return_size * 10) to ensure we have enough.
-            nmax = max(100 * self.n_dim, self.acquisition_fun_return_size * 50)
-
-            # Wrapper for tricands: Normalize -> Gen Candidates -> Denormalize
-            # This handles non-hypercube bounds correctly as tricands assumes [lower, upper]^m box.
-
-            # Normalize X_ to [0, 1] relative to bounds
-            X_norm = (self.X_ - self.lower) / (self.upper - self.lower)
-
-            # Generate candidates in [0, 1] space
-            X_cands_norm = tricands(
-                X_norm, nmax=nmax, lower=0.0, upper=1.0, fringe=True
-            )
-
-            # Denormalize candidates back to original space
-            X_cands = X_cands_norm * (self.upper - self.lower) + self.lower
-
-            # Evaluate acquisition function on all candidates
-            # _acquisition_function returns NEGATIVE acquisition values (minimization)
-            # We iterate to ensure correct handling of 1D/2D shapes by _acquisition_function
-            acq_values = np.array([self._acquisition_function(x) for x in X_cands])
-
-            # Sort indices (smallest is best because of negation)
-            sorted_indices = np.argsort(acq_values)
-
-            # Select top n
-            top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
-            best_indices = sorted_indices[:top_n]
-            return X_cands[best_indices]
-
-        if self.acquisition_optimizer == "differential_evolution":
-            # Variables to capture population from callback
-            population = None
-            population_energies = None
-            # with probability .5 select best_x_ as x0 or None
-            # Determine which "best" to use
-            if self.noise and hasattr(self, "min_mean_X"):
-                best_x = self.min_mean_X
+            if val < self.prob_de_tricands:
+                return self._optimize_acquisition_de()
             else:
-                best_x = self.best_x_
-
-            if best_x is not None:
-                best_x = self._transform_X(best_x)
-                best_X = best_x if np.random.rand() < self.de_x0_prob else None
-            else:
-                best_X = None
-
-            def callback(intermediate_result: OptimizeResult):
-                nonlocal population, population_energies
-                # Capture population if available (requires scipy >= 1.10.0)
-                if hasattr(intermediate_result, "population"):
-                    population = intermediate_result.population
-                    population_energies = intermediate_result.population_energies
-
-            result = differential_evolution(
-                func=self._acquisition_function,
-                bounds=self.bounds,
-                seed=self.seed,
-                maxiter=1000,
-                callback=callback,
-                x0=best_X,
-            )
-
-            if self.acquisition_fun_return_size > 1:
-                if population is not None and population_energies is not None:
-                    # Sort by energy (ascending, since DE minimizes)
-                    sorted_indices = np.argsort(population_energies)
-
-                    # Determine how many to take
-                    top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
-
-                    # First candidate is always the polished result (best)
-                    candidates = [result.x]
-
-                    # Add remaining candidates from population (skipping the best unpolished one which corresponds to result.x)
-                    if top_n > 1:
-                        # Take next (top_n - 1) indices
-                        # Start from 1 because 0 is the best unpolished
-                        next_indices = sorted_indices[1:top_n]
-                        candidates.extend(population[next_indices])
-
-                    return np.array(candidates)
-                else:
-                    # Fallback if population not available (e.g. very fast convergence or old scipy)
-                    # Just return the best point as 2D array
-                    return result.x.reshape(1, -1)
-
-            return result.x
-
+                return self._optimize_acquisition_tricands()
         else:
-            # Use scipy.optimize.minimize interface
-            # Generate random x0 within bounds
+            return self._optimize_acquisition_scipy()
+
+    def _optimize_acquisition_tricands(self) -> np.ndarray:
+        """Optimize using geometric infill strategy via triangulation candidates."""
+        # Use X_ (all evaluated points) as basis for triangulation
+        # If no points yet (e.g. before initial design), fallback to LHS or random
+        if (
+            not hasattr(self, "X_")
+            or self.X_ is None
+            or len(self.X_) < self.n_dim + 1
+        ):
+            # Not enough points for valid triangulation (need n >= m + 1)
+            # Fallback to random search using existing logic logic in 'else' block or explicit call pass
+            # Will fall through to 'else' block which handles generic minimize/random x0
+            # BUT 'tricands' isn't a valid minimize method, so we should handle this fallback specifically.
+            # Actually, let's just use random sampling here for fallback.
+
+
             low = np.array([b[0] for b in self.bounds])
             high = np.array([b[1] for b in self.bounds])
 
-            # Use random state if seeded
-            if self.seed is not None:
-                rng = np.random.RandomState(self.seed)
-                x0 = rng.uniform(low, high)
-            else:
-                x0 = np.random.uniform(low, high)
+            # Use persistent RNG
+            x0 = self.rng.uniform(low, high).reshape(1, -1)
 
-            if isinstance(self.acquisition_optimizer, str):
-                # It's a method name for minimize (e.g. "Nelder-Mead")
-                result = minimize(
-                    fun=self._acquisition_function,
-                    x0=x0,
-                    bounds=self.bounds,
-                    method=self.acquisition_optimizer,
-                )
-            elif callable(self.acquisition_optimizer):
-                # It's a custom callable compatible with minimize
-                result = self.acquisition_optimizer(
-                    fun=self._acquisition_function, x0=x0, bounds=self.bounds
-                )
-            else:
-                raise ValueError(
-                    f"Unknown acquisition optimizer type: {type(self.acquisition_optimizer)}"
-                )
-
-            # Minimize-based optimizers typically return a single point
-            # If acquisition_fun_return_size > 1, we map to 2D array but only 1 unique point
+            # If we need multiple points, generate them
             if self.acquisition_fun_return_size > 1:
+                # Generate n random points
+                x0 = self.rng.uniform(
+                    low,
+                    high,
+                    size=(self.acquisition_fun_return_size, self.n_dim),
+                )
+                return x0
+            return x0.flatten()
+
+        # Generate candidates
+        # Default nmax to a reasonable multiple of desired return size, or just large enough
+        # tricands handles nmax internally (default 100*m).
+        # We pass nmax as max(100*m, acquisition_fun_return_size * 10) to ensure we have enough.
+        nmax = max(100 * self.n_dim, self.acquisition_fun_return_size * 50)
+
+        # Wrapper for tricands: Normalize -> Gen Candidates -> Denormalize
+        # This handles non-hypercube bounds correctly as tricands assumes [lower, upper]^m box.
+
+        # Normalize X_ to [0, 1] relative to bounds
+        X_norm = (self.X_ - self.lower) / (self.upper - self.lower)
+
+        # Generate candidates in [0, 1] space
+        X_cands_norm = tricands(
+            X_norm, nmax=nmax, lower=0.0, upper=1.0, fringe=True
+        )
+
+        # Denormalize candidates back to original space
+        X_cands = X_cands_norm * (self.upper - self.lower) + self.lower
+
+        # Evaluate acquisition function on all candidates
+        # _acquisition_function returns NEGATIVE acquisition values (minimization)
+        # We iterate to ensure correct handling of 1D/2D shapes by _acquisition_function
+        acq_values = np.array([self._acquisition_function(x) for x in X_cands])
+
+        # Sort indices (smallest is best because of negation)
+        sorted_indices = np.argsort(acq_values)
+
+        # Select top n
+        top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
+        best_indices = sorted_indices[:top_n]
+        return X_cands[best_indices]
+
+    def _optimize_acquisition_de(self) -> np.ndarray:
+        """Optimize using differential evolution."""
+        # Variables to capture population from callback
+        population = None
+        population_energies = None
+        # with probability .5 select best_x_ as x0 or None
+        # Determine which "best" to use
+        if self.noise and hasattr(self, "min_mean_X"):
+            best_x = self.min_mean_X
+        else:
+            best_x = self.best_x_
+
+        if best_x is not None:
+            best_x = self._transform_X(best_x)
+            best_X = best_x if self.rng.rand() < self.de_x0_prob else None
+        else:
+            best_X = None
+
+        def callback(intermediate_result: OptimizeResult):
+            nonlocal population, population_energies
+            # Capture population if available (requires scipy >= 1.10.0)
+            if hasattr(intermediate_result, "population"):
+                population = intermediate_result.population
+                population_energies = intermediate_result.population_energies
+
+        result = differential_evolution(
+            func=self._acquisition_function,
+            bounds=self.bounds,
+            seed=self.rng,
+            maxiter=1000,
+            callback=callback,
+            x0=best_X,
+        )
+
+        if self.acquisition_fun_return_size > 1:
+            if population is not None and population_energies is not None:
+                # Sort by energy (ascending, since DE minimizes)
+                sorted_indices = np.argsort(population_energies)
+
+                # Determine how many to take
+                top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
+
+                # First candidate is always the polished result (best)
+                candidates = [result.x]
+
+                # Add remaining candidates from population (skipping the best unpolished one which corresponds to result.x)
+                if top_n > 1:
+                    # Take next (top_n - 1) indices
+                    # Start from 1 because 0 is the best unpolished
+                    next_indices = sorted_indices[1:top_n]
+                    candidates.extend(population[next_indices])
+
+                return np.array(candidates)
+            else:
+                # Fallback if population not available (e.g. very fast convergence or old scipy)
+                # Just return the best point as 2D array
                 return result.x.reshape(1, -1)
 
-            return result.x
+        return result.x
+
+    def _optimize_acquisition_scipy(self) -> np.ndarray:
+        """Optimize using scipy.optimize.minimize interface (default)."""
+        # Use scipy.optimize.minimize interface
+        # Generate random x0 within bounds
+        low = np.array([b[0] for b in self.bounds])
+        high = np.array([b[1] for b in self.bounds])
+        # Use persistent RNG
+        x0 = self.rng.uniform(low, high)
+
+        if isinstance(self.acquisition_optimizer, str):
+
+            # It's a method name for minimize (e.g. "Nelder-Mead")
+            result = minimize(
+                fun=self._acquisition_function,
+                x0=x0,
+                bounds=self.bounds,
+                method=self.acquisition_optimizer,
+            )
+        elif callable(self.acquisition_optimizer):
+            # It's a custom callable compatible with minimize
+            result = self.acquisition_optimizer(
+                fun=self._acquisition_function, x0=x0, bounds=self.bounds
+            )
+        else:
+            raise ValueError(
+                f"Unknown acquisition optimizer type: {type(self.acquisition_optimizer)}"
+            )
+
+        # Minimize-based optimizers typically return a single point
+        # If acquisition_fun_return_size > 1, we map to 2D array but only 1 unique point
+        if self.acquisition_fun_return_size > 1:
+            return result.x.reshape(1, -1)
+
+        return result.x
 
     def _suggest_next_point(self) -> np.ndarray:
         """Suggest next point to evaluate using acquisition function optimization.

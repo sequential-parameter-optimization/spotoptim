@@ -70,7 +70,7 @@ class TestOptimizeAcquisitionFunc:
         
         # Check specific arguments that are important
         assert call_kwargs["bounds"] == optimizer.bounds
-        assert call_kwargs["seed"] == optimizer.seed
+        assert call_kwargs["seed"] == optimizer.rng
         assert call_kwargs["maxiter"] == 1000
         assert call_kwargs["func"] == optimizer._acquisition_function
         
