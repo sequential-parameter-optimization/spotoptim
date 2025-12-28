@@ -55,28 +55,25 @@ class TestTricandsIntegration:
         # _acquisition_function returns NEGATIVE values.
         # Lets mock it to return values such that specific indices are chosen.
         
-        def side_effect(X):
-            # Return increasing values. Since we minimize negative acquisition (maximize acq),
-            # the lowest values here are "best" (most negative).
-            # Wait, usually _acquisition_function returns -1 * EI.
-            # So lower is better. 
-            # Let's return a range.
-            return np.arange(len(X))
+        def side_effect(x):
+            # Return a value based on the candidate's coordinates to ensure deterministic selection.
+            # We want point 0 ([-5, 0]) to have lowest value (best), then point 1, etc.
+            # Let's just sum the coordinates.
+            # x is shape (2,)
+            return np.sum(x)
+
             
         self.opt._acquisition_function = MagicMock(side_effect=side_effect)
         
         with patch("spotoptim.SpotOptim.tricands") as mock_tricands:
-            # Mock tricands returning 10 candidates in [0, 1] (normalized)
-            # We must return normalized candidates because the code expects them from tricands
-            mock_cands_norm = np.random.uniform(0, 1, size=(10, 2))
+            # Mock tricands returning 10 candidates
+            # We explicitly control values to ensure deterministic sorting order.
+            mock_cands_norm = np.full((10, 2), 0.99) # Initialize with high values (worst)
             
-            # Set specific values for first 3 to track them.
-            # Point 0: [0, 0] -> unnorms to [-5, 0]
-            # Point 1: [0.5, 0.5] -> unnorms to [0, 5]
-            # Point 2: [1, 1] -> unnorms to [5, 10]
-            mock_cands_norm[0] = [0.0, 0.0]
-            mock_cands_norm[1] = [0.5, 0.5]
-            mock_cands_norm[2] = [1.0, 1.0]
+            # Set specific best candidates (lowest sums)
+            mock_cands_norm[0] = [0.0, 0.0]        # Sum -> Lowest
+            mock_cands_norm[1] = [0.1, 0.1]        # Sum -> Second Lowest
+            mock_cands_norm[2] = [0.2, 0.2]        # Sum -> Third Lowest
             
             mock_tricands.return_value = mock_cands_norm
             
@@ -93,16 +90,28 @@ class TestTricandsIntegration:
             assert kwargs['nmax'] >= 100 * 2
             
             # Verify denormalization of result
-            # We mocked _acquisition_function to return 0, 1, 2... for the candidates.
-            # So indices 0, 1, 2 should be selected.
+            # Expected denormalized values:
+            # val = norm * (upper - lower) + lower
+            # ranges: x1: 10, lower -5. x2: 10, lower 0.
+            
+            # Cand 0: [0, 0] -> [-5, 0]
             expected_0 = np.array([-5.0, 0.0])
-            expected_1 = np.array([0.0, 5.0])
-            expected_2 = np.array([5.0, 10.0])
+            
+            # Cand 1: [0.1, 0.1] 
+            # x1 = 0.1*10 - 5 = -4.0
+            # x2 = 0.1*10 + 0 = 1.0
+            expected_1 = np.array([-4.0, 1.0])
+            
+            # Cand 2: [0.2, 0.2]
+            # x1 = 0.2*10 - 5 = -3.0
+            # x2 = 0.2*10 + 0 = 2.0
+            expected_2 = np.array([-3.0, 2.0])
             
             assert len(candidates) == 3
             np.testing.assert_allclose(candidates[0], expected_0)
             np.testing.assert_allclose(candidates[1], expected_1)
             np.testing.assert_allclose(candidates[2], expected_2)
+
 
     def test_nmax_scaling(self):
         """Test that nmax scales with acquisition_fun_return_size."""

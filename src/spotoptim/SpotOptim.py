@@ -2788,7 +2788,8 @@ class SpotOptim(BaseEstimator):
 
             # Evaluate acquisition function on all candidates
             # _acquisition_function returns NEGATIVE acquisition values (minimization)
-            acq_values = self._acquisition_function(X_cands)
+            # We iterate to ensure correct handling of 1D/2D shapes by _acquisition_function
+            acq_values = np.array([self._acquisition_function(x) for x in X_cands])
 
             # Sort indices (smallest is best because of negation)
             sorted_indices = np.argsort(acq_values)

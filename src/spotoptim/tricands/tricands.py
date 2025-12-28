@@ -76,14 +76,14 @@ def tricands_fringe(
     # p specifies distance between hull and boundary
     eps = np.sqrt(np.finfo(float).eps)
     alpha = np.zeros(Xbound.shape[0])
-    
+
     # Initialize with infinity (for zero/small norms)
     ai = np.full([Xbound.shape[0], m], np.inf)
 
     # Positive norms (significant): distance to upper bound
     pos_mask = norms > eps
     ai[pos_mask] = (upper - Xbound[pos_mask]) / norms[pos_mask]
-    
+
     # Negative norms (significant): distance to lower bound
     neg_mask = norms < -eps
     ai[neg_mask] = (lower - Xbound[neg_mask]) / norms[neg_mask]
