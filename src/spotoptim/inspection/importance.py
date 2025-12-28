@@ -264,13 +264,13 @@ def plot_importances(
     if feature_names is not None:
         ax2.boxplot(
             perm_imp.importances[perm_sorted_idx].T,
-            orientation='horizontal',
+            orientation="horizontal",
             tick_labels=np.array(feature_names)[perm_sorted_idx],
         )
     else:
         ax2.boxplot(
             perm_imp.importances[perm_sorted_idx].T,
-            orientation='horizontal',
+            orientation="horizontal",
             tick_labels=X_test.columns[perm_sorted_idx],
         )
     ax2.axvline(x=0, color="k", linestyle="--")
