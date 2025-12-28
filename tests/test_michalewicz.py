@@ -300,7 +300,8 @@ class TestMichalewiczOptimization:
             bounds=[(0, np.pi)] * 5,
             n_initial=15,
             max_iter=30,
-            seed=42
+            seed=42,
+            de_x0_prob=0.0, # do not use best point as starting point
         )
         
         result = opt.optimize()

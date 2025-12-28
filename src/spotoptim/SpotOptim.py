@@ -122,6 +122,8 @@ class SpotOptim(BaseEstimator):
             If provided, this point will be evaluated first and included in the initial design.
             The point should be within the bounds and will be validated before use.
             Defaults to None (no starting point, uses only LHS design).
+        de_x0_prob (float, optional): Probability of using the best point as starting point for differential evolution.
+            Defaults to 0.1.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -146,6 +148,7 @@ class SpotOptim(BaseEstimator):
         min_mean_X (ndarray or None): X value of best mean y (if noise=True).
         min_mean_y (float or None): Best mean y value (if noise=True).
         min_var_y (float or None): Variance of best mean y (if noise=True).
+        de_x0_prob (float): Probability of using the best point as starting point for differential evolution.
 
     Examples:
         >>> import numpy as np
@@ -347,6 +350,7 @@ class SpotOptim(BaseEstimator):
         acquisition_fun_return_size: int = 3,
         acquisition_optimizer: Union[str, Callable] = "differential_evolution",
         x0: Optional[np.ndarray] = None,
+        de_x0_prob: float = 0.1,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
@@ -419,6 +423,7 @@ class SpotOptim(BaseEstimator):
         self.penalty = penalty
         self.penalty_val = penalty_val
         self.x0 = x0
+        self.de_x0_prob = de_x0_prob
         self.args = args
         self.kwargs = kwargs if kwargs is not None else {}
 
@@ -849,6 +854,15 @@ class SpotOptim(BaseEstimator):
                    [2.        ]])
         """
         X_transformed = X.copy()
+
+        # Handle 1D array
+        if X.ndim == 1:
+            for i, trans in enumerate(self.var_trans):
+                if trans is not None:
+                    X_transformed[i] = self.transform_value(X[i], trans)
+            return X_transformed
+
+        # Handle 2D array
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
                 X_transformed[:, i] = np.array(
@@ -876,6 +890,16 @@ class SpotOptim(BaseEstimator):
                    [100.]])
         """
         X_original = X.copy()
+
+        # Handle 1D array (single sample)
+        if X.ndim == 1:
+            for i, trans in enumerate(self.var_trans):
+                if trans is not None:
+                    # Element-wise transformation for 1D array
+                    X_original[i] = self.inverse_transform_value(X[i], trans)
+            return X_original
+
+        # Handle 2D array (multiple samples)
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
                 X_original[:, i] = np.array(
@@ -1190,7 +1214,11 @@ class SpotOptim(BaseEstimator):
             # No reduction occurred, return as-is
             return X_full
 
-        # Select only non-fixed dimensions
+        # Handle 1D array
+        if X_full.ndim == 1:
+            return X_full[~self.ident]
+
+        # Select only non-fixed dimensions (2D)
         return X_full[:, ~self.ident]
 
     def _aggregate_mean_var(
@@ -2803,6 +2831,18 @@ class SpotOptim(BaseEstimator):
             # Variables to capture population from callback
             population = None
             population_energies = None
+            # with probability .5 select best_x_ as x0 or None
+            # Determine which "best" to use
+            if self.noise and hasattr(self, "min_mean_X"):
+                best_x = self.min_mean_X
+            else:
+                best_x = self.best_x_
+
+            if best_x is not None:
+                best_x = self._transform_X(best_x)
+                best_X = best_x if np.random.rand() < self.de_x0_prob else None
+            else:
+                best_X = None
 
             def callback(intermediate_result: OptimizeResult):
                 nonlocal population, population_energies
@@ -2817,6 +2857,7 @@ class SpotOptim(BaseEstimator):
                 seed=self.seed,
                 maxiter=1000,
                 callback=callback,
+                x0=best_X,
             )
 
             if self.acquisition_fun_return_size > 1:
@@ -3843,6 +3884,9 @@ class SpotOptim(BaseEstimator):
         """
         # Start timer for max_time check
         timeout_start = time.time()
+
+        # Set seed for reproducibility (crucial for ensuring identical results across runs)
+        self._set_seed()
 
         # Set initial design (generate or process user-provided points)
         X0 = self.get_initial_design(X0)
