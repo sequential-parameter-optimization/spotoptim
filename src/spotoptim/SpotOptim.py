@@ -2932,34 +2932,11 @@ class SpotOptim(BaseEstimator):
 
         return result.x
 
-    def _suggest_next_point(self) -> np.ndarray:
-        """Suggest next point to evaluate using acquisition function optimization.
-        Used in the optimize() method.
-
-        If the acquisition function optimization fails to find a sufficiently distant
-        point, falls back to the strategy specified by acquisition_failure_strategy.
-        For integer/factor variables, applies rounding before checking distance to
-        avoid duplicate evaluations.
+    def _try_optimizer_candidates(self) -> Optional[np.ndarray]:
+        """Try candidates proposed by the acquisition result optimizer.
 
         Returns:
-            ndarray: Next point to evaluate, shape (n_features,).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> from sklearn.gaussian_process import GaussianProcessRegressor
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     surrogate=GaussianProcessRegressor(),
-            ...     acquisition='ei'
-            ... )
-            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
-            >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
-            >>> x_next = opt._suggest_next_point()
-            >>> print("Next point to evaluate:", x_next)
-            Next point to evaluate: [some point within bounds]
+            Optional[ndarray]: A unique valid candidate point, or None if all candidates are duplicates.
         """
         # Phase 1: Try candidates from acquisition function optimizer
         # These can be multiple if acquisition_fun_return_size > 1
@@ -2991,22 +2968,35 @@ class SpotOptim(BaseEstimator):
                 return x_next_rounded
             elif self.verbose:
                 print(
-                    f"  Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate after rounding."
+                    f"Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate after rounding."
                 )
+        return None
 
-        # Phase 2: Fallback attempts if optimizer candidates failed
-        max_attempts = 10
+    def _try_fallback_strategy(
+        self, max_attempts: int = 10
+    ) -> Tuple[Optional[np.ndarray], np.ndarray]:
+        """Try fallback strategy (e.g. random search) to find a unique point.
 
+        Args:
+            max_attempts (int): Maximum number of fallback attempts.
+
+        Returns:
+            Tuple[Optional[ndarray], ndarray]:
+                - The first element is the unique valid candidate point if found, else None.
+                - The second element is the last attempted point (even if duplicate), logic requires returning something.
+        """
+        x_last = None
         for attempt in range(max_attempts):
             if self.verbose:
                 print(
-                    f"  Fallback attempt {attempt + 1}/{max_attempts}: Using fallback strategy"
+                    f"Fallback attempt {attempt + 1}/{max_attempts}: Using fallback strategy"
                 )
             x_next = self._handle_acquisition_failure()
 
             x_next_rounded = self._repair_non_numeric(
                 x_next.reshape(1, -1), self.var_type
             )[0]
+            x_last = x_next_rounded
 
             x_next_2d = x_next_rounded.reshape(1, -1)
             X_transformed = self._transform_X(self.X_)
@@ -3015,16 +3005,46 @@ class SpotOptim(BaseEstimator):
             )
 
             if x_new.shape[0] > 0:
-                return x_next_rounded
+                return x_next_rounded, x_last
+        
+        return None, x_last
 
-        # If we get here, we failed to find a unique point after all attempts
-        # Return the last attempt anyway
+    def suggest_next_infill_point(self) -> np.ndarray:
+        """Suggest next point to evaluate (dispatcher).
+
+        1. Try candidates from acquisition function optimizer.
+        2. Handle_acquisition_failure (fallback).
+        3. Return last attempt if all fails.
+
+        Returns:
+            ndarray: Next point to evaluate.
+        """
+        # 1. Try optimizer candidates
+        x_candidate = self._try_optimizer_candidates()
+        if x_candidate is not None:
+            return x_candidate
+
+        # 2. Try fallback strategy
+        max_attempts = 10
+        x_candidate, x_last = self._try_fallback_strategy(max_attempts=max_attempts)
+        if x_candidate is not None:
+            return x_candidate
+
+        # 3. Return last attempt
         if self.verbose:
             print(
                 f"Warning: Could not find unique point after optimization candidates and {max_attempts} fallback attempts. "
                 "Returning last candidate (may be duplicate)."
             )
-        return x_next_rounded
+        # Verify x_last is not None (should be handled by _try_fallback_strategy logic unless max_attempts=0)
+        if x_last is None:
+             # Should practically not happen if max_attempts > 0, but safe fallback
+             return self._handle_acquisition_failure()
+        return x_last
+
+    def _suggest_next_point(self) -> np.ndarray:
+        """Suggest next point (wrapper for suggest_next_infill_point)."""
+        return self.suggest_next_infill_point()
 
     def _update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
         """Repeat infill point for noisy function evaluation.
