@@ -354,7 +354,8 @@ def fullfactorial(q, Edges=1) -> np.ndarray:
         ValueError: If any dimension in `q` is less than 2.
 
     Notes:
-        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence. Original Matlab Code: Copyright 2007 A Sobester:
+        Many thanks to the original author of this code, A Sobester, for providing the original Matlab code under the GNU Licence.
+        Original Matlab Code: Copyright 2007 A Sobester:
         "This program is free software: you can redistribute it and/or modify  it
         under the terms of the GNU Lesser General Public License as published by
         the Free Software Foundation, either version 3 of the License, or any
