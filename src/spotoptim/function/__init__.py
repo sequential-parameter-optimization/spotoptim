@@ -20,6 +20,7 @@ from .mo import (
     zdt4,
     zdt6,
 )
+from .forr08a import aerofoilcd, branin, onevar
 from .torch_objective import TorchObjective
 
 __all__ = [
@@ -42,5 +43,8 @@ __all__ = [
     "conversion_pred",
     "activity_pred",
     "fun_myer16a",
+    "aerofoilcd",
+    "branin",
+    "onevar",
     "TorchObjective",
 ]
