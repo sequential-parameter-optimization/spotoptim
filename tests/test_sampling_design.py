@@ -148,6 +148,7 @@ class TestGenerateClusteredDesign:
         assert np.all(design[:, 0] <= -2)
         assert np.all(design[:, 1] <= 20)
 
+
     def test_generate_clustered_design_generator_seed(self):
         """Test functioning with a numpy Generator instance."""
         bounds = [(-1, 1), (-1, 1)]
@@ -158,4 +159,95 @@ class TestGenerateClusteredDesign:
         design = generate_clustered_design(bounds, n_points, n_clusters, seed=rng)
         
         assert design.shape == (10, 2)
+
+
+from spotoptim.sampling.design import generate_sobol_design, generate_qmc_lhs_design, generate_grid_design
+
+class TestGenerateSobolDesign:
+    """Test suite for generate_sobol_design."""
+
+    def test_shape(self):
+        bounds = [(-5, 5), (0, 10)]
+        n_design = 8
+        X = generate_sobol_design(bounds, n_design, seed=42)
+        assert X.shape == (n_design, 2)
+
+    def test_bounds(self):
+        bounds = [(0, 1), (10, 20)]
+        n_design = 16
+        X = generate_sobol_design(bounds, n_design, seed=42)
+        assert np.all(X[:, 0] >= 0)
+        assert np.all(X[:, 0] <= 1)
+        assert np.all(X[:, 1] >= 10)
+        assert np.all(X[:, 1] <= 20)
+
+    def test_reproducibility(self):
+        bounds = [(0, 1)]
+        n_design = 5
+        X1 = generate_sobol_design(bounds, n_design, seed=123)
+        X2 = generate_sobol_design(bounds, n_design, seed=123)
+        np.testing.assert_array_equal(X1, X2)
+
+
+class TestGenerateQMCLHSDesign:
+    """Test suite for generate_qmc_lhs_design."""
+
+    def test_shape(self):
+        bounds = [(-5, 5), (0, 10)]
+        n_design = 10
+        X = generate_qmc_lhs_design(bounds, n_design, seed=42)
+        assert X.shape == (n_design, 2)
+
+    def test_bounds(self):
+        bounds = [(0, 1), (10, 20)]
+        n_design = 10
+        X = generate_qmc_lhs_design(bounds, n_design, seed=42)
+        assert np.all(X[:, 0] >= 0)
+        assert np.all(X[:, 0] <= 1)
+        assert np.all(X[:, 1] >= 10)
+        assert np.all(X[:, 1] <= 20)
+
+    def test_reproducibility(self):
+        bounds = [(0, 1)]
+        n_design = 5
+        X1 = generate_qmc_lhs_design(bounds, n_design, seed=123)
+        X2 = generate_qmc_lhs_design(bounds, n_design, seed=123)
+        np.testing.assert_array_equal(X1, X2)
+
+
+class TestGenerateGridDesign:
+    """Test suite for generate_grid_design."""
+
+    def test_shape_2d(self):
+        bounds = [(0, 1), (0, 1)]
+        n_design = 25 # 5x5
+        X = generate_grid_design(bounds, n_design)
+        assert X.shape == (25, 2)
+
+    def test_shape_mismatch(self):
+        # 10 is not a square, floor(sqrt(10)) = 3 -> 3x3=9 points
+        bounds = [(0, 1), (0, 1)]
+        n_design = 10
+        X = generate_grid_design(bounds, n_design)
+        assert X.shape == (9, 2)
+
+    def test_bounds(self):
+        bounds = [(-5, -2), (10, 20)]
+        n_design = 16
+        X = generate_grid_design(bounds, n_design)
+        
+        # Check lower bounds
+        assert np.all(X[:, 0] >= -5)
+        assert np.all(X[:, 1] >= 10)
+        
+        # Check upper bounds
+        assert np.all(X[:, 0] <= -2)
+        assert np.all(X[:, 1] <= 20)
+
+    def test_nd(self):
+        # 3D grid
+        bounds = [(0, 1), (0, 1), (0, 1)]
+        n_design = 27 # 3^3
+        X = generate_grid_design(bounds, n_design)
+        assert X.shape == (27, 3)
 

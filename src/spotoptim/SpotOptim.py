@@ -848,11 +848,14 @@ class SpotOptim(BaseEstimator):
     def _transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from original to internal scale.
 
+        Converts from **Natural Space** (Original) to **Transformed Space** (Full Dimension).
+        Does NOT handle dimension reduction (mapping).
+
         Args:
-            X: Array in original scale, shape (n_samples, n_features)
+            X: Array in **Natural Space**, shape (n_samples, n_features)
 
         Returns:
-            Array in transformed (internal) scale
+            Array in **Transformed Space** (Full Dimension)
 
         Examples:
             >>> from spotoptim import SpotOptim
@@ -884,11 +887,14 @@ class SpotOptim(BaseEstimator):
     def _inverse_transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from internal to original scale.
 
+        Converts from **Transformed Space** (Full Dimension) to **Natural Space** (Original).
+        Does NOT handle dimension expansion (un-mapping).
+
         Args:
-            X: Array in transformed (internal) scale, shape (n_samples, n_features)
+            X: Array in **Transformed Space**, shape (n_samples, n_features)
 
         Returns:
-            Array in original scale
+            Array in **Natural Space**
 
         Examples:
             >>> from spotoptim import SpotOptim
@@ -920,6 +926,9 @@ class SpotOptim(BaseEstimator):
 
     def transform_bounds(self) -> None:
         """Transform bounds from original to internal scale.
+
+        Updates `self.bounds` (and `self.lower`, `self.upper`) from **Natural Space**
+        to **Transformed Space**.
 
         Examples:
             >>> from spotoptim import SpotOptim
@@ -956,8 +965,15 @@ class SpotOptim(BaseEstimator):
     def _setup_dimension_reduction(self) -> None:
         """Set up dimension reduction by identifying fixed dimensions.
 
-        This method identifies dimensions where lower and upper bounds are equal,
-        indicating fixed (constant) variables. It stores:
+        identifies dimensions where lower and upper bounds are equal in **Transformed Space**.
+        Reduces `self.bounds`, `self.lower`, `self.upper`, etc., to the **Mapped Space**
+        (active variables only).
+
+        The resulting `self.bounds` defines the **Transformed and Mapped Space** used
+        for optimization.
+
+        This method identifies variables that are fixed (constant) and excludes them
+        from the optimization process. It stores:
         - Original bounds and metadata in `all_*` attributes
         - Boolean mask of fixed dimensions in `ident`
         - Reduced bounds, types, and names for optimization
@@ -1991,12 +2007,18 @@ class SpotOptim(BaseEstimator):
         """Evaluate objective function at points X.
         Used in the optimize() method to evaluate the objective function.
 
+        **Input Space**: `X` is expected in **Transformed and Mapped Space** (Internal scale, Reduced dimensions).
+        **Process**:
+        1. Expands `X` to **Transformed Space** (Full dimensions) if dimension reduction is active.
+        2. Inverse transforms `X` to **Natural Space** (Original scale).
+        3. Evaluates the user function with points in **Natural Space**.
+
         If dimension reduction is active, expands X to full dimensions before evaluation.
         Supports both single-objective and multi-objective functions. For multi-objective
         functions, converts to single-objective using _mo2so method.
 
         Args:
-            X (ndarray): Points to evaluate in reduced space, shape (n_samples, n_reduced_features).
+            X (ndarray): Points to evaluate in **Transformed and Mapped Space**, shape (n_samples, n_reduced_features).
 
         Returns:
             ndarray: Function values, shape (n_samples,).
@@ -3006,17 +3028,22 @@ class SpotOptim(BaseEstimator):
     def suggest_next_infill_point(self) -> np.ndarray:
         """Suggest next point to evaluate (dispatcher).
 
+        The returned point is in the **Transformed and Mapped Space** (Internal Optimization Space).
+        This means:
+        1. Transformations (e.g., log, sqrt) have been applied.
+        2. Dimension reduction has been applied (fixed variables removed).
+
         1. Try candidates from acquisition function optimizer.
         2. Handle_acquisition_failure (fallback).
         3. Return last attempt if all fails.
 
         Returns:
-            ndarray: Next point to evaluate.
+            ndarray: Next point to evaluate in **Transformed and Mapped Space**.
 
         Examples:
             >>> from spotoptim import SpotOptim
             >>> spot = SpotOptim()
-            >>> spot.suggest_next_infill_point()
+            >>> x_internal = spot.suggest_next_infill_point()
         """
         # 1. Try optimizer candidates
         x_candidate = self._try_optimizer_candidates()
@@ -3868,20 +3895,26 @@ class SpotOptim(BaseEstimator):
         - Total function evaluations reach max_iter (including initial design), OR
         - Runtime exceeds max_time minutes
 
+        **Input/Output Spaces:**
+        - **Input X0**: Expected in **Natural Space** (original scale, physical units).
+        - **Output result.x**: Returned in **Natural Space**.
+        - **Output result.X**: Returned in **Natural Space**.
+        - **Internal Optimization**: Performed in **Transformed and Mapped Space**.
+
         Args:
-            X0 (ndarray, optional): Initial design points, shape (n_initial, n_features).
+            X0 (ndarray, optional): Initial design points in **Natural Space**, shape (n_initial, n_features).
                 If None, generates space-filling design. Defaults to None.
 
         Returns:
             OptimizeResult: Optimization result with fields:
-                - x: best point found
+                - x: best point found in **Natural Space**
                 - fun: best function value
                 - nfev: number of function evaluations (including initial design)
                 - nit: number of sequential optimization iterations (after initial design)
                 - success: whether optimization succeeded
                 - message: termination message indicating reason for stopping, including
                   statistics (function value, iterations, evaluations)
-                - X: all evaluated points
+                - X: all evaluated points in **Natural Space**
                 - y: all function values
 
         Examples:
