@@ -543,6 +543,7 @@ def phisort(
     Examples:
         >>> import numpy as np
             from spotoptim.sampling.mm import phisort
+            from spotoptim.sampling.mm import bestlh
             X1 = bestlh(n=5, k=2, population=5, iterations=10)
             X2 = bestlh(n=5, k=2, population=15, iterations=20)
             X3 = bestlh(n=5, k=2, population=25, iterations=30)
