@@ -293,7 +293,7 @@ class TestVarType:
             result.x[2], np.round(result.x[2]), atol=1e-10
         ), "Factor var should be integer"
 
-    def test_var_type_persistence_through_suggest_next_point(self):
+    def test_var_type_persistence_throughsuggest_next_infill_point(self):
         """Test that var_type is applied when suggesting next points."""
 
         def sphere(X):

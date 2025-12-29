@@ -1245,6 +1245,7 @@ def plot_mmphi_vs_points(
 
     # Show plot
     plt.show()
+    plt.close()
 
     return df_summary
 
@@ -1291,3 +1292,4 @@ def mm_improvement_contour(
     plt.legend()
     plt.grid()
     plt.show()
+    plt.close()

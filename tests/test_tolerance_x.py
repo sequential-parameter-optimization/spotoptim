@@ -675,7 +675,7 @@ class TestSelectNewMethod:
         # This point rounds to [12, 3] - same as first existing point
         X_new_raw = np.array([[12.4, 2.7]])
 
-        # Apply the same rounding that _suggest_next_point does
+        # Apply the same rounding that suggest_next_infill_point does
         X_new = optimizer._repair_non_numeric(X_new_raw, optimizer.var_type)
 
         selected, mask = optimizer.select_new(X_new, X_existing, tolerance=0.1)

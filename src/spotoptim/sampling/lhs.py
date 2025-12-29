@@ -1,7 +1,13 @@
 import numpy as np
 
 
-def rlh(n: int, k: int, edges: int = 0) -> np.ndarray:
+from typing import Optional, Union
+from numpy.random import Generator, default_rng
+
+
+def rlh(
+    n: int, k: int, edges: int = 0, seed: Optional[Union[int, Generator]] = None
+) -> np.ndarray:
     """
     Generates a random Latin hypercube within the [0,1]^k hypercube.
 
@@ -41,9 +47,12 @@ def rlh(n: int, k: int, edges: int = 0) -> np.ndarray:
     # Initialize array
     X = np.zeros((n, k), dtype=float)
 
+    # Initialize rng
+    rng = default_rng(seed)
+
     # Fill with random permutations
     for i in range(k):
-        X[:, i] = np.random.permutation(n)
+        X[:, i] = rng.permutation(n)
 
     # Adjust normalization based on the edges flag
     if edges == 1:

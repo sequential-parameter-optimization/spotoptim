@@ -20,6 +20,7 @@ import os
 import shutil
 from tabulate import tabulate
 from spotoptim.tricands import tricands
+from spotoptim.sampling.design import generate_uniform_design
 
 
 class SpotOptim(BaseEstimator):
@@ -124,6 +125,8 @@ class SpotOptim(BaseEstimator):
             Defaults to None (no starting point, uses only LHS design).
         de_x0_prob (float, optional): Probability of using the best point as starting point for differential evolution.
             Defaults to 0.1.
+        tricands_fringe (bool, optional): Whether to use the fringe of the design space for the initial design.
+            Defaults to False.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -149,6 +152,7 @@ class SpotOptim(BaseEstimator):
         min_mean_y (float or None): Best mean y value (if noise=True).
         min_var_y (float or None): Variance of best mean y (if noise=True).
         de_x0_prob (float): Probability of using the best point as starting point for differential evolution.
+        tricands_fringe (bool): Whether to use the fringe of the design space for the initial design.
 
     Examples:
         >>> import numpy as np
@@ -351,6 +355,7 @@ class SpotOptim(BaseEstimator):
         acquisition_optimizer: Union[str, Callable] = "differential_evolution",
         x0: Optional[np.ndarray] = None,
         de_x0_prob: float = 0.1,
+        tricands_fringe: bool = False,
         prob_de_tricands: float = 0.8,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
@@ -428,6 +433,7 @@ class SpotOptim(BaseEstimator):
         self.penalty_val = penalty_val
         self.x0 = x0
         self.de_x0_prob = de_x0_prob
+        self.tricands_fringe = tricands_fringe
         self.prob_de_tricands = prob_de_tricands
         self.args = args
         self.kwargs = kwargs if kwargs is not None else {}
@@ -2312,7 +2318,7 @@ class SpotOptim(BaseEstimator):
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Select rows from A that are not in X.
-        Used in _suggest_next_point() to avoid duplicate evaluations.
+        Used in suggest_next_infill_point() to avoid duplicate evaluations.
 
         Args:
             A (ndarray): Array with new values.
@@ -2588,7 +2594,7 @@ class SpotOptim(BaseEstimator):
 
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
-        Used in the _suggest_next_point() method.
+        Used in the suggest_next_infill_point() method.
 
         This method is called when no new design points can be suggested
         by the surrogate model (e.g., when the proposed point is too close
@@ -2619,7 +2625,6 @@ class SpotOptim(BaseEstimator):
                 print(
                     "Acquisition failure: Using random space-filling design as fallback."
                 )
-
             x_new_unit = self.lhs_sampler.random(n=1)[0]
             x_new = self.lower + x_new_unit * (self.upper - self.lower)
 
@@ -2667,7 +2672,7 @@ class SpotOptim(BaseEstimator):
 
     def _acquisition_function(self, x: np.ndarray) -> float:
         """Compute acquisition function value.
-        Used in the _suggest_next_point() method.
+        Used in the suggest_next_infill_point() method.
 
         This implements "Infill Criteria" as described in Forrester et al. (2008),
         Section 3 "Exploring and Exploiting".
@@ -2775,34 +2780,22 @@ class SpotOptim(BaseEstimator):
         """Optimize using geometric infill strategy via triangulation candidates."""
         # Use X_ (all evaluated points) as basis for triangulation
         # If no points yet (e.g. before initial design), fallback to LHS or random
-        if (
-            not hasattr(self, "X_")
-            or self.X_ is None
-            or len(self.X_) < self.n_dim + 1
-        ):
+        if not hasattr(self, "X_") or self.X_ is None or len(self.X_) < self.n_dim + 1:
             # Not enough points for valid triangulation (need n >= m + 1)
             # Fallback to random search using existing logic logic in 'else' block or explicit call pass
             # Will fall through to 'else' block which handles generic minimize/random x0
             # BUT 'tricands' isn't a valid minimize method, so we should handle this fallback specifically.
             # Actually, let's just use random sampling here for fallback.
 
+            # Fallback to random search using generate_uniform_design
+            # Return size defaults to 1 unless specified
+            n_design = max(1, self.acquisition_fun_return_size)
+            x0 = generate_uniform_design(self.bounds, n_design, seed=self.rng)
 
-            low = np.array([b[0] for b in self.bounds])
-            high = np.array([b[1] for b in self.bounds])
-
-            # Use persistent RNG
-            x0 = self.rng.uniform(low, high).reshape(1, -1)
-
-            # If we need multiple points, generate them
-            if self.acquisition_fun_return_size > 1:
-                # Generate n random points
-                x0 = self.rng.uniform(
-                    low,
-                    high,
-                    size=(self.acquisition_fun_return_size, self.n_dim),
-                )
-                return x0
-            return x0.flatten()
+            # If we requested ONLY 1 point, return expected shape (n_dim,) for flatten behavior
+            if self.acquisition_fun_return_size <= 1:
+                return x0.flatten()
+            return x0
 
         # Generate candidates
         # Default nmax to a reasonable multiple of desired return size, or just large enough
@@ -2818,7 +2811,7 @@ class SpotOptim(BaseEstimator):
 
         # Generate candidates in [0, 1] space
         X_cands_norm = tricands(
-            X_norm, nmax=nmax, lower=0.0, upper=1.0, fringe=True
+            X_norm, nmax=nmax, lower=0.0, upper=1.0, fringe=self.tricands_fringe
         )
 
         # Denormalize candidates back to original space
@@ -2976,6 +2969,7 @@ class SpotOptim(BaseEstimator):
         self, max_attempts: int = 10
     ) -> Tuple[Optional[np.ndarray], np.ndarray]:
         """Try fallback strategy (e.g. random search) to find a unique point.
+        Calls _handle_acquisition_failure.
 
         Args:
             max_attempts (int): Maximum number of fallback attempts.
@@ -3006,7 +3000,7 @@ class SpotOptim(BaseEstimator):
 
             if x_new.shape[0] > 0:
                 return x_next_rounded, x_last
-        
+
         return None, x_last
 
     def suggest_next_infill_point(self) -> np.ndarray:
@@ -3018,6 +3012,11 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             ndarray: Next point to evaluate.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim()
+            >>> spot.suggest_next_infill_point()
         """
         # 1. Try optimizer candidates
         x_candidate = self._try_optimizer_candidates()
@@ -3038,13 +3037,9 @@ class SpotOptim(BaseEstimator):
             )
         # Verify x_last is not None (should be handled by _try_fallback_strategy logic unless max_attempts=0)
         if x_last is None:
-             # Should practically not happen if max_attempts > 0, but safe fallback
-             return self._handle_acquisition_failure()
+            # Should practically not happen if max_attempts > 0, but safe fallback
+            return self._handle_acquisition_failure()
         return x_last
-
-    def _suggest_next_point(self) -> np.ndarray:
-        """Suggest next point (wrapper for suggest_next_infill_point)."""
-        return self.suggest_next_infill_point()
 
     def _update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
         """Repeat infill point for noisy function evaluation.
@@ -3978,7 +3973,7 @@ class SpotOptim(BaseEstimator):
             X_ocba = self._apply_ocba()
 
             # Suggest next point
-            x_next = self._suggest_next_point()
+            x_next = self.suggest_next_infill_point()
 
             # Repeat next point if repeats_surrogate > 1
             x_next_repeated = self._update_repeats_infill_points(x_next)

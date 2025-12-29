@@ -74,8 +74,8 @@ class TestAcquisitionReturnSize:
         np.testing.assert_array_equal(candidates, expected_candidates)
 
     @patch("spotoptim.SpotOptim.differential_evolution")
-    def test_suggest_next_point_uses_alternatives(self, mock_de):
-        """Test _suggest_next_point tries 2nd candidate if 1st is duplicate."""
+    def testsuggest_next_infill_point_uses_alternatives(self, mock_de):
+        """Test suggest_next_infill_point tries 2nd candidate if 1st is duplicate."""
         # Setup: 1st candidate is duplicate, 2nd is new
         existing_point = np.array([1.0, 1.0])
         new_point = np.array([2.0, 2.0])
@@ -105,6 +105,6 @@ class TestAcquisitionReturnSize:
         opt.tolerance_x = 0.1
         
         # Should skip 1st (duplicate) and return 2nd
-        x_suggested = opt._suggest_next_point()
+        x_suggested = opt.suggest_next_infill_point()
         
         np.testing.assert_array_almost_equal(x_suggested, new_point)

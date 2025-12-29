@@ -238,7 +238,8 @@ def plot_mo(
         plt.grid()
         plt.title(title)
         # Move the legend outside the plot
-        plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        if plt.gca().get_legend_handles_labels()[1]:
+            plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
         # Save or show the plot
         if filename:
             if filename.endswith(".pdf") or filename.endswith(".png"):
