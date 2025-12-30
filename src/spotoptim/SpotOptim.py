@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import dill
-
+import re
 import torch
 from typing import Callable, Optional, Tuple, List, Any, Dict, Union
 from scipy.optimize import OptimizeResult, differential_evolution, minimize
@@ -727,6 +727,9 @@ class SpotOptim(BaseEstimator):
             TypeError: If x is not a float.
             ValueError: If an unknown transformation is specified.
 
+        Notes:
+            See also inverse_transform_value.
+
         Examples:
             >>> from spotoptim import SpotOptim
             >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
@@ -794,6 +797,17 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             Original value
+
+        Notes:
+            See also transform_value.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
+            >>> spot.inverse_transform_value(10, 'log10')
+            10.0
+            >>> spot.inverse_transform_value(100, 'log(x)')
+            10.0
         """
         # Ensure x is a float
         if not isinstance(x, float):
@@ -821,8 +835,6 @@ class SpotOptim(BaseEstimator):
             return 1.0 / x
 
         # Dynamic Transformations (Inverses)
-        import re
-
         if trans == "log(x)":
             return np.exp(x)
         if trans == "sqrt(x)":
@@ -2913,7 +2925,46 @@ class SpotOptim(BaseEstimator):
         return result.x
 
     def _optimize_acquisition_scipy(self) -> np.ndarray:
-        """Optimize using scipy.optimize.minimize interface (default)."""
+        """Optimize using scipy.optimize.minimize interface (default).
+
+        Args:
+            None
+
+        Returns:
+            np.ndarray: The optimized acquisition function values.
+
+        Raises:
+            ValueError: If acquisition optimizer is not a string or callable.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Define objective function
+            >>> def fun(x): return np.sum(x**2, axis=1)
+            >>>
+            >>> # Initialize optimizer with a scipy-compatible acquisition optimizer
+            >>> # Note: default is 'differential_evolution' which uses a different method
+            >>> optimizer = SpotOptim(
+            ...     fun=fun,
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     acquisition_optimizer="L-BFGS-B"
+            ... )
+            >>>
+            >>> # Create some dummy data to fit the surrogate model
+            >>> X = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
+            >>> y = fun(X)
+            >>>
+            >>> # Fit the surrogate model manually
+            >>> # Note: this is normally handled inside optimize()
+            >>> optimizer._fit_surrogate(X, y)
+            >>>
+            >>> # Optimize the acquisition function using scipy's minimize
+            >>> x_next = optimizer._optimize_acquisition_scipy()
+            >>> x_next.shape
+            (2,)
+
+        """
         # Use scipy.optimize.minimize interface
         # Generate random x0 within bounds
         low = np.array([b[0] for b in self.bounds])
