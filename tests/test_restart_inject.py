@@ -45,16 +45,17 @@ def test_restart_inject_best():
     # success_rate window needs to be small to trigger restart
     # restart_after_n=5 to trigger restart quickly
     # n_initial=5
-    # max_iter=50 (enough for restart)
+    # max_iter=20 (enough for restart)
     optimizer = SpotOptim(
         fun=obj,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=60,
+        max_iter=40,
         n_initial=5,
-        restart_after_n=5,
+        restart_after_n=2,
         restart_inject_best=True,
         seed=42,
-        verbose=True
+        verbose=True,
+        max_surrogate_points=10,
     )
     
     # Manually seed a "best" point in the first run to ensure we have something known

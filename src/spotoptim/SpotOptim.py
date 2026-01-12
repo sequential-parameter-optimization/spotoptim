@@ -121,7 +121,7 @@ class SpotOptim(BaseEstimator):
             scipy.optimize.minimize (fun, x0, bounds, ...). Defaults to "differential_evolution".
         restart_after_n (int, optional): Number of consecutive iterations with zero success rate
             before triggering a restart. Defaults to 100.
-        restart_inject_best (bool, optional): Whether to inject the best solution found so far 
+        restart_inject_best (bool, optional): Whether to inject the best solution found so far
             as a starting point for the next restart. Defaults to True.
         x0 (array-like, optional): Starting point for optimization, shape (n_features,).
             If provided, this point will be evaluated first and included in the initial design.
@@ -131,6 +131,8 @@ class SpotOptim(BaseEstimator):
             Defaults to 0.1.
         tricands_fringe (bool, optional): Whether to use the fringe of the design space for the initial design.
             Defaults to False.
+        prob_de_tricands (float, optional): Probability of using differential evolution as an optimizer
+            on the surrogate model. 1 - prob_de_tricands is the probability of using tricands. Defaults to 0.8.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -157,6 +159,7 @@ class SpotOptim(BaseEstimator):
         min_var_y (float or None): Variance of best mean y (if noise=True).
         de_x0_prob (float): Probability of using the best point as starting point for differential evolution.
         tricands_fringe (bool): Whether to use the fringe of the design space for the initial design.
+        prob_de_tricands (float): Probability of using differential evolution as an optimizer on the surrogate model.
 
     Examples:
         >>> import numpy as np
@@ -529,7 +532,7 @@ class SpotOptim(BaseEstimator):
         # Success rate tracking (similar to Spot class)
         self.success_rate = 0.0
         self.success_counter = 0
-        
+
         if window_size is not None:
             self.window_size = window_size
         elif restart_after_n is not None:
@@ -539,7 +542,7 @@ class SpotOptim(BaseEstimator):
             self.window_size = restart_after_n
         else:
             self.window_size = 100
-            
+
         self._success_history = []
         self._success_history = []
 
@@ -2827,7 +2830,6 @@ class SpotOptim(BaseEstimator):
             return self._optimize_acquisition_de()
         elif self.acquisition_optimizer == "de_tricands":
             val = self.rng.rand()
-
             if val < self.prob_de_tricands:
                 return self._optimize_acquisition_de()
             else:
@@ -3760,7 +3762,10 @@ class SpotOptim(BaseEstimator):
         return X_next_clean, y_next_clean
 
     def _update_best_main_loop(
-        self, x_next_repeated: np.ndarray, y_next: np.ndarray, start_time: Optional[float] = None
+        self,
+        x_next_repeated: np.ndarray,
+        y_next: np.ndarray,
+        start_time: Optional[float] = None,
     ) -> None:
         """Update best solution found during main optimization loop.
 
@@ -3830,45 +3835,45 @@ class SpotOptim(BaseEstimator):
             if self.verbose:
                 # Calculate progress
                 if self.max_time != np.inf and start_time is not None:
-                     progress = (time.time() - start_time) / self.max_time * 100
-                     progress_str = f"Time: {progress:.1f}%"
+                    progress = (time.time() - start_time) / (self.max_time * 60) * 100
+                    progress_str = f"Time: {progress:.1f}%"
                 else:
-                     progress = self.counter / self.max_iter * 100
-                     progress_str = f"Evals: {progress:.1f}%"
+                    progress = self.counter / self.max_iter * 100
+                    progress_str = f"Evals: {progress:.1f}%"
 
                 msg = f"Iter {self.n_iter_} | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
-                
+
                 if self.noise:
-                     msg += f" | Mean Best: {self.min_mean_y:.6f}"
-                
+                    msg += f" | Mean Best: {self.min_mean_y:.6f}"
+
                 print(msg)
         elif self.verbose:
-             # Print status even if no improvement (optional, but keep consistent with previous behavior logic if desired, 
-             # usually users want to see every iteration if verbose)
-             # The user asked for "print also global best... success rate... percentage..."
-             # If we only print on improvement, we miss updates on stagnation.
-             # But the original code printed on 'else' too (for noise mean or just current val).
-             # Let's use the same compact format for non-improvement too.
-             
+            # Print status even if no improvement (optional, but keep consistent with previous behavior logic if desired,
+            # usually users want to see every iteration if verbose)
+            # The user asked for "print also global best... success rate... percentage..."
+            # If we only print on improvement, we miss updates on stagnation.
+            # But the original code printed on 'else' too (for noise mean or just current val).
+            # Let's use the same compact format for non-improvement too.
+
             if self.max_time != np.inf and start_time is not None:
-                 progress = (time.time() - start_time) / self.max_time * 100
-                 progress_str = f"Time: {progress:.1f}%"
+                progress = (time.time() - start_time) / (self.max_time * 60) * 100
+                progress_str = f"Time: {progress:.1f}%"
             else:
-                 progress = self.counter / self.max_iter * 100
-                 progress_str = f"Evals: {progress:.1f}%"
-            
+                progress = self.counter / self.max_iter * 100
+                progress_str = f"Evals: {progress:.1f}%"
+
             # For non-improvement, show current value instead of Best (or both?)
             # User request: "print also the global best value found so far..."
             # So we should print global best.
             # And maybe current value.
-            
+
             current_val = np.min(y_next)
             msg = f"Iter {self.n_iter_} | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
-            
+
             if self.noise:
-                 mean_y_new = np.mean(y_next)
-                 msg += f" | Mean Curr: {mean_y_new:.6f}"
-            
+                mean_y_new = np.mean(y_next)
+                msg += f" | Mean Curr: {mean_y_new:.6f}"
+
             print(msg)
 
     def _determine_termination(self, timeout_start: float) -> str:
@@ -3993,7 +3998,11 @@ class SpotOptim(BaseEstimator):
         return params
 
     def _optimize_single_run(
-        self, timeout_start: float, X0: Optional[np.ndarray] = None, y0_known: Optional[float] = None
+        self,
+        timeout_start: float,
+        X0: Optional[np.ndarray] = None,
+        y0_known: Optional[float] = None,
+        max_iter_override: Optional[int] = None,
     ) -> Tuple[str, OptimizeResult]:
         """Internal single optimization run."""
         # Note: timeout_start is passed as argument
@@ -4009,32 +4018,32 @@ class SpotOptim(BaseEstimator):
 
         # Evaluate initial design
         if y0_known is not None and self.x0 is not None:
-             # Identify injected point to skip evaluation
-             dists = np.linalg.norm(X0 - self.x0, axis=1)
-             # Use a small tolerance for matching
-             matches = dists < 1e-9
-             
-             if np.any(matches):
-                 if self.verbose:
-                     print("Skipping re-evaluation of injected best point.")
-                     
-                 # Initialize y0
-                 y0 = np.empty(len(X0))
-                 y0[:] = np.nan
-                 
-                 # Set known values
-                 y0[matches] = y0_known
-                 
-                 # Evaluate others
-                 not_matches = ~matches
-                 if np.any(not_matches):
-                     y0_others = self._evaluate_function(X0[not_matches])
-                     y0[not_matches] = y0_others
-             else:
-                 # Injected point lost during curation? Should not happen if it was unique
-                 y0 = self._evaluate_function(X0)
+            # Identify injected point to skip evaluation
+            dists = np.linalg.norm(X0 - self.x0, axis=1)
+            # Use a small tolerance for matching
+            matches = dists < 1e-9
+
+            if np.any(matches):
+                if self.verbose:
+                    print("Skipping re-evaluation of injected best point.")
+
+                # Initialize y0
+                y0 = np.empty(len(X0))
+                y0[:] = np.nan
+
+                # Set known values
+                y0[matches] = y0_known
+
+                # Evaluate others
+                not_matches = ~matches
+                if np.any(not_matches):
+                    y0_others = self._evaluate_function(X0[not_matches])
+                    y0[not_matches] = y0_others
+            else:
+                # Injected point lost during curation? Should not happen if it was unique
+                y0 = self._evaluate_function(X0)
         else:
-             y0 = self._evaluate_function(X0)
+            y0 = self._evaluate_function(X0)
 
         # Handle NaN/inf values in initial design (remove invalid points)
         X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
@@ -4058,8 +4067,11 @@ class SpotOptim(BaseEstimator):
 
         # Main optimization loop
         # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
+        effective_max_iter = (
+            max_iter_override if max_iter_override is not None else self.max_iter
+        )
         consecutive_failures = 0
-        while (len(self.y_) < self.max_iter) and (
+        while (len(self.y_) < effective_max_iter) and (
             time.time() < timeout_start + self.max_time * 60
         ):
             # Check for excessive consecutive failures (infinite loop prevention)
@@ -4173,7 +4185,9 @@ class SpotOptim(BaseEstimator):
                 self._write_tensorboard_scalars()
 
             # Update best solution
-            self._update_best_main_loop(x_next_repeated, y_next, start_time=timeout_start)
+            self._update_best_main_loop(
+                x_next_repeated, y_next, start_time=timeout_start
+            )
 
         # Expand results to full dimensions if needed
         # Note: best_x_ and X_ are already in original scale (stored that way)
@@ -4221,26 +4235,26 @@ class SpotOptim(BaseEstimator):
         - Total function evaluations reach max_iter (including initial design), OR
         - Runtime exceeds max_time minutes
 
-        **Input/Output Spaces:**
-        - **Input X0**: Expected in **Natural Space** (original scale, physical units).
-        - **Output result.x**: Returned in **Natural Space**.
-        - **Output result.X**: Returned in **Natural Space**.
-        - **Internal Optimization**: Performed in **Transformed and Mapped Space**.
+        Input/Output Spaces:
+        - Input X0: Expected in Natural Space (original scale, physical units).
+        - Output result.x: Returned in Natural Space.
+        - Output result.X: Returned in Natural Space.
+        - Internal Optimization: Performed in Transformed and Mapped Space.
 
         Args:
-            X0 (ndarray, optional): Initial design points in **Natural Space**, shape (n_initial, n_features).
+            X0 (ndarray, optional): Initial design points in Natural Space, shape (n_initial, n_features).
                 If None, generates space-filling design. Defaults to None.
 
         Returns:
             OptimizeResult: Optimization result with fields:
-                - x: best point found in **Natural Space**
+                - x: best point found in Natural Space
                 - fun: best function value
                 - nfev: number of function evaluations (including initial design)
                 - nit: number of sequential optimization iterations (after initial design)
                 - success: whether optimization succeeded
                 - message: termination message indicating reason for stopping, including
                   statistics (function value, iterations, evaluations)
-                - X: all evaluated points in **Natural Space**
+                - X: all evaluated points in Natural Space
                 - y: all function values
 
         Examples:
@@ -4272,11 +4286,41 @@ class SpotOptim(BaseEstimator):
         status = "START"
 
         while True:
+            # Get best result so far if we have results
+            best_res = (
+                min(self.restarts_results_, key=lambda x: x.fun)
+                if self.restarts_results_
+                else None
+            )
+
             # Perform single optimization run
             # Pass known best value if injecting
-            y0_known_val = best_res.fun if (status == "RESTART" and self.restart_inject_best and self.restarts_results_) else None
-            
-            status, result = self._optimize_single_run(timeout_start, current_X0, y0_known=y0_known_val)
+            y0_known_val = (
+                best_res.fun
+                if (
+                    status == "RESTART"
+                    and self.restart_inject_best
+                    and self.restarts_results_
+                )
+                else None
+            )
+
+            # Calculate remaining budget
+            total_evals_so_far = sum(len(r.y) for r in self.restarts_results_)
+            remaining_iter = self.max_iter - total_evals_so_far
+
+            # If we don't have enough budget for at least initial design (or some minimal amount), stop
+            if remaining_iter < self.n_initial:
+                if self.verbose:
+                    print("Global budget exhausted. Stopping restarts.")
+                break
+
+            status, result = self._optimize_single_run(
+                timeout_start,
+                current_X0,
+                y0_known=y0_known_val,
+                max_iter_override=remaining_iter,
+            )
             self.restarts_results_.append(result)
 
             if status == "FINISHED":
@@ -4284,21 +4328,23 @@ class SpotOptim(BaseEstimator):
             elif status == "RESTART":
                 # Prepare for restart
                 current_X0 = None  # Default loop behavior
-                
+
                 # Identify best result so far (including current restart)
                 # Find best result based on 'fun' from all finished runs so far
                 if self.restarts_results_:
-                     best_res = min(self.restarts_results_, key=lambda r: r.fun)
-                     
-                     if self.restart_inject_best:
-                         # Use global best result as starting point for next run
-                         # We update self.x0 directly (in internal scale) so gets mixed with LHS
-                         # best_res.x is in natural scale, _validate_x0 converts to internal
-                         self.x0 = self._validate_x0(best_res.x)
-                         current_X0 = None # Ensure we generate full design including x0
-                         
-                         if self.verbose:
-                             print(f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f}).")
+                    best_res = min(self.restarts_results_, key=lambda r: r.fun)
+
+                    if self.restart_inject_best:
+                        # Use global best result as starting point for next run
+                        # We update self.x0 directly (in internal scale) so gets mixed with LHS
+                        # best_res.x is in natural scale, _validate_x0 converts to internal
+                        self.x0 = self._validate_x0(best_res.x)
+                        current_X0 = None  # Ensure we generate full design including x0
+
+                        if self.verbose:
+                            print(
+                                f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f})."
+                            )
 
                 if self.seed is not None:
                     self.seed += 1  # Change seed to ensure variation
