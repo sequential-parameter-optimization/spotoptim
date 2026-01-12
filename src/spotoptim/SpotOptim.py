@@ -119,6 +119,10 @@ class SpotOptim(BaseEstimator):
             Can be "differential_evolution" (default) or any method name supported by scipy.optimize.minimize
             (e.g., "Nelder-Mead", "L-BFGS-B"). Can also be a callable with signature compatible with
             scipy.optimize.minimize (fun, x0, bounds, ...). Defaults to "differential_evolution".
+        restart_after_n (int, optional): Number of consecutive iterations with zero success rate
+            before triggering a restart. Defaults to 100.
+        restart_inject_best (bool, optional): Whether to inject the best solution found so far 
+            as a starting point for the next restart. Defaults to True.
         x0 (array-like, optional): Starting point for optimization, shape (n_features,).
             If provided, this point will be evaluated first and included in the initial design.
             The point should be within the bounds and will be validated before use.
@@ -353,10 +357,13 @@ class SpotOptim(BaseEstimator):
         penalty_val: Optional[float] = None,
         acquisition_fun_return_size: int = 3,
         acquisition_optimizer: Union[str, Callable] = "differential_evolution",
+        restart_after_n: int = 100,
+        restart_inject_best: bool = True,
         x0: Optional[np.ndarray] = None,
         de_x0_prob: float = 0.1,
         tricands_fringe: bool = False,
         prob_de_tricands: float = 0.8,
+        window_size: Optional[int] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
@@ -432,6 +439,10 @@ class SpotOptim(BaseEstimator):
         self.penalty = penalty
         self.penalty_val = penalty_val
         self.x0 = x0
+        self.x0 = x0
+        self.restart_after_n = restart_after_n
+        self.restart_inject_best = restart_inject_best
+        self.restarts_results_ = []
         self.de_x0_prob = de_x0_prob
         self.tricands_fringe = tricands_fringe
         self.prob_de_tricands = prob_de_tricands
@@ -515,7 +526,21 @@ class SpotOptim(BaseEstimator):
         # Success rate tracking (similar to Spot class)
         self.success_rate = 0.0
         self.success_counter = 0
-        self.window_size = 100
+        # Success rate tracking (similar to Spot class)
+        self.success_rate = 0.0
+        self.success_counter = 0
+        
+        if window_size is not None:
+            self.window_size = window_size
+        elif restart_after_n is not None:
+            # Default window size should be related to restart_after_n
+            # Use restart_after_n if provided, otherwise default to 100
+            # But allow at least some history (e.g. max of restart_after_n and something small)
+            self.window_size = restart_after_n
+        else:
+            self.window_size = 100
+            
+        self._success_history = []
         self._success_history = []
 
         # Clean old TensorBoard logs if requested
@@ -3735,7 +3760,7 @@ class SpotOptim(BaseEstimator):
         return X_next_clean, y_next_clean
 
     def _update_best_main_loop(
-        self, x_next_repeated: np.ndarray, y_next: np.ndarray
+        self, x_next_repeated: np.ndarray, y_next: np.ndarray, start_time: Optional[float] = None
     ) -> None:
         """Update best solution found during main optimization loop.
 
@@ -3803,20 +3828,48 @@ class SpotOptim(BaseEstimator):
             self.best_y_ = current_best
 
             if self.verbose:
-                if self.noise:
-                    print(
-                        f"Iteration {self.n_iter_}: New best f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
-                    )
+                # Calculate progress
+                if self.max_time != np.inf and start_time is not None:
+                     progress = (time.time() - start_time) / self.max_time * 100
+                     progress_str = f"Time: {progress:.1f}%"
                 else:
-                    print(
-                        f"Iteration {self.n_iter_}: New best f(x) = {self.best_y_:.6f}"
-                    )
+                     progress = self.counter / self.max_iter * 100
+                     progress_str = f"Evals: {progress:.1f}%"
+
+                msg = f"Iter {self.n_iter_} | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
+                
+                if self.noise:
+                     msg += f" | Mean Best: {self.min_mean_y:.6f}"
+                
+                print(msg)
         elif self.verbose:
-            if self.noise:
-                mean_y_new = np.mean(y_next)
-                print(f"Iteration {self.n_iter_}: mean f(x) = {mean_y_new:.6f}")
+             # Print status even if no improvement (optional, but keep consistent with previous behavior logic if desired, 
+             # usually users want to see every iteration if verbose)
+             # The user asked for "print also global best... success rate... percentage..."
+             # If we only print on improvement, we miss updates on stagnation.
+             # But the original code printed on 'else' too (for noise mean or just current val).
+             # Let's use the same compact format for non-improvement too.
+             
+            if self.max_time != np.inf and start_time is not None:
+                 progress = (time.time() - start_time) / self.max_time * 100
+                 progress_str = f"Time: {progress:.1f}%"
             else:
-                print(f"Iteration {self.n_iter_}: f(x) = {y_next[0]:.6f}")
+                 progress = self.counter / self.max_iter * 100
+                 progress_str = f"Evals: {progress:.1f}%"
+            
+            # For non-improvement, show current value instead of Best (or both?)
+            # User request: "print also the global best value found so far..."
+            # So we should print global best.
+            # And maybe current value.
+            
+            current_val = np.min(y_next)
+            msg = f"Iter {self.n_iter_} | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
+            
+            if self.noise:
+                 mean_y_new = np.mean(y_next)
+                 msg += f" | Mean Curr: {mean_y_new:.6f}"
+            
+            print(msg)
 
     def _determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.
@@ -3939,6 +3992,228 @@ class SpotOptim(BaseEstimator):
 
         return params
 
+    def _optimize_single_run(
+        self, timeout_start: float, X0: Optional[np.ndarray] = None, y0_known: Optional[float] = None
+    ) -> Tuple[str, OptimizeResult]:
+        """Internal single optimization run."""
+        # Note: timeout_start is passed as argument
+
+        # Set seed for reproducibility (crucial for ensuring identical results across runs)
+        self._set_seed()
+
+        # Set initial design (generate or process user-provided points)
+        X0 = self.get_initial_design(X0)
+
+        # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
+        X0 = self._curate_initial_design(X0)
+
+        # Evaluate initial design
+        if y0_known is not None and self.x0 is not None:
+             # Identify injected point to skip evaluation
+             dists = np.linalg.norm(X0 - self.x0, axis=1)
+             # Use a small tolerance for matching
+             matches = dists < 1e-9
+             
+             if np.any(matches):
+                 if self.verbose:
+                     print("Skipping re-evaluation of injected best point.")
+                     
+                 # Initialize y0
+                 y0 = np.empty(len(X0))
+                 y0[:] = np.nan
+                 
+                 # Set known values
+                 y0[matches] = y0_known
+                 
+                 # Evaluate others
+                 not_matches = ~matches
+                 if np.any(not_matches):
+                     y0_others = self._evaluate_function(X0[not_matches])
+                     y0[not_matches] = y0_others
+             else:
+                 # Injected point lost during curation? Should not happen if it was unique
+                 y0 = self._evaluate_function(X0)
+        else:
+             y0 = self._evaluate_function(X0)
+
+        # Handle NaN/inf values in initial design (remove invalid points)
+        X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
+
+        # Check if we have enough valid points to continue
+        self._check_size_initial_design(y0, n_evaluated)
+
+        # Initialize storage and statistics
+        self._init_storage(X0, y0)
+        self._zero_success_count = 0
+        self._success_history = []  # Clear success history for new run
+
+        # Update stats after initial design
+        self.update_stats()
+
+        # Log initial design to TensorBoard
+        self._init_tensorboard()
+
+        # Determine and report initial best
+        self._get_best_xy_initial_design()
+
+        # Main optimization loop
+        # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
+        consecutive_failures = 0
+        while (len(self.y_) < self.max_iter) and (
+            time.time() < timeout_start + self.max_time * 60
+        ):
+            # Check for excessive consecutive failures (infinite loop prevention)
+            if consecutive_failures > self.max_iter:
+                msg = (
+                    f"Optimization stopped due to {consecutive_failures} consecutive "
+                    "invalid evaluations (NaN/inf). Check your objective function."
+                )
+                if self.verbose:
+                    print(f"Warning: {msg}")
+                return "FINISHED", OptimizeResult(
+                    x=self.best_x_,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=msg,
+                    X=self.X_,
+                    y=self.y_,
+                )
+
+            # Increment iteration counter. This is not the same as number of function evaluations.
+            self.n_iter_ += 1
+
+            # Fit surrogate (use mean_y if noise, otherwise y_)
+            self._fit_scheduler()
+
+            # Apply OCBA for noisy functions
+            X_ocba = self._apply_ocba()
+
+            # Suggest next point
+            x_next = self.suggest_next_infill_point()
+
+            # Repeat next point if repeats_surrogate > 1
+            x_next_repeated = self._update_repeats_infill_points(x_next)
+
+            # Append OCBA points to new design points (if applicable)
+            if X_ocba is not None:
+                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
+
+            # Evaluate next point(s) including OCBA points
+            y_next = self._evaluate_function(x_next_repeated)
+
+            # Handle NaN/inf values in new evaluations
+            x_next_repeated, y_next = self._handle_NA_new_points(
+                x_next_repeated, y_next
+            )
+            if x_next_repeated is None:
+                consecutive_failures += 1
+                continue  # Skip iteration if all evaluations were invalid
+
+            # Reset failure counter if we got valid points
+            consecutive_failures = 0
+
+            # Update success rate BEFORE updating storage (so it compares against previous best)
+            self._update_success_rate(y_next)
+
+            # Check for restart
+            if self.success_rate == 0.0:
+                self._zero_success_count += 1
+            else:
+                self._zero_success_count = 0
+
+            if self._zero_success_count >= self.restart_after_n:
+                if self.verbose:
+                    print(
+                        f"Restarting optimization: success_rate 0 for {self._zero_success_count} iterations."
+                    )
+
+                status_message = "Restart triggered due to lack of improvement."
+
+                # Expand results to full dimensions if needed
+                best_x_full = (
+                    self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+                    if self.red_dim
+                    else self.best_x_
+                )
+                X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+
+                # Map factor variables back to original strings
+                best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[
+                    0
+                ]
+                X_result = (
+                    self._map_to_factor_values(X_full) if self._factor_maps else X_full
+                )
+
+                res = OptimizeResult(
+                    x=best_x_result,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=status_message,
+                    X=X_result,
+                    y=self.y_,
+                )
+                return "RESTART", res
+
+            # Update storage
+            self._update_storage(x_next_repeated, y_next)
+
+            # Update stats
+            self.update_stats()
+
+            # Log to TensorBoard
+            if self.tb_writer is not None:
+                # Log each new evaluation
+                for i in range(len(y_next)):
+                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
+                self._write_tensorboard_scalars()
+
+            # Update best solution
+            self._update_best_main_loop(x_next_repeated, y_next, start_time=timeout_start)
+
+        # Expand results to full dimensions if needed
+        # Note: best_x_ and X_ are already in original scale (stored that way)
+        best_x_full = (
+            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+            if self.red_dim
+            else self.best_x_
+        )
+        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+
+        # Determine termination reason
+        status_message = self._determine_termination(timeout_start)
+
+        # Append statistics to match scipy.optimize.minimize format
+        message = (
+            f"{status_message}\n"
+            f"         Current function value: {float(self.best_y_):.6f}\n"
+            f"         Iterations: {self.n_iter_}\n"
+            f"         Function evaluations: {len(self.y_)}"
+        )
+
+        # Close TensorBoard writer
+        self._close_tensorboard_writer()
+
+        # Map factor variables back to original strings for results
+        best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        X_result = self._map_to_factor_values(X_full) if self._factor_maps else X_full
+
+        # Return scipy-style result
+        return "FINISHED", OptimizeResult(
+            x=best_x_result,
+            fun=self.best_y_,
+            nfev=len(self.y_),
+            nit=self.n_iter_,
+            success=True,
+            message=message,
+            X=X_result,
+            y=self.y_,
+        )
+
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
         """Run the optimization process.
 
@@ -3989,154 +4264,56 @@ class SpotOptim(BaseEstimator):
             >>> print("Best value:", result.fun)
             Best value: [some value close to 0]
         """
-        # Start timer for max_time check
+        self.restarts_results_ = []
         timeout_start = time.time()
 
-        # Set seed for reproducibility (crucial for ensuring identical results across runs)
-        self._set_seed()
+        # Initial run
+        current_X0 = X0
+        status = "START"
 
-        # Set initial design (generate or process user-provided points)
-        X0 = self.get_initial_design(X0)
+        while True:
+            # Perform single optimization run
+            # Pass known best value if injecting
+            y0_known_val = best_res.fun if (status == "RESTART" and self.restart_inject_best and self.restarts_results_) else None
+            
+            status, result = self._optimize_single_run(timeout_start, current_X0, y0_known=y0_known_val)
+            self.restarts_results_.append(result)
 
-        # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
-        X0 = self._curate_initial_design(X0)
+            if status == "FINISHED":
+                break
+            elif status == "RESTART":
+                # Prepare for restart
+                current_X0 = None  # Default loop behavior
+                
+                # Identify best result so far (including current restart)
+                # Find best result based on 'fun' from all finished runs so far
+                if self.restarts_results_:
+                     best_res = min(self.restarts_results_, key=lambda r: r.fun)
+                     
+                     if self.restart_inject_best:
+                         # Use global best result as starting point for next run
+                         # We update self.x0 directly (in internal scale) so gets mixed with LHS
+                         # best_res.x is in natural scale, _validate_x0 converts to internal
+                         self.x0 = self._validate_x0(best_res.x)
+                         current_X0 = None # Ensure we generate full design including x0
+                         
+                         if self.verbose:
+                             print(f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f}).")
 
-        # Evaluate initial design
-        y0 = self._evaluate_function(X0)
+                if self.seed is not None:
+                    self.seed += 1  # Change seed to ensure variation
+                # Continue loop
+            else:
+                # Should not happen
+                break
 
-        # Handle NaN/inf values in initial design (remove invalid points)
-        X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
+        # Return best result
+        if not self.restarts_results_:
+            return result  # Fallback
 
-        # Check if we have enough valid points to continue
-        self._check_size_initial_design(y0, n_evaluated)
-
-        # Initialize storage and statistics
-        self._init_storage(X0, y0)
-
-        # Update stats after initial design
-        self.update_stats()
-
-        # Log initial design to TensorBoard
-        self._init_tensorboard()
-
-        # Determine and report initial best
-        self._get_best_xy_initial_design()
-
-        # Main optimization loop
-        # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
-        consecutive_failures = 0
-        while (len(self.y_) < self.max_iter) and (
-            time.time() < timeout_start + self.max_time * 60
-        ):
-            # Check for excessive consecutive failures (infinite loop prevention)
-            if consecutive_failures > self.max_iter:
-                msg = (
-                    f"Optimization stopped due to {consecutive_failures} consecutive "
-                    "invalid evaluations (NaN/inf). Check your objective function."
-                )
-                if self.verbose:
-                    print(f"Warning: {msg}")
-                return OptimizeResult(
-                    x=self.best_x_,
-                    fun=self.best_y_,
-                    nfev=len(self.y_),
-                    nit=self.n_iter_,
-                    success=False,
-                    message=msg,
-                    X=self.X_,
-                    y=self.y_,
-                )
-
-            # Increment iteration counter. This is not the same as number of function evaluations.
-            self.n_iter_ += 1
-
-            # Fit surrogate (use mean_y if noise, otherwise y_)
-            self._fit_scheduler()
-
-            # Apply OCBA for noisy functions
-            X_ocba = self._apply_ocba()
-
-            # Suggest next point
-            x_next = self.suggest_next_infill_point()
-
-            # Repeat next point if repeats_surrogate > 1
-            x_next_repeated = self._update_repeats_infill_points(x_next)
-
-            # Append OCBA points to new design points (if applicable)
-            if X_ocba is not None:
-                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
-
-            # Evaluate next point(s) including OCBA points
-            y_next = self._evaluate_function(x_next_repeated)
-
-            # Handle NaN/inf values in new evaluations
-            x_next_repeated, y_next = self._handle_NA_new_points(
-                x_next_repeated, y_next
-            )
-            if x_next_repeated is None:
-                consecutive_failures += 1
-                continue  # Skip iteration if all evaluations were invalid
-
-            # Reset failure counter if we got valid points
-            consecutive_failures = 0
-
-            # Update success rate BEFORE updating storage (so it compares against previous best)
-            self._update_success_rate(y_next)
-
-            # Update storage
-            self._update_storage(x_next_repeated, y_next)
-
-            # Update stats
-            self.update_stats()
-
-            # Log to TensorBoard
-            if self.tb_writer is not None:
-                # Log each new evaluation
-                for i in range(len(y_next)):
-                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
-                self._write_tensorboard_scalars()
-
-            # Update best solution
-            self._update_best_main_loop(x_next_repeated, y_next)
-
-        # Expand results to full dimensions if needed
-        # Note: best_x_ and X_ are already in original scale (stored that way)
-        best_x_full = (
-            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-            if self.red_dim
-            else self.best_x_
-        )
-        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
-
-        # Determine termination reason
-        status_message = self._determine_termination(timeout_start)
-
-        # Append statistics to match scipy.optimize.minimize format
-        message = (
-            f"{status_message}\n"
-            f"         Current function value: {float(self.best_y_):.6f}\n"
-            f"         Iterations: {self.n_iter_}\n"
-            f"         Function evaluations: {len(self.y_)}"
-        )
-
-        # Close TensorBoard writer
-        self._close_tensorboard_writer()
-
-        # Map factor variables back to original strings for results
-        best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
-        X_result = self._map_to_factor_values(X_full) if self._factor_maps else X_full
-
-        # Return scipy-style result
-        return OptimizeResult(
-            x=best_x_result,
-            fun=self.best_y_,
-            nfev=len(self.y_),
-            nit=self.n_iter_,
-            success=True,
-            message=message,
-            X=X_result,
-            y=self.y_,
-        )
+        # Find best result based on 'fun'
+        best_result = min(self.restarts_results_, key=lambda r: r.fun)
+        return best_result
 
     def plot_surrogate(
         self,
