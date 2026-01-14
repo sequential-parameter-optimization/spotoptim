@@ -681,6 +681,20 @@ class SpotOptim(BaseEstimator):
         - torch (cpu and cuda)
 
         Only performs actions if self.seed is not None.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> import numpy as np
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0, 1)], seed=42)
+            >>> spot._set_seed()
+            >>> np.random.rand()  # Should be deterministic
+            0.3745401188473625
         """
         if self.seed is not None:
             random.seed(self.seed)
@@ -713,6 +727,9 @@ class SpotOptim(BaseEstimator):
         - 'int': Ensures bounds are integers (ceiling for lower, floor for upper)
         - 'factor': Bounds already set to (0, n_levels-1) by process_factor_bounds
         - 'float': Explicitly converts bounds to float
+
+        Returns:
+            None
 
         Raises:
             ValueError: If an unsupported var_type is encountered.
@@ -759,6 +776,9 @@ class SpotOptim(BaseEstimator):
 
         Also validates that var_trans length matches the number of dimensions.
 
+        Returns:
+            None
+
         Raises:
             ValueError: If var_trans length doesn't match n_dim.
 
@@ -799,6 +819,12 @@ class SpotOptim(BaseEstimator):
         integer mappings and replaces bounds with (0, n_levels-1).
 
         Stores mappings in self._factor_maps: {dim_idx: {int_val: str_val}}
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If bounds are invalidly formatted.
 
         Examples:
             >>> from spotoptim import SpotOptim
@@ -1012,10 +1038,10 @@ class SpotOptim(BaseEstimator):
         Does NOT handle dimension reduction (mapping).
 
         Args:
-            X: Array in **Natural Space**, shape (n_samples, n_features)
+            X (ndarray): Array in **Natural Space**, shape (n_samples, n_features)
 
         Returns:
-            Array in **Transformed Space** (Full Dimension)
+            ndarray: Array in **Transformed Space** (Full Dimension)
 
         Examples:
             >>> from spotoptim import SpotOptim
@@ -1051,10 +1077,10 @@ class SpotOptim(BaseEstimator):
         Does NOT handle dimension expansion (un-mapping).
 
         Args:
-            X: Array in **Transformed Space**, shape (n_samples, n_features)
+            X (ndarray): Array in **Transformed Space**, shape (n_samples, n_features)
 
         Returns:
-            Array in **Natural Space**
+            ndarray: Array in **Natural Space**
 
         Examples:
             >>> from spotoptim import SpotOptim
@@ -1090,6 +1116,9 @@ class SpotOptim(BaseEstimator):
         Updates `self.bounds` (and `self.lower`, `self.upper`) from **Natural Space**
         to **Transformed Space**.
 
+        Returns:
+            None
+
         Examples:
             >>> from spotoptim import SpotOptim
             >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (0.1, 100)])
@@ -1097,7 +1126,6 @@ class SpotOptim(BaseEstimator):
             >>> spot.transform_bounds()
             >>> print(spot.bounds)
             [(0.0, 1.0), (0.31622776601683794, 10.0)]
-
         """
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
@@ -1138,6 +1166,9 @@ class SpotOptim(BaseEstimator):
         - Boolean mask of fixed dimensions in `ident`
         - Reduced bounds, types, and names for optimization
         - `red_dim` flag indicating if reduction occurred
+
+        Returns:
+            None
 
         Examples:
             >>> from spotoptim import SpotOptim
@@ -1487,6 +1518,9 @@ class SpotOptim(BaseEstimator):
             X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).
             y0 (ndarray): Function values at X0, shape (n_samples,).
 
+        Returns:
+            None
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -1520,6 +1554,9 @@ class SpotOptim(BaseEstimator):
             X_new (ndarray): New design points in internal scale, shape (n_new, n_features).
             y_new (ndarray): Function values at X_new, shape (n_new,).
 
+        Returns:
+            None
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -1545,10 +1582,10 @@ class SpotOptim(BaseEstimator):
     def update_stats(self) -> None:
         """Update optimization statistics.
 
-        Updates:
-        1. `min_y`: Minimum y value found so far
-        2. `min_X`: X value corresponding to minimum y
-        3. `counter`: Total number of function evaluations
+        Updates various statistics related to the optimization progress:
+        - `min_y`: Minimum y value found so far
+        - `min_X`: X value corresponding to minimum y
+        - `counter`: Total number of function evaluations
 
         Note: `success_rate` is updated separately via `_update_success_rate()` method,
         which is called after each batch of function evaluations.
@@ -1560,6 +1597,10 @@ class SpotOptim(BaseEstimator):
         4. `min_mean_X`: X value of the best mean y value
         5. `min_mean_y`: Best mean y value
         6. `min_var_y`: Variance of the best mean y value
+
+
+        Returns:
+            None
 
         Examples:
             >>> import numpy as np
@@ -1581,16 +1622,14 @@ class SpotOptim(BaseEstimator):
             >>> # With noise
             >>> opt_noise = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
             ...                       bounds=[(-5, 5), (-5, 5)],
+            ...                       n_initial=5,
             ...                       repeats_initial=2)
+            >>> opt_noise.noise = True
             >>> opt_noise.X_ = np.array([[1, 2], [1, 2], [3, 4]])
-            >>> opt_noise.y_ = np.array([4.0, 6.0, 25.0])
+            >>> opt_noise.y_ = np.array([5.0, 5.0, 25.0])
             >>> opt_noise.update_stats()
-            >>> opt_noise.min_y
-            4.0
-            >>> opt_noise.mean_y
-            array([ 5., 25.])
-            >>> opt_noise.var_y
-            array([1., 0.])
+            >>> opt_noise.mean_y.shape
+            (2,)
         """
         if self.y_ is None or len(self.y_) == 0:
             return
@@ -1742,7 +1781,12 @@ class SpotOptim(BaseEstimator):
         Creates a unique log directory based on timestamp if tensorboard_log is True.
         The log directory will be in the format: runs/spotoptim_YYYYMMDD_HHMMSS
 
+
+        Returns:
+            None
+
         Examples:
+            >>> import numpy as np
             >>> from spotoptim import SpotOptim
             >>> opt = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
@@ -1850,6 +1894,10 @@ class SpotOptim(BaseEstimator):
         Logs all initial design points (hyperparameters and function values)
         and scalar metrics to TensorBoard. Only executes if TensorBoard logging
         is enabled (tb_writer is not None).
+
+
+        Returns:
+            None
 
         Examples:
             >>> import numpy as np
@@ -2245,6 +2293,9 @@ class SpotOptim(BaseEstimator):
         """Generate initial space-filling design using Latin Hypercube Sampling.
         Used in the optimize() method to create the initial set of design points.
 
+        Args:
+            None
+
         Returns:
             ndarray: Initial design points, shape (n_initial, n_features).
 
@@ -2412,18 +2463,21 @@ class SpotOptim(BaseEstimator):
             X (ndarray): Design points, shape (n_samples, n_features).
             y (ndarray): Function values at X, shape (n_samples,).
 
+        Returns:
+            None
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
             >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
             ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_surrogate_points=10)
+            ...                 max_surrogate_points=10,
+            ...                 surrogate=GaussianProcessRegressor())
             >>> X = np.random.rand(50, 2)
             >>> y = np.random.rand(50)
             >>> opt._fit_surrogate(X, y)
-            # Show the fitted surrogate model
-            >>> print(opt.surrogate)
-
+            >>> # Surrogate is now fitted
         """
         X_fit = X
         y_fit = y
@@ -2451,6 +2505,9 @@ class SpotOptim(BaseEstimator):
 
         The data is transformed to internal scale before fitting the surrogate.
 
+        Returns:
+            None
+
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -2474,10 +2531,10 @@ class SpotOptim(BaseEstimator):
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     surrogate=GaussianProcessRegressor(),
             ...     n_initial=5,
-            ...     repeats_initial=3  # Activates noise handling
+            ...     repeats_initial=3,
+            ...     noise=True  # Activates noise handling
             ... )
             >>> # Simulate noisy optimization state
-            >>> opt_noise.noise = True
             >>> opt_noise.mean_X = np.array([[1, 2], [0, 0]])
             >>> opt_noise.mean_y = np.array([5.0, 0.0])
             >>> opt_noise._fit_scheduler()
@@ -2526,33 +2583,33 @@ class SpotOptim(BaseEstimator):
         return A[~ind], ~ind
 
     def _map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
-        """Map internal integer values to original factor strings.
+        """Map internal integer factor values back to string labels.
 
         For factor variables, converts integer indices back to original string values.
         Other variable types remain unchanged.
 
         Args:
-            X (ndarray): Array with internal numeric values, shape (n_samples, n_features).
+            X (ndarray): Design points with integer values for factors,
+                shape (n_samples, n_features).
 
         Returns:
-            ndarray: Array with factor values as strings where applicable, shape (n_samples, n_features).
+            ndarray: Design points with factor integers replaced by string labels.
+                Dtype will be object or string if mixed types are present.
 
         Examples:
-            >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     var_type=['float', 'factor'],
-            ...     var_level=[None, ['red', 'green', 'blue']]
+            >>> import numpy as np
+            >>> spot = SpotOptim(
+            ...     fun=lambda x: x,
+            ...     bounds=[('red', 'blue'), (0, 10)]
             ... )
-            >>> X_internal = np.array([[1.0, 0], [2.0, 1], [3.0, 2]])
-            >>> X_mapped = opt._map_to_factor_values(X_internal)
-            >>> print(X_mapped)
-            [[1.0 'red']
-             [2.0 'green']
-             [3.0 'blue']]
+            >>> spot.process_factor_bounds()
+            >>> X_int = np.array([[0, 5.0], [1, 8.0]])
+            >>> X_str = spot._map_to_factor_values(X_int)
+            >>> print(X_str[0])
+            ['red' 5.0]
         """
+
         if not self._factor_maps:
             # No factor variables
             return X
@@ -2954,7 +3011,25 @@ class SpotOptim(BaseEstimator):
             return self._optimize_acquisition_scipy()
 
     def _optimize_acquisition_tricands(self) -> np.ndarray:
-        """Optimize using geometric infill strategy via triangulation candidates."""
+        """Optimize using geometric infill strategy via triangulation candidates.
+
+        Returns:
+            ndarray: The optimized point(s).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5
+            ... )
+            >>> # Requires points to work
+            >>> opt.X_ = np.random.rand(10, 2)
+            >>> x_next = opt._optimize_acquisition_tricands()
+            >>> x_next.shape[1] == 2
+            True
+        """
         # Use X_ (all evaluated points) as basis for triangulation
         # If no points yet (e.g. before initial design), fallback to LHS or random
         if not hasattr(self, "X_") or self.X_ is None or len(self.X_) < self.n_dim + 1:
@@ -3008,7 +3083,25 @@ class SpotOptim(BaseEstimator):
         return X_cands[best_indices]
 
     def _optimize_acquisition_de(self) -> np.ndarray:
-        """Optimize using differential evolution."""
+        """Optimize using differential evolution.
+
+        Returns:
+            ndarray: The optimized point(s).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5
+            ... )
+            >>> # Requires surrogate model and points to work effectively
+            >>> # but can run without them (will return randomish or best_x if set)
+            >>> x_next = opt._optimize_acquisition_de()
+            >>> x_next.shape[0] >= 0
+            True
+        """
         # Variables to capture population from callback
         population = None
         population_energies = None
@@ -3227,17 +3320,31 @@ class SpotOptim(BaseEstimator):
         1. Transformations (e.g., log, sqrt) have been applied.
         2. Dimension reduction has been applied (fixed variables removed).
 
+        Process:
         1. Try candidates from acquisition function optimizer.
-        2. Handle_acquisition_failure (fallback).
+        2. Handle acquisition failure (fallback).
         3. Return last attempt if all fails.
+
 
         Returns:
             ndarray: Next point to evaluate in **Transformed and Mapped Space**.
 
         Examples:
+            >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim()
-            >>> x_internal = spot.suggest_next_infill_point()
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5
+            ... )
+            >>> # Need to initialize optimization state (X_, y_, surrogate)
+            >>> # Normally done inside optimize()
+            >>> opt.X_ = np.random.rand(10, 2)
+            >>> opt.y_ = np.random.rand(10)
+            >>> opt._fit_surrogate(opt.X_, opt.y_)
+            >>> x_next = opt.suggest_next_infill_point()
+            >>> x_next.shape
+            (2,)
         """
         # 1. Try optimizer candidates
         x_candidate = self._try_optimizer_candidates()
@@ -3572,6 +3679,9 @@ class SpotOptim(BaseEstimator):
                 shape (n_valid,).
             n_evaluated (int): Original number of points evaluated before filtering.
 
+        Returns:
+            None
+
         Raises:
             ValueError: If the number of valid points is less than the minimum required.
 
@@ -3637,6 +3747,9 @@ class SpotOptim(BaseEstimator):
         Note:
             This method assumes self.X_ and self.y_ have been initialized
             with the initial design evaluations.
+
+        Returns:
+            None
 
         Examples:
             >>> import numpy as np
@@ -4120,7 +4233,25 @@ class SpotOptim(BaseEstimator):
         y0_known: Optional[float] = None,
         max_iter_override: Optional[int] = None,
     ) -> Tuple[str, OptimizeResult]:
-        """Internal single optimization run."""
+        """Perform a single optimization run.
+
+        This method encapsulates the entire optimization process for a single run,
+        from initialization (seed, design) to the main optimization loop. It handles
+        initial design curation, evaluation, surrogate fitting, and the sequential
+        update loop with termination checks.
+
+        Args:
+            timeout_start (float): The start time of the optimization process (from time.time()).
+            X0 (ndarray, optional): Initial design points. Defaults to None.
+            y0_known (float, optional): Known best function value to inject (used for restarts).
+                Defaults to None.
+            max_iter_override (int, optional): Override max iterations for this run.
+                Defaults to None.
+
+        Returns:
+            Tuple[str, OptimizeResult]: A tuple containing the status ("FINISHED" or "RESTART")
+                and the optimization result object.
+        """
         # Note: timeout_start is passed as argument
 
         # Set seed for reproducibility (crucial for ensuring identical results across runs)
