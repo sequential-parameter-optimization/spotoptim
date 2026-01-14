@@ -28,6 +28,8 @@ from spotoptim.plot.visualization import (
     plot_progress,
     plot_important_hyperparameter_contour,
     _plot_surrogate_with_factors,
+    _generate_mesh_grid,
+    _generate_mesh_grid_with_factors,
 )
 
 
@@ -418,6 +420,10 @@ class SpotOptim(BaseEstimator):
         >>> result = optimizer_rbf.optimize()
     """
 
+    # ====================
+    # Core
+    # ====================
+
     def __init__(
         self,
         fun: Callable,
@@ -672,6 +678,10 @@ class SpotOptim(BaseEstimator):
 
         return list(d)
 
+    # ====================
+    # Configuration & Helpers
+    # ====================
+
     def _set_seed(self) -> None:
         """Set global random seeds for reproducibility.
 
@@ -884,6 +894,403 @@ class SpotOptim(BaseEstimator):
 
         # Update bounds with processed values
         self.bounds = processed_bounds
+
+    def get_best_hyperparameters(
+        self, as_dict: bool = True
+    ) -> Union[Dict[str, Any], np.ndarray, None]:
+        """
+        Get the best hyperparameter configuration found during optimization.
+
+        If noise handling is active (repeats_initial > 1 or OCBA), this returns the parameter
+        configuration associated with the best *mean* objective value. Otherwise, it returns
+        the configuration associated with the absolute best observed value.
+
+        Args:
+            as_dict (bool, optional): If True, returns a dictionary mapping parameter names
+                to their values. If False, returns the raw numpy array. Defaults to True.
+
+        Returns:
+            Union[Dict[str, Any], np.ndarray, None]: The best hyperparameter configuration.
+                Returns None if optimization hasn't started (no data).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: np.sum(x**2), bounds=[(-5, 5)], var_name=["x"])
+            >>> opt.optimize()
+            >>> best_params = opt.get_best_hyperparameters()
+            >>> print(best_params['x']) # Should be close to 0
+        """
+        if self.X_ is None or len(self.X_) == 0:
+            return None
+
+        # Determine which "best" to use
+        if self.noise and hasattr(self, "min_mean_X"):
+            best_x = self.min_mean_X
+        else:
+            best_x = self.best_x_
+
+        if not as_dict:
+            return best_x
+
+        # Map factors using existing method (handles 2D, returns 2D)
+        # We pass best_x as (1, D) and get (1, D) back
+        mapped_x = self._map_to_factor_values(best_x.reshape(1, -1))[0]
+
+        # Convert to dictionary with types
+        params = {}
+        names = (
+            self.var_name if self.var_name else [f"p{i}" for i in range(len(best_x))]
+        )
+
+        for i, name in enumerate(names):
+            val = mapped_x[i]
+
+            # Handle types if available (specifically int, as factors are already mapped)
+            if self.var_type:
+                v_type = self.var_type[i]
+                if v_type == "int":
+                    val = int(round(val))
+
+            params[name] = val
+
+        return params
+
+    def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
+        """Round non-numeric values to integers based on variable type.
+
+        This method applies rounding to variables that are not continuous:
+        - 'float': No rounding (continuous values)
+        - 'int': Rounded to integers
+        - 'factor': Rounded to integers (representing categorical values)
+
+        Args:
+            X (ndarray): X array with values to potentially round.
+            var_type (list of str): List with type information for each dimension.
+
+        Returns:
+            ndarray: X array with non-continuous values rounded to integers.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 var_type=['int', 'float'])
+            >>> X = np.array([[1.2, 2.5], [3.7, 4.1], [5.9, 6.8]])
+            >>> X_repaired = opt._repair_non_numeric(X, opt.var_type)
+            >>> print(X_repaired)
+            [[1. 2.5]
+             [4. 4.1]
+             [6. 6.8]]
+        """
+        # Don't round float or num types (continuous values)
+        mask = np.isin(var_type, ["float", "float"], invert=True)
+        X[:, mask] = np.around(X[:, mask])
+        return X
+
+    def _reinitialize_components(self) -> None:
+        """Reinitialize components that were excluded during pickling.
+
+        This method recreates the surrogate model and LHS sampler that were
+        excluded when saving an experiment or result.
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Load experiment
+            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            >>> # Reinitialize components
+            >>> opt._reinitialize_components()
+        """
+        # Reinitialize LHS sampler if needed
+        if not hasattr(self, "lhs_sampler") or self.lhs_sampler is None:
+            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+
+        # Reinitialize surrogate if needed
+        if not hasattr(self, "surrogate") or self.surrogate is None:
+            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
+                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
+            )
+            self.surrogate = GaussianProcessRegressor(
+                kernel=kernel,
+                n_restarts_optimizer=100,
+                random_state=self.seed,
+                normalize_y=True,
+            )
+
+    def _get_pickle_safe_optimizer(
+        self, unpickleables: str = "file_io", verbosity: int = 0
+    ) -> "SpotOptim":
+        """Create a pickle-safe copy of the optimizer.
+
+        This method creates a copy of the optimizer instance with unpickleable components removed
+        or set to None to enable safe serialization.
+
+        Args:
+            unpickleables (str): Type of unpickleable components to exclude.
+                - "file_io": Excludes only file I/O components (tb_writer) and fun
+                - "all": Excludes file I/O, fun, surrogate, and lhs_sampler
+                Defaults to "file_io".
+            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
+
+        Returns:
+            SpotOptim: A copy of the optimizer with unpickleable components removed.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Define optimizer
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> # Create pickle-safe copy excluding all unpickleables
+            >>> opt_safe = opt._get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
+
+        """
+        # Always exclude tb_writer (can't reliably pickle file handles)
+        # Determine which additional attributes to exclude
+        if unpickleables == "file_io":
+            unpickleable_attrs = ["tb_writer"]
+        else:
+            # "all" or specific exclusions
+            unpickleable_attrs = ["tb_writer", "surrogate", "lhs_sampler"]
+
+        # Prepare picklable state dictionary
+        picklable_state = {}
+
+        for key, value in self.__dict__.items():
+            if key not in unpickleable_attrs:
+                try:
+                    # Test if attribute can be pickled
+                    dill.dumps(value, protocol=dill.HIGHEST_PROTOCOL)
+                    picklable_state[key] = value
+                    if verbosity > 1:
+                        print(f"Attribute '{key}' is picklable and will be included.")
+                except Exception as e:
+                    if verbosity > 0:
+                        print(
+                            f"Attribute '{key}' is not picklable and will be excluded: {e}"
+                        )
+                    continue
+            else:
+                if verbosity > 1:
+                    print(f"Attribute '{key}' explicitly excluded from pickling.")
+
+        # Create new instance with picklable state
+        picklable_instance = self.__class__.__new__(self.__class__)
+        picklable_instance.__dict__.update(picklable_state)
+
+        # Set excluded attributes to None
+        for attr in unpickleable_attrs:
+            if not hasattr(picklable_instance, attr):
+                setattr(picklable_instance, attr, None)
+
+        return picklable_instance
+
+    # ====================
+    # Dimension Reduction
+    # ====================
+
+    def _setup_dimension_reduction(self) -> None:
+        """Set up dimension reduction by identifying fixed dimensions.
+
+        identifies dimensions where lower and upper bounds are equal in **Transformed Space**.
+        Reduces `self.bounds`, `self.lower`, `self.upper`, etc., to the **Mapped Space**
+        (active variables only).
+
+        The resulting `self.bounds` defines the **Transformed and Mapped Space** used
+        for optimization.
+
+        This method identifies variables that are fixed (constant) and excludes them
+        from the optimization process. It stores:
+        - Original bounds and metadata in `all_*` attributes
+        - Boolean mask of fixed dimensions in `ident`
+        - Reduced bounds, types, and names for optimization
+        - `red_dim` flag indicating if reduction occurred
+
+        Returns:
+            None
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (5, 5), (0, 1)])
+            >>> spot._setup_dimension_reduction()
+            >>> print("Original lower bounds:", spot.all_lower)
+            Original lower bounds: [ 1  5  0]
+            >>> print("Original upper bounds:", spot.all_upper)
+            Original upper bounds: [10  5  1]
+            >>> print("Fixed dimensions mask:", spot.ident)
+            Fixed dimensions mask: [False  True False]
+            >>> print("Reduced lower bounds:", spot.lower)
+            Reduced lower bounds: [1 0]
+            >>> print("Reduced upper bounds:", spot.upper)
+            Reduced upper bounds: [10  1]
+            >>> print("Reduced variable names:", spot.var_name)
+            Reduced variable names: ['x0', 'x2']
+            >>> print("Is dimension reduction active?", spot.red_dim)
+            Is dimension reduction active? True
+        """
+        # Backup original values
+        self.all_lower = self.lower.copy()
+        self.all_upper = self.upper.copy()
+        self.all_var_type = self.var_type.copy()
+        self.all_var_name = self.var_name.copy()
+        self.all_var_trans = self.var_trans.copy()
+
+        # Identify fixed dimensions (lower == upper)
+        self.ident = (self.upper - self.lower) == 0
+
+        # Check if any dimension is fixed
+        self.red_dim = self.ident.any()
+
+        if self.red_dim:
+            # Reduce bounds to only varying dimensions
+            self.lower = self.lower[~self.ident]
+            self.upper = self.upper[~self.ident]
+
+            # Update dimension count
+            self.n_dim = self.lower.size
+
+            # Reduce variable types and names
+            self.var_type = [
+                vtype
+                for vtype, fixed in zip(self.all_var_type, self.ident)
+                if not fixed
+            ]
+            self.var_name = [
+                vname
+                for vname, fixed in zip(self.all_var_name, self.ident)
+                if not fixed
+            ]
+
+            # Reduce transformations
+            self.var_trans = [
+                vtrans
+                for vtrans, fixed in zip(self.all_var_trans, self.ident)
+                if not fixed
+            ]
+
+            # Update bounds list for reduced dimensions
+            # Convert numpy types to Python native types (int or float based on var_type)
+            self.bounds = []
+            for i in range(self.n_dim):
+                # Check if var_type has this index (handle mismatched lengths)
+                if i < len(self.var_type) and (
+                    self.var_type[i] == "int" or self.var_type[i] == "factor"
+                ):
+                    self.bounds.append((int(self.lower[i]), int(self.upper[i])))
+                else:
+                    self.bounds.append((float(self.lower[i]), float(self.upper[i])))
+
+            # Recreate LHS sampler with reduced dimensions
+            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+
+    def to_red_dim(self, X_full: np.ndarray) -> np.ndarray:
+        """Reduce full-dimensional points to optimization space.
+
+        This method removes fixed dimensions from full-dimensional points,
+        extracting only the varying dimensions used in optimization.
+
+        Args:
+            X_full (ndarray): Points in full space, shape (n_samples, n_original_dims).
+
+        Returns:
+            ndarray: Points in reduced space, shape (n_samples, n_reduced_dims).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Create problem with one fixed dimension
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
+            ...     max_iter=1,
+            ...     n_initial=3
+            ... )
+            >>> X_full = np.array([[1.0, 2.0, 3.0], [4.0, 2.0, 5.0]])
+            >>> X_red = opt.to_red_dim(X_full)
+            >>> X_red.shape
+            (2, 2)
+            >>> np.array_equal(X_red, np.array([[1.0, 3.0], [4.0, 5.0]]))
+            True
+        """
+        if not self.red_dim:
+            # No reduction occurred, return as-is
+            return X_full
+
+        # Handle 1D array
+        if X_full.ndim == 1:
+            return X_full[~self.ident]
+
+        # Select only non-fixed dimensions (2D)
+        return X_full[:, ~self.ident]
+
+    def to_all_dim(self, X_red: np.ndarray) -> np.ndarray:
+        """Expand reduced-dimensional points to full-dimensional representation.
+
+        This method restores points from the reduced optimization space to the
+        full-dimensional space by inserting fixed values for constant dimensions.
+
+        Args:
+            X_red (ndarray): Points in reduced space, shape (n_samples, n_reduced_dims).
+
+        Returns:
+            ndarray: Points in full space, shape (n_samples, n_original_dims).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Create problem with one fixed dimension
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
+            ...     max_iter=1,
+            ...     n_initial=3
+            ... )
+            >>> X_red = np.array([[1.0, 3.0], [2.0, 4.0]])  # Only x0 and x2
+            >>> X_full = opt.to_all_dim(X_red)
+            >>> X_full.shape
+            (2, 3)
+            >>> X_full[:, 1]  # Middle dimension should be 2.0
+            array([2., 2.])
+        """
+        if not self.red_dim:
+            # No reduction occurred, return as-is
+            return X_red
+
+        # Number of samples and full dimensions
+        n_samples = X_red.shape[0]
+        n_full_dims = len(self.ident)
+
+        # Initialize full-dimensional array
+        X_full = np.zeros((n_samples, n_full_dims))
+
+        # Track index in reduced array
+        red_idx = 0
+
+        # Fill in values dimension by dimension
+        for i in range(n_full_dims):
+            if self.ident[i]:
+                # Fixed dimension: use stored value
+                X_full[:, i] = self.all_lower[i]
+            else:
+                # Varying dimension: use value from reduced array
+                X_full[:, i] = X_red[:, red_idx]
+                red_idx += 1
+
+        return X_full
+
+    # ====================
+    # Variable Transformation
+    # ====================
 
     def transform_value(self, x: float, trans: Optional[str]) -> float:
         """Apply transformation to a single float value.
@@ -1150,99 +1557,338 @@ class SpotOptim(BaseEstimator):
             else:
                 self.bounds.append((float(self.lower[i]), float(self.upper[i])))
 
-    def _setup_dimension_reduction(self) -> None:
-        """Set up dimension reduction by identifying fixed dimensions.
+    def _map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
+        """Map internal integer factor values back to string labels.
 
-        identifies dimensions where lower and upper bounds are equal in **Transformed Space**.
-        Reduces `self.bounds`, `self.lower`, `self.upper`, etc., to the **Mapped Space**
-        (active variables only).
+        For factor variables, converts integer indices back to original string values.
+        Other variable types remain unchanged.
 
-        The resulting `self.bounds` defines the **Transformed and Mapped Space** used
-        for optimization.
-
-        This method identifies variables that are fixed (constant) and excludes them
-        from the optimization process. It stores:
-        - Original bounds and metadata in `all_*` attributes
-        - Boolean mask of fixed dimensions in `ident`
-        - Reduced bounds, types, and names for optimization
-        - `red_dim` flag indicating if reduction occurred
+        Args:
+            X (ndarray): Design points with integer values for factors,
+                shape (n_samples, n_features).
 
         Returns:
-            None
+            ndarray: Design points with factor integers replaced by string labels.
+                Dtype will be object or string if mixed types are present.
 
         Examples:
             >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (5, 5), (0, 1)])
-            >>> spot._setup_dimension_reduction()
-            >>> print("Original lower bounds:", spot.all_lower)
-            Original lower bounds: [ 1  5  0]
-            >>> print("Original upper bounds:", spot.all_upper)
-            Original upper bounds: [10  5  1]
-            >>> print("Fixed dimensions mask:", spot.ident)
-            Fixed dimensions mask: [False  True False]
-            >>> print("Reduced lower bounds:", spot.lower)
-            Reduced lower bounds: [1 0]
-            >>> print("Reduced upper bounds:", spot.upper)
-            Reduced upper bounds: [10  1]
-            >>> print("Reduced variable names:", spot.var_name)
-            Reduced variable names: ['x0', 'x2']
-            >>> print("Is dimension reduction active?", spot.red_dim)
-            Is dimension reduction active? True
+            >>> import numpy as np
+            >>> spot = SpotOptim(
+            ...     fun=lambda x: x,
+            ...     bounds=[('red', 'blue'), (0, 10)]
+            ... )
+            >>> spot.process_factor_bounds()
+            >>> X_int = np.array([[0, 5.0], [1, 8.0]])
+            >>> X_str = spot._map_to_factor_values(X_int)
+            >>> print(X_str[0])
+            ['red' 5.0]
         """
-        # Backup original values
-        self.all_lower = self.lower.copy()
-        self.all_upper = self.upper.copy()
-        self.all_var_type = self.var_type.copy()
-        self.all_var_name = self.var_name.copy()
-        self.all_var_trans = self.var_trans.copy()
 
-        # Identify fixed dimensions (lower == upper)
-        self.ident = (self.upper - self.lower) == 0
+        if not self._factor_maps:
+            # No factor variables
+            return X
 
-        # Check if any dimension is fixed
-        self.red_dim = self.ident.any()
+        X = np.atleast_2d(X)
+        # Create object array to hold mixed types (strings and numbers)
+        X_mapped = np.empty(X.shape, dtype=object)
+        X_mapped[:] = X  # Copy numeric values
 
-        if self.red_dim:
-            # Reduce bounds to only varying dimensions
-            self.lower = self.lower[~self.ident]
-            self.upper = self.upper[~self.ident]
+        for dim_idx, mapping in self._factor_maps.items():
+            # Check if already mapped (strings) or needs mapping (numeric)
+            col_values = X[:, dim_idx]
 
-            # Update dimension count
-            self.n_dim = self.lower.size
+            # If already strings, keep them
+            if isinstance(col_values[0], str):
+                continue
 
-            # Reduce variable types and names
-            self.var_type = [
-                vtype
-                for vtype, fixed in zip(self.all_var_type, self.ident)
-                if not fixed
-            ]
-            self.var_name = [
-                vname
-                for vname, fixed in zip(self.all_var_name, self.ident)
-                if not fixed
-            ]
+            # Round to nearest integer and map to string
+            int_values = np.round(col_values).astype(int)
+            # Clip to valid range
+            int_values = np.clip(int_values, 0, len(mapping) - 1)
+            # Map to strings
+            for i, val in enumerate(int_values):
+                X_mapped[i, dim_idx] = mapping[int(val)]
 
-            # Reduce transformations
-            self.var_trans = [
-                vtrans
-                for vtrans, fixed in zip(self.all_var_trans, self.ident)
-                if not fixed
-            ]
+        return X_mapped
 
-            # Update bounds list for reduced dimensions
-            # Convert numpy types to Python native types (int or float based on var_type)
-            self.bounds = []
-            for i in range(self.n_dim):
-                # Check if var_type has this index (handle mismatched lengths)
-                if i < len(self.var_type) and (
-                    self.var_type[i] == "int" or self.var_type[i] == "factor"
-                ):
-                    self.bounds.append((int(self.lower[i]), int(self.upper[i])))
+    # ====================
+    # Initial Design
+    # ====================
+
+    def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
+        """Generate or process initial design points.
+
+        Handles three scenarios:
+        1. X0 is None: Generate space-filling design using LHS
+        2. X0 is None but x0 is provided: Generate LHS and include x0 as first point
+        3. X0 is provided: Transform and prepare user-provided initial design
+
+        Args:
+            X0 (ndarray, optional): User-provided initial design points in original scale,
+                shape (n_initial, n_features). If None, generates space-filling design.
+                Defaults to None.
+
+        Returns:
+            ndarray: Initial design points in internal (transformed and reduced) scale,
+                shape (n_initial, n_features_reduced).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10
+            ... )
+            >>> # Generate default LHS design
+            >>> X0 = opt.get_initial_design()
+            >>> X0.shape
+            (10, 2)
+            >>>
+            >>> # Provide custom initial design
+            >>> X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> X0_processed = opt.get_initial_design(X0_custom)
+            >>> X0_processed.shape
+            (3, 2)
+        """
+        # Generate or use provided initial design
+        if X0 is None:
+            X0 = self._generate_initial_design()
+
+            # If starting point x0 was provided, include it in initial design
+            if self.x0 is not None:
+                # x0 is already validated and in internal scale
+                # Check if x0 is 1D or 2D
+                if self.x0.ndim == 1:
+                    x0_points = self.x0.reshape(1, -1)
                 else:
-                    self.bounds.append((float(self.lower[i]), float(self.upper[i])))
+                    x0_points = self.x0
 
-            # Recreate LHS sampler with reduced dimensions
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+                n_x0 = x0_points.shape[0]
+
+                # If we have more x0 points than n_initial, use all x0 points
+                if n_x0 >= self.n_initial:
+                    X0 = x0_points
+                    if self.verbose:
+                        print(f"Using provided x0 points ({n_x0}) as initial design.")
+                else:
+                    # Replace the first n_x0 points of LHS with x0 points
+                    X0 = np.vstack([x0_points, X0[:-n_x0]])
+                    if self.verbose:
+                        print(
+                            f"Including {n_x0} starting points from x0 in initial design."
+                        )
+        else:
+            X0 = np.atleast_2d(X0)
+            # If user provided X0, it's in original scale - transform it
+            X0 = self._transform_X(X0)
+            # If X0 is in full dimensions and we have dimension reduction, reduce it
+            if self.red_dim and X0.shape[1] == len(self.ident):
+                X0 = self.to_red_dim(X0)
+            X0 = self._repair_non_numeric(X0, self.var_type)
+
+        return X0
+
+    def _generate_initial_design(self) -> np.ndarray:
+        """Generate initial space-filling design using Latin Hypercube Sampling.
+        Used in the optimize() method to create the initial set of design points.
+
+        Args:
+            None
+
+        Returns:
+            ndarray: Initial design points, shape (n_initial, n_features).
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 n_initial=10)
+            >>> X0 = opt._generate_initial_design()
+            >>> X0.shape
+            (10, 2)
+        """
+        # Generate samples in [0, 1]^d
+        X0_unit = self.lhs_sampler.random(n=self.n_initial)
+
+        # Scale to [lower, upper]
+        X0 = self.lower + X0_unit * (self.upper - self.lower)
+
+        return self._repair_non_numeric(X0, self.var_type)
+
+    def _curate_initial_design(self, X0: np.ndarray) -> np.ndarray:
+        """Remove duplicates and ensure sufficient unique points in initial design.
+
+        This method handles deduplication that can occur after rounding integer/factor
+        variables. If duplicates are found, it generates additional points to reach
+        the target n_initial unique points. Also handles repeating points when
+        repeats_initial > 1.
+
+        Args:
+            X0 (ndarray): Initial design points in internal scale,
+                shape (n_samples, n_features).
+
+        Returns:
+            ndarray: Curated initial design with duplicates removed and repeated
+                if necessary, shape (n_unique * repeats_initial, n_features).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10,
+            ...     var_type=['int', 'int']  # Integer variables may cause duplicates
+            ... )
+            >>> X0 = opt.get_initial_design()
+            >>> X0_curated = opt._curate_initial_design(X0)
+            >>> X0_curated.shape[0] == 10  # Should have n_initial unique points
+            True
+            >>>
+            >>> # With repeats
+            >>> opt_repeat = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     repeats_initial=3
+            ... )
+            >>> X0 = opt_repeat.get_initial_design()
+            >>> X0_curated = opt_repeat._curate_initial_design(X0)
+            >>> X0_curated.shape[0] == 15  # 5 unique points * 3 repeats
+            True
+        """
+        # Remove duplicates from initial design (can occur after rounding integers/factors)
+        # Keep only unique rows based on rounded values
+        X0_unique, unique_indices = np.unique(X0, axis=0, return_index=True)
+        if len(X0_unique) < len(X0):
+            n_duplicates = len(X0) - len(X0_unique)
+            if self.verbose:
+                print(
+                    f"Removed {n_duplicates} duplicate(s) from initial design after rounding"
+                )
+
+            # Generate additional points to reach n_initial unique points
+            if len(X0_unique) < self.n_initial:
+                n_additional = self.n_initial - len(X0_unique)
+                if self.verbose:
+                    print(
+                        f"Generating {n_additional} additional point(s) to reach n_initial={self.n_initial}"
+                    )
+
+                # Generate extra points and deduplicate again
+                max_gen_attempts = 10
+                for gen_attempt in range(max_gen_attempts):
+                    X_extra_unit = self.lhs_sampler.random(
+                        n=n_additional * 2
+                    )  # Generate extras
+                    X_extra = self.lower + X_extra_unit * (self.upper - self.lower)
+                    X_extra = self._repair_non_numeric(X_extra, self.var_type)
+
+                    # Combine and get unique
+                    X_combined = np.vstack([X0_unique, X_extra])
+                    X_combined_unique = np.unique(X_combined, axis=0)
+
+                    if len(X_combined_unique) >= self.n_initial:
+                        X0 = X_combined_unique[: self.n_initial]
+                        break
+                else:
+                    # If still not enough unique points, just use what we have
+                    X0 = X_combined_unique
+                    if self.verbose:
+                        print(
+                            f"Warning: Could only generate {len(X0)} unique initial points (target was {self.n_initial})"
+                        )
+            else:
+                X0 = X0_unique
+
+        # Repeat initial design points if repeats_initial > 1
+        if self.repeats_initial > 1:
+            X0 = np.repeat(X0, self.repeats_initial, axis=0)
+
+        return X0
+
+    def _rm_NA_values(
+        self, X0: np.ndarray, y0: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, int]:
+        """Remove NaN/inf values from initial design evaluations.
+
+        This method filters out design points that returned NaN or inf values
+        during initial evaluation. Unlike the sequential optimization phase where
+        penalties are applied, initial design points with invalid values are
+        simply removed.
+
+        Args:
+            X0 (ndarray): Initial design points in internal scale,
+                shape (n_samples, n_features).
+            y0 (ndarray): Function values at X0, shape (n_samples,).
+
+        Returns:
+            Tuple[ndarray, ndarray, int]: Filtered (X0, y0) with only finite values
+                and the original count before filtering. X0 has shape (n_valid, n_features),
+                y0 has shape (n_valid,), and the int is the original size.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10
+            ... )
+            >>> X0 = np.array([[1, 2], [3, 4], [5, 6]])
+            >>> y0 = np.array([5.0, np.nan, np.inf])
+            >>> X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
+            >>> X0_clean.shape
+            (1, 2)
+            >>> y0_clean
+            array([5.])
+            >>> n_eval
+            3
+            >>>
+            >>> # All valid values - no filtering
+            >>> X0 = np.array([[1, 2], [3, 4]])
+            >>> y0 = np.array([5.0, 25.0])
+            >>> X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
+            >>> X0_clean.shape
+            (2, 2)
+            >>> n_eval
+            2
+        """
+        # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
+
+        # If y0 contains None (object dtype), convert None to NaN and ensure float dtype
+        if y0.dtype == object:
+            # Create a float array, replacing None with NaN
+            # Use list comprehension for safe conversion of None
+            y0 = np.array([np.nan if v is None else v for v in y0], dtype=float)
+
+        finite_mask = np.isfinite(y0)
+        n_non_finite = np.sum(~finite_mask)
+
+        if n_non_finite > 0:
+            if self.verbose:
+                print(
+                    f"Warning: {n_non_finite} initial design point(s) returned NaN/inf "
+                    f"and will be ignored (reduced from {len(y0)} to {np.sum(finite_mask)} points)"
+                )
+            X0 = X0[finite_mask]
+            y0 = y0[finite_mask]
+
+            # Also filter y_mo if it exists (must match y0 size)
+            if self.y_mo is not None:
+                if len(self.y_mo) == len(finite_mask):  # Safety check
+                    self.y_mo = self.y_mo[finite_mask]
+                else:
+                    # Fallback or warning if sizes already mismatched (shouldn't happen here normally)
+                    if self.verbose:
+                        print(
+                            f"Warning: y_mo size ({len(self.y_mo)}) != mask size ({len(finite_mask)}) in initial design filtering"
+                        )
+                    # Try to filter only if sizes match, otherwise we might be in inconsistent state
+
+        return X0, y0, len(finite_mask)
 
     def _validate_x0(self, x0: np.ndarray) -> np.ndarray:
         """Validate and process starting point x0.
@@ -1344,557 +1990,87 @@ class SpotOptim(BaseEstimator):
 
         return x0_transformed
 
-    def to_all_dim(self, X_red: np.ndarray) -> np.ndarray:
-        """Expand reduced-dimensional points to full-dimensional representation.
+    def _check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
+        """Validate that initial design has sufficient points for surrogate fitting.
 
-        This method restores points from the reduced optimization space to the
-        full-dimensional space by inserting fixed values for constant dimensions.
+        Checks if the number of valid initial design points meets the minimum
+        requirement for fitting a surrogate model. The minimum required is the
+        smaller of: (a) typical minimum for surrogate fitting (3 for multi-dimensional,
+        2 for 1D), or (b) what the user requested (n_initial).
 
         Args:
-            X_red (ndarray): Points in reduced space, shape (n_samples, n_reduced_dims).
+            y0 (ndarray): Function values at initial design points (after filtering),
+                shape (n_valid,).
+            n_evaluated (int): Original number of points evaluated before filtering.
 
         Returns:
-            ndarray: Points in full space, shape (n_samples, n_original_dims).
+            None
+
+        Raises:
+            ValueError: If the number of valid points is less than the minimum required.
 
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> # Create problem with one fixed dimension
             >>> opt = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
-            ...     max_iter=1,
-            ...     n_initial=3
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=10
             ... )
-            >>> X_red = np.array([[1.0, 3.0], [2.0, 4.0]])  # Only x0 and x2
-            >>> X_full = opt.to_all_dim(X_red)
-            >>> X_full.shape
-            (2, 3)
-            >>> X_full[:, 1]  # Middle dimension should be 2.0
-            array([2., 2.])
-        """
-        if not self.red_dim:
-            # No reduction occurred, return as-is
-            return X_red
-
-        # Number of samples and full dimensions
-        n_samples = X_red.shape[0]
-        n_full_dims = len(self.ident)
-
-        # Initialize full-dimensional array
-        X_full = np.zeros((n_samples, n_full_dims))
-
-        # Track index in reduced array
-        red_idx = 0
-
-        # Fill in values dimension by dimension
-        for i in range(n_full_dims):
-            if self.ident[i]:
-                # Fixed dimension: use stored value
-                X_full[:, i] = self.all_lower[i]
-            else:
-                # Varying dimension: use value from reduced array
-                X_full[:, i] = X_red[:, red_idx]
-                red_idx += 1
-
-        return X_full
-
-    def to_red_dim(self, X_full: np.ndarray) -> np.ndarray:
-        """Reduce full-dimensional points to optimization space.
-
-        This method removes fixed dimensions from full-dimensional points,
-        extracting only the varying dimensions used in optimization.
-
-        Args:
-            X_full (ndarray): Points in full space, shape (n_samples, n_original_dims).
-
-        Returns:
-            ndarray: Points in reduced space, shape (n_samples, n_reduced_dims).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Create problem with one fixed dimension
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
-            ...     max_iter=1,
-            ...     n_initial=3
-            ... )
-            >>> X_full = np.array([[1.0, 2.0, 3.0], [4.0, 2.0, 5.0]])
-            >>> X_red = opt.to_red_dim(X_full)
-            >>> X_red.shape
-            (2, 2)
-            >>> np.array_equal(X_red, np.array([[1.0, 3.0], [4.0, 5.0]]))
-            True
-        """
-        if not self.red_dim:
-            # No reduction occurred, return as-is
-            return X_full
-
-        # Handle 1D array
-        if X_full.ndim == 1:
-            return X_full[~self.ident]
-
-        # Select only non-fixed dimensions (2D)
-        return X_full[:, ~self.ident]
-
-    def _aggregate_mean_var(
-        self, X: np.ndarray, y: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Aggregate X and y values to compute mean and variance per group.
-
-        For repeated evaluations at the same design point, this method computes
-        the mean function value and variance (using population variance, ddof=0).
-
-        Args:
-            X (ndarray): Design points, shape (n_samples, n_features).
-            y (ndarray): Function values, shape (n_samples,).
-
-        Returns:
-            tuple: A tuple containing:
-                - X_agg (ndarray): Unique design points, shape (n_groups, n_features)
-                - y_mean (ndarray): Mean y values per group, shape (n_groups,)
-                - y_var (ndarray): Variance of y values per group, shape (n_groups,)
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 repeats_initial=2)
-            >>> X = np.array([[1, 2], [3, 4], [1, 2]])
-            >>> y = np.array([1, 2, 3])
-            >>> X_agg, y_mean, y_var = opt._aggregate_mean_var(X, y)
-            >>> X_agg.shape
-            (2, 2)
-            >>> y_mean
-            array([2., 2.])
-            >>> y_var
-            array([1., 0.])
-        """
-        # Input validation
-        X = np.asarray(X)
-        y = np.asarray(y)
-
-        if X.ndim != 2 or y.ndim != 1 or X.shape[0] != y.shape[0]:
-            raise ValueError("Invalid input shapes for _aggregate_mean_var")
-
-        if X.shape[0] == 0:
-            return np.empty((0, X.shape[1])), np.array([]), np.array([])
-
-        # Find unique rows and group indices
-        _, unique_idx, inverse_idx = np.unique(
-            X, axis=0, return_index=True, return_inverse=True
-        )
-
-        X_agg = X[unique_idx]
-
-        # Calculate mean and variance for each group
-        n_groups = len(unique_idx)
-        y_mean = np.zeros(n_groups)
-        y_var = np.zeros(n_groups)
-
-        for i in range(n_groups):
-            group_mask = inverse_idx == i
-            group_y = y[group_mask]
-            y_mean[i] = np.mean(group_y)
-            # Use population variance (ddof=0) for consistency with Spot
-            y_var[i] = np.var(group_y, ddof=0)
-
-        return X_agg, y_mean, y_var
-
-    def _init_storage(self, X0: np.ndarray, y0: np.ndarray) -> None:
-        """Initialize storage for optimization.
-
-        Sets up the initial data structures needed for optimization tracking:
-        - X_: Evaluated design points (in original scale)
-        - y_: Function values at evaluated points
-        - n_iter_: Iteration counter
-
-        Then updates statistics by calling update_stats().
-
-        Args:
-            X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).
-            y0 (ndarray): Function values at X0, shape (n_samples,).
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 n_initial=5)
-            >>> X0 = np.array([[1, 2], [3, 4], [0, 1]])
-            >>> y0 = np.array([5.0, 25.0, 1.0])
-            >>> opt._init_storage(X0, y0)
-            >>> opt.X_.shape
-            (3, 2)
-            >>> opt.y_.shape
-            (3,)
-            >>> opt.n_iter_
-            0
-            >>> opt.counter
-            3
-        """
-        # Initialize storage (convert to original scale for user-facing storage)
-        self.X_ = self._inverse_transform_X(X0.copy())
-        self.y_ = y0.copy()
-        self.n_iter_ = 0
-
-    def _update_storage(self, X_new: np.ndarray, y_new: np.ndarray) -> None:
-        """Update storage with new evaluation points.
-
-        Appends new design points and their function values to the storage arrays.
-        Points are converted from internal scale to original scale before storage.
-
-        Args:
-            X_new (ndarray): New design points in internal scale, shape (n_new, n_features).
-            y_new (ndarray): Function values at X_new, shape (n_new,).
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 n_initial=5)
-            >>> # Initialize with some data
-            >>> opt.X_ = np.array([[1, 2], [3, 4]])
-            >>> opt.y_ = np.array([5.0, 25.0])
-            >>> # Add new points
-            >>> X_new = np.array([[0, 1], [2, 3]])
-            >>> y_new = np.array([1.0, 13.0])
-            >>> opt._update_storage(X_new, y_new)
-            >>> opt.X_.shape
-            (4, 2)
-            >>> opt.y_.shape
-            (4,)
-        """
-        # Update storage (convert to original scale for user-facing storage)
-        self.X_ = np.vstack([self.X_, self._inverse_transform_X(X_new)])
-        self.y_ = np.append(self.y_, y_new)
-
-    def update_stats(self) -> None:
-        """Update optimization statistics.
-
-        Updates various statistics related to the optimization progress:
-        - `min_y`: Minimum y value found so far
-        - `min_X`: X value corresponding to minimum y
-        - `counter`: Total number of function evaluations
-
-        Note: `success_rate` is updated separately via `_update_success_rate()` method,
-        which is called after each batch of function evaluations.
-
-        If `noise` is True (repeats > 1), additionally computes:
-        1. `mean_X`: Unique design points (aggregated from repeated evaluations)
-        2. `mean_y`: Mean y values per design point
-        3. `var_y`: Variance of y values per design point
-        4. `min_mean_X`: X value of the best mean y value
-        5. `min_mean_y`: Best mean y value
-        6. `min_var_y`: Variance of the best mean y value
-
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Without noise
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_iter=10, n_initial=5)
-            >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
-            >>> opt.y_ = np.array([5.0, 25.0, 1.0])
-            >>> opt.update_stats()
-            >>> opt.min_y
-            1.0
-            >>> opt.min_X
-            array([0, 1])
-            >>> opt.counter
-            3
+            >>> # Sufficient points - no error
+            >>> y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+            >>> opt._check_size_initial_design(y0, n_evaluated=10)
             >>>
-            >>> # With noise
-            >>> opt_noise = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                       bounds=[(-5, 5), (-5, 5)],
-            ...                       n_initial=5,
-            ...                       repeats_initial=2)
-            >>> opt_noise.noise = True
-            >>> opt_noise.X_ = np.array([[1, 2], [1, 2], [3, 4]])
-            >>> opt_noise.y_ = np.array([5.0, 5.0, 25.0])
-            >>> opt_noise.update_stats()
-            >>> opt_noise.mean_y.shape
-            (2,)
-        """
-        if self.y_ is None or len(self.y_) == 0:
-            return
-
-        # Basic stats
-        self.min_y = np.min(self.y_)
-        self.min_X = self.X_[np.argmin(self.y_)]
-        self.counter = len(self.y_)
-
-        # Aggregated stats for noisy functions
-        if self.noise:
-            self.mean_X, self.mean_y, self.var_y = self._aggregate_mean_var(
-                self.X_, self.y_
-            )
-            # X value of the best mean y value so far
-            best_mean_idx = np.argmin(self.mean_y)
-            self.min_mean_X = self.mean_X[best_mean_idx]
-            # Best mean y value so far
-            self.min_mean_y = self.mean_y[best_mean_idx]
-            # Variance of the best mean y value so far
-            self.min_var_y = self.var_y[best_mean_idx]
-
-    def _update_success_rate(self, y_new: np.ndarray) -> None:
-        """Update the rolling success rate of the optimization process.
-
-        A success is counted only if the new value is better (smaller) than the best
-        found y value so far. The success rate is calculated based on the last
-        `window_size` successes.
-
-        Important: This method should be called BEFORE updating self.y_ to correctly
-        track improvements against the previous best value.
-
-        Args:
-            y_new (ndarray): The new function values to consider for the success rate update.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_iter=10, n_initial=5)
-            >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
-            >>> opt.y_ = np.array([5.0, 3.0, 2.0])
-            >>> opt._update_success_rate(np.array([1.5, 2.5]))
-            >>> opt.success_rate > 0
-            True
-        """
-        # Initialize or update the rolling history of successes (1 for success, 0 for failure)
-        if not hasattr(self, "_success_history") or self._success_history is None:
-            self._success_history = []
-
-        # Get the best y value so far (before adding new evaluations)
-        # Since this is called BEFORE updating self.y_, we can safely use min(self.y_)
-        if self.y_ is not None and len(self.y_) > 0:
-            best_y_before = min(self.y_)
-        else:
-            # This is the initial design, no previous best
-            best_y_before = float("inf")
-
-        successes = []
-        current_best = best_y_before
-
-        for val in y_new:
-            if val < current_best:
-                successes.append(1)
-                current_best = val  # Update for next comparison within this batch
-            else:
-                successes.append(0)
-
-        # Add new successes to the history
-        self._success_history.extend(successes)
-        # Keep only the last window_size successes
-        self._success_history = self._success_history[-self.window_size :]
-
-        # Calculate the rolling success rate
-        window_size = len(self._success_history)
-        num_successes = sum(self._success_history)
-        self.success_rate = num_successes / window_size if window_size > 0 else 0.0
-
-    def _get_success_rate(self) -> float:
-        """Get the current success rate of the optimization process.
-
-        Returns:
-            float: The current success rate.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x,
-            ...                 bounds=[(-5, 5), (-5, 5)])
-            >>> print(opt._get_success_rate())
-            0.0
-        """
-        return float(getattr(self, "success_rate", 0.0) or 0.0)
-
-    def _clean_tensorboard_logs(self) -> None:
-        """Clean old TensorBoard log directories from the runs folder.
-
-        Removes all subdirectories in the 'runs' directory if tensorboard_clean is True.
-        This is useful for removing old logs before starting a new optimization run.
-
-        Warning:
-            This will permanently delete all subdirectories in the 'runs' folder.
-            Use with caution.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
+            >>> # Insufficient points - raises ValueError
+            >>> y0_small = np.array([1.0])
+            >>> try:
+            ...     opt._check_size_initial_design(y0_small, n_evaluated=10)
+            ... except ValueError as e:
+            ...     print(f"Error: {e}")
+            Error: Insufficient valid initial design points: only 1 finite value(s) out of 10 evaluated...
+            >>>
+            >>> # With verbose output
+            >>> opt_verbose = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
-            ...     tensorboard_log=True,
-            ...     tensorboard_clean=True
+            ...     n_initial=10,
+            ...     verbose=True
             ... )
-            >>> # Old logs in 'runs' will be removed before optimization starts
+            >>> y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
+            >>> opt_verbose._check_size_initial_design(y0_reduced, n_evaluated=10)
+            Note: Initial design size (3) is smaller than requested (10) due to NaN/inf values
         """
-        if self.tensorboard_clean:
-            runs_dir = "runs"
-            if os.path.exists(runs_dir) and os.path.isdir(runs_dir):
-                # Get all subdirectories in runs
-                subdirs = [
-                    os.path.join(runs_dir, d)
-                    for d in os.listdir(runs_dir)
-                    if os.path.isdir(os.path.join(runs_dir, d))
-                ]
+        # Check if we have enough points to continue
+        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
+        min_points_typical = 3 if self.n_dim > 1 else 2
+        min_points_required = min(min_points_typical, self.n_initial)
 
-                if subdirs:
-                    removed_count = 0
-                    for subdir in subdirs:
-                        try:
-                            shutil.rmtree(subdir)
-                            removed_count += 1
-                            if self.verbose:
-                                print(f"Removed old TensorBoard logs: {subdir}")
-                        except Exception as e:
-                            if self.verbose:
-                                print(f"Warning: Could not remove {subdir}: {e}")
-
-                    if self.verbose and removed_count > 0:
-                        print(
-                            f"Cleaned {removed_count} old TensorBoard log director{'y' if removed_count == 1 else 'ies'}"
-                        )
-                elif self.verbose:
-                    print("No old TensorBoard logs to clean in 'runs' directory")
-            elif self.verbose:
-                print("'runs' directory does not exist, nothing to clean")
-
-    def _init_tensorboard_writer(self) -> None:
-        """Initialize TensorBoard SummaryWriter if logging is enabled.
-
-        Creates a unique log directory based on timestamp if tensorboard_log is True.
-        The log directory will be in the format: runs/spotoptim_YYYYMMDD_HHMMSS
-
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     tensorboard_log=True
-            ... )
-            >>> hasattr(opt, 'tb_writer')
-            True
-        """
-        if self.tensorboard_log:
-            if self.tensorboard_path is None:
-                # Create default path with timestamp
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                self.tensorboard_path = f"runs/spotoptim_{timestamp}"
-
-            # Create directory if it doesn't exist
-            os.makedirs(self.tensorboard_path, exist_ok=True)
-
-            self.tb_writer = SummaryWriter(log_dir=self.tensorboard_path)
-            if self.verbose:
-                print(f"TensorBoard logging enabled: {self.tensorboard_path}")
-        else:
-            self.tb_writer = None
-            if self.verbose:
-                print("TensorBoard logging disabled")
-
-    def _write_tensorboard_scalars(self) -> None:
-        """Write scalar metrics to TensorBoard.
-
-        Logs the following metrics:
-        - Best y value found so far (min_y)
-        - Last y value evaluated
-        - Best X coordinates (for each dimension)
-        - If noise=True: also logs mean values and variance
-        """
-        if self.tb_writer is None or self.y_ is None or len(self.y_) == 0:
-            return
-
-        step = self.counter
-        y_last = self.y_[-1]
-
-        if not self.noise:
-            # Non-noisy optimization
-            self.tb_writer.add_scalars(
-                "y_values", {"min": self.min_y, "last": y_last}, step
+        if len(y0) < min_points_required:
+            error_msg = (
+                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
+                f"out of {n_evaluated} evaluated. Need at least {min_points_required} "
+                f"points to fit surrogate model. Please check your objective function or increase n_initial."
             )
-            # Log success rate
-            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
-            # Log best X coordinates using var_name if available
-            for i in range(self.n_dim):
-                param_name = self.var_name[i] if self.var_name else f"x{i}"
-                self.tb_writer.add_scalar(f"X_best/{param_name}", self.min_X[i], step)
-        else:
-            # Noisy optimization
-            self.tb_writer.add_scalars(
-                "y_values",
-                {"min": self.min_y, "mean_best": self.min_mean_y, "last": y_last},
-                step,
+            raise ValueError(error_msg)
+
+        if len(y0) < self.n_initial and self.verbose:
+            print(
+                f"Note: Initial design size ({len(y0)}) is smaller than requested "
+                f"({self.n_initial}) due to NaN/inf values"
             )
-            # Log variance of best mean
-            self.tb_writer.add_scalar("y_variance_at_best", self.min_var_y, step)
-            # Log success rate
-            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
 
-            # Log best X coordinates (by mean) using var_name if available
-            for i in range(self.n_dim):
-                param_name = self.var_name[i] if self.var_name else f"x{i}"
-                self.tb_writer.add_scalar(
-                    f"X_mean_best/{param_name}", self.min_mean_X[i], step
-                )
+    def _get_best_xy_initial_design(self) -> None:
+        """Determine and store the best point from initial design.
 
-        self.tb_writer.flush()
+        Finds the best (minimum) function value in the initial design,
+        stores the corresponding point and value in instance attributes,
+        and optionally prints the results if verbose mode is enabled.
 
-    def _write_tensorboard_hparams(self, X: np.ndarray, y: float) -> None:
-        """Write hyperparameters and metric to TensorBoard.
+        For noisy functions, also reports the mean best value.
 
-        Args:
-            X (ndarray): Design point coordinates, shape (n_features,)
-            y (float): Function value at X
-        """
-        if self.tb_writer is None:
-            return
-
-        # Create hyperparameter dict with variable names
-        hparam_dict = {self.var_name[i]: float(X[i]) for i in range(self.n_dim)}
-        metric_dict = {"hp_metric": float(y)}
-
-        self.tb_writer.add_hparams(hparam_dict, metric_dict)
-        self.tb_writer.flush()
-
-    def _close_tensorboard_writer(self) -> None:
-        """Close TensorBoard writer and cleanup."""
-        if hasattr(self, "tb_writer") and self.tb_writer is not None:
-            self.tb_writer.flush()
-            self.tb_writer.close()
-            if self.verbose:
-                print(
-                    f"TensorBoard writer closed. View logs with: tensorboard --logdir={self.tensorboard_path}"
-                )
-            del self.tb_writer
-
-    def _init_tensorboard(self) -> None:
-        """Log initial design to TensorBoard.
-
-        Logs all initial design points (hyperparameters and function values)
-        and scalar metrics to TensorBoard. Only executes if TensorBoard logging
-        is enabled (tb_writer is not None).
-
+        Note:
+            This method assumes self.X_ and self.y_ have been initialized
+            with the initial design evaluations.
 
         Returns:
             None
@@ -1906,19 +2082,691 @@ class SpotOptim(BaseEstimator):
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
-            ...     tensorboard_log=True,
-            ...     verbose=False
+            ...     verbose=True
             ... )
             >>> # Simulate initial design (normally done in optimize())
             >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
             >>> opt.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt._init_tensorboard()
-            >>> # TensorBoard logs created for all initial points
+            >>> opt._get_best_xy_initial_design()
+            Initial best: f(x) = 0.000000
+            >>> print(f"Best x: {opt.best_x_}")
+            Best x: [0 0]
+            >>> print(f"Best y: {opt.best_y_}")
+            Best y: 0.0
+            >>>
+            >>> # With noisy function
+            >>> opt_noise = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     noise=True,
+            ...     verbose=True
+            ... )
+            >>> opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt_noise.y_ = np.array([5.0, 0.0, 5.0])
+            >>> opt_noise.min_mean_y = 0.5  # Simulated mean best
+            >>> opt_noise._get_best_xy_initial_design()
+            Initial best: f(x) = 0.000000, mean best: f(x) = 0.500000
         """
-        if self.tb_writer is not None:
-            for i in range(len(self.y_)):
-                self._write_tensorboard_hparams(self.X_[i], self.y_[i])
-            self._write_tensorboard_scalars()
+        # Initial best
+        best_idx = np.argmin(self.y_)
+        self.best_x_ = self.X_[best_idx].copy()
+        self.best_y_ = self.y_[best_idx]
+
+        if self.verbose:
+            if self.noise:
+                print(
+                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
+                )
+            else:
+                print(f"Initial best: f(x) = {self.best_y_:.6f}")
+
+    def _update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
+        """Repeat infill point for noisy function evaluation.
+
+        For noisy objective functions (repeats_surrogate > 1), creates multiple
+        copies of the suggested point for repeated evaluation. Otherwise, returns
+        the point in 2D array format.
+
+        Args:
+            x_next (ndarray): Next point to evaluate, shape (n_features,).
+
+        Returns:
+            ndarray: Points to evaluate, shape (repeats_surrogate, n_features)
+                or (1, n_features) if repeats_surrogate == 1.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Without repeats
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     repeats_surrogate=1
+            ... )
+            >>> x_next = np.array([1.0, 2.0])
+            >>> x_repeated = opt._update_repeats_infill_points(x_next)
+            >>> x_repeated.shape
+            (1, 2)
+            >>>
+            >>> # With repeats for noisy function
+            >>> opt_noisy = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     repeats_surrogate=3
+            ... )
+            >>> x_next = np.array([1.0, 2.0])
+            >>> x_repeated = opt_noisy._update_repeats_infill_points(x_next)
+            >>> x_repeated.shape
+            (3, 2)
+            >>> # All three copies should be identical
+            >>> np.all(x_repeated[0] == x_repeated[1])
+            True
+        """
+        if self.repeats_surrogate > 1:
+            x_next_repeated = np.repeat(
+                x_next.reshape(1, -1), self.repeats_surrogate, axis=0
+            )
+        else:
+            x_next_repeated = x_next.reshape(1, -1)
+        return x_next_repeated
+
+    def _remove_nan(
+        self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
+    ) -> tuple:
+        """Remove rows where y contains NaN or inf values.
+        Used in the optimize() method after function evaluations.
+
+        Args:
+            X (ndarray): Design matrix, shape (n_samples, n_features).
+            y (ndarray): Objective values, shape (n_samples,).
+            stop_on_zero_return (bool): If True, raise error when all values are removed.
+
+        Returns:
+            tuple: (X_clean, y_clean) with NaN/inf rows removed.
+
+        Raises:
+            ValueError: If all values are NaN/inf and stop_on_zero_return is True.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> X = np.array([[1, 2], [3, 4], [5, 6]])
+            >>> y = np.array([1.0, np.nan, np.inf])
+            >>> X_clean, y_clean = opt._remove_nan(X, y, stop_on_zero_return=False)
+            >>> print("Clean X:", X_clean)
+            Clean X: [[1 2]]
+            >>> print("Clean y:", y_clean)
+            Clean y: [1.]
+        """
+        # Find finite values
+        finite_mask = np.isfinite(y)
+
+        if not np.any(finite_mask):
+            msg = "All objective function values are NaN or inf."
+            if stop_on_zero_return:
+                raise ValueError(msg)
+            else:
+                if self.verbose:
+                    print(f"Warning: {msg} Returning empty arrays.")
+                return np.array([]).reshape(0, X.shape[1]), np.array([])
+
+        # Filter out non-finite values
+        n_removed = np.sum(~finite_mask)
+        if n_removed > 0 and self.verbose:
+            print(f"Warning: Removed {n_removed} sample(s) with NaN/inf values")
+
+        return X[finite_mask], y[finite_mask]
+
+    # ====================
+    # Surrogate & Acquisition
+    # ====================
+
+    def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
+        """Fit surrogate model to data.
+        Used in optimize() to fit the surrogate model.
+
+        If the number of points exceeds `self.max_surrogate_points`,
+        a subset of points is selected using the selection dispatcher.
+
+        Args:
+            X (ndarray): Design points, shape (n_samples, n_features).
+            y (ndarray): Function values at X, shape (n_samples,).
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 max_surrogate_points=10,
+            ...                 surrogate=GaussianProcessRegressor())
+            >>> X = np.random.rand(50, 2)
+            >>> y = np.random.rand(50)
+            >>> opt._fit_surrogate(X, y)
+            >>> # Surrogate is now fitted
+        """
+        X_fit = X
+        y_fit = y
+
+        # Select subset if needed
+        if (
+            self.max_surrogate_points is not None
+            and X.shape[0] > self.max_surrogate_points
+        ):
+            if self.verbose:
+                print(
+                    f"Selecting subset of {self.max_surrogate_points} points "
+                    f"from {X.shape[0]} total points for surrogate fitting."
+                )
+            X_fit, y_fit = self._selection_dispatcher(X, y)
+
+        self.surrogate.fit(X_fit, y_fit)
+
+    def _fit_scheduler(self) -> None:
+        """Fit surrogate model using appropriate data based on noise handling.
+
+        This method selects the appropriate training data for surrogate fitting:
+        - For noisy functions (noise=True): Uses mean_X and mean_y (aggregated values)
+        - For deterministic functions: Uses X_ and y_ (all evaluated points)
+
+        The data is transformed to internal scale before fitting the surrogate.
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> # Deterministic function
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor(),
+            ...     n_initial=5
+            ... )
+            >>> # Simulate optimization state
+            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
+            >>> opt._fit_scheduler()
+            >>> # Surrogate fitted with X_ and y_
+            >>>
+            >>> # Noisy function
+            >>> opt_noise = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor(),
+            ...     n_initial=5,
+            ...     repeats_initial=3,
+            ...     noise=True  # Activates noise handling
+            ... )
+            >>> # Simulate noisy optimization state
+            >>> opt_noise.mean_X = np.array([[1, 2], [0, 0]])
+            >>> opt_noise.mean_y = np.array([5.0, 0.0])
+            >>> opt_noise._fit_scheduler()
+            >>> # Surrogate fitted with mean_X and mean_y
+        """
+        # Fit surrogate (use mean_y if noise, otherwise y_)
+        # Transform X to internal scale for surrogate fitting
+        if self.noise:
+            X_for_surrogate = self._transform_X(self.mean_X)
+            self._fit_surrogate(X_for_surrogate, self.mean_y)
+        else:
+            X_for_surrogate = self._transform_X(self.X_)
+            self._fit_surrogate(X_for_surrogate, self.y_)
+
+    def _predict_with_uncertainty(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Predict with uncertainty estimates, handling surrogates without return_std.
+        Used in the _acquisition_function() method and in the plot_surrogate() method.
+
+        Args:
+            X: Input points, shape (n_samples, n_features)
+
+        Returns:
+            Tuple of (predictions, std_deviations). If surrogate doesn't support
+            return_std, returns predictions with zeros for std.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor()
+            ... )
+            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> y_train = np.array([0, 2, 8])
+            >>> opt._fit_surrogate(X_train, y_train)
+            >>> X_test = np.array([[1.5, 1.5], [3.0, 3.0]])
+            >>> preds, stds = opt._predict_with_uncertainty(X_test)
+            >>> print("Predictions:", preds)
+            Predictions: [4.5 9. ]
+            >>> print("Standard deviations:", stds)
+            Standard deviations: [some values or zeros depending on surrogate]
+        """
+        try:
+            # Try to get uncertainty estimates
+            y_pred, y_std = self.surrogate.predict(X, return_std=True)
+            return y_pred, y_std
+        except (TypeError, AttributeError):
+            # Surrogate doesn't support return_std (e.g., Random Forest, XGBoost)
+            y_pred = self.surrogate.predict(X)
+            y_std = np.zeros_like(y_pred)
+            return y_pred, y_std
+
+    def _acquisition_function(self, x: np.ndarray) -> float:
+        """Compute acquisition function value.
+        Used in the suggest_next_infill_point() method.
+
+        This implements "Infill Criteria" as described in Forrester et al. (2008),
+        Section 3 "Exploring and Exploiting".
+
+        Args:
+            x (ndarray): Point to evaluate, shape (n_features,).
+
+        Returns:
+            float: Acquisition function value (to be minimized).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     surrogate=GaussianProcessRegressor(),
+            ...     acquisition='ei'
+            ... )
+            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
+            >>> y_train = np.array([0, 2, 8])
+            >>> opt._fit_surrogate(X_train, y_train)
+            >>> x_eval = np.array([1.5, 1.5])
+            >>> acq_value = opt._acquisition_function(x_eval)
+            >>> print("Acquisition function value:", acq_value)
+            Acquisition function value: [some float value]
+        """
+        x = x.reshape(1, -1)
+
+        if self.acquisition == "y":
+            # Predicted mean
+            return self.surrogate.predict(x)[0]
+
+        elif self.acquisition == "ei":
+            # Expected Improvement
+            mu, sigma = self._predict_with_uncertainty(x)
+            mu = mu[0]
+            sigma = sigma[0]
+
+            if sigma < 1e-10:
+                return 0.0
+
+            y_best = np.min(self.y_)
+            improvement = y_best - mu
+            Z = improvement / sigma
+            ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
+            return -ei  # Minimize negative EI
+
+        elif self.acquisition == "pi":
+            # Probability of Improvement
+            mu, sigma = self._predict_with_uncertainty(x)
+            mu = mu[0]
+            sigma = sigma[0]
+
+            if sigma < 1e-10:
+                return 0.0
+
+            y_best = np.min(self.y_)
+            Z = (y_best - mu) / sigma
+            pi = norm.cdf(Z)
+            return -pi  # Minimize negative PI
+
+            raise ValueError(f"Unknown acquisition function: {self.acquisition}")
+
+    def _optimize_acquisition_tricands(self) -> np.ndarray:
+        """Optimize using geometric infill strategy via triangulation candidates.
+
+        Returns:
+            ndarray: The optimized point(s).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5
+            ... )
+            >>> # Requires points to work
+            >>> opt.X_ = np.random.rand(10, 2)
+            >>> x_next = opt._optimize_acquisition_tricands()
+            >>> x_next.shape[1] == 2
+            True
+        """
+        # Use X_ (all evaluated points) as basis for triangulation
+        # If no points yet (e.g. before initial design), fallback to LHS or random
+        if not hasattr(self, "X_") or self.X_ is None or len(self.X_) < self.n_dim + 1:
+            # Not enough points for valid triangulation (need n >= m + 1)
+            # Fallback to random search using existing logic logic in 'else' block or explicit call pass
+            # Will fall through to 'else' block which handles generic minimize/random x0
+            # BUT 'tricands' isn't a valid minimize method, so we should handle this fallback specifically.
+            # Actually, let's just use random sampling here for fallback.
+
+            # Fallback to random search using generate_uniform_design
+            # Return size defaults to 1 unless specified
+            n_design = max(1, self.acquisition_fun_return_size)
+            x0 = generate_uniform_design(self.bounds, n_design, seed=self.rng)
+
+            # If we requested ONLY 1 point, return expected shape (n_dim,) for flatten behavior
+            if self.acquisition_fun_return_size <= 1:
+                return x0.flatten()
+            return x0
+
+        # Generate candidates
+        # Default nmax to a reasonable multiple of desired return size, or just large enough
+        # tricands handles nmax internally (default 100*m).
+        # We pass nmax as max(100*m, acquisition_fun_return_size * 10) to ensure we have enough.
+        nmax = max(100 * self.n_dim, self.acquisition_fun_return_size * 50)
+
+        # Wrapper for tricands: Normalize -> Gen Candidates -> Denormalize
+        # This handles non-hypercube bounds correctly as tricands assumes [lower, upper]^m box.
+
+        # Normalize X_ to [0, 1] relative to bounds
+        X_norm = (self.X_ - self.lower) / (self.upper - self.lower)
+
+        # Generate candidates in [0, 1] space
+        X_cands_norm = tricands(
+            X_norm, nmax=nmax, lower=0.0, upper=1.0, fringe=self.tricands_fringe
+        )
+
+        # Denormalize candidates back to original space
+        X_cands = X_cands_norm * (self.upper - self.lower) + self.lower
+
+        # Evaluate acquisition function on all candidates
+        # _acquisition_function returns NEGATIVE acquisition values (minimization)
+        # We iterate to ensure correct handling of 1D/2D shapes by _acquisition_function
+        acq_values = np.array([self._acquisition_function(x) for x in X_cands])
+
+        # Sort indices (smallest is best because of negation)
+        sorted_indices = np.argsort(acq_values)
+
+        # Select top n
+        top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
+        best_indices = sorted_indices[:top_n]
+        return X_cands[best_indices]
+
+    def _optimize_acquisition_de(self) -> np.ndarray:
+        """Optimize using differential evolution.
+
+        Returns:
+            ndarray: The optimized point(s).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5
+            ... )
+            >>> # Requires surrogate model and points to work effectively
+            >>> # but can run without them (will return randomish or best_x if set)
+            >>> x_next = opt._optimize_acquisition_de()
+            >>> x_next.shape[0] >= 0
+            True
+        """
+        # Variables to capture population from callback
+        population = None
+        population_energies = None
+        # with probability .5 select best_x_ as x0 or None
+        # Determine which "best" to use
+        if self.noise and hasattr(self, "min_mean_X"):
+            best_x = self.min_mean_X
+        else:
+            best_x = self.best_x_
+
+        if best_x is not None:
+            best_x = self._transform_X(best_x)
+            best_X = best_x if self.rng.rand() < self.de_x0_prob else None
+        else:
+            best_X = None
+
+        def callback(intermediate_result: OptimizeResult):
+            nonlocal population, population_energies
+            # Capture population if available (requires scipy >= 1.10.0)
+            if hasattr(intermediate_result, "population"):
+                population = intermediate_result.population
+                population_energies = intermediate_result.population_energies
+
+        result = differential_evolution(
+            func=self._acquisition_function,
+            bounds=self.bounds,
+            seed=self.rng,
+            maxiter=1000,
+            callback=callback,
+            x0=best_X,
+        )
+
+        if self.acquisition_fun_return_size > 1:
+            if population is not None and population_energies is not None:
+                # Sort by energy (ascending, since DE minimizes)
+                sorted_indices = np.argsort(population_energies)
+
+                # Determine how many to take
+                top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
+
+                # First candidate is always the polished result (best)
+                candidates = [result.x]
+
+                # Add remaining candidates from population (skipping the best unpolished one which corresponds to result.x)
+                if top_n > 1:
+                    # Take next (top_n - 1) indices
+                    # Start from 1 because 0 is the best unpolished
+                    next_indices = sorted_indices[1:top_n]
+                    candidates.extend(population[next_indices])
+
+                return np.array(candidates)
+            else:
+                # Fallback if population not available (e.g. very fast convergence or old scipy)
+                # Just return the best point as 2D array
+                return result.x.reshape(1, -1)
+
+        return result.x
+
+    def _optimize_acquisition_scipy(self) -> np.ndarray:
+        """Optimize using scipy.optimize.minimize interface (default).
+
+        Args:
+            None
+
+        Returns:
+            np.ndarray: The optimized acquisition function values.
+
+        Raises:
+            ValueError: If acquisition optimizer is not a string or callable.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Define objective function
+            >>> def fun(x): return np.sum(x**2, axis=1)
+            >>>
+            >>> # Initialize optimizer with a scipy-compatible acquisition optimizer
+            >>> # Note: default is 'differential_evolution' which uses a different method
+            >>> optimizer = SpotOptim(
+            ...     fun=fun,
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     acquisition_optimizer="L-BFGS-B"
+            ... )
+            >>>
+            >>> # Create some dummy data to fit the surrogate model
+            >>> X = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
+            >>> y = fun(X)
+            >>>
+            >>> # Fit the surrogate model manually
+            >>> # Note: this is normally handled inside optimize()
+            >>> optimizer._fit_surrogate(X, y)
+            >>>
+            >>> # Optimize the acquisition function using scipy's minimize
+            >>> x_next = optimizer._optimize_acquisition_scipy()
+            >>> x_next.shape
+            (2,)
+
+        """
+        # Use scipy.optimize.minimize interface
+        # Generate random x0 within bounds
+        low = np.array([b[0] for b in self.bounds])
+        high = np.array([b[1] for b in self.bounds])
+        # Use persistent RNG
+        x0 = self.rng.uniform(low, high)
+
+        if isinstance(self.acquisition_optimizer, str):
+
+            # It's a method name for minimize (e.g. "Nelder-Mead")
+            result = minimize(
+                fun=self._acquisition_function,
+                x0=x0,
+                bounds=self.bounds,
+                method=self.acquisition_optimizer,
+            )
+        elif callable(self.acquisition_optimizer):
+            # It's a custom callable compatible with minimize
+            result = self.acquisition_optimizer(
+                fun=self._acquisition_function, x0=x0, bounds=self.bounds
+            )
+        else:
+            raise ValueError(
+                f"Unknown acquisition optimizer type: {type(self.acquisition_optimizer)}"
+            )
+
+        # Minimize-based optimizers typically return a single point
+        # If acquisition_fun_return_size > 1, we map to 2D array but only 1 unique point
+        if self.acquisition_fun_return_size > 1:
+            return result.x.reshape(1, -1)
+
+        return result.x
+
+    def _try_optimizer_candidates(self) -> Optional[np.ndarray]:
+        """Try candidates proposed by the acquisition result optimizer.
+
+        Returns:
+            Optional[ndarray]: A unique valid candidate point, or None if all candidates are duplicates.
+        """
+        # Phase 1: Try candidates from acquisition function optimizer
+        # These can be multiple if acquisition_fun_return_size > 1
+        x_next_candidates = self.optimize_acquisition_func()
+
+        # Ensure iterable of 1D arrays
+        if x_next_candidates.ndim == 1:
+            obs_candidates = [x_next_candidates]
+        else:
+            obs_candidates = [
+                x_next_candidates[i] for i in range(x_next_candidates.shape[0])
+            ]
+
+        for i, x_next in enumerate(obs_candidates):
+            # Apply rounding BEFORE checking tolerance
+            x_next_rounded = self._repair_non_numeric(
+                x_next.reshape(1, -1), self.var_type
+            )[0]
+
+            # Ensure minimum distance to existing points
+            x_next_2d = x_next_rounded.reshape(1, -1)
+            X_transformed = self._transform_X(self.X_)
+            x_new, _ = self.select_new(
+                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+            )
+
+            if x_new.shape[0] > 0:
+                # Found a unique point!
+                return x_next_rounded
+            elif self.verbose:
+                print(
+                    f"Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate after rounding."
+                )
+        return None
+
+    def _handle_acquisition_failure(self) -> np.ndarray:
+        """Handle acquisition failure by proposing new design points.
+        Used in the suggest_next_infill_point() method.
+
+        This method is called when no new design points can be suggested
+        by the surrogate model (e.g., when the proposed point is too close
+        to existing points). It proposes a random space-filling design as a fallback.
+
+        Returns:
+            ndarray: New design point as a fallback, shape (n_features,).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     acquisition_failure_strategy='random'
+            ... )
+            >>> opt.X_ = np.array([[0, 0], [1, 1]])
+            >>> opt.y_ = np.array([0, 2])
+            >>> x_fallback = opt._handle_acquisition_failure()
+            >>> x_fallback.shape
+            (2,)
+            >>> print(x_fallback)
+            [some new point within bounds]
+        """
+        if self.acquisition_failure_strategy == "random":
+            # Default: random space-filling design (Latin Hypercube Sampling)
+            if self.verbose:
+                print(
+                    "Acquisition failure: Using random space-filling design as fallback."
+                )
+            x_new_unit = self.lhs_sampler.random(n=1)[0]
+            x_new = self.lower + x_new_unit * (self.upper - self.lower)
+
+        return self._repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
+
+    def _try_fallback_strategy(
+        self, max_attempts: int = 10
+    ) -> Tuple[Optional[np.ndarray], np.ndarray]:
+        """Try fallback strategy (e.g. random search) to find a unique point.
+        Calls _handle_acquisition_failure.
+
+        Args:
+            max_attempts (int): Maximum number of fallback attempts.
+
+        Returns:
+            Tuple[Optional[ndarray], ndarray]:
+                - The first element is the unique valid candidate point if found, else None.
+                - The second element is the last attempted point (even if duplicate), logic requires returning something.
+        """
+        x_last = None
+        for attempt in range(max_attempts):
+            if self.verbose:
+                print(
+                    f"Fallback attempt {attempt + 1}/{max_attempts}: Using fallback strategy"
+                )
+            x_next = self._handle_acquisition_failure()
+
+            x_next_rounded = self._repair_non_numeric(
+                x_next.reshape(1, -1), self.var_type
+            )[0]
+            x_last = x_next_rounded
+
+            x_next_2d = x_next_rounded.reshape(1, -1)
+            X_transformed = self._transform_X(self.X_)
+            x_new, _ = self.select_new(
+                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+            )
+
+            if x_new.shape[0] > 0:
+                return x_next_rounded, x_last
+
+        return None, x_last
 
     def _get_shape(self, y: np.ndarray) -> Tuple[int, Optional[int]]:
         """Get the shape of the objective function output.
@@ -2289,33 +3137,6 @@ class SpotOptim(BaseEstimator):
 
         return y
 
-    def _generate_initial_design(self) -> np.ndarray:
-        """Generate initial space-filling design using Latin Hypercube Sampling.
-        Used in the optimize() method to create the initial set of design points.
-
-        Args:
-            None
-
-        Returns:
-            ndarray: Initial design points, shape (n_initial, n_features).
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 n_initial=10)
-            >>> X0 = opt._generate_initial_design()
-            >>> X0.shape
-            (10, 2)
-        """
-        # Generate samples in [0, 1]^d
-        X0_unit = self.lhs_sampler.random(n=self.n_initial)
-
-        # Scale to [lower, upper]
-        X0 = self.lower + X0_unit * (self.upper - self.lower)
-
-        return self._repair_non_numeric(X0, self.var_type)
-
     def _select_distant_points(
         self, X: np.ndarray, y: np.ndarray, k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
@@ -2452,103 +3273,6 @@ class SpotOptim(BaseEstimator):
             # If no valid selection method, return all points
             return X, y
 
-    def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
-        """Fit surrogate model to data.
-        Used in optimize() to fit the surrogate model.
-
-        If the number of points exceeds `self.max_surrogate_points`,
-        a subset of points is selected using the selection dispatcher.
-
-        Args:
-            X (ndarray): Design points, shape (n_samples, n_features).
-            y (ndarray): Function values at X, shape (n_samples,).
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> from sklearn.gaussian_process import GaussianProcessRegressor
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_surrogate_points=10,
-            ...                 surrogate=GaussianProcessRegressor())
-            >>> X = np.random.rand(50, 2)
-            >>> y = np.random.rand(50)
-            >>> opt._fit_surrogate(X, y)
-            >>> # Surrogate is now fitted
-        """
-        X_fit = X
-        y_fit = y
-
-        # Select subset if needed
-        if (
-            self.max_surrogate_points is not None
-            and X.shape[0] > self.max_surrogate_points
-        ):
-            if self.verbose:
-                print(
-                    f"Selecting subset of {self.max_surrogate_points} points "
-                    f"from {X.shape[0]} total points for surrogate fitting."
-                )
-            X_fit, y_fit = self._selection_dispatcher(X, y)
-
-        self.surrogate.fit(X_fit, y_fit)
-
-    def _fit_scheduler(self) -> None:
-        """Fit surrogate model using appropriate data based on noise handling.
-
-        This method selects the appropriate training data for surrogate fitting:
-        - For noisy functions (noise=True): Uses mean_X and mean_y (aggregated values)
-        - For deterministic functions: Uses X_ and y_ (all evaluated points)
-
-        The data is transformed to internal scale before fitting the surrogate.
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> from sklearn.gaussian_process import GaussianProcessRegressor
-            >>> # Deterministic function
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     surrogate=GaussianProcessRegressor(),
-            ...     n_initial=5
-            ... )
-            >>> # Simulate optimization state
-            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt._fit_scheduler()
-            >>> # Surrogate fitted with X_ and y_
-            >>>
-            >>> # Noisy function
-            >>> opt_noise = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     surrogate=GaussianProcessRegressor(),
-            ...     n_initial=5,
-            ...     repeats_initial=3,
-            ...     noise=True  # Activates noise handling
-            ... )
-            >>> # Simulate noisy optimization state
-            >>> opt_noise.mean_X = np.array([[1, 2], [0, 0]])
-            >>> opt_noise.mean_y = np.array([5.0, 0.0])
-            >>> opt_noise._fit_scheduler()
-            >>> # Surrogate fitted with mean_X and mean_y
-        """
-        # Fit surrogate (use mean_y if noise, otherwise y_)
-        # Transform X to internal scale for surrogate fitting
-        if self.noise:
-            X_for_surrogate = self._transform_X(self.mean_X)
-            self._fit_surrogate(X_for_surrogate, self.mean_y)
-        else:
-            X_for_surrogate = self._transform_X(self.X_)
-            self._fit_surrogate(X_for_surrogate, self.y_)
-
     def select_new(
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
     ) -> Tuple[np.ndarray, np.ndarray]:
@@ -2581,397 +3305,6 @@ class SpotOptim(BaseEstimator):
         B = np.abs(A[:, None] - X)
         ind = np.any(np.all(B <= tolerance, axis=2), axis=1)
         return A[~ind], ~ind
-
-    def _map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
-        """Map internal integer factor values back to string labels.
-
-        For factor variables, converts integer indices back to original string values.
-        Other variable types remain unchanged.
-
-        Args:
-            X (ndarray): Design points with integer values for factors,
-                shape (n_samples, n_features).
-
-        Returns:
-            ndarray: Design points with factor integers replaced by string labels.
-                Dtype will be object or string if mixed types are present.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> import numpy as np
-            >>> spot = SpotOptim(
-            ...     fun=lambda x: x,
-            ...     bounds=[('red', 'blue'), (0, 10)]
-            ... )
-            >>> spot.process_factor_bounds()
-            >>> X_int = np.array([[0, 5.0], [1, 8.0]])
-            >>> X_str = spot._map_to_factor_values(X_int)
-            >>> print(X_str[0])
-            ['red' 5.0]
-        """
-
-        if not self._factor_maps:
-            # No factor variables
-            return X
-
-        X = np.atleast_2d(X)
-        # Create object array to hold mixed types (strings and numbers)
-        X_mapped = np.empty(X.shape, dtype=object)
-        X_mapped[:] = X  # Copy numeric values
-
-        for dim_idx, mapping in self._factor_maps.items():
-            # Check if already mapped (strings) or needs mapping (numeric)
-            col_values = X[:, dim_idx]
-
-            # If already strings, keep them
-            if isinstance(col_values[0], str):
-                continue
-
-            # Round to nearest integer and map to string
-            int_values = np.round(col_values).astype(int)
-            # Clip to valid range
-            int_values = np.clip(int_values, 0, len(mapping) - 1)
-            # Map to strings
-            for i, val in enumerate(int_values):
-                X_mapped[i, dim_idx] = mapping[int(val)]
-
-        return X_mapped
-
-    def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
-        """Round non-numeric values to integers based on variable type.
-
-        This method applies rounding to variables that are not continuous:
-        - 'float': No rounding (continuous values)
-        - 'int': Rounded to integers
-        - 'factor': Rounded to integers (representing categorical values)
-
-        Args:
-            X (ndarray): X array with values to potentially round.
-            var_type (list of str): List with type information for each dimension.
-
-        Returns:
-            ndarray: X array with non-continuous values rounded to integers.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 var_type=['int', 'float'])
-            >>> X = np.array([[1.2, 2.5], [3.7, 4.1], [5.9, 6.8]])
-            >>> X_repaired = opt._repair_non_numeric(X, opt.var_type)
-            >>> print(X_repaired)
-            [[1. 2.5]
-             [4. 4.1]
-             [6. 6.8]]
-        """
-        # Don't round float or num types (continuous values)
-        mask = np.isin(var_type, ["float", "float"], invert=True)
-        X[:, mask] = np.around(X[:, mask])
-        return X
-
-    def _apply_penalty_NA(
-        self,
-        y: np.ndarray,
-        y_history: Optional[np.ndarray] = None,
-        penalty_value: Optional[float] = None,
-        sd: float = 0.1,
-    ) -> np.ndarray:
-        """Replace NaN and infinite values with penalty plus random noise.
-        Used in the optimize() method after function evaluations.
-
-        This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
-        replacing NaN/inf values with a penalty value plus random noise to avoid
-        identical penalty values.
-
-        Args:
-            y (ndarray): Array of objective function values to be repaired.
-            y_history (ndarray, optional): Historical objective function values used for
-                computing penalty statistics. If None, uses y itself. Default is None.
-            penalty_value (float, optional): Value to replace NaN/inf with.
-                If None, computes penalty as: max(finite_y_history) + 3 * std(finite_y_history).
-                If all values are NaN/inf or only one finite value exists, falls back
-                to self.penalty_val. Default is None.
-            sd (float): Standard deviation for random noise added to penalty.
-                Default is 0.1.
-
-        Returns:
-            ndarray: Array with NaN/inf replaced by penalty_value + random noise.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> y_hist = np.array([1.0, 2.0, 3.0, 5.0])
-            >>> y_new = np.array([4.0, np.nan, np.inf])
-            >>> y_clean = opt._apply_penalty_NA(y_new, y_history=y_hist)
-            >>> np.all(np.isfinite(y_clean))
-            True
-            >>> # NaN/inf replaced with worst value from history + 3*std + noise
-            >>> y_clean[1] > 5.0  # Should be larger than max finite value in history
-            True
-        """
-
-        # Ensure y is a float array (maps non-convertible values like "error" or None to nan)
-        def _safe_float(v):
-            try:
-                return float(v)
-            except (ValueError, TypeError):
-                return np.nan
-
-        y_flat = np.array(y).flatten()
-        y = np.array([_safe_float(v) for v in y_flat])
-        # Identify NaN and inf values in y
-        mask = ~np.isfinite(y)
-
-        if np.any(mask):
-            n_bad = np.sum(mask)
-
-            # Compute penalty_value if not provided
-            if penalty_value is None:
-                # Get finite values from history for statistics
-                # Use y_history if provided, otherwise fall back to y itself
-                if y_history is not None:
-                    finite_values = y_history[np.isfinite(y_history)]
-                else:
-                    # Use current y values
-                    finite_values = y[~mask]
-
-                # If we have at least 2 finite values, compute adaptive penalty
-                if len(finite_values) >= 2:
-                    max_y = np.max(finite_values)
-                    std_y = np.std(finite_values, ddof=1)
-                    penalty_value = max_y + 3.0 * std_y
-
-                    if self.verbose:
-                        print(
-                            f"Warning: Found {n_bad} NaN/inf value(s), replacing with "
-                            f"adaptive penalty (max + 3*std = {penalty_value:.4f})"
-                        )
-                else:
-                    # Fallback to self.penalty if insufficient finite values
-                    if self.penalty_val is not None:
-                        penalty_value = self.penalty_val
-                    elif len(finite_values) == 1:
-                        # Use the single finite value + a large constant
-                        penalty_value = finite_values[0] + 1000.0
-                    else:
-                        # All values are NaN/inf, use a large default
-                        penalty_value = 1e10
-
-                    if self.verbose:
-                        print(
-                            f"Warning: Found {n_bad} NaN/inf value(s), insufficient finite values "
-                            f"for adaptive penalty. Using penalty_value = {penalty_value}"
-                        )
-            else:
-                if self.verbose:
-                    print(
-                        f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise"
-                    )
-
-            # Generate random noise and add to penalty
-            random_noise = self.rng.normal(0, sd, y.shape)
-            penalty_values = penalty_value + random_noise
-
-            # Replace NaN/inf with penalty + noise
-            y[mask] = penalty_values[mask]
-
-        return y
-
-    def _remove_nan(
-        self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
-    ) -> tuple:
-        """Remove rows where y contains NaN or inf values.
-        Used in the optimize() method after function evaluations.
-
-        Args:
-            X (ndarray): Design matrix, shape (n_samples, n_features).
-            y (ndarray): Objective values, shape (n_samples,).
-            stop_on_zero_return (bool): If True, raise error when all values are removed.
-
-        Returns:
-            tuple: (X_clean, y_clean) with NaN/inf rows removed.
-
-        Raises:
-            ValueError: If all values are NaN/inf and stop_on_zero_return is True.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> X = np.array([[1, 2], [3, 4], [5, 6]])
-            >>> y = np.array([1.0, np.nan, np.inf])
-            >>> X_clean, y_clean = opt._remove_nan(X, y, stop_on_zero_return=False)
-            >>> print("Clean X:", X_clean)
-            Clean X: [[1 2]]
-            >>> print("Clean y:", y_clean)
-            Clean y: [1.]
-        """
-        # Find finite values
-        finite_mask = np.isfinite(y)
-
-        if not np.any(finite_mask):
-            msg = "All objective function values are NaN or inf."
-            if stop_on_zero_return:
-                raise ValueError(msg)
-            else:
-                if self.verbose:
-                    print(f"Warning: {msg} Returning empty arrays.")
-                return np.array([]).reshape(0, X.shape[1]), np.array([])
-
-        # Filter out non-finite values
-        n_removed = np.sum(~finite_mask)
-        if n_removed > 0 and self.verbose:
-            print(f"Warning: Removed {n_removed} sample(s) with NaN/inf values")
-
-        return X[finite_mask], y[finite_mask]
-
-    def _handle_acquisition_failure(self) -> np.ndarray:
-        """Handle acquisition failure by proposing new design points.
-        Used in the suggest_next_infill_point() method.
-
-        This method is called when no new design points can be suggested
-        by the surrogate model (e.g., when the proposed point is too close
-        to existing points). It proposes a random space-filling design as a fallback.
-
-        Returns:
-            ndarray: New design point as a fallback, shape (n_features,).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     acquisition_failure_strategy='random'
-            ... )
-            >>> opt.X_ = np.array([[0, 0], [1, 1]])
-            >>> opt.y_ = np.array([0, 2])
-            >>> x_fallback = opt._handle_acquisition_failure()
-            >>> x_fallback.shape
-            (2,)
-            >>> print(x_fallback)
-            [some new point within bounds]
-        """
-        if self.acquisition_failure_strategy == "random":
-            # Default: random space-filling design (Latin Hypercube Sampling)
-            if self.verbose:
-                print(
-                    "Acquisition failure: Using random space-filling design as fallback."
-                )
-            x_new_unit = self.lhs_sampler.random(n=1)[0]
-            x_new = self.lower + x_new_unit * (self.upper - self.lower)
-
-        return self._repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
-
-    def _predict_with_uncertainty(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """Predict with uncertainty estimates, handling surrogates without return_std.
-        Used in the _acquisition_function() method and in the plot_surrogate() method.
-
-        Args:
-            X: Input points, shape (n_samples, n_features)
-
-        Returns:
-            Tuple of (predictions, std_deviations). If surrogate doesn't support
-            return_std, returns predictions with zeros for std.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> from sklearn.gaussian_process import GaussianProcessRegressor
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     surrogate=GaussianProcessRegressor()
-            ... )
-            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
-            >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
-            >>> X_test = np.array([[1.5, 1.5], [3.0, 3.0]])
-            >>> preds, stds = opt._predict_with_uncertainty(X_test)
-            >>> print("Predictions:", preds)
-            Predictions: [4.5 9. ]
-            >>> print("Standard deviations:", stds)
-            Standard deviations: [some values or zeros depending on surrogate]
-        """
-        try:
-            # Try to get uncertainty estimates
-            y_pred, y_std = self.surrogate.predict(X, return_std=True)
-            return y_pred, y_std
-        except (TypeError, AttributeError):
-            # Surrogate doesn't support return_std (e.g., Random Forest, XGBoost)
-            y_pred = self.surrogate.predict(X)
-            y_std = np.zeros_like(y_pred)
-            return y_pred, y_std
-
-    def _acquisition_function(self, x: np.ndarray) -> float:
-        """Compute acquisition function value.
-        Used in the suggest_next_infill_point() method.
-
-        This implements "Infill Criteria" as described in Forrester et al. (2008),
-        Section 3 "Exploring and Exploiting".
-
-        Args:
-            x (ndarray): Point to evaluate, shape (n_features,).
-
-        Returns:
-            float: Acquisition function value (to be minimized).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> from sklearn.gaussian_process import GaussianProcessRegressor
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     surrogate=GaussianProcessRegressor(),
-            ...     acquisition='ei'
-            ... )
-            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
-            >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
-            >>> x_eval = np.array([1.5, 1.5])
-            >>> acq_value = opt._acquisition_function(x_eval)
-            >>> print("Acquisition function value:", acq_value)
-            Acquisition function value: [some float value]
-        """
-        x = x.reshape(1, -1)
-
-        if self.acquisition == "y":
-            # Predicted mean
-            return self.surrogate.predict(x)[0]
-
-        elif self.acquisition == "ei":
-            # Expected Improvement
-            mu, sigma = self._predict_with_uncertainty(x)
-            mu = mu[0]
-            sigma = sigma[0]
-
-            if sigma < 1e-10:
-                return 0.0
-
-            y_best = np.min(self.y_)
-            improvement = y_best - mu
-            Z = improvement / sigma
-            ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
-            return -ei  # Minimize negative EI
-
-        elif self.acquisition == "pi":
-            # Probability of Improvement
-            mu, sigma = self._predict_with_uncertainty(x)
-            mu = mu[0]
-            sigma = sigma[0]
-
-            if sigma < 1e-10:
-                return 0.0
-
-            y_best = np.min(self.y_)
-            Z = (y_best - mu) / sigma
-            pi = norm.cdf(Z)
-            return -pi  # Minimize negative PI
-
-            raise ValueError(f"Unknown acquisition function: {self.acquisition}")
 
     def optimize_acquisition_func(self) -> np.ndarray:
         """Optimize the acquisition function to find the next point to evaluate.
@@ -3010,11 +3343,38 @@ class SpotOptim(BaseEstimator):
         else:
             return self._optimize_acquisition_scipy()
 
-    def _optimize_acquisition_tricands(self) -> np.ndarray:
-        """Optimize using geometric infill strategy via triangulation candidates.
+    # ====================
+    # Optimization Loop
+    # ====================
+
+    def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
+        """Run the optimization process.
+
+        The optimization terminates when either:
+        - Total function evaluations reach max_iter (including initial design), OR
+        - Runtime exceeds max_time minutes
+
+        Input/Output Spaces:
+        - Input X0: Expected in Natural Space (original scale, physical units).
+        - Output result.x: Returned in Natural Space.
+        - Output result.X: Returned in Natural Space.
+        - Internal Optimization: Performed in Transformed and Mapped Space.
+
+        Args:
+            X0 (ndarray, optional): Initial design points in Natural Space, shape (n_initial, n_features).
+                If None, generates space-filling design. Defaults to None.
 
         Returns:
-            ndarray: The optimized point(s).
+            OptimizeResult: Optimization result with fields:
+                - x: best point found in Natural Space
+                - fun: best function value
+                - nfev: number of function evaluations (including initial design)
+                - nit: number of sequential optimization iterations (after initial design)
+                - success: whether optimization succeeded
+                - message: termination message indicating reason for stopping, including
+                  statistics (function value, iterations, evaluations)
+                - X: all evaluated points in Natural Space
+                - y: all function values
 
         Examples:
             >>> import numpy as np
@@ -3022,295 +3382,352 @@ class SpotOptim(BaseEstimator):
             >>> opt = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5
+            ...     n_initial=5,
+            ...     max_iter=20,
+            ...     verbose=True
             ... )
-            >>> # Requires points to work
-            >>> opt.X_ = np.random.rand(10, 2)
-            >>> x_next = opt._optimize_acquisition_tricands()
-            >>> x_next.shape[1] == 2
-            True
+            >>> result = opt.optimize()
+            >>> print(result.message)
+            Optimization finished successfully
+                     Current function value: ...
+                     Iterations: ...
+                     Function evaluations: ...
+            >>> print("Best point:", result.x)
+            Best point: [some point close to [0, 0]]
+            >>> print("Best value:", result.fun)
+            Best value: [some value close to 0]
         """
-        # Use X_ (all evaluated points) as basis for triangulation
-        # If no points yet (e.g. before initial design), fallback to LHS or random
-        if not hasattr(self, "X_") or self.X_ is None or len(self.X_) < self.n_dim + 1:
-            # Not enough points for valid triangulation (need n >= m + 1)
-            # Fallback to random search using existing logic logic in 'else' block or explicit call pass
-            # Will fall through to 'else' block which handles generic minimize/random x0
-            # BUT 'tricands' isn't a valid minimize method, so we should handle this fallback specifically.
-            # Actually, let's just use random sampling here for fallback.
+        self.restarts_results_ = []
+        timeout_start = time.time()
 
-            # Fallback to random search using generate_uniform_design
-            # Return size defaults to 1 unless specified
-            n_design = max(1, self.acquisition_fun_return_size)
-            x0 = generate_uniform_design(self.bounds, n_design, seed=self.rng)
+        # Initial run
+        current_X0 = X0
+        status = "START"
 
-            # If we requested ONLY 1 point, return expected shape (n_dim,) for flatten behavior
-            if self.acquisition_fun_return_size <= 1:
-                return x0.flatten()
-            return x0
+        while True:
+            # Get best result so far if we have results
+            best_res = (
+                min(self.restarts_results_, key=lambda x: x.fun)
+                if self.restarts_results_
+                else None
+            )
 
-        # Generate candidates
-        # Default nmax to a reasonable multiple of desired return size, or just large enough
-        # tricands handles nmax internally (default 100*m).
-        # We pass nmax as max(100*m, acquisition_fun_return_size * 10) to ensure we have enough.
-        nmax = max(100 * self.n_dim, self.acquisition_fun_return_size * 50)
+            # Perform single optimization run
+            # Pass known best value if injecting
+            y0_known_val = (
+                best_res.fun
+                if (
+                    status == "RESTART"
+                    and self.restart_inject_best
+                    and self.restarts_results_
+                )
+                else None
+            )
 
-        # Wrapper for tricands: Normalize -> Gen Candidates -> Denormalize
-        # This handles non-hypercube bounds correctly as tricands assumes [lower, upper]^m box.
+            # Calculate remaining budget
+            total_evals_so_far = sum(len(r.y) for r in self.restarts_results_)
+            remaining_iter = self.max_iter - total_evals_so_far
 
-        # Normalize X_ to [0, 1] relative to bounds
-        X_norm = (self.X_ - self.lower) / (self.upper - self.lower)
+            # If we don't have enough budget for at least initial design (or some minimal amount), stop
+            if remaining_iter < self.n_initial:
+                if self.verbose:
+                    print("Global budget exhausted. Stopping restarts.")
+                break
 
-        # Generate candidates in [0, 1] space
-        X_cands_norm = tricands(
-            X_norm, nmax=nmax, lower=0.0, upper=1.0, fringe=self.tricands_fringe
-        )
+            status, result = self._optimize_single_run(
+                timeout_start,
+                current_X0,
+                y0_known=y0_known_val,
+                max_iter_override=remaining_iter,
+            )
+            self.restarts_results_.append(result)
 
-        # Denormalize candidates back to original space
-        X_cands = X_cands_norm * (self.upper - self.lower) + self.lower
+            if status == "FINISHED":
+                break
+            elif status == "RESTART":
+                # Prepare for restart
+                current_X0 = None  # Default loop behavior
 
-        # Evaluate acquisition function on all candidates
-        # _acquisition_function returns NEGATIVE acquisition values (minimization)
-        # We iterate to ensure correct handling of 1D/2D shapes by _acquisition_function
-        acq_values = np.array([self._acquisition_function(x) for x in X_cands])
+                # Identify best result so far (including current restart)
+                # Find best result based on 'fun' from all finished runs so far
+                if self.restarts_results_:
+                    best_res = min(self.restarts_results_, key=lambda r: r.fun)
 
-        # Sort indices (smallest is best because of negation)
-        sorted_indices = np.argsort(acq_values)
+                    if self.restart_inject_best:
+                        # Use global best result as starting point for next run
+                        # We update self.x0 directly (in internal scale) so gets mixed with LHS
+                        # best_res.x is in natural scale, _validate_x0 converts to internal
+                        self.x0 = self._validate_x0(best_res.x)
+                        current_X0 = None  # Ensure we generate full design including x0
 
-        # Select top n
-        top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
-        best_indices = sorted_indices[:top_n]
-        return X_cands[best_indices]
+                        if self.verbose:
+                            print(
+                                f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f})."
+                            )
 
-    def _optimize_acquisition_de(self) -> np.ndarray:
-        """Optimize using differential evolution.
-
-        Returns:
-            ndarray: The optimized point(s).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5
-            ... )
-            >>> # Requires surrogate model and points to work effectively
-            >>> # but can run without them (will return randomish or best_x if set)
-            >>> x_next = opt._optimize_acquisition_de()
-            >>> x_next.shape[0] >= 0
-            True
-        """
-        # Variables to capture population from callback
-        population = None
-        population_energies = None
-        # with probability .5 select best_x_ as x0 or None
-        # Determine which "best" to use
-        if self.noise and hasattr(self, "min_mean_X"):
-            best_x = self.min_mean_X
-        else:
-            best_x = self.best_x_
-
-        if best_x is not None:
-            best_x = self._transform_X(best_x)
-            best_X = best_x if self.rng.rand() < self.de_x0_prob else None
-        else:
-            best_X = None
-
-        def callback(intermediate_result: OptimizeResult):
-            nonlocal population, population_energies
-            # Capture population if available (requires scipy >= 1.10.0)
-            if hasattr(intermediate_result, "population"):
-                population = intermediate_result.population
-                population_energies = intermediate_result.population_energies
-
-        result = differential_evolution(
-            func=self._acquisition_function,
-            bounds=self.bounds,
-            seed=self.rng,
-            maxiter=1000,
-            callback=callback,
-            x0=best_X,
-        )
-
-        if self.acquisition_fun_return_size > 1:
-            if population is not None and population_energies is not None:
-                # Sort by energy (ascending, since DE minimizes)
-                sorted_indices = np.argsort(population_energies)
-
-                # Determine how many to take
-                top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
-
-                # First candidate is always the polished result (best)
-                candidates = [result.x]
-
-                # Add remaining candidates from population (skipping the best unpolished one which corresponds to result.x)
-                if top_n > 1:
-                    # Take next (top_n - 1) indices
-                    # Start from 1 because 0 is the best unpolished
-                    next_indices = sorted_indices[1:top_n]
-                    candidates.extend(population[next_indices])
-
-                return np.array(candidates)
+                if self.seed is not None:
+                    self.seed += 1  # Change seed to ensure variation
+                # Continue loop
             else:
-                # Fallback if population not available (e.g. very fast convergence or old scipy)
-                # Just return the best point as 2D array
-                return result.x.reshape(1, -1)
+                # Should not happen
+                break
 
-        return result.x
+        # Return best result
+        if not self.restarts_results_:
+            return result  # Fallback
 
-    def _optimize_acquisition_scipy(self) -> np.ndarray:
-        """Optimize using scipy.optimize.minimize interface (default).
+        # Find best result based on 'fun'
+        best_result = min(self.restarts_results_, key=lambda r: r.fun)
+        return best_result
 
-        Args:
-            None
+    def _optimize_single_run(
+        self,
+        timeout_start: float,
+        X0: Optional[np.ndarray] = None,
+        y0_known: Optional[float] = None,
+        max_iter_override: Optional[int] = None,
+    ) -> Tuple[str, OptimizeResult]:
+        """Perform a single optimization run.
 
-        Returns:
-            np.ndarray: The optimized acquisition function values.
-
-        Raises:
-            ValueError: If acquisition optimizer is not a string or callable.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Define objective function
-            >>> def fun(x): return np.sum(x**2, axis=1)
-            >>>
-            >>> # Initialize optimizer with a scipy-compatible acquisition optimizer
-            >>> # Note: default is 'differential_evolution' which uses a different method
-            >>> optimizer = SpotOptim(
-            ...     fun=fun,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     acquisition_optimizer="L-BFGS-B"
-            ... )
-            >>>
-            >>> # Create some dummy data to fit the surrogate model
-            >>> X = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
-            >>> y = fun(X)
-            >>>
-            >>> # Fit the surrogate model manually
-            >>> # Note: this is normally handled inside optimize()
-            >>> optimizer._fit_surrogate(X, y)
-            >>>
-            >>> # Optimize the acquisition function using scipy's minimize
-            >>> x_next = optimizer._optimize_acquisition_scipy()
-            >>> x_next.shape
-            (2,)
-
-        """
-        # Use scipy.optimize.minimize interface
-        # Generate random x0 within bounds
-        low = np.array([b[0] for b in self.bounds])
-        high = np.array([b[1] for b in self.bounds])
-        # Use persistent RNG
-        x0 = self.rng.uniform(low, high)
-
-        if isinstance(self.acquisition_optimizer, str):
-
-            # It's a method name for minimize (e.g. "Nelder-Mead")
-            result = minimize(
-                fun=self._acquisition_function,
-                x0=x0,
-                bounds=self.bounds,
-                method=self.acquisition_optimizer,
-            )
-        elif callable(self.acquisition_optimizer):
-            # It's a custom callable compatible with minimize
-            result = self.acquisition_optimizer(
-                fun=self._acquisition_function, x0=x0, bounds=self.bounds
-            )
-        else:
-            raise ValueError(
-                f"Unknown acquisition optimizer type: {type(self.acquisition_optimizer)}"
-            )
-
-        # Minimize-based optimizers typically return a single point
-        # If acquisition_fun_return_size > 1, we map to 2D array but only 1 unique point
-        if self.acquisition_fun_return_size > 1:
-            return result.x.reshape(1, -1)
-
-        return result.x
-
-    def _try_optimizer_candidates(self) -> Optional[np.ndarray]:
-        """Try candidates proposed by the acquisition result optimizer.
-
-        Returns:
-            Optional[ndarray]: A unique valid candidate point, or None if all candidates are duplicates.
-        """
-        # Phase 1: Try candidates from acquisition function optimizer
-        # These can be multiple if acquisition_fun_return_size > 1
-        x_next_candidates = self.optimize_acquisition_func()
-
-        # Ensure iterable of 1D arrays
-        if x_next_candidates.ndim == 1:
-            obs_candidates = [x_next_candidates]
-        else:
-            obs_candidates = [
-                x_next_candidates[i] for i in range(x_next_candidates.shape[0])
-            ]
-
-        for i, x_next in enumerate(obs_candidates):
-            # Apply rounding BEFORE checking tolerance
-            x_next_rounded = self._repair_non_numeric(
-                x_next.reshape(1, -1), self.var_type
-            )[0]
-
-            # Ensure minimum distance to existing points
-            x_next_2d = x_next_rounded.reshape(1, -1)
-            X_transformed = self._transform_X(self.X_)
-            x_new, _ = self.select_new(
-                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
-            )
-
-            if x_new.shape[0] > 0:
-                # Found a unique point!
-                return x_next_rounded
-            elif self.verbose:
-                print(
-                    f"Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate after rounding."
-                )
-        return None
-
-    def _try_fallback_strategy(
-        self, max_attempts: int = 10
-    ) -> Tuple[Optional[np.ndarray], np.ndarray]:
-        """Try fallback strategy (e.g. random search) to find a unique point.
-        Calls _handle_acquisition_failure.
+        This method encapsulates the entire optimization process for a single run,
+        from initialization (seed, design) to the main optimization loop. It handles
+        initial design curation, evaluation, surrogate fitting, and the sequential
+        update loop with termination checks.
 
         Args:
-            max_attempts (int): Maximum number of fallback attempts.
+            timeout_start (float): The start time of the optimization process (from time.time()).
+            X0 (ndarray, optional): Initial design points. Defaults to None.
+            y0_known (float, optional): Known best function value to inject (used for restarts).
+                Defaults to None.
+            max_iter_override (int, optional): Override max iterations for this run.
+                Defaults to None.
 
         Returns:
-            Tuple[Optional[ndarray], ndarray]:
-                - The first element is the unique valid candidate point if found, else None.
-                - The second element is the last attempted point (even if duplicate), logic requires returning something.
+            Tuple[str, OptimizeResult]: A tuple containing the status ("FINISHED" or "RESTART")
+                and the optimization result object.
         """
-        x_last = None
-        for attempt in range(max_attempts):
-            if self.verbose:
-                print(
-                    f"Fallback attempt {attempt + 1}/{max_attempts}: Using fallback strategy"
+        # Note: timeout_start is passed as argument
+
+        # Set seed for reproducibility (crucial for ensuring identical results across runs)
+        self._set_seed()
+
+        # Set initial design (generate or process user-provided points)
+        X0 = self.get_initial_design(X0)
+
+        # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
+        X0 = self._curate_initial_design(X0)
+
+        # Evaluate initial design
+        if y0_known is not None and self.x0 is not None:
+            # Identify injected point to skip evaluation
+            dists = np.linalg.norm(X0 - self.x0, axis=1)
+            # Use a small tolerance for matching
+            matches = dists < 1e-9
+
+            if np.any(matches):
+                if self.verbose:
+                    print("Skipping re-evaluation of injected best point.")
+
+                # Initialize y0
+                y0 = np.empty(len(X0))
+                y0[:] = np.nan
+
+                # Set known values
+                y0[matches] = y0_known
+
+                # Evaluate others
+                not_matches = ~matches
+                if np.any(not_matches):
+                    y0_others = self._evaluate_function(X0[not_matches])
+                    y0[not_matches] = y0_others
+            else:
+                # Injected point lost during curation? Should not happen if it was unique
+                y0 = self._evaluate_function(X0)
+        else:
+            y0 = self._evaluate_function(X0)
+
+        # Handle NaN/inf values in initial design (remove invalid points)
+        X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
+
+        # Check if we have enough valid points to continue
+        self._check_size_initial_design(y0, n_evaluated)
+
+        # Initialize storage and statistics
+        self._init_storage(X0, y0)
+        self._zero_success_count = 0
+        self._success_history = []  # Clear success history for new run
+
+        # Update stats after initial design
+        self.update_stats()
+
+        # Log initial design to TensorBoard
+        self._init_tensorboard()
+
+        # Determine and report initial best
+        self._get_best_xy_initial_design()
+
+        # Main optimization loop
+        # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
+        effective_max_iter = (
+            max_iter_override if max_iter_override is not None else self.max_iter
+        )
+        consecutive_failures = 0
+        while (len(self.y_) < effective_max_iter) and (
+            time.time() < timeout_start + self.max_time * 60
+        ):
+            # Check for excessive consecutive failures (infinite loop prevention)
+            if consecutive_failures > self.max_iter:
+                msg = (
+                    f"Optimization stopped due to {consecutive_failures} consecutive "
+                    "invalid evaluations (NaN/inf). Check your objective function."
                 )
-            x_next = self._handle_acquisition_failure()
+                if self.verbose:
+                    print(f"Warning: {msg}")
+                return "FINISHED", OptimizeResult(
+                    x=self.best_x_,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=msg,
+                    X=self.X_,
+                    y=self.y_,
+                )
 
-            x_next_rounded = self._repair_non_numeric(
-                x_next.reshape(1, -1), self.var_type
-            )[0]
-            x_last = x_next_rounded
+            # Increment iteration counter. This is not the same as number of function evaluations.
+            self.n_iter_ += 1
 
-            x_next_2d = x_next_rounded.reshape(1, -1)
-            X_transformed = self._transform_X(self.X_)
-            x_new, _ = self.select_new(
-                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+            # Fit surrogate (use mean_y if noise, otherwise y_)
+            self._fit_scheduler()
+
+            # Apply OCBA for noisy functions
+            X_ocba = self._apply_ocba()
+
+            # Suggest next point
+            x_next = self.suggest_next_infill_point()
+
+            # Repeat next point if repeats_surrogate > 1
+            x_next_repeated = self._update_repeats_infill_points(x_next)
+
+            # Append OCBA points to new design points (if applicable)
+            if X_ocba is not None:
+                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
+
+            # Evaluate next point(s) including OCBA points
+            y_next = self._evaluate_function(x_next_repeated)
+
+            # Handle NaN/inf values in new evaluations
+            x_next_repeated, y_next = self._handle_NA_new_points(
+                x_next_repeated, y_next
+            )
+            if x_next_repeated is None:
+                consecutive_failures += 1
+                continue  # Skip iteration if all evaluations were invalid
+
+            # Reset failure counter if we got valid points
+            consecutive_failures = 0
+
+            # Update success rate BEFORE updating storage (so it compares against previous best)
+            self._update_success_rate(y_next)
+
+            # Check for restart
+            if self.success_rate == 0.0:
+                self._zero_success_count += 1
+            else:
+                self._zero_success_count = 0
+
+            if self._zero_success_count >= self.restart_after_n:
+                if self.verbose:
+                    print(
+                        f"Restarting optimization: success_rate 0 for {self._zero_success_count} iterations."
+                    )
+
+                status_message = "Restart triggered due to lack of improvement."
+
+                # Expand results to full dimensions if needed
+                best_x_full = (
+                    self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+                    if self.red_dim
+                    else self.best_x_
+                )
+                X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+
+                # Map factor variables back to original strings
+                best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[
+                    0
+                ]
+                X_result = (
+                    self._map_to_factor_values(X_full) if self._factor_maps else X_full
+                )
+
+                res = OptimizeResult(
+                    x=best_x_result,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=status_message,
+                    X=X_result,
+                    y=self.y_,
+                )
+                return "RESTART", res
+
+            # Update storage
+            self._update_storage(x_next_repeated, y_next)
+
+            # Update stats
+            self.update_stats()
+
+            # Log to TensorBoard
+            if self.tb_writer is not None:
+                # Log each new evaluation
+                for i in range(len(y_next)):
+                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
+                self._write_tensorboard_scalars()
+
+            # Update best solution
+            self._update_best_main_loop(
+                x_next_repeated, y_next, start_time=timeout_start
             )
 
-            if x_new.shape[0] > 0:
-                return x_next_rounded, x_last
+        # Expand results to full dimensions if needed
+        # Note: best_x_ and X_ are already in original scale (stored that way)
+        best_x_full = (
+            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+            if self.red_dim
+            else self.best_x_
+        )
+        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
 
-        return None, x_last
+        # Determine termination reason
+        status_message = self._determine_termination(timeout_start)
+
+        # Append statistics to match scipy.optimize.minimize format
+        message = (
+            f"{status_message}\n"
+            f"         Current function value: {float(self.best_y_):.6f}\n"
+            f"         Iterations: {self.n_iter_}\n"
+            f"         Function evaluations: {len(self.y_)}"
+        )
+
+        # Close TensorBoard writer
+        self._close_tensorboard_writer()
+
+        # Map factor variables back to original strings for results
+        best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        X_result = self._map_to_factor_values(X_full) if self._factor_maps else X_full
+
+        # Return scipy-style result
+        return "FINISHED", OptimizeResult(
+            x=best_x_result,
+            fun=self.best_y_,
+            nfev=len(self.y_),
+            nit=self.n_iter_,
+            success=True,
+            message=message,
+            X=X_result,
+            y=self.y_,
+        )
 
     def suggest_next_infill_point(self) -> np.ndarray:
         """Suggest next point to evaluate (dispatcher).
@@ -3368,510 +3785,6 @@ class SpotOptim(BaseEstimator):
             # Should practically not happen if max_attempts > 0, but safe fallback
             return self._handle_acquisition_failure()
         return x_last
-
-    def _update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
-        """Repeat infill point for noisy function evaluation.
-
-        For noisy objective functions (repeats_surrogate > 1), creates multiple
-        copies of the suggested point for repeated evaluation. Otherwise, returns
-        the point in 2D array format.
-
-        Args:
-            x_next (ndarray): Next point to evaluate, shape (n_features,).
-
-        Returns:
-            ndarray: Points to evaluate, shape (repeats_surrogate, n_features)
-                or (1, n_features) if repeats_surrogate == 1.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Without repeats
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     repeats_surrogate=1
-            ... )
-            >>> x_next = np.array([1.0, 2.0])
-            >>> x_repeated = opt._update_repeats_infill_points(x_next)
-            >>> x_repeated.shape
-            (1, 2)
-            >>>
-            >>> # With repeats for noisy function
-            >>> opt_noisy = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     repeats_surrogate=3
-            ... )
-            >>> x_next = np.array([1.0, 2.0])
-            >>> x_repeated = opt_noisy._update_repeats_infill_points(x_next)
-            >>> x_repeated.shape
-            (3, 2)
-            >>> # All three copies should be identical
-            >>> np.all(x_repeated[0] == x_repeated[1])
-            True
-        """
-        if self.repeats_surrogate > 1:
-            x_next_repeated = np.repeat(
-                x_next.reshape(1, -1), self.repeats_surrogate, axis=0
-            )
-        else:
-            x_next_repeated = x_next.reshape(1, -1)
-        return x_next_repeated
-
-    def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
-        """Generate or process initial design points.
-
-        Handles three scenarios:
-        1. X0 is None: Generate space-filling design using LHS
-        2. X0 is None but x0 is provided: Generate LHS and include x0 as first point
-        3. X0 is provided: Transform and prepare user-provided initial design
-
-        Args:
-            X0 (ndarray, optional): User-provided initial design points in original scale,
-                shape (n_initial, n_features). If None, generates space-filling design.
-                Defaults to None.
-
-        Returns:
-            ndarray: Initial design points in internal (transformed and reduced) scale,
-                shape (n_initial, n_features_reduced).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10
-            ... )
-            >>> # Generate default LHS design
-            >>> X0 = opt.get_initial_design()
-            >>> X0.shape
-            (10, 2)
-            >>>
-            >>> # Provide custom initial design
-            >>> X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
-            >>> X0_processed = opt.get_initial_design(X0_custom)
-            >>> X0_processed.shape
-            (3, 2)
-        """
-        # Generate or use provided initial design
-        if X0 is None:
-            X0 = self._generate_initial_design()
-
-            # If starting point x0 was provided, include it in initial design
-            if self.x0 is not None:
-                # x0 is already validated and in internal scale
-                # Check if x0 is 1D or 2D
-                if self.x0.ndim == 1:
-                    x0_points = self.x0.reshape(1, -1)
-                else:
-                    x0_points = self.x0
-
-                n_x0 = x0_points.shape[0]
-
-                # If we have more x0 points than n_initial, use all x0 points
-                if n_x0 >= self.n_initial:
-                    X0 = x0_points
-                    if self.verbose:
-                        print(f"Using provided x0 points ({n_x0}) as initial design.")
-                else:
-                    # Replace the first n_x0 points of LHS with x0 points
-                    X0 = np.vstack([x0_points, X0[:-n_x0]])
-                    if self.verbose:
-                        print(
-                            f"Including {n_x0} starting points from x0 in initial design."
-                        )
-        else:
-            X0 = np.atleast_2d(X0)
-            # If user provided X0, it's in original scale - transform it
-            X0 = self._transform_X(X0)
-            # If X0 is in full dimensions and we have dimension reduction, reduce it
-            if self.red_dim and X0.shape[1] == len(self.ident):
-                X0 = self.to_red_dim(X0)
-            X0 = self._repair_non_numeric(X0, self.var_type)
-
-        return X0
-
-    def _curate_initial_design(self, X0: np.ndarray) -> np.ndarray:
-        """Remove duplicates and ensure sufficient unique points in initial design.
-
-        This method handles deduplication that can occur after rounding integer/factor
-        variables. If duplicates are found, it generates additional points to reach
-        the target n_initial unique points. Also handles repeating points when
-        repeats_initial > 1.
-
-        Args:
-            X0 (ndarray): Initial design points in internal scale,
-                shape (n_samples, n_features).
-
-        Returns:
-            ndarray: Curated initial design with duplicates removed and repeated
-                if necessary, shape (n_unique * repeats_initial, n_features).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10,
-            ...     var_type=['int', 'int']  # Integer variables may cause duplicates
-            ... )
-            >>> X0 = opt.get_initial_design()
-            >>> X0_curated = opt._curate_initial_design(X0)
-            >>> X0_curated.shape[0] == 10  # Should have n_initial unique points
-            True
-            >>>
-            >>> # With repeats
-            >>> opt_repeat = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     repeats_initial=3
-            ... )
-            >>> X0 = opt_repeat.get_initial_design()
-            >>> X0_curated = opt_repeat._curate_initial_design(X0)
-            >>> X0_curated.shape[0] == 15  # 5 unique points * 3 repeats
-            True
-        """
-        # Remove duplicates from initial design (can occur after rounding integers/factors)
-        # Keep only unique rows based on rounded values
-        X0_unique, unique_indices = np.unique(X0, axis=0, return_index=True)
-        if len(X0_unique) < len(X0):
-            n_duplicates = len(X0) - len(X0_unique)
-            if self.verbose:
-                print(
-                    f"Removed {n_duplicates} duplicate(s) from initial design after rounding"
-                )
-
-            # Generate additional points to reach n_initial unique points
-            if len(X0_unique) < self.n_initial:
-                n_additional = self.n_initial - len(X0_unique)
-                if self.verbose:
-                    print(
-                        f"Generating {n_additional} additional point(s) to reach n_initial={self.n_initial}"
-                    )
-
-                # Generate extra points and deduplicate again
-                max_gen_attempts = 10
-                for gen_attempt in range(max_gen_attempts):
-                    X_extra_unit = self.lhs_sampler.random(
-                        n=n_additional * 2
-                    )  # Generate extras
-                    X_extra = self.lower + X_extra_unit * (self.upper - self.lower)
-                    X_extra = self._repair_non_numeric(X_extra, self.var_type)
-
-                    # Combine and get unique
-                    X_combined = np.vstack([X0_unique, X_extra])
-                    X_combined_unique = np.unique(X_combined, axis=0)
-
-                    if len(X_combined_unique) >= self.n_initial:
-                        X0 = X_combined_unique[: self.n_initial]
-                        break
-                else:
-                    # If still not enough unique points, just use what we have
-                    X0 = X_combined_unique
-                    if self.verbose:
-                        print(
-                            f"Warning: Could only generate {len(X0)} unique initial points (target was {self.n_initial})"
-                        )
-            else:
-                X0 = X0_unique
-
-        # Repeat initial design points if repeats_initial > 1
-        if self.repeats_initial > 1:
-            X0 = np.repeat(X0, self.repeats_initial, axis=0)
-
-        return X0
-
-    def _rm_NA_values(
-        self, X0: np.ndarray, y0: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, int]:
-        """Remove NaN/inf values from initial design evaluations.
-
-        This method filters out design points that returned NaN or inf values
-        during initial evaluation. Unlike the sequential optimization phase where
-        penalties are applied, initial design points with invalid values are
-        simply removed.
-
-        Args:
-            X0 (ndarray): Initial design points in internal scale,
-                shape (n_samples, n_features).
-            y0 (ndarray): Function values at X0, shape (n_samples,).
-
-        Returns:
-            Tuple[ndarray, ndarray, int]: Filtered (X0, y0) with only finite values
-                and the original count before filtering. X0 has shape (n_valid, n_features),
-                y0 has shape (n_valid,), and the int is the original size.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10
-            ... )
-            >>> X0 = np.array([[1, 2], [3, 4], [5, 6]])
-            >>> y0 = np.array([5.0, np.nan, np.inf])
-            >>> X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
-            >>> X0_clean.shape
-            (1, 2)
-            >>> y0_clean
-            array([5.])
-            >>> n_eval
-            3
-            >>>
-            >>> # All valid values - no filtering
-            >>> X0 = np.array([[1, 2], [3, 4]])
-            >>> y0 = np.array([5.0, 25.0])
-            >>> X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
-            >>> X0_clean.shape
-            (2, 2)
-            >>> n_eval
-            2
-        """
-        # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
-
-        # If y0 contains None (object dtype), convert None to NaN and ensure float dtype
-        if y0.dtype == object:
-            # Create a float array, replacing None with NaN
-            # Use list comprehension for safe conversion of None
-            y0 = np.array([np.nan if v is None else v for v in y0], dtype=float)
-
-        finite_mask = np.isfinite(y0)
-        n_non_finite = np.sum(~finite_mask)
-
-        if n_non_finite > 0:
-            if self.verbose:
-                print(
-                    f"Warning: {n_non_finite} initial design point(s) returned NaN/inf "
-                    f"and will be ignored (reduced from {len(y0)} to {np.sum(finite_mask)} points)"
-                )
-            X0 = X0[finite_mask]
-            y0 = y0[finite_mask]
-
-            # Also filter y_mo if it exists (must match y0 size)
-            if self.y_mo is not None:
-                if len(self.y_mo) == len(finite_mask):  # Safety check
-                    self.y_mo = self.y_mo[finite_mask]
-                else:
-                    # Fallback or warning if sizes already mismatched (shouldn't happen here normally)
-                    if self.verbose:
-                        print(
-                            f"Warning: y_mo size ({len(self.y_mo)}) != mask size ({len(finite_mask)}) in initial design filtering"
-                        )
-                    # Try to filter only if sizes match, otherwise we might be in inconsistent state
-
-        return X0, y0, len(finite_mask)
-
-    def _check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
-        """Validate that initial design has sufficient points for surrogate fitting.
-
-        Checks if the number of valid initial design points meets the minimum
-        requirement for fitting a surrogate model. The minimum required is the
-        smaller of: (a) typical minimum for surrogate fitting (3 for multi-dimensional,
-        2 for 1D), or (b) what the user requested (n_initial).
-
-        Args:
-            y0 (ndarray): Function values at initial design points (after filtering),
-                shape (n_valid,).
-            n_evaluated (int): Original number of points evaluated before filtering.
-
-        Returns:
-            None
-
-        Raises:
-            ValueError: If the number of valid points is less than the minimum required.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10
-            ... )
-            >>> # Sufficient points - no error
-            >>> y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-            >>> opt._check_size_initial_design(y0, n_evaluated=10)
-            >>>
-            >>> # Insufficient points - raises ValueError
-            >>> y0_small = np.array([1.0])
-            >>> try:
-            ...     opt._check_size_initial_design(y0_small, n_evaluated=10)
-            ... except ValueError as e:
-            ...     print(f"Error: {e}")
-            Error: Insufficient valid initial design points: only 1 finite value(s) out of 10 evaluated...
-            >>>
-            >>> # With verbose output
-            >>> opt_verbose = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10,
-            ...     verbose=True
-            ... )
-            >>> y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
-            >>> opt_verbose._check_size_initial_design(y0_reduced, n_evaluated=10)
-            Note: Initial design size (3) is smaller than requested (10) due to NaN/inf values
-        """
-        # Check if we have enough points to continue
-        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
-        min_points_typical = 3 if self.n_dim > 1 else 2
-        min_points_required = min(min_points_typical, self.n_initial)
-
-        if len(y0) < min_points_required:
-            error_msg = (
-                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
-                f"out of {n_evaluated} evaluated. Need at least {min_points_required} "
-                f"points to fit surrogate model. Please check your objective function or increase n_initial."
-            )
-            raise ValueError(error_msg)
-
-        if len(y0) < self.n_initial and self.verbose:
-            print(
-                f"Note: Initial design size ({len(y0)}) is smaller than requested "
-                f"({self.n_initial}) due to NaN/inf values"
-            )
-
-    def _get_best_xy_initial_design(self) -> None:
-        """Determine and store the best point from initial design.
-
-        Finds the best (minimum) function value in the initial design,
-        stores the corresponding point and value in instance attributes,
-        and optionally prints the results if verbose mode is enabled.
-
-        For noisy functions, also reports the mean best value.
-
-        Note:
-            This method assumes self.X_ and self.y_ have been initialized
-            with the initial design evaluations.
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     verbose=True
-            ... )
-            >>> # Simulate initial design (normally done in optimize())
-            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt._get_best_xy_initial_design()
-            Initial best: f(x) = 0.000000
-            >>> print(f"Best x: {opt.best_x_}")
-            Best x: [0 0]
-            >>> print(f"Best y: {opt.best_y_}")
-            Best y: 0.0
-            >>>
-            >>> # With noisy function
-            >>> opt_noise = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     noise=True,
-            ...     verbose=True
-            ... )
-            >>> opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt_noise.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt_noise.min_mean_y = 0.5  # Simulated mean best
-            >>> opt_noise._get_best_xy_initial_design()
-            Initial best: f(x) = 0.000000, mean best: f(x) = 0.500000
-        """
-        # Initial best
-        best_idx = np.argmin(self.y_)
-        self.best_x_ = self.X_[best_idx].copy()
-        self.best_y_ = self.y_[best_idx]
-
-        if self.verbose:
-            if self.noise:
-                print(
-                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
-                )
-            else:
-                print(f"Initial best: f(x) = {self.best_y_:.6f}")
-
-    def _apply_ocba(self) -> Optional[np.ndarray]:
-        """Apply Optimal Computing Budget Allocation for noisy functions.
-
-        Determines which existing design points should be re-evaluated based on
-        OCBA algorithm. This method computes optimal budget allocation to improve
-        the quality of the estimated best design.
-
-        Returns:
-            Optional[ndarray]: Array of design points to re-evaluate, shape (n_re_eval, n_features).
-                Returns None if OCBA conditions are not met or OCBA is disabled.
-
-        Note:
-            OCBA is only applied when:
-            - self.noise is True
-            - self.ocba_delta > 0
-            - All variances are > 0
-            - At least 3 design points exist
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0]),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     noise=True,
-            ...     ocba_delta=5,
-            ...     verbose=True
-            ... )
-            >>> # Simulate optimization state (normally done in optimize())
-            >>> opt.mean_X = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt.mean_y = np.array([5.0, 0.1, 5.0])
-            >>> opt.var_y = np.array([0.1, 0.05, 0.15])
-            >>> X_ocba = opt._apply_ocba()
-              OCBA: Adding 5 re-evaluation(s)
-            >>> X_ocba.shape[0] == 5
-            True
-            >>>
-            >>> # OCBA skipped - insufficient points
-            >>> opt2 = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     noise=True,
-            ...     ocba_delta=5,
-            ...     verbose=True
-            ... )
-            >>> opt2.mean_X = np.array([[1, 2], [0, 0]])
-            >>> opt2.mean_y = np.array([5.0, 0.1])
-            >>> opt2.var_y = np.array([0.1, 0.05])
-            >>> X_ocba = opt2._apply_ocba()
-            Warning: OCBA skipped (need >2 points with variance > 0)
-            >>> X_ocba is None
-            True
-        """
-        # OCBA: Compute optimal budget allocation for noisy functions
-        # This determines which existing design points should be re-evaluated
-        X_ocba = None
-        if self.noise and self.ocba_delta > 0:
-            # Check conditions for OCBA (need variance > 0 and at least 3 points)
-            if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
-                if self.verbose:
-                    print("Warning: OCBA skipped (need >2 points with variance > 0)")
-            elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
-                # Get OCBA allocation
-                X_ocba = self._get_ocba_X(
-                    self.mean_X,
-                    self.mean_y,
-                    self.var_y,
-                    self.ocba_delta,
-                    verbose=self.verbose,
-                )
-                if self.verbose and X_ocba is not None:
-                    print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")
-
-        return X_ocba
 
     def _handle_NA_new_points(
         self, x_next: np.ndarray, y_next: np.ndarray
@@ -4165,344 +4078,1804 @@ class SpotOptim(BaseEstimator):
 
         return message
 
-    def get_best_hyperparameters(
-        self, as_dict: bool = True
-    ) -> Union[Dict[str, Any], np.ndarray, None]:
-        """
-        Get the best hyperparameter configuration found during optimization.
+    def _apply_ocba(self) -> Optional[np.ndarray]:
+        """Apply Optimal Computing Budget Allocation for noisy functions.
 
-        If noise handling is active (repeats_initial > 1 or OCBA), this returns the parameter
-        configuration associated with the best *mean* objective value. Otherwise, it returns
-        the configuration associated with the absolute best observed value.
-
-        Args:
-            as_dict (bool, optional): If True, returns a dictionary mapping parameter names
-                to their values. If False, returns the raw numpy array. Defaults to True.
+        Determines which existing design points should be re-evaluated based on
+        OCBA algorithm. This method computes optimal budget allocation to improve
+        the quality of the estimated best design.
 
         Returns:
-            Union[Dict[str, Any], np.ndarray, None]: The best hyperparameter configuration.
-                Returns None if optimization hasn't started (no data).
+            Optional[ndarray]: Array of design points to re-evaluate, shape (n_re_eval, n_features).
+                Returns None if OCBA conditions are not met or OCBA is disabled.
+
+        Note:
+            OCBA is only applied when:
+            - self.noise is True
+            - self.ocba_delta > 0
+            - All variances are > 0
+            - At least 3 design points exist
 
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: np.sum(x**2), bounds=[(-5, 5)], var_name=["x"])
-            >>> opt.optimize()
-            >>> best_params = opt.get_best_hyperparameters()
-            >>> print(best_params['x']) # Should be close to 0
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0]),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     noise=True,
+            ...     ocba_delta=5,
+            ...     verbose=True
+            ... )
+            >>> # Simulate optimization state (normally done in optimize())
+            >>> opt.mean_X = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt.mean_y = np.array([5.0, 0.1, 5.0])
+            >>> opt.var_y = np.array([0.1, 0.05, 0.15])
+            >>> X_ocba = opt._apply_ocba()
+              OCBA: Adding 5 re-evaluation(s)
+            >>> X_ocba.shape[0] == 5
+            True
+            >>>
+            >>> # OCBA skipped - insufficient points
+            >>> opt2 = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     noise=True,
+            ...     ocba_delta=5,
+            ...     verbose=True
+            ... )
+            >>> opt2.mean_X = np.array([[1, 2], [0, 0]])
+            >>> opt2.mean_y = np.array([5.0, 0.1])
+            >>> opt2.var_y = np.array([0.1, 0.05])
+            >>> X_ocba = opt2._apply_ocba()
+            Warning: OCBA skipped (need >2 points with variance > 0)
+            >>> X_ocba is None
+            True
         """
-        if self.X_ is None or len(self.X_) == 0:
-            return None
+        # OCBA: Compute optimal budget allocation for noisy functions
+        # This determines which existing design points should be re-evaluated
+        X_ocba = None
+        if self.noise and self.ocba_delta > 0:
+            # Check conditions for OCBA (need variance > 0 and at least 3 points)
+            if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
+                if self.verbose:
+                    print("Warning: OCBA skipped (need >2 points with variance > 0)")
+            elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
+                # Get OCBA allocation
+                X_ocba = self._get_ocba_X(
+                    self.mean_X,
+                    self.mean_y,
+                    self.var_y,
+                    self.ocba_delta,
+                    verbose=self.verbose,
+                )
+                if self.verbose and X_ocba is not None:
+                    print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")
 
-        # Determine which "best" to use
-        if self.noise and hasattr(self, "min_mean_X"):
-            best_x = self.min_mean_X
-        else:
-            best_x = self.best_x_
+        return X_ocba
 
-        if not as_dict:
-            return best_x
-
-        # Map factors using existing method (handles 2D, returns 2D)
-        # We pass best_x as (1, D) and get (1, D) back
-        mapped_x = self._map_to_factor_values(best_x.reshape(1, -1))[0]
-
-        # Convert to dictionary with types
-        params = {}
-        names = (
-            self.var_name if self.var_name else [f"p{i}" for i in range(len(best_x))]
-        )
-
-        for i, name in enumerate(names):
-            val = mapped_x[i]
-
-            # Handle types if available (specifically int, as factors are already mapped)
-            if self.var_type:
-                v_type = self.var_type[i]
-                if v_type == "int":
-                    val = int(round(val))
-
-            params[name] = val
-
-        return params
-
-    def _optimize_single_run(
+    def _apply_penalty_NA(
         self,
-        timeout_start: float,
-        X0: Optional[np.ndarray] = None,
-        y0_known: Optional[float] = None,
-        max_iter_override: Optional[int] = None,
-    ) -> Tuple[str, OptimizeResult]:
-        """Perform a single optimization run.
+        y: np.ndarray,
+        y_history: Optional[np.ndarray] = None,
+        penalty_value: Optional[float] = None,
+        sd: float = 0.1,
+    ) -> np.ndarray:
+        """Replace NaN and infinite values with penalty plus random noise.
+        Used in the optimize() method after function evaluations.
 
-        This method encapsulates the entire optimization process for a single run,
-        from initialization (seed, design) to the main optimization loop. It handles
-        initial design curation, evaluation, surrogate fitting, and the sequential
-        update loop with termination checks.
+        This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
+        replacing NaN/inf values with a penalty value plus random noise to avoid
+        identical penalty values.
 
         Args:
-            timeout_start (float): The start time of the optimization process (from time.time()).
-            X0 (ndarray, optional): Initial design points. Defaults to None.
-            y0_known (float, optional): Known best function value to inject (used for restarts).
-                Defaults to None.
-            max_iter_override (int, optional): Override max iterations for this run.
-                Defaults to None.
+            y (ndarray): Array of objective function values to be repaired.
+            y_history (ndarray, optional): Historical objective function values used for
+                computing penalty statistics. If None, uses y itself. Default is None.
+            penalty_value (float, optional): Value to replace NaN/inf with.
+                If None, computes penalty as: max(finite_y_history) + 3 * std(finite_y_history).
+                If all values are NaN/inf or only one finite value exists, falls back
+                to self.penalty_val. Default is None.
+            sd (float): Standard deviation for random noise added to penalty.
+                Default is 0.1.
 
         Returns:
-            Tuple[str, OptimizeResult]: A tuple containing the status ("FINISHED" or "RESTART")
-                and the optimization result object.
+            ndarray: Array with NaN/inf replaced by penalty_value + random noise.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> y_hist = np.array([1.0, 2.0, 3.0, 5.0])
+            >>> y_new = np.array([4.0, np.nan, np.inf])
+            >>> y_clean = opt._apply_penalty_NA(y_new, y_history=y_hist)
+            >>> np.all(np.isfinite(y_clean))
+            True
+            >>> # NaN/inf replaced with worst value from history + 3*std + noise
+            >>> y_clean[1] > 5.0  # Should be larger than max finite value in history
+            True
         """
-        # Note: timeout_start is passed as argument
 
-        # Set seed for reproducibility (crucial for ensuring identical results across runs)
-        self._set_seed()
+        # Ensure y is a float array (maps non-convertible values like "error" or None to nan)
+        def _safe_float(v):
+            try:
+                return float(v)
+            except (ValueError, TypeError):
+                return np.nan
 
-        # Set initial design (generate or process user-provided points)
-        X0 = self.get_initial_design(X0)
+        y_flat = np.array(y).flatten()
+        y = np.array([_safe_float(v) for v in y_flat])
+        # Identify NaN and inf values in y
+        mask = ~np.isfinite(y)
 
-        # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
-        X0 = self._curate_initial_design(X0)
+        if np.any(mask):
+            n_bad = np.sum(mask)
 
-        # Evaluate initial design
-        if y0_known is not None and self.x0 is not None:
-            # Identify injected point to skip evaluation
-            dists = np.linalg.norm(X0 - self.x0, axis=1)
-            # Use a small tolerance for matching
-            matches = dists < 1e-9
+            # Compute penalty_value if not provided
+            if penalty_value is None:
+                # Get finite values from history for statistics
+                # Use y_history if provided, otherwise fall back to y itself
+                if y_history is not None:
+                    finite_values = y_history[np.isfinite(y_history)]
+                else:
+                    # Use current y values
+                    finite_values = y[~mask]
 
-            if np.any(matches):
-                if self.verbose:
-                    print("Skipping re-evaluation of injected best point.")
+                # If we have at least 2 finite values, compute adaptive penalty
+                if len(finite_values) >= 2:
+                    max_y = np.max(finite_values)
+                    std_y = np.std(finite_values, ddof=1)
+                    penalty_value = max_y + 3.0 * std_y
 
-                # Initialize y0
-                y0 = np.empty(len(X0))
-                y0[:] = np.nan
+                    if self.verbose:
+                        print(
+                            f"Warning: Found {n_bad} NaN/inf value(s), replacing with "
+                            f"adaptive penalty (max + 3*std = {penalty_value:.4f})"
+                        )
+                else:
+                    # Fallback to self.penalty if insufficient finite values
+                    if self.penalty_val is not None:
+                        penalty_value = self.penalty_val
+                    elif len(finite_values) == 1:
+                        # Use the single finite value + a large constant
+                        penalty_value = finite_values[0] + 1000.0
+                    else:
+                        # All values are NaN/inf, use a large default
+                        penalty_value = 1e10
 
-                # Set known values
-                y0[matches] = y0_known
-
-                # Evaluate others
-                not_matches = ~matches
-                if np.any(not_matches):
-                    y0_others = self._evaluate_function(X0[not_matches])
-                    y0[not_matches] = y0_others
+                    if self.verbose:
+                        print(
+                            f"Warning: Found {n_bad} NaN/inf value(s), insufficient finite values "
+                            f"for adaptive penalty. Using penalty_value = {penalty_value}"
+                        )
             else:
-                # Injected point lost during curation? Should not happen if it was unique
-                y0 = self._evaluate_function(X0)
-        else:
-            y0 = self._evaluate_function(X0)
-
-        # Handle NaN/inf values in initial design (remove invalid points)
-        X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
-
-        # Check if we have enough valid points to continue
-        self._check_size_initial_design(y0, n_evaluated)
-
-        # Initialize storage and statistics
-        self._init_storage(X0, y0)
-        self._zero_success_count = 0
-        self._success_history = []  # Clear success history for new run
-
-        # Update stats after initial design
-        self.update_stats()
-
-        # Log initial design to TensorBoard
-        self._init_tensorboard()
-
-        # Determine and report initial best
-        self._get_best_xy_initial_design()
-
-        # Main optimization loop
-        # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
-        effective_max_iter = (
-            max_iter_override if max_iter_override is not None else self.max_iter
-        )
-        consecutive_failures = 0
-        while (len(self.y_) < effective_max_iter) and (
-            time.time() < timeout_start + self.max_time * 60
-        ):
-            # Check for excessive consecutive failures (infinite loop prevention)
-            if consecutive_failures > self.max_iter:
-                msg = (
-                    f"Optimization stopped due to {consecutive_failures} consecutive "
-                    "invalid evaluations (NaN/inf). Check your objective function."
-                )
-                if self.verbose:
-                    print(f"Warning: {msg}")
-                return "FINISHED", OptimizeResult(
-                    x=self.best_x_,
-                    fun=self.best_y_,
-                    nfev=len(self.y_),
-                    nit=self.n_iter_,
-                    success=False,
-                    message=msg,
-                    X=self.X_,
-                    y=self.y_,
-                )
-
-            # Increment iteration counter. This is not the same as number of function evaluations.
-            self.n_iter_ += 1
-
-            # Fit surrogate (use mean_y if noise, otherwise y_)
-            self._fit_scheduler()
-
-            # Apply OCBA for noisy functions
-            X_ocba = self._apply_ocba()
-
-            # Suggest next point
-            x_next = self.suggest_next_infill_point()
-
-            # Repeat next point if repeats_surrogate > 1
-            x_next_repeated = self._update_repeats_infill_points(x_next)
-
-            # Append OCBA points to new design points (if applicable)
-            if X_ocba is not None:
-                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
-
-            # Evaluate next point(s) including OCBA points
-            y_next = self._evaluate_function(x_next_repeated)
-
-            # Handle NaN/inf values in new evaluations
-            x_next_repeated, y_next = self._handle_NA_new_points(
-                x_next_repeated, y_next
-            )
-            if x_next_repeated is None:
-                consecutive_failures += 1
-                continue  # Skip iteration if all evaluations were invalid
-
-            # Reset failure counter if we got valid points
-            consecutive_failures = 0
-
-            # Update success rate BEFORE updating storage (so it compares against previous best)
-            self._update_success_rate(y_next)
-
-            # Check for restart
-            if self.success_rate == 0.0:
-                self._zero_success_count += 1
-            else:
-                self._zero_success_count = 0
-
-            if self._zero_success_count >= self.restart_after_n:
                 if self.verbose:
                     print(
-                        f"Restarting optimization: success_rate 0 for {self._zero_success_count} iterations."
+                        f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise"
                     )
 
-                status_message = "Restart triggered due to lack of improvement."
+            # Generate random noise and add to penalty
+            random_noise = self.rng.normal(0, sd, y.shape)
+            penalty_values = penalty_value + random_noise
 
-                # Expand results to full dimensions if needed
-                best_x_full = (
-                    self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-                    if self.red_dim
-                    else self.best_x_
-                )
-                X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+            # Replace NaN/inf with penalty + noise
+            y[mask] = penalty_values[mask]
 
-                # Map factor variables back to original strings
-                best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[
-                    0
-                ]
-                X_result = (
-                    self._map_to_factor_values(X_full) if self._factor_maps else X_full
-                )
+        return y
 
-                res = OptimizeResult(
-                    x=best_x_result,
-                    fun=self.best_y_,
-                    nfev=len(self.y_),
-                    nit=self.n_iter_,
-                    success=False,
-                    message=status_message,
-                    X=X_result,
-                    y=self.y_,
-                )
-                return "RESTART", res
+    # ====================
+    # Storage & Statistics
+    # ====================
 
-            # Update storage
-            self._update_storage(x_next_repeated, y_next)
+    def _init_storage(self, X0: np.ndarray, y0: np.ndarray) -> None:
+        """Initialize storage for optimization.
 
-            # Update stats
-            self.update_stats()
+        Sets up the initial data structures needed for optimization tracking:
+        - X_: Evaluated design points (in original scale)
+        - y_: Function values at evaluated points
+        - n_iter_: Iteration counter
 
-            # Log to TensorBoard
-            if self.tb_writer is not None:
-                # Log each new evaluation
-                for i in range(len(y_next)):
-                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
-                self._write_tensorboard_scalars()
-
-            # Update best solution
-            self._update_best_main_loop(
-                x_next_repeated, y_next, start_time=timeout_start
-            )
-
-        # Expand results to full dimensions if needed
-        # Note: best_x_ and X_ are already in original scale (stored that way)
-        best_x_full = (
-            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-            if self.red_dim
-            else self.best_x_
-        )
-        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
-
-        # Determine termination reason
-        status_message = self._determine_termination(timeout_start)
-
-        # Append statistics to match scipy.optimize.minimize format
-        message = (
-            f"{status_message}\n"
-            f"         Current function value: {float(self.best_y_):.6f}\n"
-            f"         Iterations: {self.n_iter_}\n"
-            f"         Function evaluations: {len(self.y_)}"
-        )
-
-        # Close TensorBoard writer
-        self._close_tensorboard_writer()
-
-        # Map factor variables back to original strings for results
-        best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
-        X_result = self._map_to_factor_values(X_full) if self._factor_maps else X_full
-
-        # Return scipy-style result
-        return "FINISHED", OptimizeResult(
-            x=best_x_result,
-            fun=self.best_y_,
-            nfev=len(self.y_),
-            nit=self.n_iter_,
-            success=True,
-            message=message,
-            X=X_result,
-            y=self.y_,
-        )
-
-    def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
-        """Run the optimization process.
-
-        The optimization terminates when either:
-        - Total function evaluations reach max_iter (including initial design), OR
-        - Runtime exceeds max_time minutes
-
-        Input/Output Spaces:
-        - Input X0: Expected in Natural Space (original scale, physical units).
-        - Output result.x: Returned in Natural Space.
-        - Output result.X: Returned in Natural Space.
-        - Internal Optimization: Performed in Transformed and Mapped Space.
+        Then updates statistics by calling update_stats().
 
         Args:
-            X0 (ndarray, optional): Initial design points in Natural Space, shape (n_initial, n_features).
-                If None, generates space-filling design. Defaults to None.
+            X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).
+            y0 (ndarray): Function values at X0, shape (n_samples,).
 
         Returns:
-            OptimizeResult: Optimization result with fields:
-                - x: best point found in Natural Space
-                - fun: best function value
-                - nfev: number of function evaluations (including initial design)
-                - nit: number of sequential optimization iterations (after initial design)
-                - success: whether optimization succeeded
-                - message: termination message indicating reason for stopping, including
-                  statistics (function value, iterations, evaluations)
-                - X: all evaluated points in Natural Space
-                - y: all function values
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 n_initial=5)
+            >>> X0 = np.array([[1, 2], [3, 4], [0, 1]])
+            >>> y0 = np.array([5.0, 25.0, 1.0])
+            >>> opt._init_storage(X0, y0)
+            >>> opt.X_.shape
+            (3, 2)
+            >>> opt.y_.shape
+            (3,)
+            >>> opt.n_iter_
+            0
+            >>> opt.counter
+            3
+        """
+        # Initialize storage (convert to original scale for user-facing storage)
+        self.X_ = self._inverse_transform_X(X0.copy())
+        self.y_ = y0.copy()
+        self.n_iter_ = 0
+
+    def _update_storage(self, X_new: np.ndarray, y_new: np.ndarray) -> None:
+        """Update storage with new evaluation points.
+
+        Appends new design points and their function values to the storage arrays.
+        Points are converted from internal scale to original scale before storage.
+
+        Args:
+            X_new (ndarray): New design points in internal scale, shape (n_new, n_features).
+            y_new (ndarray): Function values at X_new, shape (n_new,).
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 n_initial=5)
+            >>> # Initialize with some data
+            >>> opt.X_ = np.array([[1, 2], [3, 4]])
+            >>> opt.y_ = np.array([5.0, 25.0])
+            >>> # Add new points
+            >>> X_new = np.array([[0, 1], [2, 3]])
+            >>> y_new = np.array([1.0, 13.0])
+            >>> opt._update_storage(X_new, y_new)
+            >>> opt.X_.shape
+            (4, 2)
+            >>> opt.y_.shape
+            (4,)
+        """
+        # Update storage (convert to original scale for user-facing storage)
+        self.X_ = np.vstack([self.X_, self._inverse_transform_X(X_new)])
+        self.y_ = np.append(self.y_, y_new)
+
+    def update_stats(self) -> None:
+        """Update optimization statistics.
+
+        Updates various statistics related to the optimization progress:
+        - `min_y`: Minimum y value found so far
+        - `min_X`: X value corresponding to minimum y
+        - `counter`: Total number of function evaluations
+
+        Note: `success_rate` is updated separately via `_update_success_rate()` method,
+        which is called after each batch of function evaluations.
+
+        If `noise` is True (repeats > 1), additionally computes:
+        1. `mean_X`: Unique design points (aggregated from repeated evaluations)
+        2. `mean_y`: Mean y values per design point
+        3. `var_y`: Variance of y values per design point
+        4. `min_mean_X`: X value of the best mean y value
+        5. `min_mean_y`: Best mean y value
+        6. `min_var_y`: Variance of the best mean y value
+
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> # Without noise
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 max_iter=10, n_initial=5)
+            >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
+            >>> opt.y_ = np.array([5.0, 25.0, 1.0])
+            >>> opt.update_stats()
+            >>> opt.min_y
+            1.0
+            >>> opt.min_X
+            array([0, 1])
+            >>> opt.counter
+            3
+            >>>
+            >>> # With noise
+            >>> opt_noise = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                       bounds=[(-5, 5), (-5, 5)],
+            ...                       n_initial=5,
+            ...                       repeats_initial=2)
+            >>> opt_noise.noise = True
+            >>> opt_noise.X_ = np.array([[1, 2], [1, 2], [3, 4]])
+            >>> opt_noise.y_ = np.array([5.0, 5.0, 25.0])
+            >>> opt_noise.update_stats()
+            >>> opt_noise.mean_y.shape
+            (2,)
+        """
+        if self.y_ is None or len(self.y_) == 0:
+            return
+
+        # Basic stats
+        self.min_y = np.min(self.y_)
+        self.min_X = self.X_[np.argmin(self.y_)]
+        self.counter = len(self.y_)
+
+        # Aggregated stats for noisy functions
+        if self.noise:
+            self.mean_X, self.mean_y, self.var_y = self._aggregate_mean_var(
+                self.X_, self.y_
+            )
+            # X value of the best mean y value so far
+            best_mean_idx = np.argmin(self.mean_y)
+            self.min_mean_X = self.mean_X[best_mean_idx]
+            # Best mean y value so far
+            self.min_mean_y = self.mean_y[best_mean_idx]
+            # Variance of the best mean y value so far
+            self.min_var_y = self.var_y[best_mean_idx]
+
+    def _update_success_rate(self, y_new: np.ndarray) -> None:
+        """Update the rolling success rate of the optimization process.
+
+        A success is counted only if the new value is better (smaller) than the best
+        found y value so far. The success rate is calculated based on the last
+        `window_size` successes.
+
+        Important: This method should be called BEFORE updating self.y_ to correctly
+        track improvements against the previous best value.
+
+        Args:
+            y_new (ndarray): The new function values to consider for the success rate update.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 max_iter=10, n_initial=5)
+            >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
+            >>> opt.y_ = np.array([5.0, 3.0, 2.0])
+            >>> opt._update_success_rate(np.array([1.5, 2.5]))
+            >>> opt.success_rate > 0
+            True
+        """
+        # Initialize or update the rolling history of successes (1 for success, 0 for failure)
+        if not hasattr(self, "_success_history") or self._success_history is None:
+            self._success_history = []
+
+        # Get the best y value so far (before adding new evaluations)
+        # Since this is called BEFORE updating self.y_, we can safely use min(self.y_)
+        if self.y_ is not None and len(self.y_) > 0:
+            best_y_before = min(self.y_)
+        else:
+            # This is the initial design, no previous best
+            best_y_before = float("inf")
+
+        successes = []
+        current_best = best_y_before
+
+        for val in y_new:
+            if val < current_best:
+                successes.append(1)
+                current_best = val  # Update for next comparison within this batch
+            else:
+                successes.append(0)
+
+        # Add new successes to the history
+        self._success_history.extend(successes)
+        # Keep only the last window_size successes
+        self._success_history = self._success_history[-self.window_size :]
+
+        # Calculate the rolling success rate
+        window_size = len(self._success_history)
+        num_successes = sum(self._success_history)
+        self.success_rate = num_successes / window_size if window_size > 0 else 0.0
+
+    def _get_success_rate(self) -> float:
+        """Get the current success rate of the optimization process.
+
+        Returns:
+            float: The current success rate.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x,
+            ...                 bounds=[(-5, 5), (-5, 5)])
+            >>> print(opt._get_success_rate())
+            0.0
+        """
+        return float(getattr(self, "success_rate", 0.0) or 0.0)
+
+    def _aggregate_mean_var(
+        self, X: np.ndarray, y: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Aggregate X and y values to compute mean and variance per group.
+
+        For repeated evaluations at the same design point, this method computes
+        the mean function value and variance (using population variance, ddof=0).
+
+        Args:
+            X (ndarray): Design points, shape (n_samples, n_features).
+            y (ndarray): Function values, shape (n_samples,).
+
+        Returns:
+            tuple: A tuple containing:
+                - X_agg (ndarray): Unique design points, shape (n_groups, n_features)
+                - y_mean (ndarray): Mean y values per group, shape (n_groups,)
+                - y_var (ndarray): Variance of y values per group, shape (n_groups,)
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            ...                 bounds=[(-5, 5), (-5, 5)],
+            ...                 repeats_initial=2)
+            >>> X = np.array([[1, 2], [3, 4], [1, 2]])
+            >>> y = np.array([1, 2, 3])
+            >>> X_agg, y_mean, y_var = opt._aggregate_mean_var(X, y)
+            >>> X_agg.shape
+            (2, 2)
+            >>> y_mean
+            array([2., 2.])
+            >>> y_var
+            array([1., 0.])
+        """
+        # Input validation
+        X = np.asarray(X)
+        y = np.asarray(y)
+
+        if X.ndim != 2 or y.ndim != 1 or X.shape[0] != y.shape[0]:
+            raise ValueError("Invalid input shapes for _aggregate_mean_var")
+
+        if X.shape[0] == 0:
+            return np.empty((0, X.shape[1])), np.array([]), np.array([])
+
+        # Find unique rows and group indices
+        _, unique_idx, inverse_idx = np.unique(
+            X, axis=0, return_index=True, return_inverse=True
+        )
+
+        X_agg = X[unique_idx]
+
+        # Calculate mean and variance for each group
+        n_groups = len(unique_idx)
+        y_mean = np.zeros(n_groups)
+        y_var = np.zeros(n_groups)
+
+        for i in range(n_groups):
+            group_mask = inverse_idx == i
+            group_y = y[group_mask]
+            y_mean[i] = np.mean(group_y)
+            # Use population variance (ddof=0) for consistency with Spot
+            y_var[i] = np.var(group_y, ddof=0)
+
+        return X_agg, y_mean, y_var
+
+    # ====================
+    # Results & Analysis
+    # ====================
+
+    def save_result(
+        self,
+        filename: Optional[str] = None,
+        prefix: str = "result",
+        path: Optional[str] = None,
+        overwrite: bool = True,
+        verbosity: int = 0,
+    ) -> None:
+        """Save the complete optimization results to a pickle file.
+
+        A result contains all information from a completed optimization run, including
+        the experiment configuration and all evaluation results. This is useful for
+        saving completed runs for later analysis.
+
+        The result includes everything in an experiment plus:
+        - All evaluated points (X_)
+        - All function values (y_)
+        - Best point and best value
+        - Iteration count
+        - Success rate statistics
+        - Noise statistics (if applicable)
+
+        Args:
+            filename (str, optional): Filename for the result file. If None, generates
+                from prefix. Defaults to None.
+            prefix (str): Prefix for auto-generated filename. Defaults to "result".
+            path (str, optional): Directory path to save the file. If None, saves in current
+                directory. Creates directory if it doesn't exist. Defaults to None.
+            overwrite (bool): If True, overwrites existing file. If False, raises error if
+                file exists. Defaults to True.
+            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Run optimization
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>>
+            >>> # Save complete results
+            >>> opt.save_result(prefix="sphere_opt")
+            Result saved to sphere_opt_res.pkl
+            >>>
+            >>> # Later: load and analyze
+            >>> # opt_loaded = SpotOptim.load_result("sphere_opt_res.pkl")
+            >>> # print("Best value:", opt_loaded.best_y_)
+            >>> # opt_loaded.plot_surrogate()
+        """
+        # Use save_experiment with file_io unpickleables to preserve results
+        if filename is None:
+            filename = self._get_result_filename(prefix)
+
+        self.save_experiment(
+            filename=filename,
+            path=path,
+            overwrite=overwrite,
+            unpickleables="file_io",
+            verbosity=verbosity,
+        )
+
+        # Update message
+        if path is not None:
+            full_path = os.path.join(path, filename)
+        else:
+            full_path = filename
+        print(f"Result saved to {full_path}")
+
+    @staticmethod
+    def load_result(filename: str) -> "SpotOptim":
+        """Load complete optimization results from a pickle file.
+
+        Loads results that were saved with save_result(). The loaded optimizer
+        will have both configuration and all optimization results.
+
+        Args:
+            filename (str): Path to the result pickle file.
+
+        Returns:
+            SpotOptim: Loaded optimizer instance with complete results.
+
+        Raises:
+            FileNotFoundError: If the specified file doesn't exist.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Load results
+            >>> opt = SpotOptim.load_result("sphere_opt_res.pkl")
+            Loaded result from sphere_opt_res.pkl
+            >>>
+            >>> # Analyze results
+            >>> print("Best point:", opt.best_x_)
+            >>> print("Best value:", opt.best_y_)
+            >>> print("Total evaluations:", opt.counter)
+            >>> print("Success rate:", opt.success_rate)
+            >>>
+            >>> # Continue optimization if needed
+            >>> # opt.fun = lambda X: np.sum(X**2, axis=1)  # Re-attach if continuing
+            >>> # opt.max_iter = 50  # Increase budget
+            >>> # result = opt.optimize()
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"Result file not found: {filename}")
+
+        try:
+            with open(filename, "rb") as handle:
+                optimizer = dill.load(handle)
+            print(f"Loaded result from {filename}")
+
+            # Reinitialize components that were excluded
+            optimizer._reinitialize_components()
+
+            return optimizer
+        except Exception as e:
+            print(f"Error loading result: {e}")
+            raise
+
+    def save_experiment(
+        self,
+        filename: Optional[str] = None,
+        prefix: str = "experiment",
+        path: Optional[str] = None,
+        overwrite: bool = True,
+        unpickleables: str = "all",
+        verbosity: int = 0,
+    ) -> None:
+        """Save the experiment configuration to a pickle file.
+
+        An experiment contains the optimizer configuration needed to run optimization,
+        but excludes the results. This is useful for defining experiments locally and
+        executing them on remote machines.
+
+        The experiment includes:
+        - Bounds, variable types, variable names
+        - Optimization parameters (max_iter, n_initial, etc.)
+        - Surrogate and acquisition settings
+        - Random seed
+
+        The experiment excludes:
+        - Function evaluations (X_, y_)
+        - Optimization results
+
+
+        Args:
+            filename (str, optional): Filename for the experiment file. If None, generates
+                from prefix. Defaults to None.
+            prefix (str): Prefix for auto-generated filename. Defaults to "experiment".
+            path (str, optional): Directory path to save the file. If None, saves in current
+                directory. Creates directory if it doesn't exist. Defaults to None.
+            overwrite (bool): If True, overwrites existing file. If False, raises error if
+                file exists. Defaults to True.
+            unpickleables (str): Components to exclude for pickling:
+                - "all": Excludes surrogate, lhs_sampler, tb_writer (experiment only)
+                - "file_io": Excludes only tb_writer (lighter exclusion)
+                Defaults to "all".
+            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Define experiment locally
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>>
+            >>> # Save experiment (without results)
+            >>> opt.save_experiment(prefix="sphere_opt")
+            Experiment saved to sphere_opt_exp.pkl
+            >>>
+            >>> # On remote machine: load and run
+            >>> # opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            >>> # result = opt_remote.optimize()
+            >>> # opt_remote.save_result(prefix="sphere_opt")  # Save results
+        """
+        # Close TensorBoard writer before pickling
+        self._close_and_del_tensorboard_writer()
+
+        # Create pickle-safe copy
+        optimizer_copy = self._get_pickle_safe_optimizer(
+            unpickleables=unpickleables, verbosity=verbosity
+        )
+
+        # Determine filename
+        if filename is None:
+            filename = self._get_experiment_filename(prefix)
+
+        # Add path if provided
+        if path is not None:
+            if not os.path.exists(path):
+                os.makedirs(path)
+            filename = os.path.join(path, filename)
+
+        # Check for existing file
+        if os.path.exists(filename) and not overwrite:
+            raise FileExistsError(
+                f"File {filename} already exists. Use overwrite=True to overwrite."
+            )
+
+        # Save to pickle file
+        try:
+            with open(filename, "wb") as handle:
+                dill.dump(optimizer_copy, handle, protocol=dill.HIGHEST_PROTOCOL)
+            print(f"Experiment saved to {filename}")
+        except Exception as e:
+            print(f"Error during pickling: {e}")
+            raise
+
+    @staticmethod
+    def load_experiment(filename: str) -> "SpotOptim":
+        """Load an experiment configuration from a pickle file.
+
+        Loads an experiment that was saved with save_experiment(). The loaded optimizer
+        will have the configuration and the objective function (thanks to dill).
+
+
+        Args:
+            filename (str): Path to the experiment pickle file.
+
+        Returns:
+            SpotOptim: Loaded optimizer instance (without fun attached).
+
+        Raises:
+            FileNotFoundError: If the specified file doesn't exist.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Load experiment
+            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            Loaded experiment from sphere_opt_exp.pkl
+            >>>
+            >>> # Re-attach objective function
+            >>> opt.fun = lambda X: np.sum(X**2, axis=1)
+            >>>
+            >>> # Run optimization
+            >>> result = opt.optimize()
+        """
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"Experiment file not found: {filename}")
+
+        try:
+            with open(filename, "rb") as handle:
+                optimizer = dill.load(handle)
+            print(f"Loaded experiment from {filename}")
+
+            # Reinitialize components that were excluded
+            optimizer._reinitialize_components()
+
+            return optimizer
+        except Exception as e:
+            print(f"Error loading experiment: {e}")
+            raise
+
+    def _get_result_filename(self, prefix: str) -> str:
+        """Generate result filename from prefix.
+
+        Args:
+            prefix (str): Prefix for the filename.
+
+        Returns:
+            str: Filename with '_res.pkl' suffix.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            >>> res_filename = opt._get_result_filename(prefix="my_experiment")
+            >>> print(res_filename)
+            my_experiment_res.pkl
+        """
+        if prefix is None:
+            return "result_res.pkl"
+        return f"{prefix}_res.pkl"
+
+    def _get_experiment_filename(self, prefix: str) -> str:
+        """Generate experiment filename from prefix.
+
+        Args:
+            prefix (str): Prefix for the filename.
+
+        Returns:
+            str: Filename with '_exp.pkl' suffix.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            >>> exp_filename = opt._get_experiment_filename(prefix="my_experiment")
+            >>> print(exp_filename)
+            my_experiment_exp.pkl
+        """
+        if prefix is None:
+            return "experiment_exp.pkl"
+        return f"{prefix}_exp.pkl"
+
+    def print_results(self, *args: Any, **kwargs: Any) -> None:
+        """Alias for print_results_table for compatibility.
+        Prints the table.
+        """
+        self.print_results_table(*args, **kwargs)
+
+    def print_best(
+        self,
+        result: Optional[OptimizeResult] = None,
+        transformations: Optional[List[Optional[Callable]]] = None,
+        show_name: bool = True,
+        precision: int = 4,
+    ) -> None:
+        """Print the best solution found during optimization.
+
+        This method displays the best hyperparameters and objective value in a
+        formatted table. It supports custom transformations for parameters
+        (e.g., converting log-scale values back to original scale).
+
+        Args:
+            result (OptimizeResult, optional): Optimization result object from optimize().
+                If None, uses the stored best values from the optimizer. Defaults to None.
+            transformations (list of callable, optional): List of transformation functions
+                to apply to each parameter. Each function takes a single value and returns
+                the transformed value. Use None for parameters that don't need transformation.
+                Length must match number of dimensions. Example: [None, None, lambda x: 10**x]
+                to convert the 3rd parameter from log10 scale. Defaults to None.
+            show_name (bool, optional): Whether to display variable names. If False,
+                uses generic names like 'x0', 'x1', etc. Defaults to True.
+            precision (int, optional): Number of decimal places for floating point values.
+                Defaults to 4.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Basic usage
+            >>> def sphere(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=sphere,
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     var_name=["x1", "x2"],
+            ...     max_iter=20,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> opt.print_best(result)
+            <BLANKLINE>
+            Best Solution Found:
+            --------------------------------------------------
+              x1: 0.0123
+              x2: -0.0045
+              Objective Value: 0.000173
+              Total Evaluations: 20
+            >>>
+            >>> # Example 2: With log-scale transformations (e.g., for learning rates)
+            >>> def objective(X):
+            ...     # X[:, 0]: neurons (int), X[:, 1]: layers (int),
+            ...     # X[:, 2]: log10(lr), X[:, 3]: log10(alpha)
+            ...     return np.sum(X**2, axis=1)  # Placeholder
+            >>> opt = SpotOptim(
+            ...     fun=objective,
+            ...     bounds=[(16, 128), (1, 4), (-3, 0), (-2, 1)],
+            ...     var_type=["int", "int", "float", "float"],
+            ...     var_name=["neurons", "layers", "log10_lr", "log10_alpha"],
+            ...     max_iter=30,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> # Transform log-scale parameters back to original scale
+            >>> transformations = [
+            ...     int,              # neurons -> int
+            ...     int,              # layers -> int
+            ...     lambda x: 10**x,  # log10_lr -> lr
+            ...     lambda x: 10**x   # log10_alpha -> alpha
+            ... ]
+            >>> opt.print_best(result, transformations=transformations)
+            <BLANKLINE>
+            Best Solution Found:
+            --------------------------------------------------
+              neurons: 64
+              layers: 2
+              log10_lr: 0.0012
+              log10_alpha: 0.0345
+              Objective Value: 1.2345
+              Total Evaluations: 30
+            >>>
+            >>> # Example 3: Without result object (using stored values)
+            >>> opt.print_best()  # Uses opt.best_x_ and opt.best_y_
+            >>>
+            >>> # Example 4: Hide variable names
+            >>> opt.print_best(result, show_name=False)
+            <BLANKLINE>
+            Best Solution Found:
+            --------------------------------------------------
+              x0: 0.0123
+              x1: -0.0045
+              Objective Value: 0.000173
+              Total Evaluations: 20
+        """
+        # Get values from result or stored attributes
+        if result is not None:
+            best_x = result.x
+            best_y = result.fun
+            n_evals = result.nfev
+        else:
+            if self.best_x_ is None or self.best_y_ is None:
+                print("No optimization results available. Run optimize() first.")
+                return
+            best_x = self.best_x_
+            best_y = self.best_y_
+            n_evals = self.counter
+
+        # Expand to full dimensions if dimension reduction was applied
+        if self.red_dim:
+            best_x_full = self.to_all_dim(best_x.reshape(1, -1))[0]
+        else:
+            best_x_full = best_x
+
+        # Map factor variables back to original string values
+        best_x_full = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+
+        # Determine variable names to use
+        if show_name and self.all_var_name is not None:
+            var_names = self.all_var_name
+        else:
+            var_names = [f"x{i}" for i in range(len(best_x_full))]
+
+        # Validate transformations length
+        if transformations is not None:
+            if len(transformations) != len(best_x_full):
+                raise ValueError(
+                    f"Length of transformations ({len(transformations)}) must match "
+                    f"number of dimensions ({len(best_x_full)})"
+                )
+        else:
+            transformations = [None] * len(best_x_full)
+
+        # Print header
+        print("\nBest Solution Found:")
+        print("-" * 50)
+
+        # Print each parameter
+        for i, (name, value, transform) in enumerate(
+            zip(var_names, best_x_full, transformations)
+        ):
+            # Apply transformation if provided
+            if transform is not None:
+                try:
+                    display_value = transform(value)
+                except Exception as e:
+                    print(f"Warning: Transformation failed for {name}: {e}")
+                    display_value = value
+            else:
+                display_value = value
+
+            # Format based on variable type
+            var_type = self.all_var_type[i] if i < len(self.all_var_type) else "float"
+
+            if var_type == "int" or isinstance(display_value, (int, np.integer)):
+                print(f"  {name}: {int(display_value)}")
+            elif var_type == "factor" or isinstance(display_value, str):
+                print(f"  {name}: {display_value}")
+            else:
+                print(f"  {name}: {display_value:.{precision}f}")
+
+        # Print objective value and evaluations
+        print(f"  Objective Value: {best_y:.{precision}f}")
+        print(f"  Total Evaluations: {n_evals}")
+
+    def print_results_table(
+        self,
+        tablefmt: str = "github",
+        precision: int = 4,
+        show_importance: bool = False,
+        *args: Any,
+        **kwargs: Any,
+    ) -> str:
+        """Print (and return) a comprehensive table of optimization results.
+
+        This method calls `get_results_table` to generate the table string, prints it,
+        and then returns it.
+
+        Args:
+            tablefmt (str, optional): Table format. Defaults to 'github'.
+            precision (int, optional): Decimal precision. Defaults to 4.
+            show_importance (bool, optional): Show importance column. Defaults to False.
+            *args: Arguments passed to get_results_table.
+            **kwargs: Keyword arguments passed to get_results_table.
+
+        Returns:
+            str: Formatted table string.
+        """
+        table = self.get_results_table(
+            tablefmt=tablefmt,
+            precision=precision,
+            show_importance=show_importance,
+            *args,
+            **kwargs,
+        )
+        print(table)
+        return table
+
+    def print_design_table(
+        self,
+        tablefmt: str = "github",
+        precision: int = 4,
+    ) -> str:
+        """Print (and return) a table showing the search space design before optimization.
+
+        This method calls `get_design_table` to generate the table string, prints it,
+        and then returns it.
+
+        Args:
+            tablefmt (str, optional): Table format for tabulate library.
+                Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+
+        Returns:
+            str: Formatted table string.
+        """
+        table = self.get_design_table(tablefmt=tablefmt, precision=precision)
+        print(table)
+        return table
+
+    def get_results_table(
+        self,
+        tablefmt: str = "github",
+        precision: int = 4,
+        show_importance: bool = False,
+    ) -> str:
+        """Get a comprehensive table string of optimization results.
+
+        This method generates a formatted table of the search space configuration,
+        best values found, and optionally variable importance scores.
+
+        Args:
+            tablefmt (str, optional): Table format for tabulate library. Options include:
+                'github', 'grid', 'simple', 'plain', 'html', 'latex', etc.
+                Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+            show_importance (bool, optional): Whether to include importance scores.
+                Importance is calculated as the normalized standard deviation of each
+                parameter's effect on the objective. Requires multiple evaluations.
+                Defaults to False.
+
+        Returns:
+            str: Formatted table string that can be printed or saved.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Basic usage after optimization
+            >>> def sphere(X):
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=sphere,
+            ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],
+            ...     var_name=["x1", "x2", "x3"],
+            ...     var_type=["float", "float", "float"],
+            ...     max_iter=30,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> table = opt.get_results_table()
+            >>> print(table)
+            | name   | type   |   lower |   upper |   tuned |
+            |--------|--------|---------|---------|---------|
+            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
+            | x2     | num    |    -5.0 |     5.0 | -0.0234 |
+            | x3     | num    |    -5.0 |     5.0 |  0.0345 |
+            >>>
+            >>> # Example 2: With importance scores
+            >>> table = opt.get_results_table(show_importance=True)
+            >>> print(table)
+            | name   | type   |   lower |   upper |   tuned |   importance | stars   |
+            |--------|--------|---------|---------|---------|--------------|---------|
+            | x1     | num    |    -5.0 |     5.0 |  0.0123 |        45.23 | **      |
+            | x2     | num    |    -5.0 |     5.0 | -0.0234 |        32.17 | *       |
+            | x3     | num    |    -5.0 |     5.0 |  0.0345 |        22.60 | *       |
+            >>>
+            >>> # Example 3: Different table format
+            >>> table = opt.get_results_table(tablefmt="grid")
+            >>> print(table)
+            +--------+--------+---------+---------+---------+
+            | name   | type   |   lower |   upper |   tuned |
+            +========+========+=========+=========+=========+
+            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
+            +--------+--------+---------+---------+---------+
+            ...
+            >>>
+            >>> # Example 4: With factor variables
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), ("red", "green", "blue")],
+            ...     var_name=["size", "color"],
+            ...     var_type=["float", "factor"],
+            ...     max_iter=20,
+            ...     n_initial=10
+            ... )
+            >>> result = opt.optimize()
+            >>> table = opt.get_results_table()
+            >>> print(table)
+            | name   | type   | lower   | upper   | tuned   |
+            |--------|--------|---------|---------|---------|
+            | size   | num    | -5.0    | 5.0     | 0.0123  |
+            | color  | factor | red     | blue    | green   |
+        """
+        if self.best_x_ is None or self.best_y_ is None:
+            return "No optimization results available. Run optimize() first."
+
+        # Get best solution in full dimensions
+        # Note: best_x_ is already in original scale
+        if self.red_dim:
+            best_x_full = self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+        else:
+            best_x_full = self.best_x_
+
+        # Map factor variables back to original string values
+        best_x_display = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+
+        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
+        if self.red_dim and hasattr(self, "all_var_trans"):
+            all_var_trans = self.all_var_trans
+        else:
+            all_var_trans = self.var_trans
+
+        # Prepare table data
+        table_data = {
+            "name": (
+                self.all_var_name
+                if self.all_var_name
+                else [f"x{i}" for i in range(len(best_x_display))]
+            ),
+            "type": (
+                self.all_var_type
+                if self.all_var_type
+                else ["float"] * len(best_x_display)
+            ),
+            "default": [],
+            "lower": [],
+            "upper": [],
+            "tuned": [],
+            "transform": [t if t is not None else "-" for t in all_var_trans],
+        }
+
+        # Helper to format values
+        def fmt_val(v):
+            if isinstance(v, (float, np.floating)):
+                return f"{v:.{precision}f}"
+            return v
+
+        # Process bounds, defaults, and tuned values
+        for i in range(len(best_x_display)):
+            var_type = table_data["type"][i]
+
+            # Handle bounds and defaults based on variable type
+            if var_type == "factor":
+                # For factors, show original string values
+                if i in self._factor_maps:
+                    factor_map = self._factor_maps[i]
+                    # Default is middle level logic (matching get_design_table)
+                    mid_idx = len(factor_map) // 2
+                    default_str = factor_map[mid_idx]
+
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
+                    table_data["default"].append(default_str)
+                else:
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
+                    table_data["default"].append("N/A")
+            else:
+                table_data["lower"].append(fmt_val(self._original_lower[i]))
+                table_data["upper"].append(fmt_val(self._original_upper[i]))
+                # Default is midpoint logic
+                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
+                if var_type == "int":
+                    table_data["default"].append(int(default_val))
+                else:
+                    table_data["default"].append(fmt_val(default_val))
+
+            # Format tuned value
+            tuned_val = best_x_display[i]
+            if var_type == "int":
+                table_data["tuned"].append(int(tuned_val))
+            elif var_type == "factor":
+                table_data["tuned"].append(str(tuned_val))
+            else:
+                table_data["tuned"].append(fmt_val(tuned_val))
+
+        # Add importance if requested
+        if show_importance:
+            importance = self.get_importance()
+            table_data["importance"] = [f"{x:.2f}" for x in importance]
+            table_data["stars"] = self.get_stars(importance)
+
+        # Generate table
+        table = tabulate(
+            table_data,
+            headers="keys",
+            tablefmt=tablefmt,
+            numalign="right",
+            stralign="right",
+        )
+
+        # Add interpretation if importance is shown
+        if show_importance:
+            table += "\n\nInterpretation: ***: >99%, **: >75%, *: >50%, .: >10%"
+
+        return table
+
+    def get_design_table(
+        self,
+        tablefmt: str = "github",
+        precision: int = 4,
+    ) -> str:
+        """Get a table string showing the search space design before optimization.
+
+        This method generates a table displaying the variable names, types, bounds,
+        and defaults without requiring an optimization run. Useful for inspecting
+        and documenting the search space configuration.
+
+        Args:
+            tablefmt (str, optional): Table format for tabulate library.
+                Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+
+        Returns:
+            str: Formatted table string.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Numeric parameters
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-10, 10), (0, 1)],
+            ...     var_name=["x1", "x2", "x3"],
+            ...     var_type=["float", "int", "float"],
+            ...     max_iter=20,
+            ...     n_initial=10
+            ... )
+            >>> table = opt.get_design_table()
+            >>> print(table)
+            | name   | type   |   lower |   upper |   default |
+            |--------|--------|---------|---------|-----------|
+            | x1     | num    |    -5.0 |     5.0 |       0.0 |
+            | x2     | int    |   -10.0 |    10.0 |       0.0 |
+            | x3     | num    |     0.0 |     1.0 |       0.5 |
+            >>>
+            >>> # Example 2: With factor variables
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(10, 100), ("SGD", "Adam", "RMSprop"), (0.001, 0.1)],
+            ...     var_name=["neurons", "optimizer", "lr"],
+            ...     var_type=["int", "factor", "float"],
+            ...     max_iter=30,
+            ...     n_initial=10
+            ... )
+            >>> table = opt.get_design_table()
+            >>> print(table)
+            | name      | type   | lower   | upper   | default   |
+            |-----------|--------|---------|---------|-----------|
+            | neurons   | int    | 10.0    | 100.0   | 55.0      |
+            | optimizer | factor | SGD     | RMSprop | Adam      |
+            | lr        | num    | 0.001   | 0.1     | 0.0505    |
+            >>>
+            >>> # Example 3: Before running optimization
+            >>> def hyperparameter_objective(X):
+            ...     # X[:, 0]: layers, X[:, 1]: neurons, X[:, 2]: dropout
+            ...     return np.sum(X**2, axis=1)  # Placeholder
+            >>> opt = SpotOptim(
+            ...     fun=hyperparameter_objective,
+            ...     bounds=[(1, 5), (16, 256), (0.0, 0.5)],
+            ...     var_name=["layers", "neurons", "dropout"],
+            ...     var_type=["int", "int", "float"],
+            ...     max_iter=50,
+            ...     n_initial=15
+            ... )
+            >>> # Get design table before optimization
+            >>> print("Search Space Configuration:")
+            >>> table = opt.get_design_table()
+            >>> print(table)
+            Search Space Configuration:
+            | name    | type   |   lower |   upper |   default |
+            |---------|--------|---------|---------|-----------|
+            | layers  | int    |     1.0 |     5.0 |       3.0 |
+            | neurons | int    |    16.0 |   256.0 |     136.0 |
+            | dropout | num    |     0.0 |     0.5 |      0.25 |
+        """
+        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
+        if self.red_dim and hasattr(self, "all_var_trans"):
+            all_var_trans = self.all_var_trans
+        else:
+            all_var_trans = self.var_trans
+
+        # Prepare table data
+        table_data = {
+            "name": (
+                self.all_var_name
+                if self.all_var_name
+                else [f"x{i}" for i in range(len(self.all_lower))]
+            ),
+            "type": (
+                self.all_var_type
+                if self.all_var_type
+                else ["float"] * len(self.all_lower)
+            ),
+            "lower": [],
+            "upper": [],
+            "default": [],
+            "transform": [t if t is not None else "-" for t in all_var_trans],
+        }
+
+        # Helper to format values
+        def fmt_val(v):
+            if isinstance(v, (float, np.floating)):
+                return f"{v:.{precision}f}"
+            return v
+
+        # Process bounds and compute defaults (use original bounds for display)
+        for i in range(len(self._original_lower)):
+            var_type = table_data["type"][i]
+
+            if var_type == "factor":
+                # For factors, show original string values
+                if i in self._factor_maps:
+                    factor_map = self._factor_maps[i]
+                    # Default is middle level
+                    mid_idx = len(factor_map) // 2
+                    default_str = factor_map[mid_idx]
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
+                    table_data["default"].append(default_str)
+                else:
+                    table_data["lower"].append("-")
+                    table_data["upper"].append("-")
+                    table_data["default"].append("N/A")
+            else:
+                table_data["lower"].append(fmt_val(self._original_lower[i]))
+                table_data["upper"].append(fmt_val(self._original_upper[i]))
+                # Default is midpoint
+                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
+                if var_type == "int":
+                    table_data["default"].append(int(default_val))
+                else:
+                    table_data["default"].append(fmt_val(default_val))
+
+        # Generate table
+        table = tabulate(
+            table_data,
+            headers="keys",
+            tablefmt=tablefmt,
+            numalign="right",
+            stralign="right",
+        )
+
+        return table
+
+    def gen_design_table(self, precision: int = 4, tablefmt: str = "github") -> str:
+        """Generate a table of the design or results.
+
+        If optimization has been run (results available), returns the results table.
+        Otherwise, returns the design table (search space configuration).
+
+        Args:
+            tablefmt (str, optional): Table format. Defaults to 'github'.
+            precision (int, optional): Number of decimal places for float values.
+                Defaults to 4.
+
+        Returns:
+            str: Formatted table string.
+        """
+        if self.best_x_ is not None:
+            return self.get_results_table(precision=precision, tablefmt=tablefmt)
+        else:
+            return self.get_design_table(precision=precision, tablefmt=tablefmt)
+
+    def get_importance(self) -> List[float]:
+        """Calculate variable importance scores.
+
+        Importance is computed as the normalized sensitivity of each parameter
+        based on the variation in objective values across the evaluated points.
+        Higher scores indicate parameters that have more influence on the objective.
+
+        The importance is calculated as:
+        1. For each dimension, compute the correlation between parameter values
+           and objective values
+        2. Normalize to percentage scale (0-100)
+        3. Higher values indicate more important parameters
+
+        Returns:
+            List[float]: Importance scores for each dimension (0-100 scale).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>>
+            >>> # Example 1: Identify important parameters
+            >>> def test_func(X):
+            ...     # x0 has strong effect, x1 has weak effect
+            ...     return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+            >>> opt = SpotOptim(
+            ...     fun=test_func,
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     var_name=["x0", "x1"],
+            ...     max_iter=30,
+            ...     n_initial=10,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> importance = opt.get_importance()
+            >>> print(f"x0 importance: {importance[0]:.2f}")
+            >>> print(f"x1 importance: {importance[1]:.2f}")
+            x0 importance: 89.23
+            x1 importance: 10.77
+            >>>
+            >>> # Example 2: With more dimensions
+            >>> def rosenbrock(X):
+            ...     return np.sum(100*(X[:, 1:] - X[:, :-1]**2)**2 + (1 - X[:, :-1])**2, axis=1)
+            >>> opt = SpotOptim(
+            ...     fun=rosenbrock,
+            ...     bounds=[(-2, 2)] * 4,
+            ...     var_name=["x0", "x1", "x2", "x3"],
+            ...     max_iter=50,
+            ...     n_initial=20,
+            ...     seed=42
+            ... )
+            >>> result = opt.optimize()
+            >>> importance = opt.get_importance()
+            >>> for i, imp in enumerate(importance):
+            ...     print(f"x{i}: {imp:.2f}%")
+            x0: 32.15%
+            x1: 28.43%
+            x2: 25.67%
+            x3: 13.75%
+            >>>
+            >>> # Example 3: Use in results table
+            >>> table = opt.print_results_table(show_importance=True)
+            >>> print(table)
+        """
+        if self.X_ is None or self.y_ is None or len(self.y_) < 3:
+            # Not enough data to compute importance
+            return [0.0] * len(self.all_lower)
+
+        # Use full-dimensional data
+        X_full = self.X_
+        if self.red_dim:
+            X_full = np.array([self.to_all_dim(x.reshape(1, -1))[0] for x in self.X_])
+
+        # Calculate sensitivity for each dimension
+        sensitivities = []
+        for i in range(X_full.shape[1]):
+            x_i = X_full[:, i]
+
+            # Skip if no variation in this dimension
+            if np.std(x_i) < 1e-10:
+                sensitivities.append(0.0)
+                continue
+
+            # Compute correlation with objective
+            try:
+                correlation = np.abs(np.corrcoef(x_i, self.y_)[0, 1])
+                if np.isnan(correlation):
+                    correlation = 0.0
+            except Exception:
+                correlation = 0.0
+
+            sensitivities.append(correlation)
+
+        # Normalize to percentage
+        total = sum(sensitivities)
+        if total > 0:
+            importance = [(s / total) * 100 for s in sensitivities]
+        else:
+            importance = [0.0] * len(sensitivities)
+
+        return importance
+
+    def sensitivity_spearman(self) -> None:
+        """Compute and print Spearman correlation between parameters and objective values.
+
+        This method analyzes the sensitivity of the objective function to each
+        hyperparameter by computing Spearman rank correlations. For categorical
+        (factor) variables, correlation is not computed as they require visual
+        inspection instead.
+
+        The method automatically handles different parameter types:
+        - Integer/float parameters: Direct correlation with objective values
+        - Log-transformed parameters (log10, log, ln): Correlation in log-space
+        - Factor (categorical) parameters: Skipped with informative message
+
+        Significance levels:
+        - ***: p < 0.001 (highly significant)
+        - **: p < 0.01 (significant)
+        - *: p < 0.05 (marginally significant)
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> import numpy as np
+            >>>
+            >>> # After running optimization
+            >>> opt = SpotOptim(...)
+            >>> result = opt.optimize()
+            >>> opt.sensitivity_spearman()
+            Sensitivity Analysis (Spearman Correlation):
+            --------------------------------------------------
+              l1 (neurons)        : +0.005 (p=0.959)
+              num_layers          : -0.192 (p=0.056)
+              activation          : (categorical variable, use visual inspection)
+              lr_unified          : -0.040 (p=0.689)
+              alpha               : -0.233 (p=0.020) *
+
+        Note:
+            Requires scipy to be installed. If not available, raises ImportError.
+            Only meaningful after optimize() has been called with sufficient evaluations.
+        """
+        try:
+            from scipy.stats import spearmanr
+        except ImportError:
+            raise ImportError(
+                "scipy is required for sensitivity_spearman(). "
+                "Install it with: pip install scipy"
+            )
+
+        if self.X_ is None or self.y_ is None:
+            raise ValueError("No optimization data available. Run optimize() first.")
+
+        # Get optimization history and parameters
+        history = self.y_
+        all_params = self.X_
+
+        # Get parameter names
+        param_names = (
+            self.var_name if self.var_name else [f"x{i}" for i in range(self.n_dim)]
+        )
+
+        print("\nSensitivity Analysis (Spearman Correlation):")
+        print("-" * 50)
+
+        for param_idx in range(self.n_dim):
+            name = param_names[param_idx]
+            param_values = all_params[:, param_idx]
+
+            # Check if it's a factor variable
+            var_type = self.var_type[param_idx] if self.var_type else "float"
+
+            if var_type == "factor":
+                # For categorical variables, skip correlation
+                print(f"  {name:20s}: (categorical variable, use visual inspection)")
+                continue
+
+            # Check if parameter has log transformation
+            var_trans = self.var_trans[param_idx] if self.var_trans else None
+
+            # Compute correlation based on transformation
+            if var_trans in ["log10", "log", "ln"]:
+                # For log-transformed parameters, use log-space correlation
+                try:
+                    param_values_numeric = param_values.astype(float)
+                    # Filter out non-positive values
+                    valid_mask = (param_values_numeric > 0) & (history > 0)
+                    if valid_mask.sum() < 3:
+                        print(
+                            f"  {name:20s}: (insufficient valid data for log correlation)"
+                        )
+                        continue
+
+                    corr, p_value = spearmanr(
+                        np.log10(param_values_numeric[valid_mask]),
+                        np.log10(history[valid_mask]),
+                    )
+                except (ValueError, TypeError):
+                    print(f"  {name:20s}: (error computing log correlation)")
+                    continue
+            else:
+                # For integer/float parameters, direct correlation
+                try:
+                    param_values_numeric = param_values.astype(float)
+                    corr, p_value = spearmanr(param_values_numeric, history)
+                except (ValueError, TypeError):
+                    print(f"  {name:20s}: (error computing correlation)")
+                    continue
+
+            # Determine significance level
+            if p_value < 0.001:
+                significance = " ***"
+            elif p_value < 0.01:
+                significance = " **"
+            elif p_value < 0.05:
+                significance = " *"
+            else:
+                significance = ""
+
+            print(f"  {name:20s}: {corr:+.3f} (p={p_value:.3f}){significance}")
+
+    def get_stars(self, input_list: list) -> list:
+        """Converts a list of values to a list of stars.
+
+        Used to visualize the importance of a variable.
+        Thresholds: >99: ***, >75: **, >50: *, >10: .
+
+        Args:
+            input_list (list): A list of importance scores (0-100).
+
+        Returns:
+            list: A list of star strings.
+        """
+        output_list = []
+        for value in input_list:
+            if value > 99:
+                output_list.append("***")
+            elif value > 75:
+                output_list.append("**")
+            elif value > 50:
+                output_list.append("*")
+            elif value > 10:
+                output_list.append(".")
+            else:
+                output_list.append("")
+        return output_list
+
+    # ====================
+    # TensorBoard Integration
+    # ====================
+
+    def _clean_tensorboard_logs(self) -> None:
+        """Clean old TensorBoard log directories from the runs folder.
+
+        Removes all subdirectories in the 'runs' directory if tensorboard_clean is True.
+        This is useful for removing old logs before starting a new optimization run.
+
+        Warning:
+            This will permanently delete all subdirectories in the 'runs' folder.
+            Use with caution.
+
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     tensorboard_log=True,
+            ...     tensorboard_clean=True
+            ... )
+            >>> # Old logs in 'runs' will be removed before optimization starts
+        """
+        if self.tensorboard_clean:
+            runs_dir = "runs"
+            if os.path.exists(runs_dir) and os.path.isdir(runs_dir):
+                # Get all subdirectories in runs
+                subdirs = [
+                    os.path.join(runs_dir, d)
+                    for d in os.listdir(runs_dir)
+                    if os.path.isdir(os.path.join(runs_dir, d))
+                ]
+
+                if subdirs:
+                    removed_count = 0
+                    for subdir in subdirs:
+                        try:
+                            shutil.rmtree(subdir)
+                            removed_count += 1
+                            if self.verbose:
+                                print(f"Removed old TensorBoard logs: {subdir}")
+                        except Exception as e:
+                            if self.verbose:
+                                print(f"Warning: Could not remove {subdir}: {e}")
+
+                    if self.verbose and removed_count > 0:
+                        print(
+                            f"Cleaned {removed_count} old TensorBoard log director{'y' if removed_count == 1 else 'ies'}"
+                        )
+                elif self.verbose:
+                    print("No old TensorBoard logs to clean in 'runs' directory")
+            elif self.verbose:
+                print("'runs' directory does not exist, nothing to clean")
+
+    def _init_tensorboard_writer(self) -> None:
+        """Initialize TensorBoard SummaryWriter if logging is enabled.
+
+        Creates a unique log directory based on timestamp if tensorboard_log is True.
+        The log directory will be in the format: runs/spotoptim_YYYYMMDD_HHMMSS
+
+
+        Returns:
+            None
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     tensorboard_log=True
+            ... )
+            >>> hasattr(opt, 'tb_writer')
+            True
+        """
+        if self.tensorboard_log:
+            if self.tensorboard_path is None:
+                # Create default path with timestamp
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                self.tensorboard_path = f"runs/spotoptim_{timestamp}"
+
+            # Create directory if it doesn't exist
+            os.makedirs(self.tensorboard_path, exist_ok=True)
+
+            self.tb_writer = SummaryWriter(log_dir=self.tensorboard_path)
+            if self.verbose:
+                print(f"TensorBoard logging enabled: {self.tensorboard_path}")
+        else:
+            self.tb_writer = None
+            if self.verbose:
+                print("TensorBoard logging disabled")
+
+    def _write_tensorboard_scalars(self) -> None:
+        """Write scalar metrics to TensorBoard.
+
+        Logs the following metrics:
+        - Best y value found so far (min_y)
+        - Last y value evaluated
+        - Best X coordinates (for each dimension)
+        - If noise=True: also logs mean values and variance
+        """
+        if self.tb_writer is None or self.y_ is None or len(self.y_) == 0:
+            return
+
+        step = self.counter
+        y_last = self.y_[-1]
+
+        if not self.noise:
+            # Non-noisy optimization
+            self.tb_writer.add_scalars(
+                "y_values", {"min": self.min_y, "last": y_last}, step
+            )
+            # Log success rate
+            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
+            # Log best X coordinates using var_name if available
+            for i in range(self.n_dim):
+                param_name = self.var_name[i] if self.var_name else f"x{i}"
+                self.tb_writer.add_scalar(f"X_best/{param_name}", self.min_X[i], step)
+        else:
+            # Noisy optimization
+            self.tb_writer.add_scalars(
+                "y_values",
+                {"min": self.min_y, "mean_best": self.min_mean_y, "last": y_last},
+                step,
+            )
+            # Log variance of best mean
+            self.tb_writer.add_scalar("y_variance_at_best", self.min_var_y, step)
+            # Log success rate
+            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
+
+            # Log best X coordinates (by mean) using var_name if available
+            for i in range(self.n_dim):
+                param_name = self.var_name[i] if self.var_name else f"x{i}"
+                self.tb_writer.add_scalar(
+                    f"X_mean_best/{param_name}", self.min_mean_X[i], step
+                )
+
+        self.tb_writer.flush()
+
+    def _write_tensorboard_hparams(self, X: np.ndarray, y: float) -> None:
+        """Write hyperparameters and metric to TensorBoard.
+
+        Args:
+            X (ndarray): Design point coordinates, shape (n_features,)
+            y (float): Function value at X
+        """
+        if self.tb_writer is None:
+            return
+
+        # Create hyperparameter dict with variable names
+        hparam_dict = {self.var_name[i]: float(X[i]) for i in range(self.n_dim)}
+        metric_dict = {"hp_metric": float(y)}
+
+        self.tb_writer.add_hparams(hparam_dict, metric_dict)
+        self.tb_writer.flush()
+
+    def _close_tensorboard_writer(self) -> None:
+        """Close TensorBoard writer and cleanup."""
+        if hasattr(self, "tb_writer") and self.tb_writer is not None:
+            self.tb_writer.flush()
+            self.tb_writer.close()
+            if self.verbose:
+                print(
+                    f"TensorBoard writer closed. View logs with: tensorboard --logdir={self.tensorboard_path}"
+                )
+            del self.tb_writer
+
+    def _init_tensorboard(self) -> None:
+        """Log initial design to TensorBoard.
+
+        Logs all initial design points (hyperparameters and function values)
+        and scalar metrics to TensorBoard. Only executes if TensorBoard logging
+        is enabled (tb_writer is not None).
+
+
+        Returns:
+            None
 
         Examples:
             >>> import numpy as np
@@ -4511,102 +5884,55 @@ class SpotOptim(BaseEstimator):
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
-            ...     max_iter=20,
-            ...     verbose=True
+            ...     tensorboard_log=True,
+            ...     verbose=False
             ... )
-            >>> result = opt.optimize()
-            >>> print(result.message)
-            Optimization finished successfully
-                     Current function value: ...
-                     Iterations: ...
-                     Function evaluations: ...
-            >>> print("Best point:", result.x)
-            Best point: [some point close to [0, 0]]
-            >>> print("Best value:", result.fun)
-            Best value: [some value close to 0]
+            >>> # Simulate initial design (normally done in optimize())
+            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
+            >>> opt._init_tensorboard()
+            >>> # TensorBoard logs created for all initial points
         """
-        self.restarts_results_ = []
-        timeout_start = time.time()
+        if self.tb_writer is not None:
+            for i in range(len(self.y_)):
+                self._write_tensorboard_hparams(self.X_[i], self.y_[i])
+            self._write_tensorboard_scalars()
 
-        # Initial run
-        current_X0 = X0
-        status = "START"
+    def _close_and_del_tensorboard_writer(self) -> None:
+        """Close and delete TensorBoard writer to prepare for pickling.
 
-        while True:
-            # Get best result so far if we have results
-            best_res = (
-                min(self.restarts_results_, key=lambda x: x.fun)
-                if self.restarts_results_
-                else None
-            )
+        Examples:
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            >>> # Assume tb_writer is initialized
+            >>> opt.tb_writer = SomeTensorBoardWriter()
+            >>> # Close and delete tb_writer before pickling
+            >>> opt._close_and_del_tensorboard_writer()
+        """
+        if hasattr(self, "tb_writer") and self.tb_writer is not None:
+            try:
+                self.tb_writer.flush()
+                self.tb_writer.close()
+            except Exception:
+                pass
+            self.tb_writer = None
 
-            # Perform single optimization run
-            # Pass known best value if injecting
-            y0_known_val = (
-                best_res.fun
-                if (
-                    status == "RESTART"
-                    and self.restart_inject_best
-                    and self.restarts_results_
-                )
-                else None
-            )
+    # ====================
+    # Plotting
+    # ====================
 
-            # Calculate remaining budget
-            total_evals_so_far = sum(len(r.y) for r in self.restarts_results_)
-            remaining_iter = self.max_iter - total_evals_so_far
-
-            # If we don't have enough budget for at least initial design (or some minimal amount), stop
-            if remaining_iter < self.n_initial:
-                if self.verbose:
-                    print("Global budget exhausted. Stopping restarts.")
-                break
-
-            status, result = self._optimize_single_run(
-                timeout_start,
-                current_X0,
-                y0_known=y0_known_val,
-                max_iter_override=remaining_iter,
-            )
-            self.restarts_results_.append(result)
-
-            if status == "FINISHED":
-                break
-            elif status == "RESTART":
-                # Prepare for restart
-                current_X0 = None  # Default loop behavior
-
-                # Identify best result so far (including current restart)
-                # Find best result based on 'fun' from all finished runs so far
-                if self.restarts_results_:
-                    best_res = min(self.restarts_results_, key=lambda r: r.fun)
-
-                    if self.restart_inject_best:
-                        # Use global best result as starting point for next run
-                        # We update self.x0 directly (in internal scale) so gets mixed with LHS
-                        # best_res.x is in natural scale, _validate_x0 converts to internal
-                        self.x0 = self._validate_x0(best_res.x)
-                        current_X0 = None  # Ensure we generate full design including x0
-
-                        if self.verbose:
-                            print(
-                                f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f})."
-                            )
-
-                if self.seed is not None:
-                    self.seed += 1  # Change seed to ensure variation
-                # Continue loop
-            else:
-                # Should not happen
-                break
-
-        # Return best result
-        if not self.restarts_results_:
-            return result  # Fallback
-
-        # Find best result based on 'fun'
-        best_result = min(self.restarts_results_, key=lambda r: r.fun)
-        return best_result
+    def plot_progress(
+        self,
+        show: bool = True,
+        log_y: bool = False,
+        figsize: Tuple[int, int] = (10, 6),
+        ylabel: str = "Objective Value",
+        mo: bool = False,
+    ) -> None:
+        """Plot optimization progress using spotoptim.plot.visualization.plot_progress."""
+        plot_progress(
+            self, show=show, log_y=log_y, figsize=figsize, ylabel=ylabel, mo=mo
+        )
 
     def plot_surrogate(
         self,
@@ -4643,19 +5969,6 @@ class SpotOptim(BaseEstimator):
             grid_visible=grid_visible,
             contour_levels=contour_levels,
             figsize=figsize,
-        )
-
-    def plot_progress(
-        self,
-        show: bool = True,
-        log_y: bool = False,
-        figsize: Tuple[int, int] = (10, 6),
-        ylabel: str = "Objective Value",
-        mo: bool = False,
-    ) -> None:
-        """Plot optimization progress using spotoptim.plot.visualization.plot_progress."""
-        plot_progress(
-            self, show=show, log_y=log_y, figsize=figsize, ylabel=ylabel, mo=mo
         )
 
     def plot_important_hyperparameter_contour(
@@ -4711,6 +6024,41 @@ class SpotOptim(BaseEstimator):
             contour_levels=contour_levels,
             figsize=figsize,
         )
+
+    def plot_importance(
+        self, threshold: float = 0.0, figsize: Tuple[int, int] = (10, 6)
+    ) -> None:
+        """Plot variable importance.
+
+        Args:
+            threshold (float): Minimum importance percentage to include in plot.
+            figsize (tuple): Figure size.
+        """
+        importance = self.get_importance()
+        names = (
+            self.all_var_name
+            if self.all_var_name
+            else [f"x{i}" for i in range(len(importance))]
+        )
+
+        # Filter by threshold
+        filtered_data = [(n, i) for n, i in zip(names, importance) if i >= threshold]
+        filtered_data.sort(key=lambda x: x[1], reverse=True)
+
+        if not filtered_data:
+            print("No variables met the importance threshold.")
+            return
+
+        names, values = zip(*filtered_data)
+
+        plt.figure(figsize=figsize)
+        y_pos = np.arange(len(names))
+        plt.barh(y_pos, values, align="center")
+        plt.yticks(y_pos, names)
+        plt.xlabel("Importance (%)")
+        plt.title("Variable Importance")
+        plt.gca().invert_yaxis()  # Best on top
+        plt.show()
 
     def plot_parameter_scatter(
         self,
@@ -4944,1304 +6292,14 @@ class SpotOptim(BaseEstimator):
         if show:
             plt.show()
 
-    def _get_experiment_filename(self, prefix: str) -> str:
-        """Generate experiment filename from prefix.
+    def _generate_mesh_grid(self, i: int, j: int, num: int = 100):
+        """Wrapper for _generate_mesh_grid from visualization module."""
+        return _generate_mesh_grid(self, i, j, num)
 
-        Args:
-            prefix (str): Prefix for the filename.
-
-        Returns:
-            str: Filename with '_exp.pkl' suffix.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
-            >>> exp_filename = opt._get_experiment_filename(prefix="my_experiment")
-            >>> print(exp_filename)
-            my_experiment_exp.pkl
-        """
-        if prefix is None:
-            return "experiment_exp.pkl"
-        return f"{prefix}_exp.pkl"
-
-    def _get_result_filename(self, prefix: str) -> str:
-        """Generate result filename from prefix.
-
-        Args:
-            prefix (str): Prefix for the filename.
-
-        Returns:
-            str: Filename with '_res.pkl' suffix.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
-            >>> res_filename = opt._get_result_filename(prefix="my_experiment")
-            >>> print(res_filename)
-            my_experiment_res.pkl
-        """
-        if prefix is None:
-            return "result_res.pkl"
-        return f"{prefix}_res.pkl"
-
-    def _close_and_del_tensorboard_writer(self) -> None:
-        """Close and delete TensorBoard writer to prepare for pickling.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
-            >>> # Assume tb_writer is initialized
-            >>> opt.tb_writer = SomeTensorBoardWriter()
-            >>> # Close and delete tb_writer before pickling
-            >>> opt._close_and_del_tensorboard_writer()
-        """
-        if hasattr(self, "tb_writer") and self.tb_writer is not None:
-            try:
-                self.tb_writer.flush()
-                self.tb_writer.close()
-            except Exception:
-                pass
-            self.tb_writer = None
-
-    def _get_pickle_safe_optimizer(
-        self, unpickleables: str = "file_io", verbosity: int = 0
-    ) -> "SpotOptim":
-        """Create a pickle-safe copy of the optimizer.
-
-        This method creates a copy of the optimizer instance with unpickleable components removed
-        or set to None to enable safe serialization.
-
-        Args:
-            unpickleables (str): Type of unpickleable components to exclude.
-                - "file_io": Excludes only file I/O components (tb_writer) and fun
-                - "all": Excludes file I/O, fun, surrogate, and lhs_sampler
-                Defaults to "file_io".
-            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
-
-        Returns:
-            SpotOptim: A copy of the optimizer with unpickleable components removed.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Define optimizer
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> # Create pickle-safe copy excluding all unpickleables
-            >>> opt_safe = opt._get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
-
-        """
-        # Always exclude tb_writer (can't reliably pickle file handles)
-        # Determine which additional attributes to exclude
-        if unpickleables == "file_io":
-            unpickleable_attrs = ["tb_writer"]
-        else:
-            # "all" or specific exclusions
-            unpickleable_attrs = ["tb_writer", "surrogate", "lhs_sampler"]
-
-        # Prepare picklable state dictionary
-        picklable_state = {}
-
-        for key, value in self.__dict__.items():
-            if key not in unpickleable_attrs:
-                try:
-                    # Test if attribute can be pickled
-                    dill.dumps(value, protocol=dill.HIGHEST_PROTOCOL)
-                    picklable_state[key] = value
-                    if verbosity > 1:
-                        print(f"Attribute '{key}' is picklable and will be included.")
-                except Exception as e:
-                    if verbosity > 0:
-                        print(
-                            f"Attribute '{key}' is not picklable and will be excluded: {e}"
-                        )
-                    continue
-            else:
-                if verbosity > 1:
-                    print(f"Attribute '{key}' explicitly excluded from pickling.")
-
-        # Create new instance with picklable state
-        picklable_instance = self.__class__.__new__(self.__class__)
-        picklable_instance.__dict__.update(picklable_state)
-
-        # Set excluded attributes to None
-        for attr in unpickleable_attrs:
-            if not hasattr(picklable_instance, attr):
-                setattr(picklable_instance, attr, None)
-
-        return picklable_instance
-
-    def save_experiment(
-        self,
-        filename: Optional[str] = None,
-        prefix: str = "experiment",
-        path: Optional[str] = None,
-        overwrite: bool = True,
-        unpickleables: str = "all",
-        verbosity: int = 0,
-    ) -> None:
-        """Save the experiment configuration to a pickle file.
-
-        An experiment contains the optimizer configuration needed to run optimization,
-        but excludes the results. This is useful for defining experiments locally and
-        executing them on remote machines.
-
-        The experiment includes:
-        - Bounds, variable types, variable names
-        - Optimization parameters (max_iter, n_initial, etc.)
-        - Surrogate and acquisition settings
-        - Random seed
-
-        The experiment excludes:
-        - Function evaluations (X_, y_)
-        - Optimization results
-
-
-        Args:
-            filename (str, optional): Filename for the experiment file. If None, generates
-                from prefix. Defaults to None.
-            prefix (str): Prefix for auto-generated filename. Defaults to "experiment".
-            path (str, optional): Directory path to save the file. If None, saves in current
-                directory. Creates directory if it doesn't exist. Defaults to None.
-            overwrite (bool): If True, overwrites existing file. If False, raises error if
-                file exists. Defaults to True.
-            unpickleables (str): Components to exclude for pickling:
-                - "all": Excludes surrogate, lhs_sampler, tb_writer (experiment only)
-                - "file_io": Excludes only tb_writer (lighter exclusion)
-                Defaults to "all".
-            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Define experiment locally
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>>
-            >>> # Save experiment (without results)
-            >>> opt.save_experiment(prefix="sphere_opt")
-            Experiment saved to sphere_opt_exp.pkl
-            >>>
-            >>> # On remote machine: load and run
-            >>> # opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
-            >>> # result = opt_remote.optimize()
-            >>> # opt_remote.save_result(prefix="sphere_opt")  # Save results
-        """
-        # Close TensorBoard writer before pickling
-        self._close_and_del_tensorboard_writer()
-
-        # Create pickle-safe copy
-        optimizer_copy = self._get_pickle_safe_optimizer(
-            unpickleables=unpickleables, verbosity=verbosity
+    def _generate_mesh_grid_with_factors(
+        self, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
+    ):
+        """Wrapper for _generate_mesh_grid_with_factors from visualization module."""
+        return _generate_mesh_grid_with_factors(
+            self, i, j, num, is_factor_i, is_factor_j
         )
-
-        # Determine filename
-        if filename is None:
-            filename = self._get_experiment_filename(prefix)
-
-        # Add path if provided
-        if path is not None:
-            if not os.path.exists(path):
-                os.makedirs(path)
-            filename = os.path.join(path, filename)
-
-        # Check for existing file
-        if os.path.exists(filename) and not overwrite:
-            raise FileExistsError(
-                f"File {filename} already exists. Use overwrite=True to overwrite."
-            )
-
-        # Save to pickle file
-        try:
-            with open(filename, "wb") as handle:
-                dill.dump(optimizer_copy, handle, protocol=dill.HIGHEST_PROTOCOL)
-            print(f"Experiment saved to {filename}")
-        except Exception as e:
-            print(f"Error during pickling: {e}")
-            raise
-
-    def save_result(
-        self,
-        filename: Optional[str] = None,
-        prefix: str = "result",
-        path: Optional[str] = None,
-        overwrite: bool = True,
-        verbosity: int = 0,
-    ) -> None:
-        """Save the complete optimization results to a pickle file.
-
-        A result contains all information from a completed optimization run, including
-        the experiment configuration and all evaluation results. This is useful for
-        saving completed runs for later analysis.
-
-        The result includes everything in an experiment plus:
-        - All evaluated points (X_)
-        - All function values (y_)
-        - Best point and best value
-        - Iteration count
-        - Success rate statistics
-        - Noise statistics (if applicable)
-
-        Args:
-            filename (str, optional): Filename for the result file. If None, generates
-                from prefix. Defaults to None.
-            prefix (str): Prefix for auto-generated filename. Defaults to "result".
-            path (str, optional): Directory path to save the file. If None, saves in current
-                directory. Creates directory if it doesn't exist. Defaults to None.
-            overwrite (bool): If True, overwrites existing file. If False, raises error if
-                file exists. Defaults to True.
-            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Run optimization
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>>
-            >>> # Save complete results
-            >>> opt.save_result(prefix="sphere_opt")
-            Result saved to sphere_opt_res.pkl
-            >>>
-            >>> # Later: load and analyze
-            >>> # opt_loaded = SpotOptim.load_result("sphere_opt_res.pkl")
-            >>> # print("Best value:", opt_loaded.best_y_)
-            >>> # opt_loaded.plot_surrogate()
-        """
-        # Use save_experiment with file_io unpickleables to preserve results
-        if filename is None:
-            filename = self._get_result_filename(prefix)
-
-        self.save_experiment(
-            filename=filename,
-            path=path,
-            overwrite=overwrite,
-            unpickleables="file_io",
-            verbosity=verbosity,
-        )
-
-        # Update message
-        if path is not None:
-            full_path = os.path.join(path, filename)
-        else:
-            full_path = filename
-        print(f"Result saved to {full_path}")
-
-    def _reinitialize_components(self) -> None:
-        """Reinitialize components that were excluded during pickling.
-
-        This method recreates the surrogate model and LHS sampler that were
-        excluded when saving an experiment or result.
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Load experiment
-            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
-            >>> # Reinitialize components
-            >>> opt._reinitialize_components()
-        """
-        # Reinitialize LHS sampler if needed
-        if not hasattr(self, "lhs_sampler") or self.lhs_sampler is None:
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
-
-        # Reinitialize surrogate if needed
-        if not hasattr(self, "surrogate") or self.surrogate is None:
-            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
-                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
-            )
-            self.surrogate = GaussianProcessRegressor(
-                kernel=kernel,
-                n_restarts_optimizer=100,
-                random_state=self.seed,
-                normalize_y=True,
-            )
-
-    @staticmethod
-    def load_experiment(filename: str) -> "SpotOptim":
-        """Load an experiment configuration from a pickle file.
-
-        Loads an experiment that was saved with save_experiment(). The loaded optimizer
-        will have the configuration and the objective function (thanks to dill).
-
-
-        Args:
-            filename (str): Path to the experiment pickle file.
-
-        Returns:
-            SpotOptim: Loaded optimizer instance (without fun attached).
-
-        Raises:
-            FileNotFoundError: If the specified file doesn't exist.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Load experiment
-            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
-            Loaded experiment from sphere_opt_exp.pkl
-            >>>
-            >>> # Re-attach objective function
-            >>> opt.fun = lambda X: np.sum(X**2, axis=1)
-            >>>
-            >>> # Run optimization
-            >>> result = opt.optimize()
-        """
-        if not os.path.exists(filename):
-            raise FileNotFoundError(f"Experiment file not found: {filename}")
-
-        try:
-            with open(filename, "rb") as handle:
-                optimizer = dill.load(handle)
-            print(f"Loaded experiment from {filename}")
-
-            # Reinitialize components that were excluded
-            optimizer._reinitialize_components()
-
-            return optimizer
-        except Exception as e:
-            print(f"Error loading experiment: {e}")
-            raise
-
-    @staticmethod
-    def load_result(filename: str) -> "SpotOptim":
-        """Load complete optimization results from a pickle file.
-
-        Loads results that were saved with save_result(). The loaded optimizer
-        will have both configuration and all optimization results.
-
-        Args:
-            filename (str): Path to the result pickle file.
-
-        Returns:
-            SpotOptim: Loaded optimizer instance with complete results.
-
-        Raises:
-            FileNotFoundError: If the specified file doesn't exist.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Load results
-            >>> opt = SpotOptim.load_result("sphere_opt_res.pkl")
-            Loaded result from sphere_opt_res.pkl
-            >>>
-            >>> # Analyze results
-            >>> print("Best point:", opt.best_x_)
-            >>> print("Best value:", opt.best_y_)
-            >>> print("Total evaluations:", opt.counter)
-            >>> print("Success rate:", opt.success_rate)
-            >>>
-            >>> # Continue optimization if needed
-            >>> # opt.fun = lambda X: np.sum(X**2, axis=1)  # Re-attach if continuing
-            >>> # opt.max_iter = 50  # Increase budget
-            >>> # result = opt.optimize()
-        """
-        if not os.path.exists(filename):
-            raise FileNotFoundError(f"Result file not found: {filename}")
-
-        try:
-            with open(filename, "rb") as handle:
-                optimizer = dill.load(handle)
-            print(f"Loaded result from {filename}")
-
-            # Reinitialize components that were excluded
-            optimizer._reinitialize_components()
-
-            return optimizer
-        except Exception as e:
-            print(f"Error loading result: {e}")
-            raise
-
-    def print_best(
-        self,
-        result: Optional[OptimizeResult] = None,
-        transformations: Optional[List[Optional[Callable]]] = None,
-        show_name: bool = True,
-        precision: int = 4,
-    ) -> None:
-        """Print the best solution found during optimization.
-
-        This method displays the best hyperparameters and objective value in a
-        formatted table. It supports custom transformations for parameters
-        (e.g., converting log-scale values back to original scale).
-
-        Args:
-            result (OptimizeResult, optional): Optimization result object from optimize().
-                If None, uses the stored best values from the optimizer. Defaults to None.
-            transformations (list of callable, optional): List of transformation functions
-                to apply to each parameter. Each function takes a single value and returns
-                the transformed value. Use None for parameters that don't need transformation.
-                Length must match number of dimensions. Example: [None, None, lambda x: 10**x]
-                to convert the 3rd parameter from log10 scale. Defaults to None.
-            show_name (bool, optional): Whether to display variable names. If False,
-                uses generic names like 'x0', 'x1', etc. Defaults to True.
-            precision (int, optional): Number of decimal places for floating point values.
-                Defaults to 4.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Basic usage
-            >>> def sphere(X):
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     var_name=["x1", "x2"],
-            ...     max_iter=20,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> opt.print_best(result)
-            <BLANKLINE>
-            Best Solution Found:
-            --------------------------------------------------
-              x1: 0.0123
-              x2: -0.0045
-              Objective Value: 0.000173
-              Total Evaluations: 20
-            >>>
-            >>> # Example 2: With log-scale transformations (e.g., for learning rates)
-            >>> def objective(X):
-            ...     # X[:, 0]: neurons (int), X[:, 1]: layers (int),
-            ...     # X[:, 2]: log10(lr), X[:, 3]: log10(alpha)
-            ...     return np.sum(X**2, axis=1)  # Placeholder
-            >>> opt = SpotOptim(
-            ...     fun=objective,
-            ...     bounds=[(16, 128), (1, 4), (-3, 0), (-2, 1)],
-            ...     var_type=["int", "int", "float", "float"],
-            ...     var_name=["neurons", "layers", "log10_lr", "log10_alpha"],
-            ...     max_iter=30,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> # Transform log-scale parameters back to original scale
-            >>> transformations = [
-            ...     int,              # neurons -> int
-            ...     int,              # layers -> int
-            ...     lambda x: 10**x,  # log10_lr -> lr
-            ...     lambda x: 10**x   # log10_alpha -> alpha
-            ... ]
-            >>> opt.print_best(result, transformations=transformations)
-            <BLANKLINE>
-            Best Solution Found:
-            --------------------------------------------------
-              neurons: 64
-              layers: 2
-              log10_lr: 0.0012
-              log10_alpha: 0.0345
-              Objective Value: 1.2345
-              Total Evaluations: 30
-            >>>
-            >>> # Example 3: Without result object (using stored values)
-            >>> opt.print_best()  # Uses opt.best_x_ and opt.best_y_
-            >>>
-            >>> # Example 4: Hide variable names
-            >>> opt.print_best(result, show_name=False)
-            <BLANKLINE>
-            Best Solution Found:
-            --------------------------------------------------
-              x0: 0.0123
-              x1: -0.0045
-              Objective Value: 0.000173
-              Total Evaluations: 20
-        """
-        # Get values from result or stored attributes
-        if result is not None:
-            best_x = result.x
-            best_y = result.fun
-            n_evals = result.nfev
-        else:
-            if self.best_x_ is None or self.best_y_ is None:
-                print("No optimization results available. Run optimize() first.")
-                return
-            best_x = self.best_x_
-            best_y = self.best_y_
-            n_evals = self.counter
-
-        # Expand to full dimensions if dimension reduction was applied
-        if self.red_dim:
-            best_x_full = self.to_all_dim(best_x.reshape(1, -1))[0]
-        else:
-            best_x_full = best_x
-
-        # Map factor variables back to original string values
-        best_x_full = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
-
-        # Determine variable names to use
-        if show_name and self.all_var_name is not None:
-            var_names = self.all_var_name
-        else:
-            var_names = [f"x{i}" for i in range(len(best_x_full))]
-
-        # Validate transformations length
-        if transformations is not None:
-            if len(transformations) != len(best_x_full):
-                raise ValueError(
-                    f"Length of transformations ({len(transformations)}) must match "
-                    f"number of dimensions ({len(best_x_full)})"
-                )
-        else:
-            transformations = [None] * len(best_x_full)
-
-        # Print header
-        print("\nBest Solution Found:")
-        print("-" * 50)
-
-        # Print each parameter
-        for i, (name, value, transform) in enumerate(
-            zip(var_names, best_x_full, transformations)
-        ):
-            # Apply transformation if provided
-            if transform is not None:
-                try:
-                    display_value = transform(value)
-                except Exception as e:
-                    print(f"Warning: Transformation failed for {name}: {e}")
-                    display_value = value
-            else:
-                display_value = value
-
-            # Format based on variable type
-            var_type = self.all_var_type[i] if i < len(self.all_var_type) else "float"
-
-            if var_type == "int" or isinstance(display_value, (int, np.integer)):
-                print(f"  {name}: {int(display_value)}")
-            elif var_type == "factor" or isinstance(display_value, str):
-                print(f"  {name}: {display_value}")
-            else:
-                print(f"  {name}: {display_value:.{precision}f}")
-
-        # Print objective value and evaluations
-        print(f"  Objective Value: {best_y:.{precision}f}")
-        print(f"  Total Evaluations: {n_evals}")
-
-    def sensitivity_spearman(self) -> None:
-        """Compute and print Spearman correlation between parameters and objective values.
-
-        This method analyzes the sensitivity of the objective function to each
-        hyperparameter by computing Spearman rank correlations. For categorical
-        (factor) variables, correlation is not computed as they require visual
-        inspection instead.
-
-        The method automatically handles different parameter types:
-        - Integer/float parameters: Direct correlation with objective values
-        - Log-transformed parameters (log10, log, ln): Correlation in log-space
-        - Factor (categorical) parameters: Skipped with informative message
-
-        Significance levels:
-        - ***: p < 0.001 (highly significant)
-        - **: p < 0.01 (significant)
-        - *: p < 0.05 (marginally significant)
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> import numpy as np
-            >>>
-            >>> # After running optimization
-            >>> opt = SpotOptim(...)
-            >>> result = opt.optimize()
-            >>> opt.sensitivity_spearman()
-            Sensitivity Analysis (Spearman Correlation):
-            --------------------------------------------------
-              l1 (neurons)        : +0.005 (p=0.959)
-              num_layers          : -0.192 (p=0.056)
-              activation          : (categorical variable, use visual inspection)
-              lr_unified          : -0.040 (p=0.689)
-              alpha               : -0.233 (p=0.020) *
-
-        Note:
-            Requires scipy to be installed. If not available, raises ImportError.
-            Only meaningful after optimize() has been called with sufficient evaluations.
-        """
-        try:
-            from scipy.stats import spearmanr
-        except ImportError:
-            raise ImportError(
-                "scipy is required for sensitivity_spearman(). "
-                "Install it with: pip install scipy"
-            )
-
-        if self.X_ is None or self.y_ is None:
-            raise ValueError("No optimization data available. Run optimize() first.")
-
-        # Get optimization history and parameters
-        history = self.y_
-        all_params = self.X_
-
-        # Get parameter names
-        param_names = (
-            self.var_name if self.var_name else [f"x{i}" for i in range(self.n_dim)]
-        )
-
-        print("\nSensitivity Analysis (Spearman Correlation):")
-        print("-" * 50)
-
-        for param_idx in range(self.n_dim):
-            name = param_names[param_idx]
-            param_values = all_params[:, param_idx]
-
-            # Check if it's a factor variable
-            var_type = self.var_type[param_idx] if self.var_type else "float"
-
-            if var_type == "factor":
-                # For categorical variables, skip correlation
-                print(f"  {name:20s}: (categorical variable, use visual inspection)")
-                continue
-
-            # Check if parameter has log transformation
-            var_trans = self.var_trans[param_idx] if self.var_trans else None
-
-            # Compute correlation based on transformation
-            if var_trans in ["log10", "log", "ln"]:
-                # For log-transformed parameters, use log-space correlation
-                try:
-                    param_values_numeric = param_values.astype(float)
-                    # Filter out non-positive values
-                    valid_mask = (param_values_numeric > 0) & (history > 0)
-                    if valid_mask.sum() < 3:
-                        print(
-                            f"  {name:20s}: (insufficient valid data for log correlation)"
-                        )
-                        continue
-
-                    corr, p_value = spearmanr(
-                        np.log10(param_values_numeric[valid_mask]),
-                        np.log10(history[valid_mask]),
-                    )
-                except (ValueError, TypeError):
-                    print(f"  {name:20s}: (error computing log correlation)")
-                    continue
-            else:
-                # For integer/float parameters, direct correlation
-                try:
-                    param_values_numeric = param_values.astype(float)
-                    corr, p_value = spearmanr(param_values_numeric, history)
-                except (ValueError, TypeError):
-                    print(f"  {name:20s}: (error computing correlation)")
-                    continue
-
-            # Determine significance level
-            if p_value < 0.001:
-                significance = " ***"
-            elif p_value < 0.01:
-                significance = " **"
-            elif p_value < 0.05:
-                significance = " *"
-            else:
-                significance = ""
-
-            print(f"  {name:20s}: {corr:+.3f} (p={p_value:.3f}){significance}")
-
-    def get_results_table(
-        self,
-        tablefmt: str = "github",
-        precision: int = 4,
-        show_importance: bool = False,
-    ) -> str:
-        """Get a comprehensive table string of optimization results.
-
-        This method generates a formatted table of the search space configuration,
-        best values found, and optionally variable importance scores.
-
-        Args:
-            tablefmt (str, optional): Table format for tabulate library. Options include:
-                'github', 'grid', 'simple', 'plain', 'html', 'latex', etc.
-                Defaults to 'github'.
-            precision (int, optional): Number of decimal places for float values.
-                Defaults to 4.
-            show_importance (bool, optional): Whether to include importance scores.
-                Importance is calculated as the normalized standard deviation of each
-                parameter's effect on the objective. Requires multiple evaluations.
-                Defaults to False.
-
-        Returns:
-            str: Formatted table string that can be printed or saved.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Basic usage after optimization
-            >>> def sphere(X):
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],
-            ...     var_name=["x1", "x2", "x3"],
-            ...     var_type=["float", "float", "float"],
-            ...     max_iter=30,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> table = opt.get_results_table()
-            >>> print(table)
-            | name   | type   |   lower |   upper |   tuned |
-            |--------|--------|---------|---------|---------|
-            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
-            | x2     | num    |    -5.0 |     5.0 | -0.0234 |
-            | x3     | num    |    -5.0 |     5.0 |  0.0345 |
-            >>>
-            >>> # Example 2: With importance scores
-            >>> table = opt.get_results_table(show_importance=True)
-            >>> print(table)
-            | name   | type   |   lower |   upper |   tuned |   importance | stars   |
-            |--------|--------|---------|---------|---------|--------------|---------|
-            | x1     | num    |    -5.0 |     5.0 |  0.0123 |        45.23 | **      |
-            | x2     | num    |    -5.0 |     5.0 | -0.0234 |        32.17 | *       |
-            | x3     | num    |    -5.0 |     5.0 |  0.0345 |        22.60 | *       |
-            >>>
-            >>> # Example 3: Different table format
-            >>> table = opt.get_results_table(tablefmt="grid")
-            >>> print(table)
-            +--------+--------+---------+---------+---------+
-            | name   | type   |   lower |   upper |   tuned |
-            +========+========+=========+=========+=========+
-            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
-            +--------+--------+---------+---------+---------+
-            ...
-            >>>
-            >>> # Example 4: With factor variables
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), ("red", "green", "blue")],
-            ...     var_name=["size", "color"],
-            ...     var_type=["float", "factor"],
-            ...     max_iter=20,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> table = opt.get_results_table()
-            >>> print(table)
-            | name   | type   | lower   | upper   | tuned   |
-            |--------|--------|---------|---------|---------|
-            | size   | num    | -5.0    | 5.0     | 0.0123  |
-            | color  | factor | red     | blue    | green   |
-        """
-        if self.best_x_ is None or self.best_y_ is None:
-            return "No optimization results available. Run optimize() first."
-
-        # Get best solution in full dimensions
-        # Note: best_x_ is already in original scale
-        if self.red_dim:
-            best_x_full = self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-        else:
-            best_x_full = self.best_x_
-
-        # Map factor variables back to original string values
-        best_x_display = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
-
-        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
-        if self.red_dim and hasattr(self, "all_var_trans"):
-            all_var_trans = self.all_var_trans
-        else:
-            all_var_trans = self.var_trans
-
-        # Prepare table data
-        table_data = {
-            "name": (
-                self.all_var_name
-                if self.all_var_name
-                else [f"x{i}" for i in range(len(best_x_display))]
-            ),
-            "type": (
-                self.all_var_type
-                if self.all_var_type
-                else ["float"] * len(best_x_display)
-            ),
-            "default": [],
-            "lower": [],
-            "upper": [],
-            "tuned": [],
-            "transform": [t if t is not None else "-" for t in all_var_trans],
-        }
-
-        # Helper to format values
-        def fmt_val(v):
-            if isinstance(v, (float, np.floating)):
-                return f"{v:.{precision}f}"
-            return v
-
-        # Process bounds, defaults, and tuned values
-        for i in range(len(best_x_display)):
-            var_type = table_data["type"][i]
-
-            # Handle bounds and defaults based on variable type
-            if var_type == "factor":
-                # For factors, show original string values
-                if i in self._factor_maps:
-                    factor_map = self._factor_maps[i]
-                    # Default is middle level logic (matching get_design_table)
-                    mid_idx = len(factor_map) // 2
-                    default_str = factor_map[mid_idx]
-
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append(default_str)
-                else:
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append("N/A")
-            else:
-                table_data["lower"].append(fmt_val(self._original_lower[i]))
-                table_data["upper"].append(fmt_val(self._original_upper[i]))
-                # Default is midpoint logic
-                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
-                if var_type == "int":
-                    table_data["default"].append(int(default_val))
-                else:
-                    table_data["default"].append(fmt_val(default_val))
-
-            # Format tuned value
-            tuned_val = best_x_display[i]
-            if var_type == "int":
-                table_data["tuned"].append(int(tuned_val))
-            elif var_type == "factor":
-                table_data["tuned"].append(str(tuned_val))
-            else:
-                table_data["tuned"].append(fmt_val(tuned_val))
-
-        # Add importance if requested
-        if show_importance:
-            importance = self.get_importance()
-            table_data["importance"] = [f"{x:.2f}" for x in importance]
-            table_data["stars"] = self.get_stars(importance)
-
-        # Generate table
-        table = tabulate(
-            table_data,
-            headers="keys",
-            tablefmt=tablefmt,
-            numalign="right",
-            stralign="right",
-        )
-
-        # Add interpretation if importance is shown
-        if show_importance:
-            table += "\n\nInterpretation: ***: >99%, **: >75%, *: >50%, .: >10%"
-
-        return table
-
-    def print_results_table(
-        self,
-        tablefmt: str = "github",
-        precision: int = 4,
-        show_importance: bool = False,
-        *args: Any,
-        **kwargs: Any,
-    ) -> str:
-        """Print (and return) a comprehensive table of optimization results.
-
-        This method calls `get_results_table` to generate the table string, prints it,
-        and then returns it.
-
-        Args:
-            tablefmt (str, optional): Table format. Defaults to 'github'.
-            precision (int, optional): Decimal precision. Defaults to 4.
-            show_importance (bool, optional): Show importance column. Defaults to False.
-            *args: Arguments passed to get_results_table.
-            **kwargs: Keyword arguments passed to get_results_table.
-
-        Returns:
-            str: Formatted table string.
-        """
-        table = self.get_results_table(
-            tablefmt=tablefmt,
-            precision=precision,
-            show_importance=show_importance,
-            *args,
-            **kwargs,
-        )
-        print(table)
-        return table
-
-    def print_results(self, *args: Any, **kwargs: Any) -> None:
-        """Alias for print_results_table for compatibility.
-        Prints the table.
-        """
-        self.print_results_table(*args, **kwargs)
-
-    def get_design_table(
-        self,
-        tablefmt: str = "github",
-        precision: int = 4,
-    ) -> str:
-        """Get a table string showing the search space design before optimization.
-
-        This method generates a table displaying the variable names, types, bounds,
-        and defaults without requiring an optimization run. Useful for inspecting
-        and documenting the search space configuration.
-
-        Args:
-            tablefmt (str, optional): Table format for tabulate library.
-                Defaults to 'github'.
-            precision (int, optional): Number of decimal places for float values.
-                Defaults to 4.
-
-        Returns:
-            str: Formatted table string.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Numeric parameters
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-10, 10), (0, 1)],
-            ...     var_name=["x1", "x2", "x3"],
-            ...     var_type=["float", "int", "float"],
-            ...     max_iter=20,
-            ...     n_initial=10
-            ... )
-            >>> table = opt.get_design_table()
-            >>> print(table)
-            | name   | type   |   lower |   upper |   default |
-            |--------|--------|---------|---------|-----------|
-            | x1     | num    |    -5.0 |     5.0 |       0.0 |
-            | x2     | int    |   -10.0 |    10.0 |       0.0 |
-            | x3     | num    |     0.0 |     1.0 |       0.5 |
-            >>>
-            >>> # Example 2: With factor variables
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(10, 100), ("SGD", "Adam", "RMSprop"), (0.001, 0.1)],
-            ...     var_name=["neurons", "optimizer", "lr"],
-            ...     var_type=["int", "factor", "float"],
-            ...     max_iter=30,
-            ...     n_initial=10
-            ... )
-            >>> table = opt.get_design_table()
-            >>> print(table)
-            | name      | type   | lower   | upper   | default   |
-            |-----------|--------|---------|---------|-----------|
-            | neurons   | int    | 10.0    | 100.0   | 55.0      |
-            | optimizer | factor | SGD     | RMSprop | Adam      |
-            | lr        | num    | 0.001   | 0.1     | 0.0505    |
-            >>>
-            >>> # Example 3: Before running optimization
-            >>> def hyperparameter_objective(X):
-            ...     # X[:, 0]: layers, X[:, 1]: neurons, X[:, 2]: dropout
-            ...     return np.sum(X**2, axis=1)  # Placeholder
-            >>> opt = SpotOptim(
-            ...     fun=hyperparameter_objective,
-            ...     bounds=[(1, 5), (16, 256), (0.0, 0.5)],
-            ...     var_name=["layers", "neurons", "dropout"],
-            ...     var_type=["int", "int", "float"],
-            ...     max_iter=50,
-            ...     n_initial=15
-            ... )
-            >>> # Get design table before optimization
-            >>> print("Search Space Configuration:")
-            >>> table = opt.get_design_table()
-            >>> print(table)
-            Search Space Configuration:
-            | name    | type   |   lower |   upper |   default |
-            |---------|--------|---------|---------|-----------|
-            | layers  | int    |     1.0 |     5.0 |       3.0 |
-            | neurons | int    |    16.0 |   256.0 |     136.0 |
-            | dropout | num    |     0.0 |     0.5 |      0.25 |
-        """
-        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
-        if self.red_dim and hasattr(self, "all_var_trans"):
-            all_var_trans = self.all_var_trans
-        else:
-            all_var_trans = self.var_trans
-
-        # Prepare table data
-        table_data = {
-            "name": (
-                self.all_var_name
-                if self.all_var_name
-                else [f"x{i}" for i in range(len(self.all_lower))]
-            ),
-            "type": (
-                self.all_var_type
-                if self.all_var_type
-                else ["float"] * len(self.all_lower)
-            ),
-            "lower": [],
-            "upper": [],
-            "default": [],
-            "transform": [t if t is not None else "-" for t in all_var_trans],
-        }
-
-        # Helper to format values
-        def fmt_val(v):
-            if isinstance(v, (float, np.floating)):
-                return f"{v:.{precision}f}"
-            return v
-
-        # Process bounds and compute defaults (use original bounds for display)
-        for i in range(len(self._original_lower)):
-            var_type = table_data["type"][i]
-
-            if var_type == "factor":
-                # For factors, show original string values
-                if i in self._factor_maps:
-                    factor_map = self._factor_maps[i]
-                    # Default is middle level
-                    mid_idx = len(factor_map) // 2
-                    default_str = factor_map[mid_idx]
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append(default_str)
-                else:
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append("N/A")
-            else:
-                table_data["lower"].append(fmt_val(self._original_lower[i]))
-                table_data["upper"].append(fmt_val(self._original_upper[i]))
-                # Default is midpoint
-                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
-                if var_type == "int":
-                    table_data["default"].append(int(default_val))
-                else:
-                    table_data["default"].append(fmt_val(default_val))
-
-        # Generate table
-        table = tabulate(
-            table_data,
-            headers="keys",
-            tablefmt=tablefmt,
-            numalign="right",
-            stralign="right",
-        )
-
-        return table
-
-    def print_design_table(
-        self,
-        tablefmt: str = "github",
-        precision: int = 4,
-    ) -> str:
-        """Print (and return) a table showing the search space design before optimization.
-
-        This method calls `get_design_table` to generate the table string, prints it,
-        and then returns it.
-
-        Args:
-            tablefmt (str, optional): Table format for tabulate library.
-                Defaults to 'github'.
-            precision (int, optional): Number of decimal places for float values.
-                Defaults to 4.
-
-        Returns:
-            str: Formatted table string.
-        """
-        table = self.get_design_table(tablefmt=tablefmt, precision=precision)
-        print(table)
-        return table
-
-    def gen_design_table(self, precision: int = 4, tablefmt: str = "github") -> str:
-        """Generate a table of the design or results.
-
-        If optimization has been run (results available), returns the results table.
-        Otherwise, returns the design table (search space configuration).
-
-        Args:
-            tablefmt (str, optional): Table format. Defaults to 'github'.
-            precision (int, optional): Number of decimal places for float values.
-                Defaults to 4.
-
-        Returns:
-            str: Formatted table string.
-        """
-        if self.best_x_ is not None:
-            return self.get_results_table(precision=precision, tablefmt=tablefmt)
-        else:
-            return self.get_design_table(precision=precision, tablefmt=tablefmt)
-
-    def get_stars(self, input_list: list) -> list:
-        """Converts a list of values to a list of stars.
-
-        Used to visualize the importance of a variable.
-        Thresholds: >99: ***, >75: **, >50: *, >10: .
-
-        Args:
-            input_list (list): A list of importance scores (0-100).
-
-        Returns:
-            list: A list of star strings.
-        """
-        output_list = []
-        for value in input_list:
-            if value > 99:
-                output_list.append("***")
-            elif value > 75:
-                output_list.append("**")
-            elif value > 50:
-                output_list.append("*")
-            elif value > 10:
-                output_list.append(".")
-            else:
-                output_list.append("")
-        return output_list
-
-    def get_importance(self) -> List[float]:
-        """Calculate variable importance scores.
-
-        Importance is computed as the normalized sensitivity of each parameter
-        based on the variation in objective values across the evaluated points.
-        Higher scores indicate parameters that have more influence on the objective.
-
-        The importance is calculated as:
-        1. For each dimension, compute the correlation between parameter values
-           and objective values
-        2. Normalize to percentage scale (0-100)
-        3. Higher values indicate more important parameters
-
-        Returns:
-            List[float]: Importance scores for each dimension (0-100 scale).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Identify important parameters
-            >>> def test_func(X):
-            ...     # x0 has strong effect, x1 has weak effect
-            ...     return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
-            >>> opt = SpotOptim(
-            ...     fun=test_func,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     var_name=["x0", "x1"],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>> importance = opt.get_importance()
-            >>> print(f"x0 importance: {importance[0]:.2f}")
-            >>> print(f"x1 importance: {importance[1]:.2f}")
-            x0 importance: 89.23
-            x1 importance: 10.77
-            >>>
-            >>> # Example 2: With more dimensions
-            >>> def rosenbrock(X):
-            ...     return np.sum(100*(X[:, 1:] - X[:, :-1]**2)**2 + (1 - X[:, :-1])**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=rosenbrock,
-            ...     bounds=[(-2, 2)] * 4,
-            ...     var_name=["x0", "x1", "x2", "x3"],
-            ...     max_iter=50,
-            ...     n_initial=20,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>> importance = opt.get_importance()
-            >>> for i, imp in enumerate(importance):
-            ...     print(f"x{i}: {imp:.2f}%")
-            x0: 32.15%
-            x1: 28.43%
-            x2: 25.67%
-            x3: 13.75%
-            >>>
-            >>> # Example 3: Use in results table
-            >>> table = opt.print_results_table(show_importance=True)
-            >>> print(table)
-        """
-        if self.X_ is None or self.y_ is None or len(self.y_) < 3:
-            # Not enough data to compute importance
-            return [0.0] * len(self.all_lower)
-
-        # Use full-dimensional data
-        X_full = self.X_
-        if self.red_dim:
-            X_full = np.array([self.to_all_dim(x.reshape(1, -1))[0] for x in self.X_])
-
-        # Calculate sensitivity for each dimension
-        sensitivities = []
-        for i in range(X_full.shape[1]):
-            x_i = X_full[:, i]
-
-            # Skip if no variation in this dimension
-            if np.std(x_i) < 1e-10:
-                sensitivities.append(0.0)
-                continue
-
-            # Compute correlation with objective
-            try:
-                correlation = np.abs(np.corrcoef(x_i, self.y_)[0, 1])
-                if np.isnan(correlation):
-                    correlation = 0.0
-            except Exception:
-                correlation = 0.0
-
-            sensitivities.append(correlation)
-
-        # Normalize to percentage
-        total = sum(sensitivities)
-        if total > 0:
-            importance = [(s / total) * 100 for s in sensitivities]
-        else:
-            importance = [0.0] * len(sensitivities)
-
-        return importance
-
-    def plot_importance(
-        self, threshold: float = 0.0, figsize: Tuple[int, int] = (10, 6)
-    ) -> None:
-        """Plot variable importance.
-
-        Args:
-            threshold (float): Minimum importance percentage to include in plot.
-            figsize (tuple): Figure size.
-        """
-        importance = self.get_importance()
-        names = (
-            self.all_var_name
-            if self.all_var_name
-            else [f"x{i}" for i in range(len(importance))]
-        )
-
-        # Filter by threshold
-        filtered_data = [(n, i) for n, i in zip(names, importance) if i >= threshold]
-        filtered_data.sort(key=lambda x: x[1], reverse=True)
-
-        if not filtered_data:
-            print("No variables met the importance threshold.")
-            return
-
-        names, values = zip(*filtered_data)
-
-        plt.figure(figsize=figsize)
-        y_pos = np.arange(len(names))
-        plt.barh(y_pos, values, align="center")
-        plt.yticks(y_pos, names)
-        plt.xlabel("Importance (%)")
-        plt.title("Variable Importance")
-        plt.gca().invert_yaxis()  # Best on top
-        plt.show()
