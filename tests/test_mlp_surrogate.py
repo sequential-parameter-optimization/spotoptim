@@ -9,8 +9,9 @@ def test_mlp_surrogate_initialization():
     mlp = MLPSurrogate()
     assert mlp.name == "MLPSurrogate"
     assert mlp.optimizer_name == "AdamWScheduleFree"
-    assert mlp.l1 == 64
-    assert mlp.dropout == 0.1
+    assert mlp.l1 == 128
+    assert mlp.num_hidden_layers == 3
+    assert mlp.dropout == 0.0
     assert mlp.mc_dropout_passes == 30
 
 def test_mlp_surrogate_fit_predict_shape():

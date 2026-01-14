@@ -73,6 +73,7 @@ class SpotOptimConfig:
     prob_de_tricands: float = 0.8
     window_size: Optional[int] = None
     min_tol_metric: str = "chebyshev"
+    prob_surrogate: Optional[List[float]] = None
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
 
@@ -210,7 +211,9 @@ class SpotOptim(BaseEstimator):
         acquisition_optimizer (str or callable, optional): Optimizer to use for maximizing acquisition function.
             Can be "differential_evolution" (default) or any method name supported by scipy.optimize.minimize
             (e.g., "Nelder-Mead", "L-BFGS-B"). Can also be a callable with signature compatible with
-            scipy.optimize.minimize (fun, x0, bounds, ...). Defaults to "differential_evolution".
+            scipy.optimize.minimize (fun, x0, bounds, ...). A specific version is "de_tricands", which combines DE with Tricands.
+            It can be parameterized with "prob_de_tricands" (probability of using DE).
+            Defaults to "differential_evolution".
         restart_after_n (int, optional): Number of consecutive iterations with zero success rate
             before triggering a restart. Defaults to 100.
         restart_inject_best (bool, optional): Whether to inject the best solution found so far
@@ -475,6 +478,7 @@ class SpotOptim(BaseEstimator):
         prob_de_tricands: float = 0.8,
         window_size: Optional[int] = None,
         min_tol_metric: str = "chebyshev",
+        prob_surrogate: Optional[List[float]] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
@@ -546,6 +550,7 @@ class SpotOptim(BaseEstimator):
             prob_de_tricands=prob_de_tricands,
             window_size=window_size,
             min_tol_metric=min_tol_metric,
+            prob_surrogate=prob_surrogate,
             args=args,
             kwargs=kwargs,
         )
@@ -604,7 +609,38 @@ class SpotOptim(BaseEstimator):
             self.x0 = self._validate_x0(self.x0)
 
         # Initialize surrogate if not provided
-        if self.surrogate is None:
+        # Initialize surrogate
+        self._surrogates_list = None
+        self._prob_surrogate = None
+
+        if isinstance(self.surrogate, list):
+            self._surrogates_list = self.surrogate
+            if not self._surrogates_list:
+                raise ValueError("Surrogate list cannot be empty.")
+
+            # Handle probabilities
+            if self.config.prob_surrogate is None:
+                # Uniform probability
+                n = len(self._surrogates_list)
+                self._prob_surrogate = [1.0 / n] * n
+            else:
+                probs = self.config.prob_surrogate
+                if len(probs) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of prob_surrogate ({len(probs)}) must match "
+                        f"number of surrogates ({len(self._surrogates_list)})."
+                    )
+                # Normalize probabilities
+                total = sum(probs)
+                if not np.isclose(total, 1.0) and total > 0:
+                    self._prob_surrogate = [p / total for p in probs]
+                else:
+                    self._prob_surrogate = probs
+
+            # Set initial surrogate
+            self.surrogate = self._surrogates_list[0]
+
+        elif self.surrogate is None:
             kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
                 length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
             )
@@ -2328,6 +2364,15 @@ class SpotOptim(BaseEstimator):
         """
         # Fit surrogate (use mean_y if noise, otherwise y_)
         # Transform X to internal scale for surrogate fitting
+
+        # Handle multi-surrogate selection
+        if getattr(self, "_surrogates_list", None) is not None:
+            idx = self.rng.choice(len(self._surrogates_list), p=self._prob_surrogate)
+            self.surrogate = self._surrogates_list[idx]
+            if self.verbose:
+                # Optional: print selected surrogate? separate from verbose maybe
+                pass
+
         if self.noise:
             X_for_surrogate = self._transform_X(self.mean_X)
             self._fit_surrogate(X_for_surrogate, self.mean_y)
@@ -4008,7 +4053,8 @@ class SpotOptim(BaseEstimator):
                     progress = (time.time() - start_time) / (self.max_time * 60) * 100
                     progress_str = f"Time: {progress:.1f}%"
                 else:
-                    progress = self.counter / self.max_iter * 100
+                    prev_evals = sum(res.nfev for res in self.restarts_results_)
+                    progress = (prev_evals + self.counter) / self.max_iter * 100
                     progress_str = f"Evals: {progress:.1f}%"
 
                 msg = f"Iter {self.n_iter_} | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
@@ -4029,7 +4075,8 @@ class SpotOptim(BaseEstimator):
                 progress = (time.time() - start_time) / (self.max_time * 60) * 100
                 progress_str = f"Time: {progress:.1f}%"
             else:
-                progress = self.counter / self.max_iter * 100
+                prev_evals = sum(res.nfev for res in self.restarts_results_)
+                progress = (prev_evals + self.counter) / self.max_iter * 100
                 progress_str = f"Evals: {progress:.1f}%"
 
             # For non-improvement, show current value instead of Best (or both?)
