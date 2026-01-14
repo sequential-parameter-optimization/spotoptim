@@ -95,7 +95,7 @@ def plot_surrogate(
         var_name = optimizer.var_name
 
     # Generate mesh grid
-    X_i, X_j, grid_points = optimizer._generate_mesh_grid(i, j, num)
+    X_i, X_j, grid_points = _generate_mesh_grid(optimizer, i, j, num)
 
     # Predict on grid
     y_pred, y_std = optimizer._predict_with_uncertainty(grid_points)
@@ -498,11 +498,11 @@ def _plot_surrogate_with_factors(
             grid_points,
             factor_labels_i,
             factor_labels_j,
-        ) = optimizer._generate_mesh_grid_with_factors(
-            i, j, num, is_factor_i, is_factor_j
+        ) = _generate_mesh_grid_with_factors(
+            optimizer, i, j, num, is_factor_i, is_factor_j
         )
     else:
-        X_i, X_j, grid_points = optimizer._generate_mesh_grid(i, j, num)
+        X_i, X_j, grid_points = _generate_mesh_grid(optimizer, i, j, num)
         factor_labels_i, factor_labels_j = None, None
 
     # Predict on grid
@@ -606,3 +606,220 @@ def _plot_surrogate_with_factors(
 
     if show:
         plt.show()
+
+
+def _generate_mesh_grid(
+    optimizer: object, i: int, j: int, num: int = 100
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Generate a mesh grid for two dimensions, filling others with mean values.
+
+    Args:
+        optimizer: SpotOptim instance.
+        i (int): Index of the first dimension to vary.
+        j (int): Index of the second dimension to vary.
+        num (int, optional): Number of grid points per dimension. Defaults to 100.
+
+    Returns:
+        tuple: A tuple containing:
+            - X_i (ndarray): Meshgrid for dimension i (in original scale).
+            - X_j (ndarray): Meshgrid for dimension j (in original scale).
+            - grid_points (ndarray): Grid points for prediction (in transformed scale), shape (num*num, n_dim).
+
+    Raises:
+        ValueError: If generated grid points contain non-finite values after transformation.
+    """
+    k = optimizer.n_dim
+    # Compute mean values with proper handling of factor variables
+    mean_values = np.empty(k, dtype=object)
+    for dim_idx in range(k):
+        if optimizer.var_type and optimizer.var_type[dim_idx] == "factor":
+            # For factor variables, use most common value mapped to integer
+            col_values = optimizer.X_[:, dim_idx]
+            unique_vals, counts = np.unique(col_values, return_counts=True)
+            most_common_str = unique_vals[np.argmax(counts)]
+            # Map string back to integer index
+            if dim_idx in optimizer._factor_maps:
+                reverse_map = {v: k for k, v in optimizer._factor_maps[dim_idx].items()}
+                mean_values[dim_idx] = reverse_map.get(most_common_str, 0)
+            else:
+                mean_values[dim_idx] = 0
+        else:
+            # For numeric/int variables, compute mean
+            mean_values[dim_idx] = np.mean(optimizer.X_[:, dim_idx].astype(float))
+
+    # Convert mean_values to float array for numeric operations
+    mean_values_float = mean_values.astype(float)
+
+    # Create grid for dimensions i and j using ORIGINAL bounds for plotting
+    # Add small epsilon for log-transformed variables to avoid log(0) = -inf
+    def safe_bound(value, trans, is_lower):
+        """Add epsilon to avoid problematic values with log transforms."""
+        if trans in ["log10", "log", "ln"]:
+            eps = 1e-10
+            if is_lower and value <= 0:
+                return eps
+            elif value <= 0:
+                return eps
+        return value
+
+    lower_i = safe_bound(optimizer._original_lower[i], optimizer.var_trans[i], True)
+    upper_i = safe_bound(optimizer._original_upper[i], optimizer.var_trans[i], False)
+    lower_j = safe_bound(optimizer._original_lower[j], optimizer.var_trans[j], True)
+    upper_j = safe_bound(optimizer._original_upper[j], optimizer.var_trans[j], False)
+
+    x_i = np.linspace(lower_i, upper_i, num=num)
+    x_j = np.linspace(lower_j, upper_j, num=num)
+    X_i, X_j = np.meshgrid(x_i, x_j)
+
+    # Initialize grid points with mean values (in original scale)
+    grid_points_original = np.tile(mean_values_float, (X_i.size, 1))
+    grid_points_original[:, i] = X_i.ravel()
+    grid_points_original[:, j] = X_j.ravel()
+
+    # Apply type constraints
+    grid_points_original = optimizer._repair_non_numeric(
+        grid_points_original, optimizer.var_type
+    )
+
+    # Transform to internal scale for surrogate prediction
+    grid_points = optimizer._transform_X(grid_points_original)
+
+    # Validate that transformed grid points are finite
+    if not np.all(np.isfinite(grid_points)):
+        # Provide detailed error information
+        non_finite_mask = ~np.isfinite(grid_points)
+        problem_dims = np.where(non_finite_mask.any(axis=0))[0]
+        error_msg = (
+            "Generated grid points contain non-finite values after transformation.\n"
+            f"Problematic dimensions: {problem_dims.tolist()}\n"
+        )
+        for dim in problem_dims:
+            dim_name = optimizer.var_name[dim] if optimizer.var_name else f"x{dim}"
+            trans = optimizer.var_trans[dim] if optimizer.var_trans else None
+            orig_vals = grid_points_original[:, dim]
+            trans_vals = grid_points[:, dim]
+            error_msg += (
+                f"  Dimension {dim} ({dim_name}):\n"
+                f"    Transform: {trans}\n"
+                f"    Original range: [{orig_vals.min():.6f}, {orig_vals.max():.6f}]\n"
+                f"    Transformed range: [{trans_vals[np.isfinite(trans_vals)].min() if np.any(np.isfinite(trans_vals)) else 'N/A':.6f}, "
+                f"{trans_vals[np.isfinite(trans_vals)].max() if np.any(np.isfinite(trans_vals)) else 'N/A':.6f}]\n"
+                f"    Non-finite count: {(~np.isfinite(trans_vals)).sum()}\n"
+            )
+        raise ValueError(error_msg)
+
+    return X_i, X_j, grid_points
+
+
+def _generate_mesh_grid_with_factors(
+    optimizer: object, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, list, list]:
+    """Generate mesh grid with special handling for factor variables.
+
+    Args:
+        optimizer: SpotOptim instance.
+        i (int): Dimension index i.
+        j (int): Dimension index j.
+        num (int): Number of points.
+        is_factor_i (bool): Whether i is a factor.
+        is_factor_j (bool): Whether j is a factor.
+
+    Returns:
+        X_i, X_j: Meshgrids for plotting
+        grid_points: Points for prediction (in transformed space)
+        factor_labels_i: Factor level names for dimension i (None if numeric)
+        factor_labels_j: Factor level names for dimension j (None if numeric)
+
+    Raises:
+        ValueError: If generated grid points contain non-finite values after transformation.
+    """
+    k = optimizer.n_dim
+
+    # Compute mean values, handling factor variables carefully
+    mean_values = np.empty(k, dtype=object)
+    for dim_idx in range(k):
+        if optimizer.var_type and optimizer.var_type[dim_idx] == "factor":
+            # For factor variables, use the most common value's integer index
+            col_values = optimizer.X_[:, dim_idx]
+            unique_vals, counts = np.unique(col_values, return_counts=True)
+            most_common_str = unique_vals[np.argmax(counts)]
+
+            # Map string back to integer index
+            if dim_idx in optimizer._factor_maps:
+                # Find the integer key for this string value
+                reverse_map = {v: k for k, v in optimizer._factor_maps[dim_idx].items()}
+                mean_values[dim_idx] = reverse_map.get(most_common_str, 0)
+            else:
+                mean_values[dim_idx] = 0  # Default to first level
+        else:
+            # For numeric variables, use mean
+            mean_values[dim_idx] = np.mean(optimizer.X_[:, dim_idx].astype(float))
+
+    # Handle dimension i
+    # Helper function to avoid problematic values with log transforms
+    def safe_bound(value, trans, is_lower):
+        """Add epsilon to avoid problematic values with log transforms."""
+        if trans in ["log10", "log", "ln"]:
+            eps = 1e-10
+            if is_lower and value <= 0:
+                return eps
+            elif value <= 0:
+                return eps
+        return value
+
+    if is_factor_i and optimizer._factor_maps and i in optimizer._factor_maps:
+        factor_map_i = optimizer._factor_maps[i]
+        n_levels_i = len(factor_map_i)
+        x_i = np.arange(n_levels_i)  # Integer indices
+        factor_labels_i = list(factor_map_i.values())  # Get the string labels
+    else:
+        lower_i = safe_bound(optimizer._original_lower[i], optimizer.var_trans[i], True)
+        upper_i = safe_bound(
+            optimizer._original_upper[i], optimizer.var_trans[i], False
+        )
+        x_i = np.linspace(lower_i, upper_i, num=num)
+        factor_labels_i = None
+
+    # Handle dimension j
+    if is_factor_j and optimizer._factor_maps and j in optimizer._factor_maps:
+        factor_map_j = optimizer._factor_maps[j]
+        n_levels_j = len(factor_map_j)
+        x_j = np.arange(n_levels_j)  # Integer indices
+        factor_labels_j = list(factor_map_j.values())  # Get the string labels
+    else:
+        lower_j = safe_bound(optimizer._original_lower[j], optimizer.var_trans[j], True)
+        upper_j = safe_bound(
+            optimizer._original_upper[j], optimizer.var_trans[j], False
+        )
+        x_j = np.linspace(lower_j, upper_j, num=num)
+        factor_labels_j = None
+
+    X_i, X_j = np.meshgrid(x_i, x_j)
+
+    # Initialize grid points with mean values
+    grid_points_original = np.tile(mean_values, (X_i.size, 1))
+    grid_points_original[:, i] = X_i.ravel()
+    grid_points_original[:, j] = X_j.ravel()
+
+    # Convert to float array to handle numeric operations properly
+    # Object dtype with np.float64/float values causes issues with np.around
+    grid_points_float = np.zeros((grid_points_original.shape[0], k), dtype=float)
+    for dim_idx in range(k):
+        grid_points_float[:, dim_idx] = grid_points_original[:, dim_idx].astype(float)
+
+    # Apply type constraints (convert to proper numeric types)
+    grid_points_float = optimizer._repair_non_numeric(
+        grid_points_float, optimizer.var_type
+    )
+
+    # Transform grid points for surrogate prediction
+    grid_points_transformed = optimizer._transform_X(grid_points_float)
+
+    # Validate that transformed grid points are finite
+    if not np.all(np.isfinite(grid_points_transformed)):
+        raise ValueError(
+            "Generated grid points contain non-finite values after transformation. "
+            "This may indicate an issue with variable transformations or bounds."
+        )
+
+    return X_i, X_j, grid_points_transformed, factor_labels_i, factor_labels_j

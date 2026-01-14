@@ -2592,7 +2592,7 @@ wheels = [
 
 [[package]]
 name = "spotoptim"
-version = "0.0.137"
+version = "0.0.139"
 source = { editable = "." }
 dependencies = [
     { name = "dill" },

@@ -3,6 +3,7 @@ import random
 import dill
 import re
 import torch
+from dataclasses import dataclass, field
 from typing import Callable, Optional, Tuple, List, Any, Dict, Union
 from scipy.optimize import OptimizeResult, differential_evolution, minimize
 from scipy.stats.qmc import LatinHypercube
@@ -12,7 +13,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
 import warnings
 import matplotlib.pyplot as plt
-from numpy import linspace, meshgrid, append
+from numpy import append
 import time
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
@@ -21,6 +22,93 @@ import shutil
 from tabulate import tabulate
 from spotoptim.tricands import tricands
 from spotoptim.sampling.design import generate_uniform_design
+from sklearn.cluster import KMeans
+from spotoptim.plot.visualization import (
+    plot_surrogate,
+    plot_progress,
+    plot_important_hyperparameter_contour,
+    _plot_surrogate_with_factors,
+)
+
+
+@dataclass
+class SpotOptimConfig:
+    """Configuration parameters for SpotOptim."""
+
+    bounds: Optional[list] = None
+    max_iter: int = 20
+    n_initial: int = 10
+    surrogate: Optional[object] = None
+    acquisition: str = "y"
+    var_type: Optional[list] = None
+    var_name: Optional[list] = None
+    var_trans: Optional[list] = None
+    tolerance_x: Optional[float] = None
+    max_time: float = np.inf
+    repeats_initial: int = 1
+    repeats_surrogate: int = 1
+    ocba_delta: int = 0
+    tensorboard_log: bool = False
+    tensorboard_path: Optional[str] = None
+    tensorboard_clean: bool = False
+    fun_mo2so: Optional[Callable] = None
+    seed: Optional[int] = None
+    verbose: bool = False
+    warnings_filter: str = "ignore"
+    max_surrogate_points: Optional[int] = None
+    selection_method: str = "distant"
+    acquisition_failure_strategy: str = "random"
+    penalty: bool = False
+    penalty_val: Optional[float] = None
+    acquisition_fun_return_size: int = 3
+    acquisition_optimizer: Union[str, Callable] = "differential_evolution"
+    restart_after_n: int = 100
+    restart_inject_best: bool = True
+    x0: Optional[np.ndarray] = None
+    de_x0_prob: float = 0.1
+    tricands_fringe: bool = False
+    prob_de_tricands: float = 0.8
+    window_size: Optional[int] = None
+    args: Tuple = ()
+    kwargs: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self):
+        if self.kwargs is None:
+            self.kwargs = {}
+
+
+@dataclass
+class SpotOptimState:
+    """Mutable state of the optimization process."""
+
+    X_: Optional[np.ndarray] = None
+    y_: Optional[np.ndarray] = None
+    y_mo: Optional[np.ndarray] = None
+    best_x_: Optional[np.ndarray] = None
+    best_y_: Optional[float] = None
+    n_iter_: int = 0
+    counter: int = 0
+
+    # Success tracking
+    success_rate: float = 0.0
+    success_counter: int = 0
+    _success_history: List = field(default_factory=list)
+    _zero_success_count: int = 0
+
+    # Noise statistics
+    mean_X: Optional[np.ndarray] = None
+    mean_y: Optional[np.ndarray] = None
+    var_y: Optional[np.ndarray] = None
+    min_mean_X: Optional[np.ndarray] = None
+    min_mean_y: Optional[float] = None
+    min_var_y: Optional[float] = None
+
+    # Best found
+    min_X: Optional[np.ndarray] = None
+    min_y: Optional[float] = None
+
+    # Restart history
+    restarts_results_: List = field(default_factory=list)
 
 
 class SpotOptim(BaseEstimator):
@@ -370,16 +458,12 @@ class SpotOptim(BaseEstimator):
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
-
         warnings.filterwarnings(warnings_filter)
 
-        # small value, converted to float
         self.eps = np.sqrt(np.spacing(1))
 
         if tolerance_x is None:
-            self.tolerance_x = self.eps
-        else:
-            self.tolerance_x = tolerance_x
+            tolerance_x = self.eps
 
         # Infer parameters from objective function if not provided
         if bounds is None:
@@ -405,63 +489,69 @@ class SpotOptim(BaseEstimator):
                 f"max_iter represents the total function evaluation budget including initial design."
             )
 
+        # Initialize Configuration
+        self.config = SpotOptimConfig(
+            bounds=bounds,
+            max_iter=max_iter,
+            n_initial=n_initial,
+            surrogate=surrogate,
+            acquisition=acquisition,
+            var_type=var_type,
+            var_name=var_name,
+            var_trans=var_trans,
+            tolerance_x=tolerance_x,
+            max_time=max_time,
+            repeats_initial=repeats_initial,
+            repeats_surrogate=repeats_surrogate,
+            ocba_delta=ocba_delta,
+            tensorboard_log=tensorboard_log,
+            tensorboard_path=tensorboard_path,
+            tensorboard_clean=tensorboard_clean,
+            fun_mo2so=fun_mo2so,
+            seed=seed,
+            verbose=verbose,
+            warnings_filter=warnings_filter,
+            max_surrogate_points=max_surrogate_points,
+            selection_method=selection_method,
+            acquisition_failure_strategy=acquisition_failure_strategy,
+            penalty=penalty,
+            penalty_val=penalty_val,
+            acquisition_fun_return_size=acquisition_fun_return_size,
+            acquisition_optimizer=acquisition_optimizer,
+            restart_after_n=restart_after_n,
+            restart_inject_best=restart_inject_best,
+            x0=x0,
+            de_x0_prob=de_x0_prob,
+            tricands_fringe=tricands_fringe,
+            prob_de_tricands=prob_de_tricands,
+            window_size=window_size,
+            args=args,
+            kwargs=kwargs,
+        )
+
+        # Initialize State
+        self.state = SpotOptimState()
+
+        # Other attributes
         self.fun = fun
         self.objective_names = getattr(
             fun, "objective_names", getattr(fun, "metrics", None)
         )
-        self.bounds = bounds
-        self.max_iter = max_iter
-        self.n_initial = n_initial
-        self.surrogate = surrogate
-        self.acquisition = acquisition
-        self.var_type = var_type
-        self.var_name = var_name
-        self.var_trans = var_trans
-        self.max_time = max_time
-        self.repeats_initial = repeats_initial
-        self.repeats_surrogate = repeats_surrogate
-        self.ocba_delta = ocba_delta
-        self.tensorboard_log = tensorboard_log
-        self.tensorboard_path = tensorboard_path
-        self.tensorboard_clean = tensorboard_clean
-        self.fun_mo2so = fun_mo2so
-        self.seed = seed
 
         # Initialize persistent RNG
         self.rng = np.random.RandomState(self.seed)
-
-        # Set global seeds if provided
         self._set_seed()
 
-        self.verbose = verbose
-        self.max_surrogate_points = max_surrogate_points
-        self.selection_method = selection_method
-        self.acquisition_failure_strategy = acquisition_failure_strategy
-        self.acquisition_fun_return_size = acquisition_fun_return_size
-        self.acquisition_optimizer = acquisition_optimizer
-        self.penalty = penalty
-        self.penalty_val = penalty_val
-        self.x0 = x0
-        self.x0 = x0
-        self.restart_after_n = restart_after_n
-        self.restart_inject_best = restart_inject_best
-        self.restarts_results_ = []
-        self.de_x0_prob = de_x0_prob
-        self.tricands_fringe = tricands_fringe
-        self.prob_de_tricands = prob_de_tricands
-        self.args = args
-        self.kwargs = kwargs if kwargs is not None else {}
-
-        # Determine if noise handling is active
+        # Determine if noise handling is active (derived attribute)
         self.noise = (repeats_initial > 1) or (repeats_surrogate > 1)
 
         # Process bounds and factor variables
         self._factor_maps = {}  # Maps dimension index to {int: str} mapping
-        self._original_bounds = bounds.copy()  # Store original bounds
-        self.process_factor_bounds()  # Maps factor bounds to integer indices
+        self._original_bounds = self.bounds.copy()  # Store original bounds
+        self.process_factor_bounds()  # Maps factor bounds to integer indices (updates config.bounds)
 
         # Derived attribute dimension n_dim
-        self.n_dim = len(bounds)
+        self.n_dim = len(self.bounds)
 
         # Default variable types
         if self.var_type is None:
@@ -507,50 +597,80 @@ class SpotOptim(BaseEstimator):
         # Design generator
         self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
 
-        # Storage for results
-        self.X_ = None
-        self.y_ = None
-        self.y_mo = None  # Multi-objective values (if applicable)
-        self.best_x_ = None
-        self.best_y_ = None
-        self.n_iter_ = 0
-
-        # Noise handling attributes (initialized in update_stats if noise=True)
-        self.mean_X = None
-        self.mean_y = None
-        self.var_y = None
-        self.min_mean_X = None
-        self.min_mean_y = None
-        self.min_var_y = None
-        self.min_X = None
-        self.min_y = None
-        self.counter = 0
-
-        # Success rate tracking (similar to Spot class)
-        self.success_rate = 0.0
-        self.success_counter = 0
-        # Success rate tracking (similar to Spot class)
-        self.success_rate = 0.0
-        self.success_counter = 0
-
-        if window_size is not None:
-            self.window_size = window_size
-        elif restart_after_n is not None:
-            # Default window size should be related to restart_after_n
-            # Use restart_after_n if provided, otherwise default to 100
-            # But allow at least some history (e.g. max of restart_after_n and something small)
-            self.window_size = restart_after_n
-        else:
-            self.window_size = 100
-
-        self._success_history = []
-        self._success_history = []
+        # Logic for window_size default based on restart_after_n
+        if self.window_size is None:
+            if self.restart_after_n is not None:
+                self.window_size = self.restart_after_n
+            else:
+                self.window_size = 100
 
         # Clean old TensorBoard logs if requested
         self._clean_tensorboard_logs()
 
         # Initialize TensorBoard writer
         self._init_tensorboard_writer()
+
+    def __getattr__(self, name):
+        """Proxy attribute access to config and state."""
+        try:
+            config = super().__getattribute__("config")
+            if hasattr(config, name):
+                return getattr(config, name)
+        except AttributeError:
+            pass
+
+        try:
+            state = super().__getattribute__("state")
+            if hasattr(state, name):
+                return getattr(state, name)
+        except AttributeError:
+            pass
+
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
+
+    def __setattr__(self, name, value):
+        """Proxy attribute assignment to config and state."""
+        if name in ("config", "state"):
+            super().__setattr__(name, value)
+            return
+
+        try:
+            config = super().__getattribute__("config")
+            if hasattr(config, name):
+                setattr(config, name, value)
+                return
+        except AttributeError:
+            pass
+
+        try:
+            state = super().__getattribute__("state")
+            if hasattr(state, name):
+                setattr(state, name, value)
+                return
+        except AttributeError:
+            pass
+
+        super().__setattr__(name, value)
+
+    def __dir__(self):
+        """Include config and state attributes in dir()."""
+        d = set(super().__dir__())
+        try:
+            config = super().__getattribute__("config")
+            d.update(dir(config))
+        except AttributeError:
+            pass
+
+        try:
+            state = super().__getattribute__("state")
+            # Filter internal methods/fields from dir if desired, but good for now
+            d.update(dir(state))
+        except AttributeError:
+            pass
+
+        return list(d)
 
     def _set_seed(self) -> None:
         """Set global random seeds for reproducibility.
@@ -2176,8 +2296,6 @@ class SpotOptim(BaseEstimator):
             >>> X_sel.shape
             (5, 2)
         """
-        from sklearn.cluster import KMeans
-
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
 
@@ -2221,8 +2339,6 @@ class SpotOptim(BaseEstimator):
             >>> y = np.random.rand(100)
             >>> X_sel, y_sel = opt._select_best_cluster(X, y, 5)
         """
-        from sklearn.cluster import KMeans
-
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
         labels = kmeans.labels_
@@ -4381,8 +4497,6 @@ class SpotOptim(BaseEstimator):
 
         Delegates to spotoptim.plot.visualization.plot_surrogate.
         """
-        from spotoptim.plot.visualization import plot_surrogate
-
         plot_surrogate(
             self,
             i=i,
@@ -4409,8 +4523,6 @@ class SpotOptim(BaseEstimator):
         mo: bool = False,
     ) -> None:
         """Plot optimization progress using spotoptim.plot.visualization.plot_progress."""
-        from spotoptim.plot.visualization import plot_progress
-
         plot_progress(
             self, show=show, log_y=log_y, figsize=figsize, ylabel=ylabel, mo=mo
         )
@@ -4428,10 +4540,6 @@ class SpotOptim(BaseEstimator):
         figsize: Tuple[int, int] = (12, 10),
     ) -> None:
         """Plot surrogate contours using spotoptim.plot.visualization.plot_important_hyperparameter_contour."""
-        from spotoptim.plot.visualization import (
-            plot_important_hyperparameter_contour,
-        )
-
         plot_important_hyperparameter_contour(
             self,
             max_imp=max_imp,
@@ -4459,8 +4567,6 @@ class SpotOptim(BaseEstimator):
         figsize: Tuple[int, int] = (12, 10),
     ) -> None:
         """Delegates to spotoptim.plot.visualization._plot_surrogate_with_factors."""
-        from spotoptim.plot.visualization import _plot_surrogate_with_factors
-
         _plot_surrogate_with_factors(
             self,
             i=i,
@@ -4474,127 +4580,6 @@ class SpotOptim(BaseEstimator):
             contour_levels=contour_levels,
             figsize=figsize,
         )
-
-    def _generate_mesh_grid_with_factors(
-        self, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, list, list]:
-        """Generate mesh grid with special handling for factor variables.
-
-        Returns:
-            X_i, X_j: Meshgrids for plotting
-            grid_points: Points for prediction (in transformed space)
-            factor_labels_i: Factor level names for dimension i (None if numeric)
-            factor_labels_j: Factor level names for dimension j (None if numeric)
-
-        Raises:
-            ValueError: If generated grid points contain non-finite values after transformation.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def objective(X):
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=objective,
-            ...     bounds=[(-5, 5), (-5, 5), (0, 2)],
-            ...     var_type=['float', 'float', 'factor'],
-            ...     var_name=['x1', 'x2', 'category'],
-            ...     max_iter=20,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>> # Generate mesh grid with factor handling for dimensions 0 and 2
-            >>> X_i, X_j, grid_points, factor_labels_i, factor_labels_j = (
-            ...     opt._generate_mesh_grid_with_factors(0, 2, num=10, is_factor_i=False, is_factor_j=True)
-            ... )
-        """
-        k = self.n_dim
-
-        # Compute mean values, handling factor variables carefully
-        mean_values = np.empty(k, dtype=object)
-        for dim_idx in range(k):
-            if self.var_type and self.var_type[dim_idx] == "factor":
-                # For factor variables, use the most common value's integer index
-                col_values = self.X_[:, dim_idx]
-                unique_vals, counts = np.unique(col_values, return_counts=True)
-                most_common_str = unique_vals[np.argmax(counts)]
-
-                # Map string back to integer index
-                if dim_idx in self._factor_maps:
-                    # Find the integer key for this string value
-                    reverse_map = {v: k for k, v in self._factor_maps[dim_idx].items()}
-                    mean_values[dim_idx] = reverse_map.get(most_common_str, 0)
-                else:
-                    mean_values[dim_idx] = 0  # Default to first level
-            else:
-                # For numeric variables, use mean
-                mean_values[dim_idx] = np.mean(self.X_[:, dim_idx].astype(float))
-
-        # Handle dimension i
-        # Helper function to avoid problematic values with log transforms
-        def safe_bound(value, trans, is_lower):
-            """Add epsilon to avoid problematic values with log transforms."""
-            if trans in ["log10", "log", "ln"]:
-                eps = 1e-10
-                if is_lower and value <= 0:
-                    return eps
-                elif value <= 0:
-                    return eps
-            return value
-
-        if is_factor_i and self._factor_maps and i in self._factor_maps:
-            factor_map_i = self._factor_maps[i]
-            n_levels_i = len(factor_map_i)
-            x_i = np.arange(n_levels_i)  # Integer indices
-            factor_labels_i = list(factor_map_i.values())  # Get the string labels
-        else:
-            lower_i = safe_bound(self._original_lower[i], self.var_trans[i], True)
-            upper_i = safe_bound(self._original_upper[i], self.var_trans[i], False)
-            x_i = linspace(lower_i, upper_i, num=num)
-            factor_labels_i = None
-
-        # Handle dimension j
-        if is_factor_j and self._factor_maps and j in self._factor_maps:
-            factor_map_j = self._factor_maps[j]
-            n_levels_j = len(factor_map_j)
-            x_j = np.arange(n_levels_j)  # Integer indices
-            factor_labels_j = list(factor_map_j.values())  # Get the string labels
-        else:
-            lower_j = safe_bound(self._original_lower[j], self.var_trans[j], True)
-            upper_j = safe_bound(self._original_upper[j], self.var_trans[j], False)
-            x_j = linspace(lower_j, upper_j, num=num)
-            factor_labels_j = None
-
-        X_i, X_j = meshgrid(x_i, x_j)
-
-        # Initialize grid points with mean values
-        grid_points_original = np.tile(mean_values, (X_i.size, 1))
-        grid_points_original[:, i] = X_i.ravel()
-        grid_points_original[:, j] = X_j.ravel()
-
-        # Convert to float array to handle numeric operations properly
-        # Object dtype with np.float64/float values causes issues with np.around
-        grid_points_float = np.zeros((grid_points_original.shape[0], k), dtype=float)
-        for dim_idx in range(k):
-            grid_points_float[:, dim_idx] = grid_points_original[:, dim_idx].astype(
-                float
-            )
-
-        # Apply type constraints (convert to proper numeric types)
-        grid_points_float = self._repair_non_numeric(grid_points_float, self.var_type)
-
-        # Transform grid points for surrogate prediction
-        grid_points_transformed = self._transform_X(grid_points_float)
-
-        # Validate that transformed grid points are finite
-        if not np.all(np.isfinite(grid_points_transformed)):
-            raise ValueError(
-                "Generated grid points contain non-finite values after transformation. "
-                "This may indicate an issue with variable transformations or bounds."
-            )
-
-        return X_i, X_j, grid_points_transformed, factor_labels_i, factor_labels_j
 
     def plot_parameter_scatter(
         self,
@@ -4827,123 +4812,6 @@ class SpotOptim(BaseEstimator):
 
         if show:
             plt.show()
-
-    def _generate_mesh_grid(
-        self, i: int, j: int, num: int = 100
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Generate a mesh grid for two dimensions, filling others with mean values.
-
-        Args:
-            i (int): Index of the first dimension to vary.
-            j (int): Index of the second dimension to vary.
-            num (int, optional): Number of grid points per dimension. Defaults to 100.
-
-        Returns:
-            tuple: A tuple containing:
-                - X_i (ndarray): Meshgrid for dimension i (in original scale).
-                - X_j (ndarray): Meshgrid for dimension j (in original scale).
-                - grid_points (ndarray): Grid points for prediction (in transformed scale), shape (num*num, n_dim).
-
-        Raises:
-            ValueError: If generated grid points contain non-finite values after transformation.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def objective(X):
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=objective,
-            ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],
-            ...     max_iter=20,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>> # Generate mesh grid for dimensions 0 and 1
-            >>> X_i, X_j, grid_points = opt._generate_mesh_grid(i=0, j=1, num=50)
-        """
-        k = self.n_dim
-        # Compute mean values with proper handling of factor variables
-        mean_values = np.empty(k, dtype=object)
-        for dim_idx in range(k):
-            if self.var_type and self.var_type[dim_idx] == "factor":
-                # For factor variables, use most common value mapped to integer
-                col_values = self.X_[:, dim_idx]
-                unique_vals, counts = np.unique(col_values, return_counts=True)
-                most_common_str = unique_vals[np.argmax(counts)]
-                # Map string back to integer index
-                if dim_idx in self._factor_maps:
-                    reverse_map = {v: k for k, v in self._factor_maps[dim_idx].items()}
-                    mean_values[dim_idx] = reverse_map.get(most_common_str, 0)
-                else:
-                    mean_values[dim_idx] = 0
-            else:
-                # For numeric/int variables, compute mean
-                mean_values[dim_idx] = np.mean(self.X_[:, dim_idx].astype(float))
-
-        # Convert mean_values to float array for numeric operations
-        mean_values_float = mean_values.astype(float)
-
-        # Create grid for dimensions i and j using ORIGINAL bounds for plotting
-        # Add small epsilon for log-transformed variables to avoid log(0) = -inf
-        def safe_bound(value, trans, is_lower):
-            """Add epsilon to avoid problematic values with log transforms."""
-            if trans in ["log10", "log", "ln"]:
-                eps = 1e-10
-                if is_lower and value <= 0:
-                    return eps
-                elif value <= 0:
-                    return eps
-            return value
-
-        lower_i = safe_bound(self._original_lower[i], self.var_trans[i], True)
-        upper_i = safe_bound(self._original_upper[i], self.var_trans[i], False)
-        lower_j = safe_bound(self._original_lower[j], self.var_trans[j], True)
-        upper_j = safe_bound(self._original_upper[j], self.var_trans[j], False)
-
-        x_i = linspace(lower_i, upper_i, num=num)
-        x_j = linspace(lower_j, upper_j, num=num)
-        X_i, X_j = meshgrid(x_i, x_j)
-
-        # Initialize grid points with mean values (in original scale)
-        grid_points_original = np.tile(mean_values_float, (X_i.size, 1))
-        grid_points_original[:, i] = X_i.ravel()
-        grid_points_original[:, j] = X_j.ravel()
-
-        # Apply type constraints
-        grid_points_original = self._repair_non_numeric(
-            grid_points_original, self.var_type
-        )
-
-        # Transform to internal scale for surrogate prediction
-        grid_points = self._transform_X(grid_points_original)
-
-        # Validate that transformed grid points are finite
-        if not np.all(np.isfinite(grid_points)):
-            # Provide detailed error information
-            non_finite_mask = ~np.isfinite(grid_points)
-            problem_dims = np.where(non_finite_mask.any(axis=0))[0]
-            error_msg = (
-                "Generated grid points contain non-finite values after transformation.\n"
-                f"Problematic dimensions: {problem_dims.tolist()}\n"
-            )
-            for dim in problem_dims:
-                dim_name = self.var_name[dim] if self.var_name else f"x{dim}"
-                trans = self.var_trans[dim] if self.var_trans else None
-                orig_vals = grid_points_original[:, dim]
-                trans_vals = grid_points[:, dim]
-                error_msg += (
-                    f"  Dimension {dim} ({dim_name}):\n"
-                    f"    Transform: {trans}\n"
-                    f"    Original range: [{orig_vals.min():.6f}, {orig_vals.max():.6f}]\n"
-                    f"    Transformed range: [{trans_vals[np.isfinite(trans_vals)].min() if np.any(np.isfinite(trans_vals)) else 'N/A':.6f}, "
-                    f"{trans_vals[np.isfinite(trans_vals)].max() if np.any(np.isfinite(trans_vals)) else 'N/A':.6f}]\n"
-                    f"    Non-finite count: {(~np.isfinite(trans_vals)).sum()}\n"
-                )
-            raise ValueError(error_msg)
-
-        return X_i, X_j, grid_points
 
     def _get_experiment_filename(self, prefix: str) -> str:
         """Generate experiment filename from prefix.
