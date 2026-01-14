@@ -31,5 +31,6 @@ Examples:
 
 from .kriging import Kriging
 from .simple_kriging import SimpleKriging
+from .mlp_surrogate import MLPSurrogate
 
-__all__ = ["Kriging", "SimpleKriging"]
+__all__ = ["Kriging", "SimpleKriging", "MLPSurrogate"]

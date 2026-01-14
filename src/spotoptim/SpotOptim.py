@@ -11,6 +11,7 @@ from scipy.stats import norm
 from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
+from scipy.spatial.distance import cdist
 import warnings
 import matplotlib.pyplot as plt
 from numpy import append
@@ -71,6 +72,7 @@ class SpotOptimConfig:
     tricands_fringe: bool = False
     prob_de_tricands: float = 0.8
     window_size: Optional[int] = None
+    min_tol_metric: str = "chebyshev"
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
 
@@ -223,6 +225,17 @@ class SpotOptim(BaseEstimator):
             Defaults to False.
         prob_de_tricands (float, optional): Probability of using differential evolution as an optimizer
             on the surrogate model. 1 - prob_de_tricands is the probability of using tricands. Defaults to 0.8.
+        window_size (int, optional): Window size for success rate calculation.
+        min_tol_metric (str, optional): Distance metric used when checking `tolerance_x` for
+            duplicate detection. Default is "chebyshev". Supports all metrics from
+            scipy.spatial.distance.cdist, including:
+            - "chebyshev": L-infinity distance (hypercube). Default. Matches previous behavior.
+            - "euclidean": L2 distance (hypersphere).
+            - "minkowski": Lp distance (default p=2).
+            - "cityblock": Manhattan/L1 distance.
+            - "cosine": Cosine distance.
+            - "correlation": Correlation distance.
+            - "canberra", "braycurtis", "sqeuclidean", etc.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -461,6 +474,7 @@ class SpotOptim(BaseEstimator):
         tricands_fringe: bool = False,
         prob_de_tricands: float = 0.8,
         window_size: Optional[int] = None,
+        min_tol_metric: str = "chebyshev",
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
@@ -531,6 +545,7 @@ class SpotOptim(BaseEstimator):
             tricands_fringe=tricands_fringe,
             prob_de_tricands=prob_de_tricands,
             window_size=window_size,
+            min_tol_metric=min_tol_metric,
             args=args,
             kwargs=kwargs,
         )
@@ -3302,8 +3317,21 @@ class SpotOptim(BaseEstimator):
             >>> print("Is new:", is_new)
             Is new: [ True False  True]
         """
-        B = np.abs(A[:, None] - X)
-        ind = np.any(np.all(B <= tolerance, axis=2), axis=1)
+        if len(X) == 0:
+            return A, np.ones(len(A), dtype=bool)
+
+        # Calculate distances using the configured metric
+        # cdist supports 'euclidean', 'minkowski', 'chebyshev', etc.
+        # Note: 'chebyshev' is closest to the previous logic but checks absolute difference on all coords
+        # Previous logic: np.all(np.abs(diff) <= tolerance) -> Chebyshev <= tolerance
+        dists = cdist(A, X, metric=self.min_tol_metric)
+
+        # Check if min distance to any existing point is <= tolerance (duplicate)
+        # Duplicate if ANY existing point is within tolerance
+        # is_duplicate[i] is True if A[i] is close to at least one point in X
+        is_duplicate = np.any(dists <= tolerance, axis=1)
+
+        ind = is_duplicate
         return A[~ind], ~ind
 
     def optimize_acquisition_func(self) -> np.ndarray:

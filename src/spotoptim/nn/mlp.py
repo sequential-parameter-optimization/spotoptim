@@ -183,7 +183,10 @@ class MLP(torch.nn.Sequential):
             lr_actual = map_lr(lr, optimizer_name)
         except ValueError:
             # If optimizer not in map_lr, try to use it directly with torch.optim
-            if not hasattr(optim, optimizer_name):
+            if (
+                not hasattr(optim, optimizer_name)
+                and optimizer_name != "AdamWScheduleFree"
+            ):
                 raise ValueError(
                     f"Optimizer '{optimizer_name}' not found in torch.optim and not supported by map_lr(). "
                     f"Please use a valid PyTorch optimizer name like 'Adam', 'SGD', 'AdamW', etc."
@@ -196,6 +199,16 @@ class MLP(torch.nn.Sequential):
             optimizer_class = getattr(optim, optimizer_name)
             # Create optimizer with model parameters, mapped learning rate, and additional kwargs
             return optimizer_class(self.parameters(), lr=lr_actual, **kwargs)
+
+        # Check for custom schedulue-free optimizer
+        elif optimizer_name == "AdamWScheduleFree":
+            try:
+                from spotoptim.optimizer import AdamWScheduleFree
+
+                return AdamWScheduleFree(self.parameters(), lr=lr_actual, **kwargs)
+            except ImportError as e:
+                raise ImportError(f"Could not import AdamWScheduleFree: {e}")
+
         else:
             raise ValueError(
                 f"Optimizer '{optimizer_name}' not found in torch.optim. "
