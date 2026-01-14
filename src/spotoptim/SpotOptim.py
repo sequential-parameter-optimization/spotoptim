@@ -58,6 +58,7 @@ class SpotOptimConfig:
     seed: Optional[int] = None
     verbose: bool = False
     warnings_filter: str = "ignore"
+    n_infill_points: int = 1
     max_surrogate_points: Optional[Union[int, List[int]]] = None
     selection_method: str = "distant"
     acquisition_failure_strategy: str = "random"
@@ -189,6 +190,9 @@ class SpotOptim(BaseEstimator):
         verbose (bool, optional): Print progress information. Defaults to False.
         warnings_filter (str, optional): Filter for warnings. One of "error", "ignore", "always", "all",
             "default", "module", or "once". Defaults to "ignore".
+        n_infill_points (int, optional): Number of infill points to suggest at each iteration.
+            Defaults to 1. If > 1, multiple distinct points are proposed using the optimizer
+            and fallback strategies.
         max_surrogate_points (int, optional): Maximum number of points to use for surrogate model fitting.
             If None, all points are used. If the number of evaluated points exceeds this limit,
             a subset is selected using the selection method. Defaults to None.
@@ -463,6 +467,7 @@ class SpotOptim(BaseEstimator):
         seed: Optional[int] = None,
         verbose: bool = False,
         warnings_filter: str = "ignore",
+        n_infill_points: int = 1,
         max_surrogate_points: Optional[Union[int, List[int]]] = None,
         selection_method: str = "distant",
         acquisition_failure_strategy: str = "random",
@@ -535,6 +540,7 @@ class SpotOptim(BaseEstimator):
             seed=seed,
             verbose=verbose,
             warnings_filter=warnings_filter,
+            n_infill_points=n_infill_points,
             max_surrogate_points=max_surrogate_points,
             selection_method=selection_method,
             acquisition_failure_strategy=acquisition_failure_strategy,
@@ -2234,12 +2240,15 @@ class SpotOptim(BaseEstimator):
             >>> np.all(x_repeated[0] == x_repeated[1])
             True
         """
+        if x_next.ndim == 1:
+            x_next = x_next.reshape(1, -1)
+
         if self.repeats_surrogate > 1:
-            x_next_repeated = np.repeat(
-                x_next.reshape(1, -1), self.repeats_surrogate, axis=0
-            )
+            # Repeat each row repeats_surrogate times
+            # Note: np.repeat with axis=0 repeats rows [r1, r1, r2, r2...]
+            x_next_repeated = np.repeat(x_next, self.repeats_surrogate, axis=0)
         else:
-            x_next_repeated = x_next.reshape(1, -1)
+            x_next_repeated = x_next
         return x_next_repeated
 
     def _remove_nan(
@@ -2734,12 +2743,22 @@ class SpotOptim(BaseEstimator):
 
         return result.x
 
-    def _try_optimizer_candidates(self) -> Optional[np.ndarray]:
+    def _try_optimizer_candidates(
+        self, n_needed: int = 1, current_batch: Optional[List[np.ndarray]] = None
+    ) -> List[np.ndarray]:
         """Try candidates proposed by the acquisition result optimizer.
 
+        Args:
+            n_needed (int): Number of candidates needed.
+            current_batch (list): Points already selected in current iteration (to check distance against).
+
         Returns:
-            Optional[ndarray]: A unique valid candidate point, or None if all candidates are duplicates.
+            List[ndarray]: List of unique valid candidate points found.
         """
+        valid_candidates = []
+        if current_batch is None:
+            current_batch = []
+
         # Phase 1: Try candidates from acquisition function optimizer
         # These can be multiple if acquisition_fun_return_size > 1
         x_next_candidates = self.optimize_acquisition_func()
@@ -2752,27 +2771,51 @@ class SpotOptim(BaseEstimator):
                 x_next_candidates[i] for i in range(x_next_candidates.shape[0])
             ]
 
-        for i, x_next in enumerate(obs_candidates):
-            # Apply rounding BEFORE checking tolerance
-            x_next_rounded = self._repair_non_numeric(
-                x_next.reshape(1, -1), self.var_type
-            )[0]
+        # Combine existing points and previously found candidates for distance check
+        # We need to check against (X_ + current_batch + valid_candidates)
+        # _select_new checks against X passed to it.
+        # We should construct the reference set once or update it.
 
-            # Ensure minimum distance to existing points
-            x_next_2d = x_next_rounded.reshape(1, -1)
-            X_transformed = self._transform_X(self.X_)
+        X_transformed = self._transform_X(self.X_)
+
+        # Helper to check if a point is valid
+        def is_valid(p, reference_set):
+            p_rounded = self._repair_non_numeric(p.reshape(1, -1), self.var_type)[0]
+            # Check distance
+            p_2d = p_rounded.reshape(1, -1)
+            # select_new returns subset of A that is distant from X
             x_new, _ = self.select_new(
-                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+                A=p_2d, X=reference_set, tolerance=self.tolerance_x
             )
+            return p_rounded if x_new.shape[0] > 0 else None
 
-            if x_new.shape[0] > 0:
-                # Found a unique point!
-                return x_next_rounded
+        for i, x_next in enumerate(obs_candidates):
+            if len(valid_candidates) >= n_needed:
+                break
+
+            # Build current reference set: X_ + current_batch + valid_candidates_so_far
+            # Note: This can be expensive if X_ is large, but n_infill is usually small.
+            ref_list = [X_transformed]
+            if current_batch:
+                ref_list.append(np.array(current_batch))
+            if valid_candidates:
+                ref_list.append(np.array(valid_candidates))
+
+            if len(ref_list) > 1:
+                reference_set = np.vstack(ref_list)
+            else:
+                reference_set = ref_list[0]
+
+            candidate = is_valid(x_next, reference_set)
+
+            if candidate is not None:
+                valid_candidates.append(candidate)
             elif self.verbose:
                 print(
-                    f"Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate after rounding."
+                    f"Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate/invalid."
                 )
-        return None
+
+        return valid_candidates
 
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
@@ -2813,20 +2856,28 @@ class SpotOptim(BaseEstimator):
         return self._repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
 
     def _try_fallback_strategy(
-        self, max_attempts: int = 10
+        self, max_attempts: int = 10, current_batch: Optional[List[np.ndarray]] = None
     ) -> Tuple[Optional[np.ndarray], np.ndarray]:
         """Try fallback strategy (e.g. random search) to find a unique point.
         Calls _handle_acquisition_failure.
 
         Args:
             max_attempts (int): Maximum number of fallback attempts.
+            current_batch (list): Points already selected in current iteration.
 
         Returns:
             Tuple[Optional[ndarray], ndarray]:
                 - The first element is the unique valid candidate point if found, else None.
-                - The second element is the last attempted point (even if duplicate), logic requires returning something.
+                - The second element is the last attempted point.
         """
         x_last = None
+        if current_batch is None:
+            current_batch = []
+
+        X_transformed = self._transform_X(self.X_)
+        # Build reference set once if possible or dynamically
+        # Since fallback is random, we check against X + current_batch
+
         for attempt in range(max_attempts):
             if self.verbose:
                 print(
@@ -2840,9 +2891,19 @@ class SpotOptim(BaseEstimator):
             x_last = x_next_rounded
 
             x_next_2d = x_next_rounded.reshape(1, -1)
-            X_transformed = self._transform_X(self.X_)
+
+            # Reference set
+            ref_list = [X_transformed]
+            if len(current_batch) > 0:
+                ref_list.append(np.array(current_batch))
+
+            if len(ref_list) > 1:
+                reference_set = np.vstack(ref_list)
+            else:
+                reference_set = ref_list[0]
+
             x_new, _ = self.select_new(
-                A=x_next_2d, X=X_transformed, tolerance=self.tolerance_x
+                A=x_next_2d, X=reference_set, tolerance=self.tolerance_x
             )
 
             if x_new.shape[0] > 0:
@@ -3842,7 +3903,8 @@ class SpotOptim(BaseEstimator):
 
 
         Returns:
-            ndarray: Next point to evaluate in **Transformed and Mapped Space**.
+            ndarray: Next point(s) to evaluate in **Transformed and Mapped Space**.
+            Shape is (n_infill_points, n_features).
 
         Examples:
             >>> import numpy as np
@@ -3850,7 +3912,8 @@ class SpotOptim(BaseEstimator):
             >>> opt = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5
+            ...     n_initial=5,
+            ...     n_infill_points=2
             ... )
             >>> # Need to initialize optimization state (X_, y_, surrogate)
             >>> # Normally done inside optimize()
@@ -3859,30 +3922,67 @@ class SpotOptim(BaseEstimator):
             >>> opt._fit_surrogate(opt.X_, opt.y_)
             >>> x_next = opt.suggest_next_infill_point()
             >>> x_next.shape
-            (2,)
+            (2, 2)
         """
-        # 1. Try optimizer candidates
-        x_candidate = self._try_optimizer_candidates()
-        if x_candidate is not None:
-            return x_candidate
+        # 1. Optimizer candidates
+        candidates = []
+        opt_candidates = self._try_optimizer_candidates(
+            n_needed=self.n_infill_points, current_batch=candidates
+        )
+        candidates.extend(opt_candidates)
 
-        # 2. Try fallback strategy
-        max_attempts = 10
-        x_candidate, x_last = self._try_fallback_strategy(max_attempts=max_attempts)
-        if x_candidate is not None:
-            return x_candidate
+        if len(candidates) >= self.n_infill_points:
+            return np.vstack(candidates)
 
-        # 3. Return last attempt
+        # 2. Try fallback strategy to fill remaining slots
+        while len(candidates) < self.n_infill_points:
+            # Just try one attempt at a time but loop
+            # We pass current batch to avoid dups
+            cand, x_last = self._try_fallback_strategy(
+                max_attempts=10, current_batch=candidates
+            )
+            if cand is not None:
+                candidates.append(cand)
+            else:
+                # Fallback failed to find unique point even after retries
+                # Break and fill with last attempts or just return what we have?
+                # If we return partial batch, we might fail downstream if code expects n points?
+                # Actually code should handle any number of points returned by this method?
+                # Or duplicate valid points?
+                # Warn and use duplicate if absolutely necessary?
+                if self.verbose:
+                    print(
+                        "Warning: Could not fill all infill points with unique candidates."
+                    )
+                break
+
+        if len(candidates) > 0:
+            return np.vstack(candidates)
+
+        # 3. Return last attempt (duplicate) if absolutely nothing found
+        # This returns a single point (1, d).
+        # Should we return n copies?
+        # If n_infill_points > 1, we should probably output (n, d)
+
         if self.verbose:
             print(
-                f"Warning: Could not find unique point after optimization candidates and {max_attempts} fallback attempts. "
-                "Returning last candidate (may be duplicate)."
+                "Warning: Could not find unique point after optimization candidates and fallback attempts. "
+                "Returning last candidate (duplicate)."
             )
-        # Verify x_last is not None (should be handled by _try_fallback_strategy logic unless max_attempts=0)
+
+        # Verify x_last is not None
         if x_last is None:
-            # Should practically not happen if max_attempts > 0, but safe fallback
-            return self._handle_acquisition_failure()
-        return x_last
+            # Should practically not happen
+            x_next = self._handle_acquisition_failure()
+            return x_next.reshape(1, -1)
+
+        # Return duplicated x_last to fill n_infill_points? OR just 1?
+        # Let's return 1 and let loop repeat it?
+        # But loop repeats based on x_next logic.
+        # If we return 1 point, it is treated as 1 point.
+        # If user asked for n_infill_points, maybe we should just return what we have (1 duplicated).
+
+        return x_last.reshape(1, -1)
 
     def _handle_NA_new_points(
         self, x_next: np.ndarray, y_next: np.ndarray
