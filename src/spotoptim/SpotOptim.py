@@ -58,7 +58,7 @@ class SpotOptimConfig:
     seed: Optional[int] = None
     verbose: bool = False
     warnings_filter: str = "ignore"
-    max_surrogate_points: Optional[int] = None
+    max_surrogate_points: Optional[Union[int, List[int]]] = None
     selection_method: str = "distant"
     acquisition_failure_strategy: str = "random"
     penalty: bool = False
@@ -463,7 +463,7 @@ class SpotOptim(BaseEstimator):
         seed: Optional[int] = None,
         verbose: bool = False,
         warnings_filter: str = "ignore",
-        max_surrogate_points: Optional[int] = None,
+        max_surrogate_points: Optional[Union[int, List[int]]] = None,
         selection_method: str = "distant",
         acquisition_failure_strategy: str = "random",
         penalty: bool = False,
@@ -637,10 +637,30 @@ class SpotOptim(BaseEstimator):
                 else:
                     self._prob_surrogate = probs
 
-            # Set initial surrogate
+            # Handle max_surrogate_points list
+            self._max_surrogate_points_list = None
+            if isinstance(self.config.max_surrogate_points, list):
+                if len(self.config.max_surrogate_points) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of max_surrogate_points ({len(self.config.max_surrogate_points)}) "
+                        f"must match number of surrogates ({len(self._surrogates_list)})."
+                    )
+                self._max_surrogate_points_list = self.config.max_surrogate_points
+            else:
+                # If int or None, broadcast to list for easier indexing
+                self._max_surrogate_points_list = [
+                    self.config.max_surrogate_points
+                ] * len(self._surrogates_list)
+
+            # Set initial surrogate and max points
             self.surrogate = self._surrogates_list[0]
+            self._active_max_surrogate_points = self._max_surrogate_points_list[0]
 
         elif self.surrogate is None:
+            # Default single surrogate case
+            self._max_surrogate_points_list = None
+            self._active_max_surrogate_points = self.config.max_surrogate_points
+
             kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
                 length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
             )
@@ -2305,13 +2325,13 @@ class SpotOptim(BaseEstimator):
         y_fit = y
 
         # Select subset if needed
-        if (
-            self.max_surrogate_points is not None
-            and X.shape[0] > self.max_surrogate_points
-        ):
+        # Resolve active max points
+        max_k = getattr(self, "_active_max_surrogate_points", self.max_surrogate_points)
+
+        if max_k is not None and X.shape[0] > max_k:
             if self.verbose:
                 print(
-                    f"Selecting subset of {self.max_surrogate_points} points "
+                    f"Selecting subset of {max_k} points "
                     f"from {X.shape[0]} total points for surrogate fitting."
                 )
             X_fit, y_fit = self._selection_dispatcher(X, y)
@@ -2369,6 +2389,8 @@ class SpotOptim(BaseEstimator):
         if getattr(self, "_surrogates_list", None) is not None:
             idx = self.rng.choice(len(self._surrogates_list), p=self._prob_surrogate)
             self.surrogate = self._surrogates_list[idx]
+            # Update active max surrogate points
+            self._active_max_surrogate_points = self._max_surrogate_points_list[idx]
             if self.verbose:
                 # Optional: print selected surrogate? separate from verbose maybe
                 pass
@@ -3322,13 +3344,16 @@ class SpotOptim(BaseEstimator):
             >>> X_sel.shape[0] <= 5
             True
         """
-        if self.max_surrogate_points is None:
+        # Resolve active max points
+        max_k = getattr(self, "_active_max_surrogate_points", self.max_surrogate_points)
+
+        if max_k is None:
             return X, y
 
         if self.selection_method == "distant":
-            return self._select_distant_points(X=X, y=y, k=self.max_surrogate_points)
+            return self._select_distant_points(X=X, y=y, k=max_k)
         elif self.selection_method == "best":
-            return self._select_best_cluster(X=X, y=y, k=self.max_surrogate_points)
+            return self._select_best_cluster(X=X, y=y, k=max_k)
         else:
             # If no valid selection method, return all points
             return X, y
