@@ -107,4 +107,6 @@ class TestAcquisitionReturnSize:
         # Should skip 1st (duplicate) and return 2nd
         x_suggested = opt.suggest_next_infill_point()
         
-        np.testing.assert_array_almost_equal(x_suggested, new_point)
+        # Since n_infill_points default is 1, it returns (1, n_features)
+        # new_point is (2,)
+        np.testing.assert_array_almost_equal(x_suggested, new_point.reshape(1, -1))

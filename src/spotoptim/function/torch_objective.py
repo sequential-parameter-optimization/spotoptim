@@ -9,6 +9,8 @@ from spotoptim.core.experiment import ExperimentControl
 from spotoptim.core.data import SpotDataFromArray, SpotDataFromTorchDataset
 import logging
 import inspect
+from spotoptim.utils.scaler import TorchStandardScaler
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +20,12 @@ class TorchObjective:
     A callable objective function for SpotOptim that trains and evaluates a PyTorch model.
     """
 
-    def __init__(self, experiment: ExperimentControl, seed: Optional[int] = None):
+    def __init__(
+        self,
+        experiment: ExperimentControl,
+        seed: Optional[int] = None,
+        use_scaler: bool = False,
+    ):
         """
         Initialize the TorchObjective.
 
@@ -27,6 +34,8 @@ class TorchObjective:
                 dataset, and hyperparameters.
             seed (Optional[int]): Random seed for reproducibility. If None, attempst to use
                 experiment.seed. Defaults to None.
+            use_scaler (bool, optional): If True, uses TorchStandardScaler to scale the input data (features).
+                Currently supported/effective only for SpotDataFromArray. Defaults to False.
 
         Examples:
             >>> import torch
@@ -69,6 +78,11 @@ class TorchObjective:
             >>> objective = TorchObjective(exp)
             >>> print(isinstance(objective, TorchObjective))
             True
+            >>>
+            >>> # 6. Initialize with Scaler
+            >>> objective_scaled = TorchObjective(exp, use_scaler=True)
+            >>> print(objective_scaled.use_scaler)
+            True
         """
         self.experiment = experiment
         self.experiment = experiment
@@ -84,6 +98,9 @@ class TorchObjective:
                 self.seed = exp_seed
             else:
                 self.seed = None
+
+        self.use_scaler = use_scaler
+        self.scaler = TorchStandardScaler() if use_scaler else None
 
     @property
     def bounds(self) -> List[Tuple[float, float]]:
@@ -263,6 +280,35 @@ class TorchObjective:
                 num_workers=num_workers,
             )
 
+            # Fit scaler on training data if enabled
+            if self.scaler is not None:
+                # We need to extract tensor to fit
+                # x_train is already tensor or array
+                self.scaler.fit(
+                    x_train
+                    if torch.is_tensor(x_train)
+                    else torch.tensor(x_train, dtype=torch.float32)
+                )
+
+                # Re-create dataset with transformed data
+                # We can transform on the fly or transform checks
+                # Transform whole dataset
+                if torch.is_tensor(x_train):
+                    x_train = self.scaler.transform(x_train)
+                else:
+                    x_train = self.scaler.transform(
+                        torch.tensor(x_train, dtype=torch.float32)
+                    )
+
+                # Update trainloader
+                train_dataset = TensorDataset(x_train, y_train)
+                train_loader = DataLoader(
+                    train_dataset,
+                    batch_size=batch_size,
+                    shuffle=True,
+                    num_workers=num_workers,
+                )
+
             val_data = data.get_validation_data()
             if val_data:
                 x_val, y_val = val_data
@@ -276,6 +322,11 @@ class TorchObjective:
                     if not torch.is_tensor(y_val)
                     else y_val.float()
                 )
+
+                # Transform validation data
+                if self.scaler is not None:
+                    x_val = self.scaler.transform(x_val)
+
                 val_dataset = TensorDataset(x_val, y_val)
                 val_loader = DataLoader(
                     val_dataset,
