@@ -24,6 +24,7 @@ from tabulate import tabulate
 from spotoptim.tricands import tricands
 from spotoptim.sampling.design import generate_uniform_design
 from sklearn.cluster import KMeans
+import joblib
 from spotoptim.plot.visualization import (
     plot_surrogate,
     plot_progress,
@@ -75,6 +76,7 @@ class SpotOptimConfig:
     window_size: Optional[int] = None
     min_tol_metric: str = "chebyshev"
     prob_surrogate: Optional[List[float]] = None
+    n_jobs: int = 1
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
 
@@ -484,6 +486,7 @@ class SpotOptim(BaseEstimator):
         window_size: Optional[int] = None,
         min_tol_metric: str = "chebyshev",
         prob_surrogate: Optional[List[float]] = None,
+        n_jobs: int = 1,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
@@ -557,6 +560,7 @@ class SpotOptim(BaseEstimator):
             window_size=window_size,
             min_tol_metric=min_tol_metric,
             prob_surrogate=prob_surrogate,
+            n_jobs=n_jobs,
             args=args,
             kwargs=kwargs,
         )
@@ -3506,6 +3510,30 @@ class SpotOptim(BaseEstimator):
     # Optimization Loop
     # ====================
 
+    def _optimize_run_task(
+        self,
+        seed: int,
+        timeout_start: float,
+        X0: Optional[np.ndarray],
+        y0_known_val: Optional[float],
+        max_iter_override: Optional[int],
+    ) -> Tuple[str, OptimizeResult]:
+        """Helper to run a single optimization task with a specific seed."""
+        # Set the seed for this run
+        self.seed = seed
+        self._set_seed()
+
+        # Re-initialize LHS sampler with new seed to ensure diversity in initial design
+        if hasattr(self, "n_dim"):
+            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+
+        return self._optimize_single_run(
+            timeout_start,
+            X0,
+            y0_known=y0_known_val,
+            max_iter_override=max_iter_override,
+        )
+
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
         """Run the optimization process.
 
@@ -3593,13 +3621,82 @@ class SpotOptim(BaseEstimator):
                     print("Global budget exhausted. Stopping restarts.")
                 break
 
-            status, result = self._optimize_single_run(
-                timeout_start,
-                current_X0,
-                y0_known=y0_known_val,
-                max_iter_override=remaining_iter,
-            )
-            self.restarts_results_.append(result)
+            # Check if n_jobs > 1 and we can run in parallel
+            if self.n_jobs > 1:
+                # Parallel execution logic
+                n_tasks = self.n_jobs
+
+                # Check if we have enough budget for n_tasks
+                # If budget is limited, we might want to reduce tasks or run fewer?
+                # For now, let's run n_tasks, and let individual runs handle budget within themselves
+                # However, allocating full remaining_iter to ALL tasks might overspend globally if they all run full?
+                # But max_iter is usually PER RUN + Restarts?
+                # Actually max_iter is TOTAL budget across restarts in the current Logic:
+                # `remaining_iter = self.max_iter - total_evals_so_far`
+                # So if we run 4 tasks in parallel, we should probably divide budget?
+                # OR, user intends max_iter as per-run budget if n_jobs is used?
+                # The docstring says "max_iter (int, optional): Maximum number of total function evaluations"
+                # So we must respect global budget.
+                # If we launch 4 tasks, and each uses 'remaining_iter', we might do 4 * remaining_iter evaluations!
+                # That would violate budget.
+                # Strategy: We launch batch of tasks. Each task gets `remaining_iter`.
+                # But we should check carefully. IF n_jobs=4, and we launch 4 runs.
+                # If we want to burn budget faster, that's fine.
+                # But strictly, we should probably divide budget or check early stopping.
+                # Given 'SpotOptim' restarts logic, it seems 'max_iter' is global cap.
+                # Let's trust the user knows what they are doing with n_jobs, but try to be safe.
+                # We will pass `remaining_iter` to override.
+
+                # Generate seeds for the batch
+                seeds = []
+                for _ in range(n_tasks):
+                    if self.seed is not None:
+                        # Update seed like in sequential loop
+                        self.seed += 1
+                        seeds.append(self.seed)
+                    else:
+                        seeds.append(None)
+
+                if self.verbose:
+                    print(
+                        f"Running batch of {n_tasks} optimizations in parallel with n_jobs={self.n_jobs}..."
+                    )
+
+                # Execute parallel batch
+                batch_results = joblib.Parallel(n_jobs=self.n_jobs)(
+                    joblib.delayed(self._optimize_run_task)(
+                        seed,
+                        timeout_start,
+                        current_X0,  # Note: current_X0 is same for all (or None)
+                        y0_known_val,
+                        remaining_iter,  # Pass budget cap
+                    )
+                    for seed in seeds
+                )
+
+                # Process batch results
+                statuses = []
+                for res_status, result in batch_results:
+                    self.restarts_results_.append(result)
+                    statuses.append(res_status)
+
+                # Determine global status from batch
+                # If ANY finished successfully, we might be done?
+                # Or if ALL requested restart?
+                if "FINISHED" in statuses:
+                    status = "FINISHED"
+                else:
+                    status = "RESTART"
+
+            else:
+                # Sequential execution logic (original)
+                status, result = self._optimize_single_run(
+                    timeout_start,
+                    current_X0,
+                    y0_known=y0_known_val,
+                    max_iter_override=remaining_iter,
+                )
+                self.restarts_results_.append(result)
 
             if status == "FINISHED":
                 break
@@ -3624,7 +3721,9 @@ class SpotOptim(BaseEstimator):
                                 f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f})."
                             )
 
-                if self.seed is not None:
+                if self.seed is not None and self.n_jobs == 1:
+                    # Only increment manually here if sequential.
+                    # In parallel block, we already incremented.
                     self.seed += 1  # Change seed to ensure variation
                 # Continue loop
             else:

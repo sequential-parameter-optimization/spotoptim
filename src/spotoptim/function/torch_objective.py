@@ -85,7 +85,6 @@ class TorchObjective:
             True
         """
         self.experiment = experiment
-        self.experiment = experiment
         self.device = experiment.torch_device
 
         # Use provided seed, or fall back to experiment seed, or None
