@@ -3736,6 +3736,17 @@ class SpotOptim(BaseEstimator):
 
         # Find best result based on 'fun'
         best_result = min(self.restarts_results_, key=lambda r: r.fun)
+
+        # Update internal state with best result to match sequential behavior
+        self.best_x_ = best_result.x
+        self.best_y_ = best_result.fun
+        self.X_ = best_result.X
+        self.y_ = best_result.y
+
+        # Update iteration count if available
+        if hasattr(best_result, "nit"):
+            self.n_iter_ = best_result.nit
+
         return best_result
 
     def _optimize_single_run(
@@ -5829,6 +5840,26 @@ class SpotOptim(BaseEstimator):
         sensitivities = []
         for i in range(X_full.shape[1]):
             x_i = X_full[:, i]
+
+            # Handle factor variables: map strings to integers
+            if hasattr(self, "_factor_maps") and i in self._factor_maps:
+                # _factor_maps[i] is {int: str}, we need {str: int}
+                str_to_int = {v: k for k, v in self._factor_maps[i].items()}
+                try:
+                    # Map values, handle potential missing values if any (though shouldn't simplify be there)
+                    x_i = np.array([str_to_int.get(val, -1) for val in x_i])
+                except Exception:
+                    # Fallback if mapping fails
+                    sensitivities.append(0.0)
+                    continue
+            else:
+                # Ensure numeric type for non-factors
+                try:
+                    x_i = x_i.astype(float)
+                except ValueError:
+                    # If conversion fails, likely a string column without factor map?
+                    sensitivities.append(0.0)
+                    continue
 
             # Skip if no variation in this dimension
             if np.std(x_i) < 1e-10:
