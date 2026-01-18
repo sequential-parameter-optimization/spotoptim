@@ -3663,7 +3663,9 @@ class SpotOptim(BaseEstimator):
                     )
 
                 # Execute parallel batch
-                batch_results = joblib.Parallel(n_jobs=self.n_jobs)(
+                batch_results = joblib.Parallel(
+                    n_jobs=self.n_jobs, verbose=50 if self.verbose else 0
+                )(
                     joblib.delayed(self._optimize_run_task)(
                         seed,
                         timeout_start,
@@ -6105,6 +6107,17 @@ class SpotOptim(BaseEstimator):
             True
         """
         if self.tensorboard_log:
+            # Check for parallel execution
+            if self.n_jobs > 1:
+                if self.verbose:
+                    print(
+                        "Warning: TensorBoard logging disabled because n_jobs > 1 "
+                        "(parallel execution does not support SummaryWriter pickling)."
+                    )
+                self.config.tensorboard_log = False
+                self.tb_writer = None
+                return
+
             if self.tensorboard_path is None:
                 # Create default path with timestamp
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
