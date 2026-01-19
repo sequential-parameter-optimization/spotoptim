@@ -5,8 +5,8 @@ from spotoptim import SpotOptim
 def dummy_func(X):
     return np.sum(X**2, axis=1)
 
-def test_tensorboard_disabled_in_parallel(capsys):
-    """Test that TensorBoard is disabled when n_jobs > 1."""
+def test_tensorboard_enabled_in_parallel(capsys):
+    """Test that TensorBoard is ENABLED when n_jobs > 1 (steady-state)."""
     opt = SpotOptim(
         fun=dummy_func,
         bounds=[(-5, 5)],
@@ -17,19 +17,32 @@ def test_tensorboard_disabled_in_parallel(capsys):
         verbose=True
     )
     
-    # Check that tb_writer is None
-    assert opt.tb_writer is None, "tb_writer should be None when n_jobs > 1"
+    # Manually trigger initialization (usually called at start of optimize, after initial design)
+    # We need to simulate having some data for it to log
+    opt.X_ = np.array([[0.0], [1.0], [2.0], [3.0]])
+    opt.y_ = np.array([0.0, 1.0, 4.0, 9.0])
     
-    # Check that config was updated (though property access redirects to config)
-    # The fix updates config.tensorboard_log
-    assert opt.config.tensorboard_log is False, "config.tensorboard_log should be set to False"
+    # Initialize stats that _write_tensorboard_scalars expects
+    opt.min_y = 0.0
+    opt.min_mean_y = 0.0
+    opt.min_var_y = 0.0
+    opt.min_mean_X = opt.X_[0]
+    opt.min_X = opt.X_[0]
+    opt.success_rate = 0.0
+    opt._init_tensorboard()
     
-    # Check for warning message
+    # Check that tb_writer is NOT None
+    assert opt.tb_writer is not None, "tb_writer should be enabled when n_jobs > 1"
+    
+    # Check that config was updated
+    assert opt.config.tensorboard_log is True, "config.tensorboard_log should stay True"
+    
+    # Check for enabled message
     captured = capsys.readouterr()
-    assert "Warning: TensorBoard logging disabled" in captured.out
+    assert "TensorBoard logging enabled" in captured.out
     
     # Ensure optimization runs without pickling error
-    # This would crash if tb_writer was present
+    # (SpotOptim handles tb_writer removal during dill serialization)
     opt.optimize()
 
 

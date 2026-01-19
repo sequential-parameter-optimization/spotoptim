@@ -25,7 +25,6 @@ from tabulate import tabulate
 from spotoptim.tricands import tricands
 from spotoptim.sampling.design import generate_uniform_design
 from sklearn.cluster import KMeans
-import joblib
 from spotoptim.plot.visualization import (
     plot_surrogate,
     plot_progress,
@@ -205,8 +204,40 @@ def _gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
             minimize_kwargs["jac"] = True
 
         res = minimize(obj_func, initial_theta, bounds=bounds, **minimize_kwargs)
-
     return res.x, res.fun
+
+
+def _remote_eval_wrapper(pickled_args):
+    """
+    Helper function for parallel evaluation with dill.
+    Accepts a single argument (pickled tuple) to bypass standard pickling limitations.
+    """
+    try:
+        # Import dill locally to ensure it's available in workers
+        import dill
+
+        optimizer, x = dill.loads(pickled_args)
+
+        # Recast to 2D for _evaluate_function
+        x_2d = x.reshape(1, -1)
+        y_arr = optimizer._evaluate_function(x_2d)
+        return x, y_arr[0]
+    except Exception as e:
+        return None, e
+
+
+def _remote_search_task(pickled_optimizer):
+    """
+    Helper function for parallel search with dill.
+    """
+    try:
+        import dill
+
+        optimizer = dill.loads(pickled_optimizer)
+        x_new = optimizer.suggest_next_infill_point()
+        return x_new
+    except Exception as e:
+        return e
 
 
 class SpotOptim(BaseEstimator):
@@ -3784,95 +3815,16 @@ class SpotOptim(BaseEstimator):
                 break
 
             # Check if n_jobs > 1 and we can run in parallel
-            if self.n_jobs > 1:
-                # Parallel execution logic
-                n_tasks = self.n_jobs
 
-                # Check if we have enough budget for n_tasks
-                # If budget is limited, we might want to reduce tasks or run fewer?
-                # For now, let's run n_tasks, and let individual runs handle budget within themselves
-                # However, allocating full remaining_iter to ALL tasks might overspend globally if they all run full?
-                # But max_iter is usually PER RUN + Restarts?
-                # Actually max_iter is TOTAL budget across restarts in the current Logic:
-                # `remaining_iter = self.max_iter - total_evals_so_far`
-                # So if we run 4 tasks in parallel, we should probably divide budget?
-                # OR, user intends max_iter as per-run budget if n_jobs is used?
-                # The docstring says "max_iter (int, optional): Maximum number of total function evaluations"
-                # So we must respect global budget.
-                # If we launch 4 tasks, and each uses 'remaining_iter', we might do 4 * remaining_iter evaluations!
-                # That would violate budget.
-                # Strategy: We launch batch of tasks. Each task gets `remaining_iter`.
-                # But we should check carefully. IF n_jobs=4, and we launch 4 runs.
-                # If we want to burn budget faster, that's fine.
-                # But strictly, we should probably divide budget or check early stopping.
-                # Given 'SpotOptim' restarts logic, it seems 'max_iter' is global cap.
-                # Let's trust the user knows what they are doing with n_jobs, but try to be safe.
-                # We will pass `remaining_iter` to override.
-
-                # Generate seeds for the batch
-                seeds = []
-                for _ in range(n_tasks):
-                    if self.seed is not None:
-                        # Update seed like in sequential loop
-                        self.seed += 1
-                        seeds.append(self.seed)
-                    else:
-                        seeds.append(None)
-
-                if self.verbose:
-                    print(
-                        f"Running batch of {n_tasks} optimizations in parallel with n_jobs={self.n_jobs}..."
-                    )
-
-                # Create shared variable for global best tracking
-                # Use multiprocessing.Value ('d' for double float)
-                # Initialize with infinity
-                import multiprocessing
-
-                # Use Manager to create a shared value that is pickleable/compatible with joblib loky backend
-                manager = multiprocessing.Manager()
-                shared_best_y = manager.Value("d", np.inf)
-                shared_lock = manager.Lock()
-
-                # Execute parallel batch
-                batch_results = joblib.Parallel(
-                    n_jobs=self.n_jobs, verbose=50 if self.verbose else 0
-                )(
-                    joblib.delayed(self._optimize_run_task)(
-                        seed,
-                        timeout_start,
-                        current_X0,  # Note: current_X0 is same for all (or None)
-                        y0_known_val,
-                        remaining_iter,  # Pass budget cap
-                        shared_best_y,  # Pass shared value
-                        shared_lock,  # Pass shared lock
-                    )
-                    for seed in seeds
-                )
-
-                # Process batch results
-                statuses = []
-                for res_status, result in batch_results:
-                    self.restarts_results_.append(result)
-                    statuses.append(res_status)
-
-                # Determine global status from batch
-                # If ANY finished successfully, we might be done?
-                # Or if ALL requested restart?
-                if "FINISHED" in statuses:
-                    status = "FINISHED"
-                else:
-                    status = "RESTART"
-
-            else:
-                # Sequential execution logic (original)
-                status, result = self._optimize_single_run(
-                    timeout_start,
-                    current_X0,
-                    y0_known=y0_known_val,
-                    max_iter_override=remaining_iter,
-                )
-                self.restarts_results_.append(result)
+            # Proceed with optimization run
+            # If n_jobs > 1, the steady-state parallelism is handled INSIDE _optimize_single_run
+            status, result = self._optimize_single_run(
+                timeout_start,
+                current_X0,
+                y0_known=y0_known_val,
+                max_iter_override=remaining_iter,
+            )
+            self.restarts_results_.append(result)
 
             if status == "FINISHED":
                 break
@@ -3960,6 +3912,15 @@ class SpotOptim(BaseEstimator):
                 and the optimization result object.
         """
         # Note: timeout_start is passed as argument
+
+        # Dispatch to steady-state optimizer if proper parallelization is requested
+        if self.n_jobs > 1:
+            return self._optimize_steady_state(
+                timeout_start,
+                X0,
+                y0_known=y0_known,
+                max_iter_override=max_iter_override,
+            )
 
         # Store shared variable if provided
         self.shared_best_y = shared_best_y
@@ -4183,6 +4144,243 @@ class SpotOptim(BaseEstimator):
             success=True,
             message=message,
             X=X_result,
+            y=self.y_,
+        )
+
+    def _update_storage_steady(self, x, y):
+        """Helper to safely append single point (for steady state)."""
+        x = np.atleast_2d(x)
+        if self.X_ is None:
+            self.X_ = x
+            self.y_ = np.array([y])
+        else:
+            self.X_ = np.vstack([self.X_, x])
+            self.y_ = np.append(self.y_, y)
+
+        # Update best
+        if self.best_y_ is None or y < self.best_y_:
+            self.best_y_ = y
+            self.best_x_ = x.flatten()
+
+        self.min_y = self.best_y_
+        self.min_X = self.best_x_
+
+    def _optimize_steady_state(
+        self,
+        timeout_start: float,
+        X0: Optional[np.ndarray],
+        y0_known: Optional[float] = None,
+        max_iter_override: Optional[int] = None,
+    ) -> Tuple[str, OptimizeResult]:
+        """Perform steady-state asynchronous optimization (n_jobs > 1).
+
+        This method implements a steady-state parallelization strategy:
+
+        1.  **Parallel Initial Design**:
+            The first class of `n_initial * repeats_initial` runs are managed by the executor.
+            The first `n_jobs` are sent to separate processors. If the first job is ready,
+            its result is returned and the next of the initial design runs is dispatched.
+            This is continued until all `n_initial * repeats_initial` runs have returned their values.
+
+        2.  **First Surrogate Fit**:
+            The first surrogate model is built (fitted) using the `n_initial * repeats_initial` evaluations
+            collected in step 1.
+
+        3.  **Parallel Search**:
+            `n_jobs` searches (optimizations) on this surrogate are initially performed in parallel.
+
+        4.  **Steady-State Loop**:
+            - If a **Search** task is ready, the candidate point `x_cand` is immediately sent
+              to the evaluation function to get `y_new`.
+            - As soon as `y_new` is available, the surrogate is fitted again (including the new `x_cand`, `y_new`).
+            - A new **Search** task is dispatched with this continuously updated model.
+            - This cycle ensures the surrogate is continuously updated as new points are available.
+        """
+        # Setup similar to _optimize_single_run
+        self._set_seed()
+        X0 = self.get_initial_design(X0)
+        X0 = self._curate_initial_design(X0)
+
+        # We need to know how many evaluations to do
+        effective_max_iter = (
+            max_iter_override if max_iter_override is not None else self.max_iter
+        )
+
+        # Import dill locally (assuming installed)
+        import dill
+
+        from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
+
+        with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+            futures = {}  # map future -> type ('eval', 'search')
+
+            # --- Phase 1: Initial Design Evaluation ---
+            if self.verbose:
+                print(f"Submitted {len(X0)} initial points for parallel evaluation...")
+
+            for i, x in enumerate(X0):
+                # Dump args using dill
+                # Temporarily remove tb_writer (not picklable)
+                _tb_writer_temp = self.tb_writer
+                self.tb_writer = None
+                try:
+                    pickled_args = dill.dumps((self, x))
+                finally:
+                    self.tb_writer = _tb_writer_temp
+
+                fut = executor.submit(_remote_eval_wrapper, pickled_args)
+                futures[fut] = "eval"
+
+            # Wait for all initial to complete
+            initial_done_count = 0
+            while initial_done_count < len(X0):
+                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    # Clean up
+                    ftype = futures.pop(fut)
+                    if ftype != "eval":
+                        continue
+
+                    try:
+                        x_done, y_done = fut.result()
+                        if isinstance(y_done, Exception):
+                            if self.verbose:
+                                print(f"Eval failed: {y_done}")
+                        else:
+                            self._update_storage_steady(x_done, y_done)
+                    except Exception as e:
+                        if self.verbose:
+                            print(f"Task failed: {e}")
+
+                    initial_done_count += 1
+
+            # Init tensorboard and stats
+            self._init_tensorboard()
+
+            if self.y_ is None or len(self.y_) == 0:
+                raise RuntimeError(
+                    "All initial design evaluations failed. "
+                    "Check your objective function for pickling issues or missing imports (e.g. numpy) in the worker process. "
+                    "If defining functions in a notebook/script, ensure imports are inside the function."
+                )
+
+            self._get_best_xy_initial_design()
+
+            # Fit first surrogate
+            if self.verbose:
+                print(
+                    f"Initial design evaluated. Fitting surrogate... (Data size: {len(self.y_)})"
+                )
+            self._fit_scheduler()
+
+            # --- Phase 2: Steady State Loop ---
+            if self.verbose:
+                print("Starting steady-state optimization loop...")
+
+            while (len(self.y_) < effective_max_iter) and (
+                time.time() < timeout_start + self.max_time * 60
+            ):
+                # 1. Fill slots - launch/dispatch
+                n_active = len(futures)
+                n_slots = self.n_jobs - n_active
+
+                if n_slots > 0:
+                    for _ in range(n_slots):
+                        n_pending_evals = sum(
+                            1 for t in futures.values() if t == "eval"
+                        )
+                        if len(self.y_) + n_pending_evals < effective_max_iter:
+                            # Dumpt optimizer (self) using dill
+                            # Note: self can be large, but it's the only way to send state reliably with dill
+                            # We must temporarily remove tb_writer as it is not picklable
+                            _tb_writer_temp = self.tb_writer
+                            self.tb_writer = None
+                            try:
+                                pickled_opt = dill.dumps(self)
+                            finally:
+                                self.tb_writer = _tb_writer_temp
+
+                            fut = executor.submit(_remote_search_task, pickled_opt)
+                            futures[fut] = "search"
+                        else:
+                            break
+
+                if not futures:
+                    break  # Done
+
+                # 2. Wait for completion
+                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    ftype = futures.pop(fut)
+                    try:
+                        res = fut.result()
+                        if isinstance(res, Exception):
+                            if self.verbose:
+                                print(f"Remote {ftype} failed: {res}")
+                            # If search failed, we just retry loop (next iter will check slots)
+                            # If eval failed, we unfortunately lost a budget count unless we don't count it?
+                            # Current logic counts evaluations in self.y_ only if successful.
+                            # So failed eval means budget not consumed, will retry.
+                            continue
+
+                        if ftype == "search":
+                            x_cand = res
+                            # Submit Eval immediately
+                            _tb_writer_temp = self.tb_writer
+                            self.tb_writer = None
+                            try:
+                                pickled_args = dill.dumps((self, x_cand))
+                            finally:
+                                self.tb_writer = _tb_writer_temp
+
+                            fut_eval = executor.submit(
+                                _remote_eval_wrapper, pickled_args
+                            )
+                            futures[fut_eval] = "eval"
+
+                        elif ftype == "eval":
+                            x_new, y_new = res
+                            # Update
+                            self._update_success_rate(np.array([y_new]))
+                            self._update_storage_steady(x_new, y_new)
+                            self.n_iter_ += 1
+
+                            if self.verbose:
+                                # Calculate progress
+                                if self.max_time != np.inf:
+                                    prog_val = (
+                                        (time.time() - timeout_start)
+                                        / (self.max_time * 60)
+                                        * 100
+                                    )
+                                    progress_str = f"Time: {prog_val:.1f}%"
+                                else:
+                                    prog_val = len(self.y_) / effective_max_iter * 100
+                                    progress_str = f"Evals: {prog_val:.1f}%"
+
+                                print(
+                                    f"Iter {len(self.y_)}/{effective_max_iter} | "
+                                    f"Best: {self.best_y_:.6f} | "
+                                    f"Curr: {y_new:.6f} | "
+                                    f"Rate: {self.success_rate:.2f} | "
+                                    f"{progress_str}"
+                                )
+
+                            # Refit surrogate
+                            self._fit_scheduler()
+
+                    except Exception as e:
+                        if self.verbose:
+                            print(f"Error processing future: {e}")
+
+        return "FINISHED", OptimizeResult(
+            x=self.best_x_,
+            fun=self.best_y_,
+            nfev=len(self.y_),
+            nit=self.n_iter_,
+            success=True,
+            message="Optimization finished (Steady State)",
+            X=self.X_,
             y=self.y_,
         )
 
@@ -4461,7 +4659,6 @@ class SpotOptim(BaseEstimator):
             Iteration 1: New best f(x) = 0.500000, mean best: f(x) = 1.500000
         """
         # Update best
-
         # Determine global best value for printing if shared variable exists
         global_best_val = None
         if hasattr(self, "shared_best_y") and self.shared_best_y is not None:
@@ -4510,13 +4707,6 @@ class SpotOptim(BaseEstimator):
 
                 print(msg)
         elif self.verbose:
-            # Print status even if no improvement (optional, but keep consistent with previous behavior logic if desired,
-            # usually users want to see every iteration if verbose)
-            # The user asked for "print also global best... success rate... percentage..."
-            # If we only print on improvement, we miss updates on stagnation.
-            # But the original code printed on 'else' too (for noise mean or just current val).
-            # Let's use the same compact format for non-improvement too.
-
             if self.max_time != np.inf and start_time is not None:
                 progress = (time.time() - start_time) / (self.max_time * 60) * 100
                 progress_str = f"Time: {progress:.1f}%"
@@ -4524,11 +4714,6 @@ class SpotOptim(BaseEstimator):
                 prev_evals = sum(res.nfev for res in self.restarts_results_)
                 progress = (prev_evals + self.counter) / self.max_iter * 100
                 progress_str = f"Evals: {progress:.1f}%"
-
-            # For non-improvement, show current value instead of Best (or both?)
-            # User request: "print also the global best value found so far..."
-            # So we should print global best.
-            # And maybe current value.
 
             current_val = np.min(y_next)
             msg = f"Iter {self.n_iter_}"
@@ -4539,22 +4724,6 @@ class SpotOptim(BaseEstimator):
             if self.noise:
                 mean_y_new = np.mean(y_next)
                 msg += f" | Mean Curr: {mean_y_new:.6f}"
-
-            # Note: _report_progress in non-improvement case needs update too if we want global best there
-            # Since _report_progress handles both logic now (updated above), we just call it.
-            # But wait, original code duplicated logic in 4455 block?
-            # Yes, lines 4455-4483 is an ELSE block for "if improved".
-            # My previous replacement REPLACED the method definition.
-            # I must check if I broke the call sites or if I should replace the usage in the loop.
-            # actually, _report_progress is CALLED in the loop.
-            # The code I replaced (1437) was just the definition.
-            # Wait, the code I SAW in view_file 4440 was INSIDE _update_best_main_loop probably?
-            # Or was it _report_progress?
-            # Checking line 4440 again...
-            # Ah, 4440 is inside `_report_progress`? No, let me check the file structure again.
-            # I might have misidentified the location of the print logic.
-            # Line 1437 seems like a method def, but line 4440 is DEEP in the file.
-            # Let me ABORT this replacement and check where `_report_progress` is defined vs used or if the logic is inline.
             pass
 
     def _determine_termination(self, timeout_start: float) -> str:
@@ -6334,16 +6503,6 @@ class SpotOptim(BaseEstimator):
             True
         """
         if self.tensorboard_log:
-            # Check for parallel execution
-            if self.n_jobs > 1:
-                if self.verbose:
-                    print(
-                        "Warning: TensorBoard logging disabled because n_jobs > 1 "
-                        "(parallel execution does not support SummaryWriter pickling)."
-                    )
-                self.config.tensorboard_log = False
-                self.tb_writer = None
-                return
 
             if self.tensorboard_path is None:
                 # Create default path with timestamp
@@ -6443,10 +6602,6 @@ class SpotOptim(BaseEstimator):
         and scalar metrics to TensorBoard. Only executes if TensorBoard logging
         is enabled (tb_writer is not None).
 
-
-        Returns:
-            None
-
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
@@ -6463,6 +6618,31 @@ class SpotOptim(BaseEstimator):
             >>> opt._init_tensorboard()
             >>> # TensorBoard logs created for all initial points
         """
+        # Create writer if not exists
+        if self.tensorboard_log and self.tb_writer is None:
+            # Determine log directory
+            if self.tensorboard_path:
+                log_dir = self.tensorboard_path
+            else:
+                import datetime
+
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                log_dir = f"runs/spotoptim_{timestamp}"
+                self.config.tensorboard_path = log_dir
+                self.tensorboard_path = log_dir
+
+            try:
+                from torch.utils.tensorboard import SummaryWriter
+
+                self.tb_writer = SummaryWriter(log_dir=log_dir)
+                if self.verbose:
+                    print(f"TensorBoard logging enabled: {log_dir}")
+            except ImportError:
+                print("Warning: torch or tensorboard not installed. Logging disabled.")
+                self.tb_writer = None
+                self.config.tensorboard_log = False
+                self.tensorboard_log = False
+
         if self.tb_writer is not None:
             for i in range(len(self.y_)):
                 self._write_tensorboard_hparams(self.X_[i], self.y_[i])
@@ -6863,13 +7043,13 @@ class SpotOptim(BaseEstimator):
             plt.show()
 
     def _generate_mesh_grid(self, i: int, j: int, num: int = 100):
-        """Wrapper for _generate_mesh_grid from visualization module."""
+        # Wrapper for _generate_mesh_grid from visualization module.
         return _generate_mesh_grid(self, i, j, num)
 
     def _generate_mesh_grid_with_factors(
         self, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
     ):
-        """Wrapper for _generate_mesh_grid_with_factors from visualization module."""
+        # Wrapper for _generate_mesh_grid_with_factors from visualization module.
         return _generate_mesh_grid_with_factors(
             self, i, j, num, is_factor_i, is_factor_j
         )

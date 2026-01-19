@@ -268,9 +268,8 @@ class TestTerminationCriteria:
         opt.optimize()
         
         captured = capsys.readouterr()
-        # In parallel, joblib might swallow output unless configured.
-        # But SpotOptim prints "Running batch of..." which is in the main process.
-        assert "Running batch of" in captured.out
+        # In parallel steady-state, we look for "Submitted X initial points"
+        assert "Submitted 4 initial points" in captured.out
         
         # User requested guarantee that status is shown.
         # We assert that we see status updates from workers.

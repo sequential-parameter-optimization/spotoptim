@@ -36,11 +36,8 @@ def test_parallel_merging():
     assert opt.best_y_ < 50.0 # Loose bound, just ensuring it ran
     
     # 2. Check total evaluations
-    # If parallel runs are merged, total evals should be roughly sum of evaluations per worker.
-    # Each worker runs max_iter evaluations.
-    # So expected total is n_jobs * max_iter (minus potentially some initial design sharing logic if any, but roughly)
-    
-    expected_evals = n_jobs * max_iter
+    # In steady-state parallelization, max_iter is the global budget.
+    expected_evals = max_iter
     
     print(f"Reported evaluations (opt.counter): {opt.counter}")
     print(f"Expected evaluations (n_jobs * max_iter): {expected_evals}")
