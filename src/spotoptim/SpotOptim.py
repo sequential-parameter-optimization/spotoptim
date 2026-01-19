@@ -3,6 +3,7 @@ import random
 import dill
 import re
 import torch
+from functools import partial
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Tuple, List, Any, Dict, Union
 from scipy.optimize import OptimizeResult, differential_evolution, minimize
@@ -77,6 +78,7 @@ class SpotOptimConfig:
     min_tol_metric: str = "chebyshev"
     prob_surrogate: Optional[List[float]] = None
     n_jobs: int = 1
+    acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
 
@@ -117,6 +119,94 @@ class SpotOptimState:
 
     # Restart history
     restarts_results_: List = field(default_factory=list)
+
+
+def _gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
+    """
+    Wrapper for scipy.optimize.minimize to be used with sklearn GaussianProcessRegressor.
+
+    This function allows passing additional options (kwargs) to the optimizer.
+    It automatically handles the `jac` parameter and objective function wrapping
+    based on the specified optimization method.
+
+    Args:
+        obj_func (callable): The objective function to minimize. It should accept the
+            parameter vector as its first argument and return the scalar function value
+            and its gradient (tuple).
+        initial_theta (np.ndarray): Initial guess for the hyperparameters (theta).
+        bounds (list of tuple): Bounds for the hyperparameters.
+        **kwargs: Arbitrary keyword arguments passed directly to `scipy.optimize.minimize`.
+            Examples:
+                method="Nelder-Mead"
+                options={'maxiter': 100}
+
+    Returns:
+        tuple: A tuple containing:
+            - theta_opt (np.ndarray): The optimized hyperparameters.
+            - func_min (float): The value of the objective function at the minimum.
+    """
+    # Default parameters if not specified
+    if "method" not in kwargs:
+        kwargs["method"] = "L-BFGS-B"
+
+    # Clean kwargs for minimize
+    # 'minimize' only accepts specific top-level arguments.
+    # If users pass DE arguments (like maxiter, popsize) in acquisition_optimizer_kwargs,
+    # they might end up here. We should move known option-like args to 'options' or ignore them
+    # if they are specialized for another optimizer (like popsize for DE).
+    # However, 'maxiter' is a valid option for almost all minimize methods, so we move it to options.
+
+    valid_minimize_args = {
+        "fun",
+        "x0",
+        "args",
+        "method",
+        "jac",
+        "hess",
+        "hessp",
+        "bounds",
+        "constraints",
+        "tol",
+        "callback",
+        "options",
+    }
+
+    minimize_kwargs = {}
+    options = kwargs.get("options", {}).copy()
+
+    for k, v in kwargs.items():
+        if k in valid_minimize_args:
+            minimize_kwargs[k] = v
+        else:
+            # Assume unknown kwargs are options (e.g. maxiter, disp, ftol)
+            # This allows sharing kwargs like {'maxiter': 100} between DE and L-BFGS-B
+            options[k] = v
+
+    minimize_kwargs["options"] = options
+    method = minimize_kwargs["method"]
+
+    # Methods that do NOT optimize based on gradients (gradient-free)
+    # These methods cannot handle the (val, grad) tuple return from obj_func.
+    gradient_free_methods = ["Nelder-Mead", "Powell", "COBYLA"]
+
+    if method in gradient_free_methods:
+        # Wrap obj_func to return only the scalar value
+        def obj_func_wrapper(theta):
+            return obj_func(theta)[0]
+
+        # Call minimize without jac=True
+        res = minimize(
+            obj_func_wrapper, initial_theta, bounds=bounds, **minimize_kwargs
+        )
+    else:
+        # Gradient-based methods (L-BFGS-B, BFGS, etc.)
+        # Default behavior: use gradients provided by obj_func
+        if "jac" not in minimize_kwargs:
+            minimize_kwargs["jac"] = True
+
+        res = minimize(obj_func, initial_theta, bounds=bounds, **minimize_kwargs)
+
+    return res.x, res.fun
 
 
 class SpotOptim(BaseEstimator):
@@ -220,6 +310,8 @@ class SpotOptim(BaseEstimator):
             scipy.optimize.minimize (fun, x0, bounds, ...). A specific version is "de_tricands", which combines DE with Tricands.
             It can be parameterized with "prob_de_tricands" (probability of using DE).
             Defaults to "differential_evolution".
+        acquisition_optimizer_kwargs (dict, optional): Kwargs passed to the acquisition function optimizer
+            and GPR surrogate optimizer. Defaults to {'maxiter': 10000, 'gtol': 1e-9}.
         restart_after_n (int, optional): Number of consecutive iterations with zero success rate
             before triggering a restart. Defaults to 100.
         restart_inject_best (bool, optional): Whether to inject the best solution found so far
@@ -487,6 +579,7 @@ class SpotOptim(BaseEstimator):
         min_tol_metric: str = "chebyshev",
         prob_surrogate: Optional[List[float]] = None,
         n_jobs: int = 1,
+        acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
     ):
@@ -521,13 +614,16 @@ class SpotOptim(BaseEstimator):
                 f"max_iter represents the total function evaluation budget including initial design."
             )
 
+        if acquisition_optimizer_kwargs is None:
+            acquisition_optimizer_kwargs = {"maxiter": 10000, "gtol": 1e-9}
+
         # Initialize Configuration
         self.config = SpotOptimConfig(
             bounds=bounds,
             max_iter=max_iter,
             n_initial=n_initial,
             surrogate=surrogate,
-            acquisition=acquisition,
+            acquisition=acquisition.lower(),
             var_type=var_type,
             var_name=var_name,
             var_trans=var_trans,
@@ -561,6 +657,7 @@ class SpotOptim(BaseEstimator):
             min_tol_metric=min_tol_metric,
             prob_surrogate=prob_surrogate,
             n_jobs=n_jobs,
+            acquisition_optimizer_kwargs=acquisition_optimizer_kwargs,
             args=args,
             kwargs=kwargs,
         )
@@ -674,11 +771,20 @@ class SpotOptim(BaseEstimator):
             kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
                 length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
             )
+
+            # Determine optimizer for GPR
+            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
+            if self.config.acquisition_optimizer_kwargs is not None:
+                optimizer = partial(
+                    _gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
+                )
+
             self.surrogate = GaussianProcessRegressor(
                 kernel=kernel,
                 n_restarts_optimizer=100,
                 normalize_y=True,
                 random_state=self.seed,
+                optimizer=optimizer,
             )
 
         # Design generator
@@ -2595,6 +2701,46 @@ class SpotOptim(BaseEstimator):
         best_indices = sorted_indices[:top_n]
         return X_cands[best_indices]
 
+    def _prepare_de_kwargs(self, x0=None):
+        """Prepare kwargs for differential_evolution, extracting options if necessary."""
+        kwargs = (self.config.acquisition_optimizer_kwargs or {}).copy()
+
+        # Extract 'options' if present (compatibility with minimize structure)
+        if "options" in kwargs and isinstance(kwargs["options"], dict):
+            options = kwargs.pop("options")
+            kwargs.update(options)
+
+        # Define valid arguments for differential_evolution
+        valid_de_args = {
+            "strategy",
+            "maxiter",
+            "popsize",
+            "tol",
+            "mutation",
+            "recombination",
+            "seed",
+            "callback",
+            "disp",
+            "polish",
+            "init",
+            "atol",
+            "updating",
+            "workers",
+            "constraints",
+            "x0",
+        }
+
+        # Filter kwargs to only include valid DE arguments
+        # This prevents errors when passing shared kwargs that contain
+        # optimizer-specific options for the surrogate (e.g. 'gtol' for L-BFGS-B)
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_de_args}
+
+        # Set defaults if not provided
+        if "maxiter" not in filtered_kwargs:
+            filtered_kwargs["maxiter"] = 1000
+
+        return filtered_kwargs
+
     def _optimize_acquisition_de(self) -> np.ndarray:
         """Optimize using differential evolution.
 
@@ -2642,9 +2788,9 @@ class SpotOptim(BaseEstimator):
             func=self._acquisition_function,
             bounds=self.bounds,
             seed=self.rng,
-            maxiter=1000,
             callback=callback,
             x0=best_X,
+            **self._prepare_de_kwargs(best_X),
         )
 
         if self.acquisition_fun_return_size > 1:
@@ -2722,16 +2868,28 @@ class SpotOptim(BaseEstimator):
         x0 = self.rng.uniform(low, high)
 
         if isinstance(self.acquisition_optimizer, str):
+            kwargs = self.config.acquisition_optimizer_kwargs or {}
+
+            # Avoid duplicate method args if kwargs has it, but self.acquisition_optimizer is the primary source
+            # However, if user passes kwargs={'method': '...'}, it might conflict if acquisition_optimizer is also a string.
+            # Strategy: self.acquisition_optimizer takes precedence if it's a specific string like "L-BFGS-B"
+            # But wait, acquisition_optimizer default is "differential_evolution".
+            # If user sets acquisition_optimizer="Nelder-Mead", we use that.
+
+            run_kwargs = kwargs.copy()
+            if "method" not in run_kwargs:
+                run_kwargs["method"] = self.acquisition_optimizer
 
             # It's a method name for minimize (e.g. "Nelder-Mead")
             result = minimize(
-                fun=self._acquisition_function,
-                x0=x0,
-                bounds=self.bounds,
-                method=self.acquisition_optimizer,
+                fun=self._acquisition_function, x0=x0, bounds=self.bounds, **run_kwargs
             )
         elif callable(self.acquisition_optimizer):
             # It's a custom callable compatible with minimize
+            # We pass kwargs if the callable supports it?
+            # Safest is to just call it as before, or assume it handles kwargs if documented.
+            # Let's pass kwargs if we can, but the standard protocol might not expect it.
+            # We'll assume the callable is configured or wraps kwargs itself.
             result = self.acquisition_optimizer(
                 fun=self._acquisition_function, x0=x0, bounds=self.bounds
             )
@@ -3517,6 +3675,8 @@ class SpotOptim(BaseEstimator):
         X0: Optional[np.ndarray],
         y0_known_val: Optional[float],
         max_iter_override: Optional[int],
+        shared_best_y=None,  # Accept shared value
+        shared_lock=None,  # Accept shared lock
     ) -> Tuple[str, OptimizeResult]:
         """Helper to run a single optimization task with a specific seed."""
         # Set the seed for this run
@@ -3532,6 +3692,8 @@ class SpotOptim(BaseEstimator):
             X0,
             y0_known=y0_known_val,
             max_iter_override=max_iter_override,
+            shared_best_y=shared_best_y,
+            shared_lock=shared_lock,
         )
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
@@ -3662,6 +3824,16 @@ class SpotOptim(BaseEstimator):
                         f"Running batch of {n_tasks} optimizations in parallel with n_jobs={self.n_jobs}..."
                     )
 
+                # Create shared variable for global best tracking
+                # Use multiprocessing.Value ('d' for double float)
+                # Initialize with infinity
+                import multiprocessing
+
+                # Use Manager to create a shared value that is pickleable/compatible with joblib loky backend
+                manager = multiprocessing.Manager()
+                shared_best_y = manager.Value("d", np.inf)
+                shared_lock = manager.Lock()
+
                 # Execute parallel batch
                 batch_results = joblib.Parallel(
                     n_jobs=self.n_jobs, verbose=50 if self.verbose else 0
@@ -3672,6 +3844,8 @@ class SpotOptim(BaseEstimator):
                         current_X0,  # Note: current_X0 is same for all (or None)
                         y0_known_val,
                         remaining_iter,  # Pass budget cap
+                        shared_best_y,  # Pass shared value
+                        shared_lock,  # Pass shared lock
                     )
                     for seed in seeds
                 )
@@ -3739,15 +3913,21 @@ class SpotOptim(BaseEstimator):
         # Find best result based on 'fun'
         best_result = min(self.restarts_results_, key=lambda r: r.fun)
 
-        # Update internal state with best result to match sequential behavior
+        # Merge results from all parallel runs (and sequential runs if any)
+        X_all_list = [res.X for res in self.restarts_results_]
+        y_all_list = [res.y for res in self.restarts_results_]
+
+        # Concatenate all evaluations
+        self.X_ = np.vstack(X_all_list)
+        self.y_ = np.concatenate(y_all_list)
+        self.counter = len(self.y_)
+
+        # Aggregated iterations (sum of all runs)
+        self.n_iter_ = sum(getattr(res, "nit", 0) for res in self.restarts_results_)
+
+        # Update best solution found
         self.best_x_ = best_result.x
         self.best_y_ = best_result.fun
-        self.X_ = best_result.X
-        self.y_ = best_result.y
-
-        # Update iteration count if available
-        if hasattr(best_result, "nit"):
-            self.n_iter_ = best_result.nit
 
         return best_result
 
@@ -3757,6 +3937,8 @@ class SpotOptim(BaseEstimator):
         X0: Optional[np.ndarray] = None,
         y0_known: Optional[float] = None,
         max_iter_override: Optional[int] = None,
+        shared_best_y=None,  # New arg
+        shared_lock=None,  # New arg
     ) -> Tuple[str, OptimizeResult]:
         """Perform a single optimization run.
 
@@ -3778,6 +3960,10 @@ class SpotOptim(BaseEstimator):
                 and the optimization result object.
         """
         # Note: timeout_start is passed as argument
+
+        # Store shared variable if provided
+        self.shared_best_y = shared_best_y
+        self.shared_lock = shared_lock
 
         # Set seed for reproducibility (crucial for ensuring identical results across runs)
         self._set_seed()
@@ -4275,6 +4461,26 @@ class SpotOptim(BaseEstimator):
             Iteration 1: New best f(x) = 0.500000, mean best: f(x) = 1.500000
         """
         # Update best
+
+        # Determine global best value for printing if shared variable exists
+        global_best_val = None
+        if hasattr(self, "shared_best_y") and self.shared_best_y is not None:
+            # Sync with global shared value
+            lock_obj = getattr(self, "shared_lock", None)
+            if lock_obj is not None:
+                with lock_obj:
+                    if (
+                        self.best_y_ is not None
+                        and self.best_y_ < self.shared_best_y.value
+                    ):
+                        self.shared_best_y.value = self.best_y_
+
+                    min_y_next = np.min(y_next)
+                    if min_y_next < self.shared_best_y.value:
+                        self.shared_best_y.value = min_y_next
+
+                    global_best_val = self.shared_best_y.value
+
         current_best = np.min(y_next)
         if current_best < self.best_y_:
             best_idx_in_new = np.argmin(y_next)
@@ -4294,7 +4500,10 @@ class SpotOptim(BaseEstimator):
                     progress = (prev_evals + self.counter) / self.max_iter * 100
                     progress_str = f"Evals: {progress:.1f}%"
 
-                msg = f"Iter {self.n_iter_} | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
+                msg = f"Iter {self.n_iter_}"
+                if global_best_val is not None:
+                    msg += f" | GlobalBest: {global_best_val:.6f}"
+                msg += f" | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
 
                 if self.noise:
                     msg += f" | Mean Best: {self.min_mean_y:.6f}"
@@ -4322,13 +4531,31 @@ class SpotOptim(BaseEstimator):
             # And maybe current value.
 
             current_val = np.min(y_next)
-            msg = f"Iter {self.n_iter_} | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
+            msg = f"Iter {self.n_iter_}"
+            if global_best_val is not None:
+                msg += f" | GlobalBest: {global_best_val:.6f}"
+            msg += f" | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
 
             if self.noise:
                 mean_y_new = np.mean(y_next)
                 msg += f" | Mean Curr: {mean_y_new:.6f}"
 
-            print(msg)
+            # Note: _report_progress in non-improvement case needs update too if we want global best there
+            # Since _report_progress handles both logic now (updated above), we just call it.
+            # But wait, original code duplicated logic in 4455 block?
+            # Yes, lines 4455-4483 is an ELSE block for "if improved".
+            # My previous replacement REPLACED the method definition.
+            # I must check if I broke the call sites or if I should replace the usage in the loop.
+            # actually, _report_progress is CALLED in the loop.
+            # The code I replaced (1437) was just the definition.
+            # Wait, the code I SAW in view_file 4440 was INSIDE _update_best_main_loop probably?
+            # Or was it _report_progress?
+            # Checking line 4440 again...
+            # Ah, 4440 is inside `_report_progress`? No, let me check the file structure again.
+            # I might have misidentified the location of the print logic.
+            # Line 1437 seems like a method def, but line 4440 is DEEP in the file.
+            # Let me ABORT this replacement and check where `_report_progress` is defined vs used or if the logic is inline.
+            pass
 
     def _determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.

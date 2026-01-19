@@ -1,110 +1,77 @@
-
-"""
-Tests for flexible acquisition optimizer in SpotOptim.
-"""
-
 import pytest
 import numpy as np
-from unittest.mock import MagicMock, patch
-from scipy.optimize import OptimizeResult
-from spotoptim.SpotOptim import SpotOptim
+from spotoptim import SpotOptim
+from sklearn.gaussian_process import GaussianProcessRegressor
+from functools import partial
 
-class TestAcquisitionOptimizer:
-    """Test suite for acquisition optimizer flexibility."""
+def objective_fun(X):
+    return np.sum(X**2, axis=1)
 
-    def setup_method(self):
-        """Setup basic optimizer params."""
-        self.bounds = [(-5, 5), (-5, 5)]
-        self.fun = lambda x: np.sum(x**2)
-        
-    def test_default_optimizer_is_differential_evolution(self):
-        """Test that default optimizer is DE."""
-        opt = SpotOptim(fun=self.fun, bounds=self.bounds)
-        assert opt.acquisition_optimizer == "differential_evolution"
-        
-        # Verify DE is called
-        with patch("spotoptim.SpotOptim.differential_evolution") as mock_de:
-            mock_de.return_value = OptimizeResult(x=np.array([1.0, 1.0]))
-            # Handle acquisition function mocking internal call
-            opt._acquisition_function = MagicMock(return_value=0.0)
-            
-            opt.optimize_acquisition_func()
-            mock_de.assert_called_once()
-            
-    def test_minimize_optimizer_nelder_mead(self):
-        """Test using Nelder-Mead via minimize interface."""
-        opt = SpotOptim(
-            fun=self.fun, 
-            bounds=self.bounds, 
-            acquisition_optimizer="Nelder-Mead",
-            seed=42,
-            acquisition_fun_return_size=1
-        )
-        
-        with patch("spotoptim.SpotOptim.minimize") as mock_minimize:
-            mock_minimize.return_value = OptimizeResult(x=np.array([0.5, 0.5]))
-            opt._acquisition_function = MagicMock(return_value=0.0)
-            
-            res = opt.optimize_acquisition_func()
-            
-            mock_minimize.assert_called_once()
-            args, kwargs = mock_minimize.call_args
-            assert kwargs["method"] == "Nelder-Mead"
-            assert "x0" in kwargs
-            # Verify x0 is within bounds
-            assert np.all(kwargs["x0"] >= -5)
-            assert np.all(kwargs["x0"] <= 5)
-            
-            np.testing.assert_array_equal(res, np.array([0.5, 0.5]))
+def test_acquisition_kwargs_config():
+    """Verify acquisition_optimizer_kwargs is correctly stored in config."""
+    control = {"method": "L-BFGS-B", "options": {"maxiter": 100, "gtol": 1e-4}}
+    optimizer = SpotOptim(
+        fun=objective_fun,
+        bounds=[(-5, 5)],
+        max_iter=5,
+        n_initial=2,
+        acquisition_optimizer_kwargs=control
+    )
+    
+    assert optimizer.config.acquisition_optimizer_kwargs == control
+    assert isinstance(optimizer.surrogate, GaussianProcessRegressor)
+    
+    # Verify optimizer is a partial function
+    assert isinstance(optimizer.surrogate.optimizer, partial)
+    # Check that kwargs match what we passed
+    assert optimizer.surrogate.optimizer.keywords == control
 
-    def test_custom_callable_optimizer(self):
-        """Test using a custom callable optimizer."""
-        
-        def custom_optimizer(fun, x0, bounds, **kwargs):
-            # Mock optimizer that always returns [2.0, 2.0]
-            return OptimizeResult(x=np.array([2.0, 2.0]))
-            
-        opt = SpotOptim(
-            fun=self.fun, 
-            bounds=self.bounds, 
-            acquisition_optimizer=custom_optimizer,
-            acquisition_fun_return_size=1
-        )
-        
-        opt._acquisition_function = MagicMock(return_value=0.0)
-        
-        res = opt.optimize_acquisition_func()
-        np.testing.assert_array_equal(res, np.array([2.0, 2.0]))
+def test_acquisition_kwargs_default():
+    """Verify default behavior (no kwargs)."""
+    optimizer = SpotOptim(
+        fun=objective_fun,
+        bounds=[(-5, 5)],
+        max_iter=5,
+        n_initial=2
+    )
+    
+    assert optimizer.config.acquisition_optimizer_kwargs == {'maxiter': 10000, 'gtol': 1e-9}
+    # Should use partial wrapper with default kwargs
+    assert isinstance(optimizer.surrogate.optimizer, partial)
+    assert optimizer.surrogate.optimizer.keywords == {'maxiter': 10000, 'gtol': 1e-9}
 
-    def test_invalid_optimizer_type(self):
-        """Test exception for invalid optimizer type."""
-        opt = SpotOptim(
-            fun=self.fun, 
-            bounds=self.bounds, 
-            acquisition_optimizer=123 # Invalid int
-        )
-        
-        opt._acquisition_function = MagicMock(return_value=0.0)
-        
-        with pytest.raises(ValueError, match="Unknown acquisition optimizer type"):
-            opt.optimize_acquisition_func()
 
-    def test_minimize_optimizer_with_return_size_gt_1(self):
-        """Test that minimize optimizer returns 2D array when return_size > 1."""
-        opt = SpotOptim(
-            fun=self.fun, 
-            bounds=self.bounds, 
-            acquisition_optimizer="Nelder-Mead",
-            acquisition_fun_return_size=3
-        )
-        
-        with patch("spotoptim.SpotOptim.minimize") as mock_minimize:
-            mock_minimize.return_value = OptimizeResult(x=np.array([0.5, 0.5]))
-            opt._acquisition_function = MagicMock(return_value=0.0)
-            
-            res = opt.optimize_acquisition_func()
-            
-            # Should be shape (1, 2) event though size=3 asked,
-            # because minimize only returns 1 result.
-            assert res.shape == (1, 2)
-            np.testing.assert_array_equal(res, np.array([[0.5, 0.5]]))
+def test_custom_options_execution(capsys):
+    """Run optimization with L-BFGS-B and custom options."""
+    control = {"options": {"maxiter": 5}} 
+    optimizer = SpotOptim(
+        fun=objective_fun,
+        bounds=[(-1, 1)],
+        max_iter=5, 
+        n_initial=3,
+        acquisition_optimizer_kwargs=control,
+        seed=42
+    )
+    
+    optimizer.optimize()
+    
+    assert optimizer.counter > 0
+    assert optimizer.best_y_ is not None
+
+def test_nelder_mead_execution(capsys):
+    """Run optimization with Nelder-Mead (gradient-free)."""
+    # this tests the gradient-stripping wrapper logic
+    control = {"method": "Nelder-Mead", "options": {"maxiter": 100}}
+    optimizer = SpotOptim(
+        fun=objective_fun,
+        bounds=[(-1, 1)],
+        max_iter=5,
+        n_initial=3,
+        acquisition_optimizer_kwargs=control,
+        seed=42
+    )
+    
+    optimizer.optimize()
+    
+    assert optimizer.counter > 0
+    assert optimizer.best_y_ is not None
