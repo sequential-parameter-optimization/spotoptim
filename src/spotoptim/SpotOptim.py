@@ -4264,6 +4264,7 @@ class SpotOptim(BaseEstimator):
                     "If defining functions in a notebook/script, ensure imports are inside the function."
                 )
 
+            self.update_stats()
             self._get_best_xy_initial_design()
 
             # Fit first surrogate
