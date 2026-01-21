@@ -706,9 +706,6 @@ class SpotOptim(BaseEstimator):
         self.rng = np.random.RandomState(self.seed)
         self._set_seed()
 
-        # Determine if noise handling is active (derived attribute)
-        self.noise = (repeats_initial > 1) or (repeats_surrogate > 1)
-
         # Process bounds and factor variables
         self._factor_maps = {}  # Maps dimension index to {int: str} mapping
         self._original_bounds = self.bounds.copy()  # Store original bounds
@@ -1143,7 +1140,10 @@ class SpotOptim(BaseEstimator):
             return None
 
         # Determine which "best" to use
-        if self.noise and hasattr(self, "min_mean_X"):
+        if (
+            (self.repeats_initial > 1 or self.repeats_surrogate > 1)
+            and hasattr(self, "min_mean_X")
+        ):
             best_x = self.min_mean_X
         else:
             best_x = self.best_x_
@@ -2332,7 +2332,7 @@ class SpotOptim(BaseEstimator):
         self.best_y_ = self.y_[best_idx]
 
         if self.verbose:
-            if self.noise:
+            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
                 print(
                     f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
                 )
@@ -2545,7 +2545,7 @@ class SpotOptim(BaseEstimator):
                 # Optional: print selected surrogate? separate from verbose maybe
                 pass
 
-        if self.noise:
+        if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
             X_for_surrogate = self._transform_X(self.mean_X)
             self._fit_surrogate(X_for_surrogate, self.mean_y)
         else:
@@ -2797,7 +2797,10 @@ class SpotOptim(BaseEstimator):
         population_energies = None
         # with probability .5 select best_x_ as x0 or None
         # Determine which "best" to use
-        if self.noise and hasattr(self, "min_mean_X"):
+        if (
+            (self.repeats_initial > 1 or self.repeats_surrogate > 1)
+            and hasattr(self, "min_mean_X")
+        ):
             best_x = self.min_mean_X
         else:
             best_x = self.best_x_
@@ -4703,7 +4706,7 @@ class SpotOptim(BaseEstimator):
                     msg += f" | GlobalBest: {global_best_val:.6f}"
                 msg += f" | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
 
-                if self.noise:
+                if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
                     msg += f" | Mean Best: {self.min_mean_y:.6f}"
 
                 print(msg)
@@ -4722,7 +4725,7 @@ class SpotOptim(BaseEstimator):
                 msg += f" | GlobalBest: {global_best_val:.6f}"
             msg += f" | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
 
-            if self.noise:
+            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
                 mean_y_new = np.mean(y_next)
                 msg += f" | Mean Curr: {mean_y_new:.6f}"
             pass
@@ -4800,7 +4803,7 @@ class SpotOptim(BaseEstimator):
 
         Note:
             OCBA is only applied when:
-            - self.noise is True
+            - (self.repeats_initial > 1) or (self.repeats_surrogate > 1)
             - self.ocba_delta > 0
             - All variances are > 0
             - At least 3 design points exist
@@ -4844,7 +4847,10 @@ class SpotOptim(BaseEstimator):
         # OCBA: Compute optimal budget allocation for noisy functions
         # This determines which existing design points should be re-evaluated
         X_ocba = None
-        if self.noise and self.ocba_delta > 0:
+        if (
+            (self.repeats_initial > 1 or self.repeats_surrogate > 1)
+            and self.ocba_delta > 0
+        ):
             # Check conditions for OCBA (need variance > 0 and at least 3 points)
             if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
                 if self.verbose:
@@ -5112,7 +5118,7 @@ class SpotOptim(BaseEstimator):
         self.counter = len(self.y_)
 
         # Aggregated stats for noisy functions
-        if self.noise:
+        if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
             self.mean_X, self.mean_y, self.var_y = self._aggregate_mean_var(
                 self.X_, self.y_
             )
@@ -6536,7 +6542,7 @@ class SpotOptim(BaseEstimator):
         step = self.counter
         y_last = self.y_[-1]
 
-        if not self.noise:
+        if not (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
             # Non-noisy optimization
             self.tb_writer.add_scalars(
                 "y_values", {"min": self.min_y, "last": y_last}, step

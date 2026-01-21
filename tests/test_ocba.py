@@ -38,7 +38,8 @@ class TestOCBAParameters:
             n_initial=5,
             ocba_delta=2,
         )
-        assert opt_no_noise.noise is False
+        assert opt_no_noise.repeats_initial == 1
+        assert opt_no_noise.repeats_surrogate == 1
         assert opt_no_noise.ocba_delta == 2
 
         opt_with_noise = SpotOptim(
@@ -49,7 +50,7 @@ class TestOCBAParameters:
             repeats_initial=2,
             ocba_delta=2,
         )
-        assert opt_with_noise.noise is True
+        assert opt_with_noise.repeats_initial == 2
         assert opt_with_noise.ocba_delta == 2
 
 

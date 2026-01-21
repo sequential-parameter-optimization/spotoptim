@@ -52,7 +52,7 @@ def test_get_best_hyperparameters_noisy():
     )
     opt.optimize()
     
-    assert opt.noise is True
+    assert opt.repeats_initial > 1
     assert hasattr(opt, "min_mean_X")
     
     params = opt.get_best_hyperparameters()
@@ -86,8 +86,7 @@ def test_get_best_hyperparameters_types():
     # Mock best solution
     # f=1.5, i=5.2 (should round to 5), c=1.1 (should round to 1 -> "dog")
     opt.best_x_ = np.array([1.5, 5.2, 1.1])
-    # Force noise=False to ensure best_x_ is used
-    opt.noise = False
+    # Force noise=False to ensure best_x_ is used - not needed as repeats=1 by default
     
     params = opt.get_best_hyperparameters()
     

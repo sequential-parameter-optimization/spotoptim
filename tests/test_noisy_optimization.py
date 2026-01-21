@@ -28,7 +28,7 @@ class TestNoisyOptimization:
             repeats_initial=3,
         )
         assert opt.repeats_initial == 3
-        assert opt.noise is True
+        assert opt.repeats_initial == 3
 
     def test_repeats_surrogate_parameter(self):
         """Test that repeats_surrogate parameter is properly initialized."""
@@ -40,7 +40,7 @@ class TestNoisyOptimization:
             repeats_surrogate=2,
         )
         assert opt.repeats_surrogate == 2
-        assert opt.noise is True
+        assert opt.repeats_surrogate == 2
 
     def test_noise_flag_activation(self):
         """Test that noise flag is set correctly."""
@@ -51,7 +51,8 @@ class TestNoisyOptimization:
             max_iter=10,
             n_initial=5,
         )
-        assert opt1.noise is False
+        assert opt1.repeats_initial == 1
+        assert opt1.repeats_surrogate == 1
 
         # Only repeats_initial
         opt2 = SpotOptim(
@@ -61,7 +62,7 @@ class TestNoisyOptimization:
             n_initial=5,
             repeats_initial=2,
         )
-        assert opt2.noise is True
+        assert opt2.repeats_initial == 2
 
         # Only repeats_surrogate
         opt3 = SpotOptim(
@@ -71,7 +72,7 @@ class TestNoisyOptimization:
             n_initial=5,
             repeats_surrogate=2,
         )
-        assert opt3.noise is True
+        assert opt3.repeats_surrogate == 2
 
         # Both
         opt4 = SpotOptim(
@@ -82,7 +83,8 @@ class TestNoisyOptimization:
             repeats_initial=2,
             repeats_surrogate=3,
         )
-        assert opt4.noise is True
+        assert opt4.repeats_initial == 2
+        assert opt4.repeats_surrogate == 3
 
     def test_initial_design_repeats(self):
         """Test that initial design points are repeated correctly."""

@@ -357,7 +357,8 @@ class TestSaveLoadWithNoise:
             opt_loaded = SpotOptim.load_result(filename)
 
             # Verify noise statistics preserved
-            assert opt_loaded.noise == opt_original.noise
+            assert opt_loaded.repeats_initial == opt_original.repeats_initial
+            assert opt_loaded.repeats_surrogate == opt_original.repeats_surrogate
             if opt_original.mean_X is not None:
                 np.testing.assert_array_equal(opt_loaded.mean_X, opt_original.mean_X)
                 np.testing.assert_array_equal(opt_loaded.mean_y, opt_original.mean_y)

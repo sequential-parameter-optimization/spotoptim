@@ -325,7 +325,7 @@ class TestMultiObjectiveOptimization:
 
         assert result.success
         assert optimizer.y_mo is not None
-        assert optimizer.noise is True
+        assert optimizer.repeats_initial > 1
 
 
 class TestMultiObjectiveEdgeCases:

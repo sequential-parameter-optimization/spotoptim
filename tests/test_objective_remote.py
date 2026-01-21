@@ -26,7 +26,7 @@ def test_objective_remote():
     assert result.shape == (3,), f"Expected shape (3,), got {result.shape}"
 
     # All values should be finite and non-negative
-    assert np.all(np.isfinite(result)), "All returned values must be finite"
+    assert np.all(np.isfinite(result.astype(float))), "All returned values must be finite"
     assert np.all(result >= 0), "Objective values should be non-negative"
 
     # For identical inputs we expect similar costs; allow some jitter if the
