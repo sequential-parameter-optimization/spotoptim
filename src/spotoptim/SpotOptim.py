@@ -1140,9 +1140,8 @@ class SpotOptim(BaseEstimator):
             return None
 
         # Determine which "best" to use
-        if (
-            (self.repeats_initial > 1 or self.repeats_surrogate > 1)
-            and hasattr(self, "min_mean_X")
+        if (self.repeats_initial > 1 or self.repeats_surrogate > 1) and hasattr(
+            self, "min_mean_X"
         ):
             best_x = self.min_mean_X
         else:
@@ -2797,9 +2796,8 @@ class SpotOptim(BaseEstimator):
         population_energies = None
         # with probability .5 select best_x_ as x0 or None
         # Determine which "best" to use
-        if (
-            (self.repeats_initial > 1 or self.repeats_surrogate > 1)
-            and hasattr(self, "min_mean_X")
+        if (self.repeats_initial > 1 or self.repeats_surrogate > 1) and hasattr(
+            self, "min_mean_X"
         ):
             best_x = self.min_mean_X
         else:
@@ -4869,9 +4867,8 @@ class SpotOptim(BaseEstimator):
         # This determines which existing design points should be re-evaluated
         X_ocba = None
         if (
-            (self.repeats_initial > 1 or self.repeats_surrogate > 1)
-            and self.ocba_delta > 0
-        ):
+            self.repeats_initial > 1 or self.repeats_surrogate > 1
+        ) and self.ocba_delta > 0:
             # Check conditions for OCBA (need variance > 0 and at least 3 points)
             if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
                 if self.verbose:
