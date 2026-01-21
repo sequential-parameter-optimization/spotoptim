@@ -2914,6 +2914,27 @@ class SpotOptim(BaseEstimator):
             if "method" not in run_kwargs:
                 run_kwargs["method"] = self.acquisition_optimizer
 
+            # Define valid arguments for minimize() (excluding fun, x0, bounds which we pass explicitly)
+            valid_minimize_args = {
+                "args",
+                "method",
+                "jac",
+                "hess",
+                "hessp",
+                "constraints",
+                "tol",
+                "callback",
+                "options",
+            }
+
+            # Move any argument that is NOT a valid minimize() argument into 'options'
+            if "options" not in run_kwargs:
+                run_kwargs["options"] = {}
+
+            keys_to_move = [k for k in run_kwargs if k not in valid_minimize_args]
+            for k in keys_to_move:
+                run_kwargs["options"][k] = run_kwargs.pop(k)
+
             # It's a method name for minimize (e.g. "Nelder-Mead")
             result = minimize(
                 fun=self._acquisition_function, x0=x0, bounds=self.bounds, **run_kwargs
