@@ -1,0 +1,4311 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="spotoptim - Sequential Parameter Optimization Toolbox in Python">
+      
+      
+      
+        <link rel="canonical" href="https://github.com/sequential-parameter-optimization/spotoptim/reference/spotoptim/function/so/">
+      
+      
+        <link rel="prev" href="../remote/">
+      
+      
+        <link rel="next" href="../torch_objective/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../../images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>so - spotoptim</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CFira+Code:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Fira Code"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="grey" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spotoptim.function.so" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../.." title="spotoptim" class="md-header__button md-logo" aria-label="spotoptim" data-md-component="logo">
+      
+  <img src="../../../../images/spotlogo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            spotoptim
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              so
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="grey" data-md-color-accent="orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue-grey" data-md-color-accent="orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/sequential-parameter-optimization/spotoptim/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../.." title="spotoptim" class="md-nav__button md-logo" aria-label="spotoptim" data-md-component="logo">
+      
+  <img src="../../../../images/spotlogo.png" alt="logo">
+
+    </a>
+    spotoptim
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/sequential-parameter-optimization/spotoptim/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Code Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    spotoptim
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    spotoptim
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SpotOptim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SpotOptim
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../core/data/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    core
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../data/base/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    data
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../eda/plots/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    eda
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../factor_analyzer/confirmatory_factor_analyzer/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    factor_analyzer
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_1_6" id="__nav_2_1_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    function
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    function
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../forr08a/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    forr08a
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    mo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../remote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    remote
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    so
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    so
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        so
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.ackley" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ackley
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.lennard_jones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lennard_jones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.michalewicz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        michalewicz
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.robot_arm_hard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robot_arm_hard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.robot_arm_obstacle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robot_arm_obstacle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.rosenbrock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rosenbrock
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.wingwt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wingwt
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../torch_objective/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    torch_objective
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../hyperparameters/parameters/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hyperparameters
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../inspection/importance/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspection
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../mo/mo_mm/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    mo
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../nn/linear_regressor/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nn
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../optimizer/schedule_free/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    optimizer
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../plot/contour/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    plot
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../sampling/design/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    sampling
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../surrogate/kernels/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    surrogate
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../tricands/tricands/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    tricands
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+    <a href="../../utils/boundaries/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils
+  
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../sequential-parameter-optimization-cookbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        so
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.ackley" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ackley
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.lennard_jones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        lennard_jones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.michalewicz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        michalewicz
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.robot_arm_hard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robot_arm_hard
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.robot_arm_obstacle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        robot_arm_obstacle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.rosenbrock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rosenbrock
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spotoptim.function.so.wingwt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        wingwt
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../SpotOptim/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Code Reference
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../SpotOptim/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    spotoptim
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../forr08a/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    function
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>so</h1>
+
+<div class="doc doc-object doc-module">
+
+
+
+<a id="spotoptim.function.so"></a>
+    <div class="doc doc-contents first">
+
+        <p>Analytical single-objective test functions for optimization benchmarking.</p>
+<p>This module provides well-known analytical test functions commonly used for evaluating and benchmarking optimization algorithms.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.ackley" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">ackley</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.ackley" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>N-dimensional Ackley function.</p>
+<p>The Ackley function is a widely used test function for optimization algorithms.
+It is characterized by a nearly flat outer region and a large hole at the center.
+The function is multimodal with many local minima but only one global minimum.</p>
+
+
+<details class="mathematical-formula" open>
+  <summary>Mathematical formula</summary>
+  <p>f(X) = -a * exp(-b * sqrt(sum(x_i^2) / n)) - exp(sum(cos(c * x_i)) / n) + a + e</p>
+</details>
+
+<details class="where" open>
+  <summary>where</summary>
+  <ul>
+<li>a = 20 (default)</li>
+<li>b = 0.2 (default)</li>
+<li>c = 2π (default)</li>
+<li>e = exp(1) ≈ 2.71828</li>
+<li>n = number of dimensions</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="array">array</span> - <span title="like">like</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input points with shape (n_samples, n_features) or (n_features,).
+Can be a 1D array for a single point or 2D array for multiple points.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Function values at the input points with shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Global minimum: f(0, 0, &hellip;, 0) = 0</li>
+<li>Typical search domain: [-32.768, 32.768]^N</li>
+<li>Characteristics: Non-convex, multimodal, separable</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation at global minimum:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function</span><span class="w"> </span><span class="kn">import</span> <span class="n">ackley</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ackley</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([0.])</span>
+</code></pre></div>
+    <p>Multiple points evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">ackley</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Should be close to 0</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>  <span class="c1"># Should be positive</span>
+<span class="go">True</span>
+</code></pre></div>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Ackley, D. H. (1987). &ldquo;A connectionist machine for genetic hillclimbing&rdquo;.
+Kluwer Academic Publishers.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">ackley</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;N-dimensional Ackley function.</span>
+
+<span class="sd">    The Ackley function is a widely used test function for optimization algorithms.</span>
+<span class="sd">    It is characterized by a nearly flat outer region and a large hole at the center.</span>
+<span class="sd">    The function is multimodal with many local minima but only one global minimum.</span>
+
+<span class="sd">    Mathematical formula:</span>
+<span class="sd">        f(X) = -a * exp(-b * sqrt(sum(x_i^2) / n)) - exp(sum(cos(c * x_i)) / n) + a + e</span>
+
+<span class="sd">    where:</span>
+<span class="sd">        - a = 20 (default)</span>
+<span class="sd">        - b = 0.2 (default)</span>
+<span class="sd">        - c = 2π (default)</span>
+<span class="sd">        - e = exp(1) ≈ 2.71828</span>
+<span class="sd">        - n = number of dimensions</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (array-like): Input points with shape (n_samples, n_features) or (n_features,).</span>
+<span class="sd">            Can be a 1D array for a single point or 2D array for multiple points.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Function values at the input points with shape (n_samples,).</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Global minimum: f(0, 0, ..., 0) = 0</span>
+<span class="sd">        - Typical search domain: [-32.768, 32.768]^N</span>
+<span class="sd">        - Characteristics: Non-convex, multimodal, separable</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation at global minimum:</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function import ackley</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; X = np.array([0.0, 0.0, 0.0])</span>
+<span class="sd">        &gt;&gt;&gt; ackley(X)</span>
+<span class="sd">        array([0.])</span>
+
+<span class="sd">        Multiple points evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = np.array([[0.0, 0.0], [1.0, 1.0], [-1.0, 1.0]])</span>
+<span class="sd">        &gt;&gt;&gt; result = ackley(X)</span>
+<span class="sd">        &gt;&gt;&gt; result[0]  # Should be close to 0</span>
+<span class="sd">        0.0</span>
+<span class="sd">        &gt;&gt;&gt; result[1] &gt; 0  # Should be positive</span>
+<span class="sd">        True</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        Ackley, D. H. (1987). &quot;A connectionist machine for genetic hillclimbing&quot;.</span>
+<span class="sd">        Kluwer Academic Publishers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.2</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">n_dim</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">sum_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sum_cos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">X</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">term1</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">b</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sum_sq</span> <span class="o">/</span> <span class="n">n_dim</span><span class="p">))</span>
+    <span class="n">term2</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">sum_cos</span> <span class="o">/</span> <span class="n">n_dim</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">term1</span> <span class="o">+</span> <span class="n">term2</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.lennard_jones" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_atoms</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.lennard_jones" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Lennard-Jones Atomic Cluster Potential Energy.</p>
+<p>Calculates the potential energy of a cluster of N atoms interacting via the
+Lennard-Jones potential. The optimization problem involves finding the atomic
+coordinates that minimize the total potential energy. This is a classic
+benchmark problem known for its high difficulty due to the exponential growth
+of local minima with N.</p>
+
+
+<details class="input-domain-handling" open>
+  <summary>Input Domain Handling</summary>
+  <p>The function accepts inputs in the range [0, 1] and internally maps them
+to the search domain [-2, 2] for each coordinate.</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input points.
+- Shape (n_samples, 3 * n_atoms) for batch evaluation.
+- Shape (3 * n_atoms,) for single evaluation.
+The input represents the flattened [x1, y1, z1, x2, y2, z2, &hellip;] coordinates.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_atoms</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of atoms in the cluster. Defaults to 13.</p>
+              </div>
+            </td>
+            <td>
+                  <code>13</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Potential energy values. Shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input dimensions do not match 3 * n_atoms.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Global minimum for N=13: E ≈ -44.3268</li>
+<li>Search domain: [-2, 2]^(3N) (mapped from [0, 1])</li>
+<li>Characteristics: Extremely rugged landscape, non-convex, many local minima.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation (random configuration):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function</span><span class="w"> </span><span class="kn">import</span> <span class="n">lennard_jones</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">39</span><span class="p">)</span>  <span class="c1"># 13 atoms * 3 coords, in [0, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([9.5...e+...])</span>
+</code></pre></div>
+    <p>Batch evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">39</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(5,)</span>
+</code></pre></div>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Wales, D. J., &amp; Doye, J. P. (1997). Global optimization by basin-hopping and
+the lowest energy structures of Lennard-Jones clusters containing up to 110 atoms.
+The Journal of Physical Chemistry A, 101(28), 5111-5116.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lennard_jones</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lennard-Jones Atomic Cluster Potential Energy.</span>
+
+<span class="sd">    Calculates the potential energy of a cluster of N atoms interacting via the</span>
+<span class="sd">    Lennard-Jones potential. The optimization problem involves finding the atomic</span>
+<span class="sd">    coordinates that minimize the total potential energy. This is a classic</span>
+<span class="sd">    benchmark problem known for its high difficulty due to the exponential growth</span>
+<span class="sd">    of local minima with N.</span>
+
+<span class="sd">    Input Domain Handling:</span>
+<span class="sd">        The function accepts inputs in the range [0, 1] and internally maps them</span>
+<span class="sd">        to the search domain [-2, 2] for each coordinate.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (np.ndarray): Input points.</span>
+<span class="sd">            - Shape (n_samples, 3 * n_atoms) for batch evaluation.</span>
+<span class="sd">            - Shape (3 * n_atoms,) for single evaluation.</span>
+<span class="sd">            The input represents the flattened [x1, y1, z1, x2, y2, z2, ...] coordinates.</span>
+<span class="sd">        n_atoms (int, optional): Number of atoms in the cluster. Defaults to 13.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Potential energy values. Shape (n_samples,).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If input dimensions do not match 3 * n_atoms.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Global minimum for N=13: E ≈ -44.3268</span>
+<span class="sd">        - Search domain: [-2, 2]^(3N) (mapped from [0, 1])</span>
+<span class="sd">        - Characteristics: Extremely rugged landscape, non-convex, many local minima.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation (random configuration):</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function import lennard_jones</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(42)</span>
+<span class="sd">        &gt;&gt;&gt; X = rng.random(39)  # 13 atoms * 3 coords, in [0, 1]</span>
+<span class="sd">        &gt;&gt;&gt; lennard_jones(X)</span>
+<span class="sd">        array([9.5...e+...])</span>
+
+<span class="sd">        Batch evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = rng.random((5, 39))</span>
+<span class="sd">        &gt;&gt;&gt; lennard_jones(X).shape</span>
+<span class="sd">        (5,)</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        Wales, D. J., &amp; Doye, J. P. (1997). Global optimization by basin-hopping and</span>
+<span class="sd">        the lowest energy structures of Lennard-Jones clusters containing up to 110 atoms.</span>
+<span class="sd">        The Journal of Physical Chemistry A, 101(28), 5111-5116.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">expected_dim</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_atoms</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_dim</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Input dimension must be 3 * n_atoms (</span><span class="si">{</span><span class="n">expected_dim</span><span class="si">}</span><span class="s2">). Got </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Scale from [0, 1] to [-2, 2]</span>
+    <span class="c1"># [-2, 2] range has length 4.</span>
+    <span class="c1"># val_scaled = val_01 * (max - min) + min</span>
+    <span class="n">coords_flattened</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="mf">4.0</span> <span class="o">-</span> <span class="mf">2.0</span>
+
+    <span class="c1"># Reshape to (n_samples, n_atoms, 3)</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">coords_flattened</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">potential</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+    <span class="c1"># Calculate pairwise interactions</span>
+    <span class="c1"># Simple double loop over atoms is often sufficient for typical N (N &lt; ~150)</span>
+    <span class="c1"># vectorized along samples.</span>
+    <span class="c1"># Potential formula: 4*epsilon * sum_{i&lt;j} [ (sigma/r_ij)^12 - (sigma/r_ij)^6 ]</span>
+    <span class="c1"># We use reduced units: epsilon=1, sigma=1.</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_atoms</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_atoms</span><span class="p">):</span>
+            <span class="c1"># Difference vectors: (n_samples, 3)</span>
+            <span class="n">d_vec</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[:,</span> <span class="n">j</span><span class="p">,</span> <span class="p">:]</span>
+
+            <span class="c1"># Squared Euclidean distances: (n_samples,)</span>
+            <span class="n">r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">d_vec</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># Avoid division by zero / singularities by setting a lower bound</span>
+            <span class="c1"># In optimization, particles can overlap leading to infinity.</span>
+            <span class="c1"># We clip at a small value.</span>
+            <span class="n">r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="mf">1e-12</span><span class="p">)</span>
+
+            <span class="n">inv_r2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">r2</span>
+            <span class="n">inv_r6</span> <span class="o">=</span> <span class="n">inv_r2</span><span class="o">**</span><span class="mi">3</span>
+            <span class="n">inv_r12</span> <span class="o">=</span> <span class="n">inv_r6</span><span class="o">**</span><span class="mi">2</span>
+
+            <span class="n">potential</span> <span class="o">+=</span> <span class="n">inv_r12</span> <span class="o">-</span> <span class="n">inv_r6</span>
+
+    <span class="k">return</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">potential</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.michalewicz" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">michalewicz</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.michalewicz" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>N-dimensional Michalewicz function.</p>
+<p>The Michalewicz function is a multimodal test function with steep ridges and valleys.
+The parameter m defines the steepness of the valleys and ridges. Larger values of m
+result in more difficult search problems. The number of local minima increases
+exponentially with the dimension.</p>
+
+
+<details class="mathematical-formula" open>
+  <summary>Mathematical formula</summary>
+  <p>f(X) = -sum_{i=1}^{n} sin(x_i) * [sin(i * x_i^2 / π)]^(2m)</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="array">array</span> - <span title="like">like</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input points with shape (n_samples, n_features) or (n_features,).
+Can be a 1D array for a single point or 2D array for multiple points.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>m</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Steepness parameter. Higher values make the function more
+difficult to optimize. Defaults to 10.</p>
+              </div>
+            </td>
+            <td>
+                  <code>10</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Function values at the input points with shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Global minimum depends on dimension:<ul>
+<li>2D: f(2.20, 1.57) ≈ -1.8013</li>
+<li>5D: f ≈ -4.687658</li>
+<li>10D: f ≈ -9.66015</li>
+</ul>
+</li>
+<li>Typical search domain: [0, π]^N</li>
+<li>Characteristics: Non-convex, multimodal, non-separable</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function</span><span class="w"> </span><span class="kn">import</span> <span class="n">michalewicz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.20</span><span class="p">,</span> <span class="mf">1.57</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">michalewicz</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Should be close to -1.8013</span>
+<span class="go">-1.801303...</span>
+</code></pre></div>
+    <p>Multiple points evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.20</span><span class="p">,</span> <span class="mf">1.57</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">michalewicz</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([-1.8013..., -1.4508...])</span>
+</code></pre></div>
+    <p>Using different steepness parameter:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.20</span><span class="p">,</span> <span class="mf">1.57</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">michalewicz</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">array([-1.6862...])</span>
+</code></pre></div>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Michalewicz, Z. (1996). &ldquo;Genetic Algorithms + Data Structures = Evolution Programs&rdquo;.
+Springer-Verlag.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">michalewicz</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;N-dimensional Michalewicz function.</span>
+
+<span class="sd">    The Michalewicz function is a multimodal test function with steep ridges and valleys.</span>
+<span class="sd">    The parameter m defines the steepness of the valleys and ridges. Larger values of m</span>
+<span class="sd">    result in more difficult search problems. The number of local minima increases</span>
+<span class="sd">    exponentially with the dimension.</span>
+
+<span class="sd">    Mathematical formula:</span>
+<span class="sd">        f(X) = -sum_{i=1}^{n} sin(x_i) * [sin(i * x_i^2 / π)]^(2m)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (array-like): Input points with shape (n_samples, n_features) or (n_features,).</span>
+<span class="sd">            Can be a 1D array for a single point or 2D array for multiple points.</span>
+<span class="sd">        m (int, optional): Steepness parameter. Higher values make the function more</span>
+<span class="sd">            difficult to optimize. Defaults to 10.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Function values at the input points with shape (n_samples,).</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Global minimum depends on dimension:</span>
+<span class="sd">            - 2D: f(2.20, 1.57) ≈ -1.8013</span>
+<span class="sd">            - 5D: f ≈ -4.687658</span>
+<span class="sd">            - 10D: f ≈ -9.66015</span>
+<span class="sd">        - Typical search domain: [0, π]^N</span>
+<span class="sd">        - Characteristics: Non-convex, multimodal, non-separable</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function import michalewicz</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; X = np.array([2.20, 1.57])</span>
+<span class="sd">        &gt;&gt;&gt; result = michalewicz(X)</span>
+<span class="sd">        &gt;&gt;&gt; result[0]  # Should be close to -1.8013</span>
+<span class="sd">        -1.801303...</span>
+
+<span class="sd">        Multiple points evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = np.array([[2.20, 1.57], [1.0, 1.0]])</span>
+<span class="sd">        &gt;&gt;&gt; michalewicz(X)</span>
+<span class="sd">        array([-1.8013..., -1.4508...])</span>
+
+<span class="sd">        Using different steepness parameter:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = np.array([2.20, 1.57])</span>
+<span class="sd">        &gt;&gt;&gt; michalewicz(X, m=5)</span>
+<span class="sd">        array([-1.6862...])</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        Michalewicz, Z. (1996). &quot;Genetic Algorithms + Data Structures = Evolution Programs&quot;.</span>
+<span class="sd">        Springer-Verlag.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Broadcasting: (n_samples, n_features)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">X</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.robot_arm_hard" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">robot_arm_hard</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.robot_arm_hard" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>10-Link Robot Arm with Maze-Like Hard Constraints.</p>
+<p>A challenging constrained optimization problem where a 10-link planar robot arm
+must reach a target point (5.0, 5.0) while avoiding multiple obstacles forming
+a maze-like environment. This function tests an optimizer&rsquo;s ability to handle
+hard constraints and navigate complex feasible regions.</p>
+<p>The problem features three main difficulty factors:
+1. &lsquo;The Great Wall&rsquo;: A vertical barrier at x=2.5 blocking direct paths
+2. &lsquo;The Ceiling&rsquo;: A horizontal bar at y=8.5 preventing high loop strategies
+3. &lsquo;The Target Trap&rsquo;: Obstacles surrounding the target, requiring precise approach</p>
+
+
+<details class="mathematical-formulation" open>
+  <summary>Mathematical formulation</summary>
+  <p>f(X) = distance_cost + constraint_penalty + energy_regularization</p>
+</details>
+
+<details class="where" open>
+  <summary>where</summary>
+  <ul>
+<li>distance_cost = (x_end - 5.0)^2 + (y_end - 5.0)^2</li>
+<li>constraint_penalty = 10,000 * sum(max(0, r - d + 0.05)^2) for all joints and obstacles</li>
+<li>energy_regularization = 0.01 * sum(angles^2)</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input points with shape (n_samples, 10) or (10,).
+Each sample contains 10 joint angles normalized to [0, 1], which are
+internally mapped to [-1.2π, 1.2π] to allow looping strategies.
+Can be a 1D array for a single point or 2D array for multiple points.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Function values at the input points with shape (n_samples,).
+Lower values indicate better solutions (closer to target with fewer
+constraint violations).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Dimension: 10 (one angle per link)</li>
+<li>Link length: L = 1.0 for all links</li>
+<li>Target position: (5.0, 5.0)</li>
+<li>Search domain: [0, 1]^10 (mapped internally to [-1.2π, 1.2π]^10)</li>
+<li>Characteristics: Highly constrained, non-convex, multimodal</li>
+<li>Constraint penalty: 10,000 per violation (effectively hard constraints)</li>
+<li>Number of obstacles: ~30 forming walls and traps</li>
+<li>Feasible region: Very small relative to search space</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation with random configuration:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function</span><span class="w"> </span><span class="kn">import</span> <span class="n">robot_arm_hard</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>  <span class="c1"># Conservative random angles</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">robot_arm_hard</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1,)</span>
+</code></pre></div>
+    <p>Multiple points evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+<span class="gp">... </span>              <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot_arm_hard</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([...])  # Returns costs for both configurations</span>
+</code></pre></div>
+    <p>Evaluating a straight configuration (all angles = 0.5, mapped to 0 radians):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X_straight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cost_straight</span> <span class="o">=</span> <span class="n">robot_arm_hard</span><span class="p">(</span><span class="n">X_straight</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cost_straight</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1000</span>  <span class="c1"># High cost due to obstacles</span>
+<span class="go">True</span>
+</code></pre></div>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>This function is inspired by robot motion planning problems with obstacles,
+commonly studied in:</p>
+<ul>
+<li>LaValle, S. M. (2006). &ldquo;Planning Algorithms&rdquo;. Cambridge University Press.</li>
+<li>Choset, H., et al. (2005). &ldquo;Principles of Robot Motion: Theory, Algorithms, and Implementations&rdquo;.
+  MIT Press.</li>
+</ul>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">robot_arm_hard</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;10-Link Robot Arm with Maze-Like Hard Constraints.</span>
+
+<span class="sd">    A challenging constrained optimization problem where a 10-link planar robot arm</span>
+<span class="sd">    must reach a target point (5.0, 5.0) while avoiding multiple obstacles forming</span>
+<span class="sd">    a maze-like environment. This function tests an optimizer&#39;s ability to handle</span>
+<span class="sd">    hard constraints and navigate complex feasible regions.</span>
+
+<span class="sd">    The problem features three main difficulty factors:</span>
+<span class="sd">    1. &#39;The Great Wall&#39;: A vertical barrier at x=2.5 blocking direct paths</span>
+<span class="sd">    2. &#39;The Ceiling&#39;: A horizontal bar at y=8.5 preventing high loop strategies</span>
+<span class="sd">    3. &#39;The Target Trap&#39;: Obstacles surrounding the target, requiring precise approach</span>
+
+<span class="sd">    Mathematical formulation:</span>
+<span class="sd">        f(X) = distance_cost + constraint_penalty + energy_regularization</span>
+
+<span class="sd">    where:</span>
+<span class="sd">        - distance_cost = (x_end - 5.0)^2 + (y_end - 5.0)^2</span>
+<span class="sd">        - constraint_penalty = 10,000 * sum(max(0, r - d + 0.05)^2) for all joints and obstacles</span>
+<span class="sd">        - energy_regularization = 0.01 * sum(angles^2)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (np.ndarray): Input points with shape (n_samples, 10) or (10,).</span>
+<span class="sd">            Each sample contains 10 joint angles normalized to [0, 1], which are</span>
+<span class="sd">            internally mapped to [-1.2π, 1.2π] to allow looping strategies.</span>
+<span class="sd">            Can be a 1D array for a single point or 2D array for multiple points.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Function values at the input points with shape (n_samples,).</span>
+<span class="sd">            Lower values indicate better solutions (closer to target with fewer</span>
+<span class="sd">            constraint violations).</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Dimension: 10 (one angle per link)</span>
+<span class="sd">        - Link length: L = 1.0 for all links</span>
+<span class="sd">        - Target position: (5.0, 5.0)</span>
+<span class="sd">        - Search domain: [0, 1]^10 (mapped internally to [-1.2π, 1.2π]^10)</span>
+<span class="sd">        - Characteristics: Highly constrained, non-convex, multimodal</span>
+<span class="sd">        - Constraint penalty: 10,000 per violation (effectively hard constraints)</span>
+<span class="sd">        - Number of obstacles: ~30 forming walls and traps</span>
+<span class="sd">        - Feasible region: Very small relative to search space</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation with random configuration:</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function import robot_arm_hard</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; X = np.random.rand(10) * 0.5  # Conservative random angles</span>
+<span class="sd">        &gt;&gt;&gt; result = robot_arm_hard(X)</span>
+<span class="sd">        &gt;&gt;&gt; result.shape</span>
+<span class="sd">        (1,)</span>
+
+<span class="sd">        Multiple points evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = np.array([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],</span>
+<span class="sd">        ...               [0.3, 0.4, 0.5, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]])</span>
+<span class="sd">        &gt;&gt;&gt; robot_arm_hard(X)</span>
+<span class="sd">        array([...])  # Returns costs for both configurations</span>
+
+<span class="sd">        Evaluating a straight configuration (all angles = 0.5, mapped to 0 radians):</span>
+
+<span class="sd">        &gt;&gt;&gt; X_straight = np.full(10, 0.5)</span>
+<span class="sd">        &gt;&gt;&gt; cost_straight = robot_arm_hard(X_straight)</span>
+<span class="sd">        &gt;&gt;&gt; cost_straight[0] &gt; 1000  # High cost due to obstacles</span>
+<span class="sd">        True</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        This function is inspired by robot motion planning problems with obstacles,</span>
+<span class="sd">        commonly studied in:</span>
+
+<span class="sd">        - LaValle, S. M. (2006). &quot;Planning Algorithms&quot;. Cambridge University Press.</span>
+<span class="sd">        - Choset, H., et al. (2005). &quot;Principles of Robot Motion: Theory, Algorithms, and Implementations&quot;.</span>
+<span class="sd">          MIT Press.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c1"># Map [0, 1] input to [-pi, pi]</span>
+    <span class="c1"># We use a slightly wider range [-1.2*pi, 1.2*pi] to allow &#39;looping&#39;</span>
+    <span class="c1"># strategies which are sometimes necessary to solve hard mazes.</span>
+    <span class="n">Angles</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="mf">2.4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">Angles</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># --- Configuration ---</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+
+    <span class="c1"># Define Obstacles (The Maze)</span>
+    <span class="n">obstacles</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># 1. The Great Wall: Vertical barrier at x=2.5, from y=-2 to y=6</span>
+    <span class="c1"># This forces the arm to reach &#39;way over&#39; (high energy) or &#39;snake around&#39;.</span>
+    <span class="c1"># We create it using overlapping circles to form a wall.</span>
+    <span class="k">for</span> <span class="n">y_pos</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>
+        <span class="n">obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">y_pos</span><span class="p">]),</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">})</span>
+
+    <span class="c1"># 2. The Ceiling: A horizontal bar at y=8 to prevent trivial &#39;high loops&#39;</span>
+    <span class="k">for</span> <span class="n">x_pos</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+        <span class="n">obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x_pos</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">]),</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">})</span>
+
+    <span class="c1"># 3. The Target Trap: Surround the target (5,5) with hazards</span>
+    <span class="c1"># Leaving only a small opening from the &#39;bottom-left&#39;.</span>
+    <span class="n">obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">]),</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">})</span>  <span class="c1"># Right</span>
+    <span class="n">obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">]),</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">})</span>  <span class="c1"># Top</span>
+    <span class="n">obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">]),</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">}</span>
+    <span class="p">)</span>  <span class="c1"># Bottom-Left (Partial Block)</span>
+
+    <span class="c1"># --- Forward Kinematics ---</span>
+    <span class="c1"># Cumulative angles</span>
+    <span class="n">abs_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">Angles</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Link vectors</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">abs_angles</span><span class="p">)</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">abs_angles</span><span class="p">)</span>
+
+    <span class="c1"># Joint positions (n_samples, 10)</span>
+    <span class="n">jx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">jy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># --- Cost Calculation ---</span>
+
+    <span class="c1"># 1. Distance Cost (End effector to Target)</span>
+    <span class="n">ex</span><span class="p">,</span> <span class="n">ey</span> <span class="o">=</span> <span class="n">jx</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">jy</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dist_sq</span> <span class="o">=</span> <span class="p">(</span><span class="n">ex</span> <span class="o">-</span> <span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">ey</span> <span class="o">-</span> <span class="n">target</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># 2. Hard Constraint Penalty</span>
+    <span class="c1"># We sum penalties for ALL joints against ALL obstacles</span>
+    <span class="n">penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+    <span class="c1"># Vectorized obstacle check could be faster, but loops are clearer for definition</span>
+    <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="n">obstacles</span><span class="p">:</span>
+        <span class="n">ox</span><span class="p">,</span> <span class="n">oy</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">]</span>
+
+        <span class="c1"># We check every joint</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+            <span class="c1"># Calculate distance from joint j to obstacle center</span>
+            <span class="c1"># (Avoid sqrt for speed where possible, but here we need true distance for linear penalty)</span>
+            <span class="n">d_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">jx</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">ox</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">jy</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">oy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># Constraint Violation</span>
+            <span class="c1"># If d_obs &lt; r, we are inside the obstacle.</span>
+            <span class="c1"># We use a &quot;Hard&quot; quadratic penalty that shoots up explicitly.</span>
+            <span class="n">violation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">r</span> <span class="o">-</span> <span class="n">d_obs</span> <span class="o">+</span> <span class="mf">0.05</span><span class="p">)</span>  <span class="c1"># 0.05 buffer &#39;skin&#39;</span>
+
+            <span class="c1"># 10,000 multiplier makes this a &quot;Death Penalty&quot; - practically a hard constraint</span>
+            <span class="n">penalty</span> <span class="o">+=</span> <span class="mi">10000</span> <span class="o">*</span> <span class="n">violation</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1"># 3. Regularization (Optional but realistic)</span>
+    <span class="c1"># Penalize extreme contortions (minimize sum of squared relative angles)</span>
+    <span class="c1"># This smooths the landscape slightly but makes the &quot;optimal&quot; path harder to find</span>
+    <span class="c1"># because the arm &#39;wants&#39; to be straight but &#39;needs&#39; to bend.</span>
+    <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Angles</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.01</span>
+
+    <span class="k">return</span> <span class="n">dist_sq</span> <span class="o">+</span> <span class="n">penalty</span> <span class="o">+</span> <span class="n">energy</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.robot_arm_obstacle" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.robot_arm_obstacle" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</p>
+<p>The goal is to minimize the distance of the end-effector to a target point
+while avoiding collision with a set of circular obstacles. This problem mimics
+a real-world inverse kinematics solver for a redundant manipulator.</p>
+
+
+<details class="input-domain-handling" open>
+  <summary>Input Domain Handling</summary>
+  <p>The function accepts inputs in the range [0, 1] and internally maps them
+to the search domain [-pi, pi] for each joint angle (radians).</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input angles (normalized).
+- Shape (n_samples, 10).
+The input contains the normalized relative angles for the 10 links.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Cost values (Weighted sum of Distance + Penalty). Shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If input dimensions do not match 10.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Target: (5.0, 5.0)</li>
+<li>Obstacles:<ul>
+<li>Order 1: (2,2), r=1</li>
+<li>Order 2: (4,3), r=1.5</li>
+<li>Order 3: (3,6), r=1</li>
+</ul>
+</li>
+<li>Dimensions: 10 (fixed)</li>
+<li>Search domain: [-pi, pi]^10 (mapped from [0, 1])</li>
+<li>Characteristics: Multimodal, disjoint feasible regions, constrained.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function.so</span><span class="w"> </span><span class="kn">import</span> <span class="n">robot_arm_obstacle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># Random angles in [0, 1]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([2547...])</span>
+</code></pre></div>
+    <p>Batch evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(5,)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">robot_arm_obstacle</span><span class="p">(</span><span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</span>
+
+<span class="sd">    The goal is to minimize the distance of the end-effector to a target point</span>
+<span class="sd">    while avoiding collision with a set of circular obstacles. This problem mimics</span>
+<span class="sd">    a real-world inverse kinematics solver for a redundant manipulator.</span>
+
+<span class="sd">    Input Domain Handling:</span>
+<span class="sd">        The function accepts inputs in the range [0, 1] and internally maps them</span>
+<span class="sd">        to the search domain [-pi, pi] for each joint angle (radians).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (np.ndarray): Input angles (normalized).</span>
+<span class="sd">            - Shape (n_samples, 10).</span>
+<span class="sd">            The input contains the normalized relative angles for the 10 links.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Cost values (Weighted sum of Distance + Penalty). Shape (n_samples,).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If input dimensions do not match 10.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Target: (5.0, 5.0)</span>
+<span class="sd">        - Obstacles:</span>
+<span class="sd">            - Order 1: (2,2), r=1</span>
+<span class="sd">            - Order 2: (4,3), r=1.5</span>
+<span class="sd">            - Order 3: (3,6), r=1</span>
+<span class="sd">        - Dimensions: 10 (fixed)</span>
+<span class="sd">        - Search domain: [-pi, pi]^10 (mapped from [0, 1])</span>
+<span class="sd">        - Characteristics: Multimodal, disjoint feasible regions, constrained.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function.so import robot_arm_obstacle</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; rng = np.random.default_rng(42)</span>
+<span class="sd">        &gt;&gt;&gt; X = rng.random(10)  # Random angles in [0, 1]</span>
+<span class="sd">        &gt;&gt;&gt; robot_arm_obstacle(X)</span>
+<span class="sd">        array([2547...])</span>
+
+<span class="sd">        Batch evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = rng.random((5, 10))</span>
+<span class="sd">        &gt;&gt;&gt; robot_arm_obstacle(X).shape</span>
+<span class="sd">        (5,)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_dims</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">n_dims</span> <span class="o">!=</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;This function requires exactly 10 dimensions (joint angles), got </span><span class="si">{</span><span class="n">n_dims</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Scale from [0, 1] to [-pi, pi]</span>
+    <span class="c1"># [-pi, pi] range length is 2*pi</span>
+    <span class="n">X_scaled</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="c1"># --- Problem Configuration ---</span>
+    <span class="c1"># Length of each arm link</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span>
+
+    <span class="c1"># Target coordinates (reachable within total length of 10)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+
+    <span class="c1"># Obstacles: centers (x,y) and radii (r)</span>
+    <span class="n">obstacles</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]),</span> <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]),</span> <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">]),</span> <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+    <span class="p">]</span>
+
+    <span class="c1"># --- Forward Kinematics ---</span>
+    <span class="c1"># X contains relative angles (theta).</span>
+    <span class="c1"># Absolute angles (cumulative sum of relative angles)</span>
+    <span class="c1"># shape: (n_samples, 10)</span>
+    <span class="n">abs_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Calculate (dx, dy) for each link</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">abs_angles</span><span class="p">)</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">abs_angles</span><span class="p">)</span>
+
+    <span class="c1"># Calculate joint coordinates (cumulative sum of dx, dy)</span>
+    <span class="c1"># Positions shape: (n_samples, 10) for x and y separately</span>
+    <span class="n">joint_positions_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">joint_positions_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># --- Cost Calculation ---</span>
+
+    <span class="c1"># 1. Distance to Target (End-effector only)</span>
+    <span class="n">end_effector_x</span> <span class="o">=</span> <span class="n">joint_positions_x</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">end_effector_y</span> <span class="o">=</span> <span class="n">joint_positions_y</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">dist_sq</span> <span class="o">=</span> <span class="p">(</span><span class="n">end_effector_x</span> <span class="o">-</span> <span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">end_effector_y</span> <span class="o">-</span> <span class="n">target</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># 2. Obstacle Penalty</span>
+    <span class="n">penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+    <span class="c1"># Check every joint against obstacles</span>
+    <span class="c1"># (Simplified: checking joints only, not full link segments)</span>
+    <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="n">obstacles</span><span class="p">:</span>
+        <span class="n">ox</span><span class="p">,</span> <span class="n">oy</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&quot;radius&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Check all 10 joints for this obstacle</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+            <span class="n">jx</span> <span class="o">=</span> <span class="n">joint_positions_x</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+            <span class="n">jy</span> <span class="o">=</span> <span class="n">joint_positions_y</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+
+            <span class="c1"># Distance from joint to obstacle center</span>
+            <span class="n">d_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">jx</span> <span class="o">-</span> <span class="n">ox</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">jy</span> <span class="o">-</span> <span class="n">oy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># If inside radius + buffer, add large penalty</span>
+            <span class="c1"># Using violation metric: max(0, r - d + buffer)</span>
+            <span class="c1"># Buffer = 0.1 to discourage grazing</span>
+            <span class="n">violation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">r</span> <span class="o">-</span> <span class="n">d_obs</span> <span class="o">+</span> <span class="mf">0.1</span><span class="p">)</span>
+
+            <span class="c1"># Penalty weight 1000</span>
+            <span class="n">penalty</span> <span class="o">+=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">violation</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">dist_sq</span> <span class="o">+</span> <span class="n">penalty</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.rosenbrock" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">rosenbrock</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.rosenbrock" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>N-dimensional Rosenbrock function.</p>
+<p>The Rosenbrock function is a classic test function for optimization algorithms.
+It is characterized by a long, narrow, parabolic-shaped valley. The global
+minimum is inside the valley and is hard to find for many algorithms.</p>
+
+
+<details class="for-the-2d-case" open>
+  <summary>For the 2D case</summary>
+  <p>f(x, y) = (1 - x)^2 + 100 * (y - x^2)^2</p>
+</details>
+
+<details class="the-generalized-form-for-n-dimensions" open>
+  <summary>The generalized form for N dimensions</summary>
+  <p>f(X) = sum_{i=1}^{N-1} [100 * (x_{i+1} - x_i^2)^2 + (1 - x_i)^2]</p>
+</details>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="array">array</span> - <span title="like">like</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input points with shape (n_samples, n_features) or (n_features,).
+Can be a 1D array for a single point or 2D array for multiple points.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Function values at the input points with shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If X has fewer than 2 dimensions.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Note</summary>
+  <ul>
+<li>Global minimum: f(1, 1, &hellip;, 1) = 0</li>
+<li>Typical search domain: [-5, 10]^N or [-2, 2]^N</li>
+<li>Characteristics: Non-convex, unimodal</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function</span><span class="w"> </span><span class="kn">import</span> <span class="n">rosenbrock</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rosenbrock</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([0.])</span>
+</code></pre></div>
+    <p>Multiple points evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rosenbrock</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([1.00e+00, 0.00e+00, 3.06e+01])</span>
+</code></pre></div>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Rosenbrock, H.H. (1960). &ldquo;An automatic method for finding the
+greatest or least value of a function&rdquo;. The Computer Journal.
+3 (3): 175–184.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rosenbrock</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;N-dimensional Rosenbrock function.</span>
+
+<span class="sd">    The Rosenbrock function is a classic test function for optimization algorithms.</span>
+<span class="sd">    It is characterized by a long, narrow, parabolic-shaped valley. The global</span>
+<span class="sd">    minimum is inside the valley and is hard to find for many algorithms.</span>
+
+<span class="sd">    For the 2D case:</span>
+<span class="sd">        f(x, y) = (1 - x)^2 + 100 * (y - x^2)^2</span>
+
+<span class="sd">    The generalized form for N dimensions:</span>
+<span class="sd">        f(X) = sum_{i=1}^{N-1} [100 * (x_{i+1} - x_i^2)^2 + (1 - x_i)^2]</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (array-like): Input points with shape (n_samples, n_features) or (n_features,).</span>
+<span class="sd">            Can be a 1D array for a single point or 2D array for multiple points.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Function values at the input points with shape (n_samples,).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If X has fewer than 2 dimensions.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        - Global minimum: f(1, 1, ..., 1) = 0</span>
+<span class="sd">        - Typical search domain: [-5, 10]^N or [-2, 2]^N</span>
+<span class="sd">        - Characteristics: Non-convex, unimodal</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function import rosenbrock</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; X = np.array([1.0, 1.0])</span>
+<span class="sd">        &gt;&gt;&gt; rosenbrock(X)</span>
+<span class="sd">        array([0.])</span>
+
+<span class="sd">        Multiple points evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = np.array([[0.0, 0.0], [1.0, 1.0], [0.5, 0.5]])</span>
+<span class="sd">        &gt;&gt;&gt; rosenbrock(X)</span>
+<span class="sd">        array([1.00e+00, 0.00e+00, 3.06e+01])</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        Rosenbrock, H.H. (1960). &quot;An automatic method for finding the</span>
+<span class="sd">        greatest or least value of a function&quot;. The Computer Journal.</span>
+<span class="sd">        3 (3): 175–184.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Rosenbrock function requires at least 2 dimensions, got </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># For 2D case (optimized)</span>
+    <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="c1"># For N-dimensional case</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">x_i</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">x_i_plus_1</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_i_plus_1</span> <span class="o">-</span> <span class="n">x_i</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x_i</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="spotoptim.function.so.wingwt" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">wingwt</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code>
+
+<a href="#spotoptim.function.so.wingwt" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Aircraft Wing Weight function.</p>
+<p>The example models the weight of an unpainted light aircraft wing.
+The function accepts inputs in the unit cube [0,1]^9 and returns the wing weight.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X</code>
+            </td>
+            <td>
+                  <code><span title="array">array</span> - <span title="like">like</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input points with shape (n_samples, 9) or (9,) or (10,) or (n_samples, 10).
+Input variables order: [Sw, Wfw, A, L, q, l, Rtc, Nz, Wdg, Wp(optional)]</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>np.ndarray: Wing weight values at the input points with shape (n_samples,).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Single point evaluation (Baseline Cessna C172 - Unpainted):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">spotoptim.function.so</span><span class="w"> </span><span class="kn">import</span> <span class="n">wingwt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Baseline configuration in unit cube</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_base</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.48</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.38</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.62</span><span class="p">,</span> <span class="mf">0.344</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.37</span><span class="p">,</span> <span class="mf">0.38</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wingwt</span><span class="p">(</span><span class="n">x_base</span><span class="p">)</span>
+<span class="go">array([233.90...])</span>
+</code></pre></div>
+    <p>Batch evaluation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x_base</span><span class="p">,</span> <span class="n">x_base</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wingwt</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="go">array([233.90..., 233.90...])</span>
+</code></pre></div>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Forrester, A., Sobester, A., &amp; Keane, A. (2008). Engineering design via surrogate modelling:
+a practical guide. John Wiley &amp; Sons.</p>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/spotoptim/function/so.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">wingwt</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aircraft Wing Weight function.</span>
+
+<span class="sd">    The example models the weight of an unpainted light aircraft wing.</span>
+<span class="sd">    The function accepts inputs in the unit cube [0,1]^9 and returns the wing weight.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        X (array-like): Input points with shape (n_samples, 9) or (9,) or (10,) or (n_samples, 10).</span>
+<span class="sd">            Input variables order: [Sw, Wfw, A, L, q, l, Rtc, Nz, Wdg, Wp(optional)]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: Wing weight values at the input points with shape (n_samples,).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Single point evaluation (Baseline Cessna C172 - Unpainted):</span>
+
+<span class="sd">        &gt;&gt;&gt; from spotoptim.function.so import wingwt</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; # Baseline configuration in unit cube</span>
+<span class="sd">        &gt;&gt;&gt; x_base = np.array([0.48, 0.4, 0.38, 0.5, 0.62, 0.344, 0.4, 0.37, 0.38])</span>
+<span class="sd">        &gt;&gt;&gt; wingwt(x_base)</span>
+<span class="sd">        array([233.90...])</span>
+
+<span class="sd">        Batch evaluation:</span>
+
+<span class="sd">        &gt;&gt;&gt; X = np.vstack([x_base, x_base])</span>
+<span class="sd">        &gt;&gt;&gt; wingwt(X)</span>
+<span class="sd">        array([233.90..., 233.90...])</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        Forrester, A., Sobester, A., &amp; Keane, A. (2008). Engineering design via surrogate modelling:</span>
+<span class="sd">        a practical guide. John Wiley &amp; Sons.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Ensure x is a 2D array for batch evaluation</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">n_features</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;wingwt expects 9 or 10 features, got </span><span class="si">{</span><span class="n">n_features</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Transform from unit cube to natural scales</span>
+    <span class="n">Sw</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">200</span> <span class="o">-</span> <span class="mi">150</span><span class="p">)</span> <span class="o">+</span> <span class="mi">150</span>
+    <span class="n">Wfw</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">300</span> <span class="o">-</span> <span class="mi">220</span><span class="p">)</span> <span class="o">+</span> <span class="mi">220</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">-</span> <span class="mi">6</span><span class="p">)</span> <span class="o">+</span> <span class="mi">6</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">10</span> <span class="o">-</span> <span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">))</span> <span class="o">-</span> <span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">45</span> <span class="o">-</span> <span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="mi">16</span>
+    <span class="n">taper</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">Rtc</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.18</span> <span class="o">-</span> <span class="mf">0.08</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.08</span>
+    <span class="n">Nz</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">6</span> <span class="o">-</span> <span class="mf">2.5</span><span class="p">)</span> <span class="o">+</span> <span class="mf">2.5</span>
+    <span class="n">Wdg</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">8</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2500</span> <span class="o">-</span> <span class="mi">1700</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1700</span>
+
+    <span class="c1"># Paint weight (W_p)</span>
+    <span class="c1"># Range assumed [0.06, 0.08] based on typical value 0.064 if modeled.</span>
+    <span class="c1"># If not provided (9 inputs), assume unpainted (0.0).</span>
+    <span class="k">if</span> <span class="n">n_features</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="c1"># User is explicitly providing W_p, scale it.</span>
+        <span class="c1"># Assuming domain [0.06, 0.08] for the 10th variable &quot;painted&quot; case.</span>
+        <span class="c1"># This is a guess to support the physics.</span>
+        <span class="n">Wp</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">9</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.08</span> <span class="o">-</span> <span class="mf">0.06</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.06</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Wp</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Calculate weight on natural scale</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="mf">0.036</span> <span class="o">*</span> <span class="n">Sw</span><span class="o">**</span><span class="mf">0.758</span> <span class="o">*</span> <span class="n">Wfw</span><span class="o">**</span><span class="mf">0.0035</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.6</span> <span class="o">*</span> <span class="n">q</span><span class="o">**</span><span class="mf">0.006</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="n">taper</span><span class="o">**</span><span class="mf">0.04</span> <span class="o">*</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">Rtc</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">Nz</span> <span class="o">*</span> <span class="n">Wdg</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.49</span><span class="p">)</span>
+
+    <span class="c1"># Add paint weight term</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">W</span> <span class="o">+</span> <span class="n">Sw</span> <span class="o">*</span> <span class="n">Wp</span>
+
+    <span class="k">return</span> <span class="n">W</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2004 - 2025
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/bartzbeielstein" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M459.4 151.7c.3 4.5.3 9.1.3 13.6 0 138.7-105.6 298.6-298.6 298.6-59.5 0-114.7-17.2-161.1-47.1 8.4 1 16.6 1.3 25.3 1.3 49.1 0 94.2-16.6 130.3-44.8-46.1-1-84.8-31.2-98.1-72.8 6.5 1 13 1.6 19.8 1.6 9.4 0 18.8-1.3 27.6-3.6-48.1-9.7-84.1-52-84.1-103v-1.3c14 7.8 30.2 12.7 47.4 13.3-28.3-18.8-46.8-51-46.8-87.4 0-19.5 5.2-37.4 14.3-53C87.4 130.8 165 172.4 252.1 176.9c-1.6-7.8-2.6-15.9-2.6-24C249.5 95.1 296.3 48 354.4 48c30.2 0 57.5 12.7 76.7 33.1 23.7-4.5 46.5-13.3 66.6-25.3-7.8 24.4-24.4 44.8-46.1 57.8 21.1-2.3 41.6-8.1 60.4-16.2-14.3 20.8-32.2 39.3-52.6 54.3"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://www.linkedin.com/in/thomas-bartz-beielstein-3157b541/" target="_blank" rel="noopener" title="www.linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zM102.2 96a38.5 38.5 0 1 1 0 77 38.5 38.5 0 1 1 0-77m282.1 320h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["content.code.copy", "navigation.instant", "navigation.indexes", "navigation.path", "navigation.prune", "navigation.expand"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
