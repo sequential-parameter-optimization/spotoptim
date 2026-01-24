@@ -613,16 +613,16 @@ class Rotator(BaseEstimator):
         phi = None
         method = self.method.lower()
         if method == "varimax":
-            (new_loadings, new_rotation_mtx) = self._varimax(X)
+            new_loadings, new_rotation_mtx = self._varimax(X)
 
         elif method == "promax":
-            (new_loadings, new_rotation_mtx, phi) = self._promax(X)
+            new_loadings, new_rotation_mtx, phi = self._promax(X)
 
         elif method in OBLIQUE_ROTATIONS:
-            (new_loadings, new_rotation_mtx, phi) = self._oblique(X, method)
+            new_loadings, new_rotation_mtx, phi = self._oblique(X, method)
 
         elif method in ORTHOGONAL_ROTATIONS:
-            (new_loadings, new_rotation_mtx) = self._orthogonal(X, method)
+            new_loadings, new_rotation_mtx = self._orthogonal(X, method)
 
         else:
             raise ValueError(
@@ -630,7 +630,7 @@ class Rotator(BaseEstimator):
                 "following: {}.".format(", ".join(POSSIBLE_ROTATIONS))
             )
 
-        (self.loadings_, self.rotation_, self.phi_) = (
+        self.loadings_, self.rotation_, self.phi_ = (
             new_loadings,
             new_rotation_mtx,
             phi,

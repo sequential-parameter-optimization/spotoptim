@@ -11,7 +11,6 @@ import logging
 import inspect
 from spotoptim.utils.scaler import TorchStandardScaler
 
-
 logger = logging.getLogger(__name__)
 
 

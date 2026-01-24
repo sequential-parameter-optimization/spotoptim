@@ -3731,7 +3731,20 @@ class SpotOptim(BaseEstimator):
         shared_best_y=None,  # Accept shared value
         shared_lock=None,  # Accept shared lock
     ) -> Tuple[str, OptimizeResult]:
-        """Helper to run a single optimization task with a specific seed."""
+        """Helper to run a single optimization task with a specific seed. Calls _optimize_single_run.
+
+        Args:
+            seed (int): Seed for this run.
+            timeout_start (float): Start time for timeout.
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known_val (Optional[float]): Known best value for initial design.
+            max_iter_override (Optional[int]): Override for maximum number of iterations.
+            shared_best_y (Optional[float]): Shared best value for parallel runs.
+            shared_lock (Optional[Lock]): Shared lock for parallel runs.
+
+        Returns:
+            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+        """
         # Set the seed for this run
         self.seed = seed
         self._set_seed()
@@ -3836,11 +3849,8 @@ class SpotOptim(BaseEstimator):
                     print("Global budget exhausted. Stopping restarts.")
                 break
 
-            # Check if n_jobs > 1 and we can run in parallel
-
-            # Proceed with optimization run
-            # If n_jobs > 1, the steady-state parallelism is handled INSIDE _optimize_single_run
-            status, result = self._optimize_single_run(
+            # Proceed with optimization run (Sequential or Parallel)
+            status, result = self._execute_optimization_run(
                 timeout_start,
                 current_X0,
                 y0_known=y0_known_val,
@@ -3855,7 +3865,6 @@ class SpotOptim(BaseEstimator):
                 current_X0 = None  # Default loop behavior
 
                 # Identify best result so far (including current restart)
-                # Find best result based on 'fun' from all finished runs so far
                 if self.restarts_results_:
                     best_res = min(self.restarts_results_, key=lambda r: r.fun)
 
@@ -3905,7 +3914,7 @@ class SpotOptim(BaseEstimator):
 
         return best_result
 
-    def _optimize_single_run(
+    def _execute_optimization_run(
         self,
         timeout_start: float,
         X0: Optional[np.ndarray] = None,
@@ -3914,26 +3923,20 @@ class SpotOptim(BaseEstimator):
         shared_best_y=None,  # New arg
         shared_lock=None,  # New arg
     ) -> Tuple[str, OptimizeResult]:
-        """Perform a single optimization run.
-
-        This method encapsulates the entire optimization process for a single run,
-        from initialization (seed, design) to the main optimization loop. It handles
-        initial design curation, evaluation, surrogate fitting, and the sequential
-        update loop with termination checks.
+        """Dispatcher for optimization run (Sequential vs Steady-State Parallel).
+        Depending on n_jobs, calls _optimize_steady_state (n_jobs > 1) or _optimize_sequential_run (n_jobs == 1).
 
         Args:
-            timeout_start (float): The start time of the optimization process (from time.time()).
-            X0 (ndarray, optional): Initial design points. Defaults to None.
-            y0_known (float, optional): Known best function value to inject (used for restarts).
-                Defaults to None.
-            max_iter_override (int, optional): Override max iterations for this run.
-                Defaults to None.
+            timeout_start (float): Start time for timeout.
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known (Optional[float]): Known best value for initial design.
+            max_iter_override (Optional[int]): Override for maximum number of iterations.
+            shared_best_y (Optional[float]): Shared best value for parallel runs.
+            shared_lock (Optional[Lock]): Shared lock for parallel runs.
 
         Returns:
-            Tuple[str, OptimizeResult]: A tuple containing the status ("FINISHED" or "RESTART")
-                and the optimization result object.
+            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
         """
-        # Note: timeout_start is passed as argument
 
         # Dispatch to steady-state optimizer if proper parallelization is requested
         if self.n_jobs > 1:
@@ -3943,12 +3946,88 @@ class SpotOptim(BaseEstimator):
                 y0_known=y0_known,
                 max_iter_override=max_iter_override,
             )
+        else:
+            return self._optimize_sequential_run(
+                timeout_start,
+                X0,
+                y0_known=y0_known,
+                max_iter_override=max_iter_override,
+                shared_best_y=shared_best_y,
+                shared_lock=shared_lock,
+            )
+
+    def _optimize_sequential_run(
+        self,
+        timeout_start: float,
+        X0: Optional[np.ndarray] = None,
+        y0_known: Optional[float] = None,
+        max_iter_override: Optional[int] = None,
+        shared_best_y=None,
+        shared_lock=None,
+    ) -> Tuple[str, OptimizeResult]:
+        """Perform a single sequential optimization run.
+        Calls _initialize_run, _rm_NA_values, _check_size_initial_design, _init_storage, _get_best_xy_initial_design, and _run_sequential_loop.
+
+
+        Args:
+            timeout_start (float): Start time for timeout.
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known (Optional[float]): Known best value for initial design.
+            max_iter_override (Optional[int]): Override for maximum number of iterations.
+            shared_best_y (Optional[float]): Shared best value for parallel runs.
+            shared_lock (Optional[Lock]): Shared lock for parallel runs.
+
+        Returns:
+            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+        """
 
         # Store shared variable if provided
         self.shared_best_y = shared_best_y
         self.shared_lock = shared_lock
 
-        # Set seed for reproducibility (crucial for ensuring identical results across runs)
+        # Initialize: Set seed, Design, Evaluate Initial Design, Init Storage & TensorBoard
+        X0, y0 = self._initialize_run(X0, y0_known)
+
+        # Handle NaN/inf values in initial design (remove invalid points)
+        X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
+
+        # Check if we have enough valid points to continue
+        self._check_size_initial_design(y0, n_evaluated)
+
+        # Initialize storage and statistics
+        self._init_storage(X0, y0)
+        self._zero_success_count = 0
+        self._success_history = []  # Clear success history for new run
+
+        # Update stats after initial design
+        self.update_stats()
+
+        # Log initial design to TensorBoard
+        self._init_tensorboard()
+
+        # Determine and report initial best
+        self._get_best_xy_initial_design()
+
+        # Run the main sequential optimization loop
+        effective_max_iter = (
+            max_iter_override if max_iter_override is not None else self.max_iter
+        )
+        return self._run_sequential_loop(timeout_start, effective_max_iter)
+
+    def _initialize_run(
+        self, X0: Optional[np.ndarray], y0_known: Optional[float]
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Initialize optimization run: seed, design generation, initial evaluation.
+        Called from _optimize_sequential_run.
+
+        Args:
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known (Optional[float]): Known best value for initial design.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: Tuple containing initial design and corresponding objective values.
+        """
+        # Set seed for reproducibility
         self._set_seed()
 
         # Set initial design (generate or process user-provided points)
@@ -3986,32 +4065,14 @@ class SpotOptim(BaseEstimator):
         else:
             y0 = self._evaluate_function(X0)
 
-        # Handle NaN/inf values in initial design (remove invalid points)
-        X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
+        return X0, y0
 
-        # Check if we have enough valid points to continue
-        self._check_size_initial_design(y0, n_evaluated)
-
-        # Initialize storage and statistics
-        self._init_storage(X0, y0)
-        self._zero_success_count = 0
-        self._success_history = []  # Clear success history for new run
-
-        # Update stats after initial design
-        self.update_stats()
-
-        # Log initial design to TensorBoard
-        self._init_tensorboard()
-
-        # Determine and report initial best
-        self._get_best_xy_initial_design()
-
-        # Main optimization loop
-        # Termination: continue while (total_evals < max_iter) AND (elapsed_time < max_time)
-        effective_max_iter = (
-            max_iter_override if max_iter_override is not None else self.max_iter
-        )
+    def _run_sequential_loop(
+        self, timeout_start: float, effective_max_iter: int
+    ) -> Tuple[str, OptimizeResult]:
+        """Execute the main sequential optimization loop."""
         consecutive_failures = 0
+
         while (len(self.y_) < effective_max_iter) and (
             time.time() < timeout_start + self.max_time * 60
         ):

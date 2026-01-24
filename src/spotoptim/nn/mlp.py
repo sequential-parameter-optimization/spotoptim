@@ -2,7 +2,6 @@ from typing import List, Optional, Callable, Any, TYPE_CHECKING
 import torch
 import torch.optim as optim
 
-
 if TYPE_CHECKING:
     from spotoptim.hyperparameters.parameters import ParameterSet
 

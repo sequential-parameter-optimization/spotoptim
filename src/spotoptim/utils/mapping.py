@@ -7,7 +7,6 @@ and typical ranges used by different PyTorch optimizers.
 
 from typing import Dict
 
-
 # Default learning rates for each optimizer as defined in PyTorch documentation
 # Source: https://pytorch.org/docs/stable/optim.html
 OPTIMIZER_DEFAULT_LR: Dict[str, float] = {

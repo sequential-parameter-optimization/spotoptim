@@ -726,7 +726,7 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             )
 
         # we split all the 1d array back into the set of original arrays
-        (loadings_res, error_vars_res, factor_vars_res, factor_covs_res) = self._split(
+        loadings_res, error_vars_res, factor_vars_res, factor_covs_res = self._split(
             res.x, self.model.n_factors, self.model.n_variables, self.model.n_lower_diag
         )
 

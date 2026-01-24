@@ -1,7 +1,6 @@
 import numpy as np
 import requests
 
-
 # Default configuration for the server endpoint
 DEFAULT_SERVER_URL = "http://139.6.66.164:8000/compute/"
 
