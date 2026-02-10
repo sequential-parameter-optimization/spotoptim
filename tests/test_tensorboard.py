@@ -5,7 +5,6 @@
 """Tests for TensorBoard logging functionality."""
 
 import numpy as np
-import pytest
 import os
 import shutil
 from spotoptim import SpotOptim
@@ -99,7 +98,7 @@ class TestTensorBoardLogging:
             verbose=False,
         )
 
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # Check that TensorBoard directory exists
         assert os.path.exists(tensorboard_path)
@@ -184,7 +183,7 @@ class TestTensorBoardLogging:
         # Writer should exist before optimization
         assert opt.tb_writer is not None
 
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # Writer should be closed after optimization
         assert not hasattr(opt, "tb_writer") or opt.tb_writer is None

@@ -6,7 +6,6 @@
 Tests for multi-objective optimization support.
 """
 
-import pytest
 import numpy as np
 from spotoptim import SpotOptim
 
@@ -82,7 +81,7 @@ class TestMultiObjectiveBasics:
             seed=42,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Should store multi-objective values
         assert optimizer.y_mo is not None

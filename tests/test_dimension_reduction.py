@@ -5,7 +5,6 @@
 """Tests for dimension reduction (to_red_dim and to_all_dim) in SpotOptim."""
 
 import numpy as np
-import pytest
 from spotoptim import SpotOptim
 
 

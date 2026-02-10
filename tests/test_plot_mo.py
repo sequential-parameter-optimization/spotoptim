@@ -6,15 +6,18 @@ import numpy as np
 import matplotlib
 
 matplotlib.use("Agg")  # Use non-interactive backend for testing
-import matplotlib.pyplot as plt
-from spotoptim.plot.mo import plot_mo
+import matplotlib.pyplot as plt  # noqa: E402
+
+from spotoptim.plot.mo import plot_mo  # noqa: E402
 
 
 def test_plot_mo_basic_runs():
     target_names = ["Target 1", "Target 2"]
     combinations = [(0, 1)]
     y_rf = np.array([[1, 2], [2, 1], [3, 3]])
-    plot_mo(target_names=target_names, combinations=combinations, pareto="min", y_rf=y_rf)
+    plot_mo(
+        target_names=target_names, combinations=combinations, pareto="min", y_rf=y_rf
+    )
     plt.close("all")
 
 
@@ -24,7 +27,14 @@ def test_plot_mo_with_orig_and_best():
     y_rf = np.array([[1, 2], [2, 1], [3, 3]])
     y_orig = np.array([[0, 4], [4, 0], [2, 2]])
     y_best = np.array([1, 2])
-    plot_mo(target_names=target_names, combinations=combinations, pareto="min", y_rf=y_rf, y_orig=y_orig, y_best=y_best)
+    plot_mo(
+        target_names=target_names,
+        combinations=combinations,
+        pareto="min",
+        y_rf=y_rf,
+        y_orig=y_orig,
+        y_best=y_best,
+    )
     plt.close("all")
 
 

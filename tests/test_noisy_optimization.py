@@ -4,7 +4,6 @@
 
 """Tests for noisy function evaluation and statistics tracking in SpotOptim."""
 
-import pytest
 import numpy as np
 from spotoptim.SpotOptim import SpotOptim
 
@@ -373,7 +372,7 @@ class TestNoisyOptimizationIntegration:
             seed=42,
             verbose=False,
         )
-        result1 = opt1.optimize()
+        _ = opt1.optimize()
 
         opt2 = SpotOptim(
             fun=noisy_objective,
@@ -384,7 +383,7 @@ class TestNoisyOptimizationIntegration:
             seed=42,
             verbose=False,
         )
-        result2 = opt2.optimize()
+        _ = opt2.optimize()
 
         # Results should be similar (not exact due to noise in function)
         # But initial design should be identical

@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import pytest
 import numpy as np
 from spotoptim.SpotOptim import SpotOptim
 
@@ -142,10 +141,10 @@ class TestDeterministicBehavior:
 
         # Run optimization twice without seed
         opt1 = SpotOptim(fun=sphere, bounds=bounds, max_iter=5, n_initial=5)
-        result1 = opt1.optimize()
+        _ = opt1.optimize()
 
         opt2 = SpotOptim(fun=sphere, bounds=bounds, max_iter=5, n_initial=5)
-        result2 = opt2.optimize()
+        _ = opt2.optimize()
 
         # Initial designs should be different
         assert not np.allclose(

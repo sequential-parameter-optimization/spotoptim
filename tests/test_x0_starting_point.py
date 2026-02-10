@@ -113,11 +113,10 @@ def test_x0_2d_array_multiple_points_success():
     x0 = np.array([[1.0, 2.0], [3.0, 4.0]])  # 2D array, shape (2, 2)
 
     opt = SpotOptim(
-            fun=objective, bounds=[(-5, 5), (-5, 5)], x0=x0, max_iter=10, n_initial=5
+        fun=objective, bounds=[(-5, 5), (-5, 5)], x0=x0, max_iter=10, n_initial=5
     )
     result = opt.optimize()
     assert result.success is True
-
 
 
 def test_x0_improves_optimization():
@@ -351,7 +350,7 @@ def test_x0_included_in_initial_design():
         verbose=False,
     )
 
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Check that we still have n_initial + sequential iterations
     assert len(opt.y_) == 20  # max_iter evaluations total

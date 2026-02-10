@@ -5,8 +5,7 @@
 """
 Tests for plot_feature_scatter_matrix in spotoptim.sensitivity.importance
 """
-import numpy as np
-import pandas as pd
+
 import pytest
 from unittest.mock import patch
 from sklearn.datasets import make_regression
@@ -23,7 +22,7 @@ def regression_data():
 
 
 class TestPlotFeatureScatterMatrixBasic:
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_basic_plot(self, mock_show, regression_data):
         X, y, feature_names, target_names = regression_data
         top_features = feature_names[:3]
@@ -38,7 +37,7 @@ class TestPlotFeatureScatterMatrixBasic:
         )
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_handles_different_figsize(self, mock_show, regression_data):
         X, y, feature_names, target_names = regression_data
         top_features = feature_names[:2]
@@ -55,7 +54,7 @@ class TestPlotFeatureScatterMatrixBasic:
 
 
 class TestPlotFeatureScatterMatrixEdgeCases:
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_top_features_not_in_feature_names_raises(self, mock_show, regression_data):
         X, y, feature_names, target_names = regression_data
         top_features = ["not_a_feature"]
@@ -69,7 +68,7 @@ class TestPlotFeatureScatterMatrixEdgeCases:
                 target_index=0,
             )
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_target_index_out_of_bounds_raises(self, mock_show, regression_data):
         X, y, feature_names, target_names = regression_data
         top_features = feature_names[:3]
@@ -83,7 +82,7 @@ class TestPlotFeatureScatterMatrixEdgeCases:
                 target_index=5,  # out of bounds
             )
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_empty_top_features_raises(self, mock_show, regression_data):
         X, y, feature_names, target_names = regression_data
         top_features = []

@@ -10,7 +10,6 @@ the _handle_acquisition_failure() method, ensuring the "random" strategy
 works correctly.
 """
 
-import pytest
 import numpy as np
 from spotoptim.SpotOptim import SpotOptim
 

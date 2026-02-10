@@ -58,118 +58,125 @@ class TestZDT1:
         assert result[0, 0] == 0.0
         assert result[0, 1] == 1.0
 
-    def test_dimension_error(self):
-        class TestMoConv2Min:
-            """Tests for mo_conv2_min function (convex bi-objective minimization)."""
+    def test_zdt4_dimension_error(self):
+        """Test error for insufficient dimensions."""
+        X = np.array([0.5])
+        with pytest.raises(ValueError, match="requires at least 2 dimensions"):
+            zdt4(X)
 
-            def test_single_point_shape(self):
-                """Test that single point returns correct shape."""
-                X = np.array([0.5, 0.5])
-                result = mo_conv2_min(X)
-                assert result.shape == (1, 2)
+    class TestMoConv2Min:
+        """Tests for mo_conv2_min function (convex bi-objective minimization)."""
 
-            def test_multiple_points_shape(self):
-                """Test that multiple points return correct shape."""
-                X = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
-                result = mo_conv2_min(X)
-                assert result.shape == (3, 2)
+        def test_single_point_shape(self):
+            """Test that single point returns correct shape."""
+            X = np.array([0.5, 0.5])
+            result = mo_conv2_min(X)
+            assert result.shape == (1, 2)
 
-            def test_ideal_point(self):
-                """Test ideal points for minimization."""
-                # Min f1 at x=0, y=0 -> f1=0, f2=2
-                X_f1 = np.array([0.0, 0.0])
-                result_f1 = mo_conv2_min(X_f1)
-                assert np.isclose(result_f1[0, 0], 0.0)
-                assert np.isclose(result_f1[0, 1], 2.0)
+        def test_multiple_points_shape(self):
+            """Test that multiple points return correct shape."""
+            X = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+            result = mo_conv2_min(X)
+            assert result.shape == (3, 2)
 
-                # Min f2 at x=1, y=1 -> f1=2, f2=0
-                X_f2 = np.array([1.0, 1.0])
-                result_f2 = mo_conv2_min(X_f2)
-                assert np.isclose(result_f2[0, 1], 0.0)
-                assert np.isclose(result_f2[0, 0], 2.0)
+        def test_ideal_point(self):
+            """Test ideal points for minimization."""
+            # Min f1 at x=0, y=0 -> f1=0, f2=2
+            X_f1 = np.array([0.0, 0.0])
+            result_f1 = mo_conv2_min(X_f1)
+            assert np.isclose(result_f1[0, 0], 0.0)
+            assert np.isclose(result_f1[0, 1], 2.0)
 
-            def test_worst_point(self):
-                """Test saddle point at (0, 1)."""
-                X = np.array([0.0, 1.0])
-                result = mo_conv2_min(X)
-                assert np.isclose(result[0, 0], 1.0)
-                assert np.isclose(result[0, 1], 1.0)
+            # Min f2 at x=1, y=1 -> f1=2, f2=0
+            X_f2 = np.array([1.0, 1.0])
+            result_f2 = mo_conv2_min(X_f2)
+            assert np.isclose(result_f2[0, 1], 0.0)
+            assert np.isclose(result_f2[0, 0], 2.0)
 
-            def test_dimension_error(self):
-                """Test error for wrong number of dimensions."""
-                X = np.array([0.5, 0.5, 0.5])
-                with pytest.raises(ValueError, match="requires exactly 2 dimensions"):
-                    mo_conv2_min(X)
+        def test_worst_point(self):
+            """Test saddle point at (0, 1)."""
+            X = np.array([0.0, 1.0])
+            result = mo_conv2_min(X)
+            assert np.isclose(result[0, 0], 1.0)
+            assert np.isclose(result[0, 1], 1.0)
 
-                X = np.array([0.5])
-                with pytest.raises(ValueError, match="requires exactly 2 dimensions"):
-                    mo_conv2_min(X)
+        def test_dimension_error(self):
+            """Test error for wrong number of dimensions."""
+            X = np.array([0.5, 0.5, 0.5])
+            with pytest.raises(ValueError, match="requires exactly 2 dimensions"):
+                mo_conv2_min(X)
 
-            def test_output_type(self):
-                """Test that output is numpy array."""
-                X = np.array([0.5, 0.5])
-                result = mo_conv2_min(X)
-                assert isinstance(result, np.ndarray)
+            X = np.array([0.5])
+            with pytest.raises(ValueError, match="requires exactly 2 dimensions"):
+                mo_conv2_min(X)
 
-            def test_conflicting_objectives(self):
-                """Test that objectives are conflicting (minimization problem)."""
-                # Points optimizing different objectives should show trade-off
-                X_samples = np.random.rand(50, 2)
-                result = mo_conv2_min(X_samples)
-                # Check that not all points can minimize both objectives simultaneously
-                min_f1_idx = np.argmin(result[:, 0])
-                min_f2_idx = np.argmin(result[:, 1])
-                # If objectives conflict, minimizing one shouldn't minimize the other
-                assert min_f1_idx != min_f2_idx or len(np.unique(result, axis=0)) > 1
+        def test_output_type(self):
+            """Test that output is numpy array."""
+            X = np.array([0.5, 0.5])
+            result = mo_conv2_min(X)
+            assert isinstance(result, np.ndarray)
 
-            def test_values_in_domain(self):
-                """Test that function values stay bounded for inputs in [0,1]^2."""
-                X = np.random.rand(100, 2)
-                result = mo_conv2_min(X)
-                # Both objectives should be non-negative
-                assert np.all(result >= 0)
-                # And bounded (for [0,1] domain)
-                assert np.all(result[:, 0] <= 2)  # f1 = x^2 + y^2 <= 2
-                assert np.all(result[:, 1] <= 2)  # f2 = (x-1)^2 + (y-1)^2 <= 2
+        def test_conflicting_objectives(self):
+            """Test that objectives are conflicting (minimization problem)."""
+            # Points optimizing different objectives should show trade-off
+            X_samples = np.random.rand(50, 2)
+            result = mo_conv2_min(X_samples)
+            # Check that not all points can minimize both objectives simultaneously
+            min_f1_idx = np.argmin(result[:, 0])
+            min_f2_idx = np.argmin(result[:, 1])
+            # If objectives conflict, minimizing one shouldn't minimize the other
+            assert min_f1_idx != min_f2_idx or len(np.unique(result, axis=0)) > 1
 
-            def test_corner_points(self):
-                """Test evaluation at domain corners."""
-                corners = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
-                result = mo_conv2_min(corners)
-                # All corner evaluations should be valid
-                assert result.shape == (4, 2)
-                assert not np.any(np.isnan(result))
-                assert not np.any(np.isinf(result))
+        def test_values_in_domain(self):
+            """Test that function values stay bounded for inputs in [0,1]^2."""
+            X = np.random.rand(100, 2)
+            result = mo_conv2_min(X)
+            # Both objectives should be non-negative
+            assert np.all(result >= 0)
+            # And bounded (for [0,1] domain)
+            assert np.all(result[:, 0] <= 2)  # f1 = x^2 + y^2 <= 2
+            assert np.all(result[:, 1] <= 2)  # f2 = (x-1)^2 + (y-1)^2 <= 2
 
-            def test_symmetry(self):
-                """Test symmetry property: f(x, y) = f(y, x)."""
-                X1 = np.array([[0.3, 0.7]])
-                X2 = np.array([[0.7, 0.3]])
-                result1 = mo_conv2_min(X1)
-                result2 = mo_conv2_min(X2)
-                # f1 and f2 are symmetric in x, y, so outputs should be identical
-                assert np.allclose(result1, result2)
+        def test_corner_points(self):
+            """Test evaluation at domain corners."""
+            corners = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+            result = mo_conv2_min(corners)
+            # All corner evaluations should be valid
+            assert result.shape == (4, 2)
+            assert not np.any(np.isnan(result))
+            assert not np.any(np.isinf(result))
 
-            def test_pareto_front_convexity(self):
-                """Test that Pareto front is convex (for minimization)."""
-                # Sample many points and find Pareto front
-                n_samples = 200
-                X = np.random.rand(n_samples, 2)
-                result = mo_conv2_min(X)
-                # For minimization, a point is Pareto optimal if no other point
-                # dominates it (has lower values in all objectives)
-                pareto_mask = np.ones(n_samples, dtype=bool)
-                for i in range(n_samples):
-                    for j in range(n_samples):
-                        if i != j:
-                            # j dominates i if j <= i in all objectives and j < i in at least one
-                            if np.all(result[j] <= result[i]) and np.any(result[j] < result[i]):
-                                pareto_mask[i] = False
-                                break
-                pareto_points = result[pareto_mask]
-                # Should have multiple Pareto points
-                assert len(pareto_points) > 1
-        assert result.shape == (3, 2)
+        def test_symmetry(self):
+            """Test symmetry property: f(x, y) = f(y, x)."""
+            X1 = np.array([[0.3, 0.7]])
+            X2 = np.array([[0.7, 0.3]])
+            result1 = mo_conv2_min(X1)
+            result2 = mo_conv2_min(X2)
+            # f1 and f2 are symmetric in x, y, so outputs should be identical
+            assert np.allclose(result1, result2)
+
+        def test_pareto_front_convexity(self):
+            """Test that Pareto front is convex (for minimization)."""
+            # Sample many points and find Pareto front
+            n_samples = 200
+            X = np.random.rand(n_samples, 2)
+            result = mo_conv2_min(X)
+            # For minimization, a point is Pareto optimal if no other point
+            # dominates it (has lower values in all objectives)
+            pareto_mask = np.ones(n_samples, dtype=bool)
+            for i in range(n_samples):
+                for j in range(n_samples):
+                    if i != j:
+                        # j dominates i if j <= i in all objectives and j < i in at least one
+                        if np.all(result[j] <= result[i]) and np.any(
+                            result[j] < result[i]
+                        ):
+                            pareto_mask[i] = False
+                            break
+            pareto_points = result[pareto_mask]
+            # Should have multiple Pareto points
+            assert len(pareto_points) > 1
+            assert result.shape == (n_samples, 2)
 
     def test_multimodal_g_function(self):
         """Test that g function creates multimodality."""
@@ -183,7 +190,7 @@ class TestZDT1:
         # Non-optimal should have higher f2 due to larger g
         assert result_local[0, 1] > result_optimal[0, 1]
 
-    def test_dimension_error(self):
+    def test_zdt3_dimension_error(self):
         """Test error for insufficient dimensions."""
         X = np.array([0.5])
         with pytest.raises(ValueError, match="requires at least 2 dimensions"):
@@ -469,11 +476,11 @@ class TestFonsecaFleming:
         # Points optimizing different objectives should show trade-off
         X_samples = np.random.rand(50, 2)
         result = mo_conv2_max(X_samples)
-        
+
         # Check that not all points can maximize both objectives simultaneously
         max_f1_idx = np.argmax(result[:, 0])
         max_f2_idx = np.argmax(result[:, 1])
-        
+
         # If objectives conflict, maximizing one shouldn't maximize the other
         assert max_f1_idx != max_f2_idx or len(np.unique(result, axis=0)) > 1
 
@@ -481,7 +488,7 @@ class TestFonsecaFleming:
         """Test that function values stay bounded for inputs in [0,1]^2."""
         X = np.random.rand(100, 2)
         result = mo_conv2_max(X)
-        
+
         # Both objectives should be non-negative
         assert np.all(result >= 0)
         # And bounded (for [0,1] domain) with max value 2
@@ -492,7 +499,7 @@ class TestFonsecaFleming:
         """Test evaluation at domain corners."""
         corners = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
         result = mo_conv2_max(corners)
-        
+
         # All corner evaluations should be valid
         assert result.shape == (4, 2)
         assert not np.any(np.isnan(result))
@@ -502,10 +509,10 @@ class TestFonsecaFleming:
         """Test symmetry property: f(x1,x2) = f(x2,x1)."""
         X1 = np.array([[0.3, 0.7]])
         X2 = np.array([[0.7, 0.3]])
-        
+
         result1 = mo_conv2_max(X1)
         result2 = mo_conv2_max(X2)
-        
+
         # m and d are symmetric in x1, x2, so outputs should be identical
         assert np.allclose(result1, result2)
 
@@ -515,7 +522,7 @@ class TestFonsecaFleming:
         n_samples = 200
         X = np.random.rand(n_samples, 2)
         result = mo_conv2_max(X)
-        
+
         # For maximization, a point is Pareto optimal if no other point
         # dominates it (has higher values in all objectives)
         pareto_mask = np.ones(n_samples, dtype=bool)
@@ -526,9 +533,9 @@ class TestFonsecaFleming:
                     if np.all(result[j] >= result[i]) and np.any(result[j] > result[i]):
                         pareto_mask[i] = False
                         break
-        
+
         pareto_points = result[pareto_mask]
-        
+
         # Should have multiple Pareto points
         assert len(pareto_points) > 1
 

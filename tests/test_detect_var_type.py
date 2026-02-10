@@ -5,7 +5,6 @@
 """Tests for detect_var_type() method in SpotOptim."""
 
 import numpy as np
-import pytest
 from spotoptim import SpotOptim
 
 
@@ -23,7 +22,7 @@ class TestDetectVarTypeBasic:
 
         # Should auto-detect as factor
         assert opt.var_type == ["factor"]
-        
+
         # Calling detect_var_type() directly should return same result
         detected = opt.detect_var_type()
         assert detected == ["factor"]
@@ -39,7 +38,7 @@ class TestDetectVarTypeBasic:
 
         # Should auto-detect as float
         assert opt.var_type == ["float"]
-        
+
         # Calling detect_var_type() directly should return same result
         detected = opt.detect_var_type()
         assert detected == ["float"]
@@ -59,7 +58,7 @@ class TestDetectVarTypeBasic:
 
         # Should auto-detect correctly
         assert opt.var_type == ["float", "factor", "float"]
-        
+
         # Calling detect_var_type() directly should return same result
         detected = opt.detect_var_type()
         assert detected == ["float", "factor", "float"]
@@ -79,7 +78,7 @@ class TestDetectVarTypeBasic:
 
         # Should auto-detect all as factor
         assert opt.var_type == ["factor", "factor", "factor"]
-        
+
         # Calling detect_var_type() directly should return same result
         detected = opt.detect_var_type()
         assert detected == ["factor", "factor", "factor"]
@@ -99,7 +98,7 @@ class TestDetectVarTypeBasic:
 
         # Should auto-detect all as float
         assert opt.var_type == ["float", "float", "float"]
-        
+
         # Calling detect_var_type() directly should return same result
         detected = opt.detect_var_type()
         assert detected == ["float", "float", "float"]
@@ -381,7 +380,7 @@ class TestDetectVarTypeIntegration:
 
         # var_type should be set from detect_var_type()
         assert opt.var_type == ["float", "factor"]
-        
+
         # Verify factor mapping was created
         assert 1 in opt._factor_maps
 
@@ -403,11 +402,12 @@ class TestDetectVarTypeIntegration:
 
     def test_optimization_runs_successfully(self):
         """Test that optimization runs successfully with auto-detected types."""
+
         # Use a function that handles factor variables by taking only the first column
         def objective(X):
             # For mixed factor/numeric, only sum numeric columns
-            return np.sum(X[:, 0:1].astype(float)**2, axis=1)
-        
+            return np.sum(X[:, 0:1].astype(float) ** 2, axis=1)
+
         opt = SpotOptim(
             fun=objective,
             bounds=[

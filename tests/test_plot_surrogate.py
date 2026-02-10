@@ -6,11 +6,12 @@
 
 import pytest
 import numpy as np
-from spotoptim import SpotOptim
 import matplotlib
 
 matplotlib.use("Agg")  # Non-interactive backend for testing
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: E402
+
+from spotoptim import SpotOptim  # noqa: E402
 
 
 def sphere_function(X):
@@ -25,7 +26,7 @@ def test_plot_surrogate_basic():
     opt = SpotOptim(
         fun=sphere_function, bounds=bounds, max_iter=5, n_initial=5, seed=42
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test plotting without showing
     opt.plot_surrogate(i=0, j=1, show=False)
@@ -38,7 +39,7 @@ def test_plot_surrogate_with_names():
     opt = SpotOptim(
         fun=sphere_function, bounds=bounds, max_iter=5, n_initial=5, seed=42
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test with variable names
     opt.plot_surrogate(i=0, j=1, var_name=["x1", "x2"], show=False)
@@ -53,7 +54,7 @@ def test_plot_surrogate_3d():
 
     bounds = [(-5, 5), (-5, 5), (-3, 3)]
     opt = SpotOptim(fun=sphere_3d, bounds=bounds, max_iter=5, n_initial=5, seed=42)
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Plot dimensions 0 and 2
     opt.plot_surrogate(i=0, j=2, show=False)
@@ -66,7 +67,7 @@ def test_plot_surrogate_custom_params():
     opt = SpotOptim(
         fun=sphere_function, bounds=bounds, max_iter=5, n_initial=5, seed=42
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test with custom parameters
     opt.plot_surrogate(
@@ -102,7 +103,7 @@ def test_plot_surrogate_invalid_dimensions():
     opt = SpotOptim(
         fun=sphere_function, bounds=bounds, max_iter=5, n_initial=5, seed=42
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test with invalid i
     with pytest.raises(ValueError, match="must be less than"):
@@ -130,7 +131,7 @@ def test_plot_surrogate_with_kriging():
         surrogate=Kriging(seed=42),
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test plotting with Kriging
     opt.plot_surrogate(i=0, j=1, show=False)

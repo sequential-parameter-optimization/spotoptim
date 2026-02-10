@@ -6,11 +6,12 @@
 
 import pytest
 import numpy as np
-from spotoptim import SpotOptim
 import matplotlib
 
 matplotlib.use("Agg")  # Non-interactive backend for testing
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: E402
+
+from spotoptim import SpotOptim  # noqa: E402
 
 
 def objective_with_factors(X):
@@ -47,7 +48,7 @@ def test_generate_mesh_grid_with_factors_both_numeric():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test with two numeric dimensions (0=l1, 2=lr)
     X_i, X_j, grid_points, labels_i, labels_j = opt._generate_mesh_grid_with_factors(
@@ -90,7 +91,7 @@ def test_generate_mesh_grid_with_factors_one_factor():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test with one factor (1=activation) and one numeric (2=lr)
     X_i, X_j, grid_points, labels_i, labels_j = opt._generate_mesh_grid_with_factors(
@@ -158,7 +159,7 @@ def test_generate_mesh_grid_with_factors_both_factors():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test with two factors (1=activation, 2=optimizer)
     X_i, X_j, grid_points, labels_i, labels_j = opt._generate_mesh_grid_with_factors(
@@ -210,7 +211,7 @@ def test_generate_mesh_grid_with_factors_custom_num():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test with custom num=20 for numeric dimensions
     X_i, X_j, grid_points, labels_i, labels_j = opt._generate_mesh_grid_with_factors(
@@ -242,7 +243,7 @@ def test_generate_mesh_grid_with_factors_mean_computation():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Generate mesh for dimensions 0 and 2 (l1 and lr)
     # Dimension 1 (activation) should be held at a constant value
@@ -297,7 +298,7 @@ def test_plot_important_hyperparameter_contour_with_factors():
         n_initial=8,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test plotting - should handle mixed types
     opt.plot_important_hyperparameter_contour(max_imp=3, show=False)
@@ -322,7 +323,7 @@ def test_generate_mesh_grid_with_factors_no_factor_maps():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Should work fine without factor variables
     X_i, X_j, grid_points, labels_i, labels_j = opt._generate_mesh_grid_with_factors(
@@ -353,7 +354,7 @@ def test_plot_surrogate_with_factors_integration():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test plotting with factor on i dimension
     opt._plot_surrogate_with_factors(i=1, j=2, show=False, num=20)
@@ -404,7 +405,7 @@ def test_generate_mesh_grid_with_factors_in_other_dims():
         n_initial=5,
         seed=42,
     )
-    result = opt.optimize()
+    _ = opt.optimize()
 
     # Test plotting dimensions 0 and 1 (both non-factors)
     # This should use _generate_mesh_grid, not _generate_mesh_grid_with_factors

@@ -13,6 +13,7 @@ from spotoptim.hyperparameters import ParameterSet
 from spotoptim.core.data import SpotDataFromArray
 from torch.utils.data import DataLoader
 
+
 # Simple model for testing
 class SimpleModel(nn.Module):
     def __init__(self, input_dim, output_dim, hidden_units=10, **kwargs):
@@ -23,11 +24,12 @@ class SimpleModel(nn.Module):
     def forward(self, x):
         return self.fc(x)
 
+
 @pytest.fixture
 def mock_experiment():
     """Create a mock ExperimentControl with necessary attributes."""
     exp = MagicMock(spec=ExperimentControl)
-    
+
     # Setup Hyperparameters
     # Using real ParameterSet might be easier, but mocking ensures isolation
     # Let's mock the internal structure of ParameterSet used by TorchObjective
@@ -38,7 +40,7 @@ def mock_experiment():
     param_set.var_trans = ["linear", "linear"]
     param_set.names.return_value = ["x1", "epochs"]
     param_set._var_types = ["float", "int"]
-    
+
     # Mocking _parameters list for factor handling (though not used in this basic setup)
     param_set._parameters = [{}, {}]
 
@@ -50,24 +52,25 @@ def mock_experiment():
     exp.batch_size = 2
     exp.num_workers = 0
     exp.model_class = SimpleModel
-    
+
     # Setup Dataset
     X = np.random.rand(10, 2)
     y = np.random.rand(10, 1)
     dataset = MagicMock(spec=SpotDataFromArray)
     dataset.get_train_data.return_value = (X, y)
-    dataset.get_validation_data.return_value = (X, y) # Same for simplicity
+    dataset.get_validation_data.return_value = (X, y)  # Same for simplicity
     dataset.input_dim = 2
     dataset.output_dim = 1
-    
+
     exp.dataset = dataset
-    
+
     return exp
+
 
 def test_init_and_properties(mock_experiment):
     """Test initialization and property access."""
     obj = TorchObjective(mock_experiment)
-    
+
     assert obj.experiment == mock_experiment
     assert obj.device == mock_experiment.torch_device
     assert obj.bounds == [(-5.0, 5.0), (1, 10)]
@@ -75,121 +78,129 @@ def test_init_and_properties(mock_experiment):
     assert obj.var_name == ["x1", "epochs"]
     assert obj.objective_names == ["val_loss", "epochs"]
 
+
 def test_get_hyperparameters(mock_experiment):
     """Test hyperparameter decoding."""
     obj = TorchObjective(mock_experiment)
-    
+
     # Test float and int casting
-    X = np.array([0.5, 5.7]) # 5.7 should round to 6 for int type
+    X = np.array([0.5, 5.7])  # 5.7 should round to 6 for int type
     params = obj._get_hyperparameters(X)
-    
+
     assert params["x1"] == 0.5
     assert params["epochs"] == 6
     assert isinstance(params["epochs"], int)
+
 
 def test_prepare_data(mock_experiment):
     """Test DataLoader creation."""
     obj = TorchObjective(mock_experiment)
     train_loader, val_loader = obj._prepare_data()
-    
+
     assert isinstance(train_loader, DataLoader)
     assert isinstance(val_loader, DataLoader)
     assert train_loader.batch_size == 2
+
 
 def test_train_model(mock_experiment):
     """Test the training loop."""
     obj = TorchObjective(mock_experiment)
     train_loader, val_loader = obj._prepare_data()
-    
+
     model = SimpleModel(2, 1)
     params = {"lr": 0.01, "epochs": 2}
-    
+
     metrics = obj.train_model(model, train_loader, val_loader, params)
-    
+
     assert "val_loss" in metrics
     assert "train_loss" in metrics
     assert "mse" in metrics
     assert metrics["epochs"] == 2.0
 
+
 def test_call_integration(mock_experiment):
     """Test the full __call__ execution."""
     obj = TorchObjective(mock_experiment)
-    
+
     # Input with 2 samples
-    X = np.array([
-        [0.1, 5],
-        [0.2, 5]
-    ])
-    
+    X = np.array([[0.1, 5], [0.2, 5]])
+
     # Mock train_model to avoid actual training time and ensure deterministic return
-    with patch.object(TorchObjective, 'train_model') as mock_train:
+    with patch.object(TorchObjective, "train_model") as mock_train:
         mock_train.side_effect = [
             {"val_loss": 0.1, "epochs": 5.0},
-            {"val_loss": 0.2, "epochs": 5.0}
+            {"val_loss": 0.2, "epochs": 5.0},
         ]
-        
+
         results = obj(X)
-        
+
         # Check calls
         assert mock_train.call_count == 2
-        
+
         # Check results shape and content
         # Metrics are ["val_loss", "epochs"]
         assert results.shape == (2, 2)
-        assert results[0, 0] == 0.1 # val_loss
-        assert results[0, 1] == 5.0 # epochs
+        assert results[0, 0] == 0.1  # val_loss
+        assert results[0, 1] == 5.0  # epochs
         assert results[1, 0] == 0.2
+
 
 def test_seed_initialization(mock_experiment):
     """Test seed initialization logic."""
     # 1. Explicit seed provided
     obj = TorchObjective(mock_experiment, seed=42)
     assert obj.seed == 42
-    
+
     # 2. Seed from experiment
     mock_experiment.seed = 123
     obj = TorchObjective(mock_experiment)
     assert obj.seed == 123
-    
+
     # 3. No seed provided or in experiment
     # Ensure experiment.seed access returns something that isn't an int (e.g. MagicMock default)
     # or explicitly None
     del mock_experiment.seed
-    
+
     # When getattr retrieves 'seed' from MagicMock, it creates a new MagicMock object.
     # The code checks isinstance(seed, int). MagicMock is not int.
     # So it should result in None.
     obj = TorchObjective(mock_experiment)
     assert obj.seed is None
 
+
 def test_seed_setting_in_call(mock_experiment):
     """Test that seed is set during __call__."""
     mock_experiment.seed = 42
     obj = TorchObjective(mock_experiment)
-    
+
     X = np.array([[0.1, 5]])
-    
-    with patch.object(obj, '_set_seed') as mock_set_seed:
+
+    with patch.object(obj, "_set_seed") as mock_set_seed:
         # Patch train_model to avoid execution
-        with patch.object(obj, 'train_model', return_value={"val_loss": 0.1, "epochs": 5}):
-             obj(X)
-             
+        with patch.object(
+            obj, "train_model", return_value={"val_loss": 0.1, "epochs": 5}
+        ):
+            obj(X)
+
         mock_set_seed.assert_called_with(42)
+
 
 def test_manual_seed_function():
     """Test the _set_seed method actually calls the libraries."""
-    with patch('spotoptim.function.torch_objective.random') as mock_random, \
-         patch('spotoptim.function.torch_objective.np.random') as mock_np_random, \
-         patch('spotoptim.function.torch_objective.torch') as mock_torch:
-         
+    with (
+        patch("spotoptim.function.torch_objective.random") as mock_random,
+        patch("spotoptim.function.torch_objective.np.random") as mock_np_random,
+        patch("spotoptim.function.torch_objective.torch") as mock_torch,
+    ):
+
         # Basic mock setup enough to instantiate
         exp = MagicMock(spec=ExperimentControl)
         # exp needs hyperparameters.seed check to pass init cleanly if we don't provide seed arg
         # or we just provide seed arg.
-        
+
         obj = TorchObjective(exp, seed=10)
         obj._set_seed(10)
-        
+
         mock_random.seed.assert_called_with(10)
         mock_np_random.seed.assert_called_with(10)
         mock_torch.manual_seed.assert_called_with(10)

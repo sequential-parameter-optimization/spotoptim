@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import numpy as np
-import pytest
 from spotoptim.sampling.mm import mmphi_intensive, mmphi_intensive_update
 
 
@@ -49,7 +48,6 @@ def test_mmphi_intensive_insufficient_points():
     phi, J, d = mmphi_intensive(X)
     assert phi == np.inf
 
-    X_empty = np.array([])
     # The function expects 2D array, let's pass empty 2D
     X_empty_2d = np.zeros((0, 2))
     phi, J, d = mmphi_intensive(X_empty_2d)
@@ -132,4 +130,4 @@ def test_mmphi_intensive_update_consistency():
         assert np.allclose(d_upd, d_scratch)
 
         # Update state for next iteration
-        phi, J, d = phi_upd, J_upd, d_upd
+        _, J, d = phi_upd, J_upd, d_upd

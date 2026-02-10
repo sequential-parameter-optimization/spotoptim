@@ -280,7 +280,7 @@ class TestFactorVariables:
 
         # Check that dimension reduction kicked in
         # n_dim becomes 0 after reduction since single-level = fixed dimension
-        assert opt.red_dim == True  # Using == for numpy bool
+        assert opt.red_dim
         assert opt.n_dim == 0  # Reduced to 0 dimensions (was 1 originally)
         assert len(opt.lower) == 0  # Reduced bounds
 

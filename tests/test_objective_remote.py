@@ -21,7 +21,9 @@ def test_objective_remote():
 
     try:
         result = objective_remote(test_X)
-    except requests.exceptions.RequestException as exc:  # pragma: no cover - network dependent
+    except (
+        requests.exceptions.RequestException
+    ) as exc:  # pragma: no cover - network dependent
         warnings.warn(f"Could not connect to remote server: {exc}")
         return
 
@@ -30,9 +32,13 @@ def test_objective_remote():
     assert result.shape == (3,), f"Expected shape (3,), got {result.shape}"
 
     # All values should be finite and non-negative
-    assert np.all(np.isfinite(result.astype(float))), "All returned values must be finite"
+    assert np.all(
+        np.isfinite(result.astype(float))
+    ), "All returned values must be finite"
     assert np.all(result >= 0), "Objective values should be non-negative"
 
     # For identical inputs we expect similar costs; allow some jitter if the
     # remote service adds noise. A wide tolerance keeps the test robust.
-    assert np.max(result) - np.min(result) < 10, "Costs for identical rows should not vary wildly"
+    assert (
+        np.max(result) - np.min(result) < 10
+    ), "Costs for identical rows should not vary wildly"

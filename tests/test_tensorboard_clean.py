@@ -6,7 +6,6 @@
 Tests for TensorBoard log cleaning functionality.
 """
 
-import pytest
 import numpy as np
 import os
 import shutil
@@ -68,7 +67,7 @@ class TestTensorBoardClean:
         assert initial_count > 0, "Test setup should create subdirectories"
 
         # Create optimizer with clean enabled (but no logging)
-        optimizer = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
@@ -87,7 +86,7 @@ class TestTensorBoardClean:
     def test_clean_with_logging(self):
         """Test that clean works together with logging enabled."""
         # Create optimizer with both clean and logging enabled
-        optimizer = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
@@ -128,7 +127,7 @@ class TestTensorBoardClean:
 
     def test_clean_with_verbose(self, capsys):
         """Test that clean provides verbose output when enabled."""
-        optimizer = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
@@ -148,7 +147,7 @@ class TestTensorBoardClean:
         with open(test_file, "w") as f:
             f.write("test")
 
-        optimizer = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
@@ -170,7 +169,7 @@ class TestTensorBoardClean:
         assert initial_count > 0
 
         # Create optimizer without clean
-        optimizer = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
@@ -235,7 +234,7 @@ class TestTensorBoardCleanEdgeCases:
 
         try:
             # Create optimizer with clean and custom path
-            optimizer = SpotOptim(
+            _ = SpotOptim(
                 fun=lambda X: np.sum(X**2, axis=1),
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=10,
@@ -267,7 +266,7 @@ class TestTensorBoardCleanEdgeCases:
         # Create nested structure
         os.makedirs("runs/parent/child", exist_ok=True)
 
-        optimizer = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,
@@ -288,7 +287,7 @@ class TestTensorBoardCleanEdgeCases:
         os.makedirs("runs/log1", exist_ok=True)
 
         # First clean
-        opt1 = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             max_iter=10,

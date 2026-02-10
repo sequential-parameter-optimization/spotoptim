@@ -5,6 +5,7 @@
 """
 Tests for spotoptim.sampling.lhs.rlh
 """
+
 import numpy as np
 import pytest
 
@@ -68,7 +69,9 @@ class TestRLHProperties:
         n, k = 7, 3
         X = rlh(n, k, edges=0, seed=3)
         # Map back to bin indices to check permutation property
-        bins = np.argsort(np.argsort(X[:, 0]))  # not reliable since values unique but shuffled
+        _ = np.argsort(
+            np.argsort(X[:, 0])
+        )  # not reliable since values unique but shuffled
         # Instead, verify uniqueness per column
         for j in range(k):
             assert len(np.unique(X[:, j])) == n

@@ -13,7 +13,6 @@ import pytest
 import numpy as np
 import os
 import tempfile
-import shutil
 from spotoptim.SpotOptim import SpotOptim
 
 
@@ -258,7 +257,7 @@ class TestSaveLoadResult:
                 verbose=False,
             )
 
-            result_original = opt_original.optimize()
+            _ = opt_original.optimize()
 
             filename = os.path.join(tmpdir, "result.pkl")
             opt_original.save_result(filename=filename, verbosity=0)

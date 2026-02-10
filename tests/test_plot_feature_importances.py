@@ -5,7 +5,7 @@
 """
 Tests for plot_feature_importances in spotoptim.sensitivity.importance
 """
-import numpy as np
+
 import pandas as pd
 import pytest
 from unittest.mock import patch
@@ -33,11 +33,17 @@ def regression_data_pandas():
 
 
 class TestPlotFeatureImportancesBasic:
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_returns_top_features_and_df(self, mock_show, regression_data_numpy):
         X, y, feature_names, target_names = regression_data_numpy
         top_features, imp_df = plot_feature_importances(
-            X, y, feature_names, target_names, target_index=0, n_top_features=3, figsize=(5, 4)
+            X,
+            y,
+            feature_names,
+            target_names,
+            target_index=0,
+            n_top_features=3,
+            figsize=(5, 4),
         )
         # Validate return types
         assert isinstance(top_features, list)
@@ -49,7 +55,7 @@ class TestPlotFeatureImportancesBasic:
         assert imp_df.shape[0] == len(feature_names)
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_handles_pandas_like_targets(self, mock_show, regression_data_pandas):
         X, y, feature_names, target_names = regression_data_pandas
         top_features, imp_df = plot_feature_importances(
@@ -61,8 +67,10 @@ class TestPlotFeatureImportancesBasic:
 
 
 class TestPlotFeatureImportancesEdgeCases:
-    @patch('matplotlib.pyplot.show')
-    def test_large_n_top_features_capped_by_features(self, mock_show, regression_data_numpy):
+    @patch("matplotlib.pyplot.show")
+    def test_large_n_top_features_capped_by_features(
+        self, mock_show, regression_data_numpy
+    ):
         X, y, feature_names, target_names = regression_data_numpy
         n_top = len(feature_names) + 10
         top_features, imp_df = plot_feature_importances(
@@ -73,7 +81,7 @@ class TestPlotFeatureImportancesEdgeCases:
         assert imp_df.shape[0] == len(feature_names)
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_multiple_targets_select_by_index(self, mock_show, regression_data_numpy):
         X, y, feature_names, target_names = regression_data_numpy
         # Create two target names; still using single y but index should select name safely
@@ -87,7 +95,7 @@ class TestPlotFeatureImportancesEdgeCases:
 
 
 class TestPlotFeatureImportancesIntegration:
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_full_parameter_combo(self, mock_show, regression_data_numpy):
         X, y, feature_names, target_names = regression_data_numpy
         top_features, imp_df = plot_feature_importances(

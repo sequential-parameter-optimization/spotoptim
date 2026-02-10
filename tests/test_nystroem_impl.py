@@ -8,6 +8,7 @@ from spotoptim.surrogate.nystroem import Nystroem
 from spotoptim.surrogate.pipeline import Pipeline
 from spotoptim.surrogate.kernels import RBF, WhiteKernel
 
+
 def test_pipeline_nystroem():
     # 1. Generate synthetic data
     X = np.linspace(0, 10, 20).reshape(-1, 1)
@@ -24,13 +25,10 @@ def test_pipeline_nystroem():
     # Nystroem transforms X (n_samples, n_features) -> (n_samples, n_components)
     # So Kriging will see input dimension = n_components.
     # We need to make sure Kriging can handle this high dimension (it should).
-    gp_model = Kriging(method='regression', seed=42)
+    gp_model = Kriging(method="regression", seed=42)
 
     # 5. Create Pipeline
-    pipeline = Pipeline([
-        ('nystroem', nystroem),
-        ('gp', gp_model)
-    ])
+    pipeline = Pipeline([("nystroem", nystroem), ("gp", gp_model)])
 
     # 6. Fit the pipeline
     print("Fitting pipeline...")
@@ -41,12 +39,13 @@ def test_pipeline_nystroem():
     X_test = np.linspace(0, 10, 50).reshape(-1, 1)
     y_pred = pipeline.predict(X_test)
     print("Prediction shape:", y_pred.shape)
-    
+
     # Check if predictions are reasonable (not all zeros or NaNs)
     assert not np.isnan(y_pred).any(), "Predictions contain NaNs"
     assert y_pred.shape == (50,), f"Expected shape (50,), got {y_pred.shape}"
-    
+
     print("Verification successful!")
+
 
 if __name__ == "__main__":
     test_pipeline_nystroem()

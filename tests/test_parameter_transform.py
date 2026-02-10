@@ -7,23 +7,25 @@ from spotoptim.SpotOptim import SpotOptim
 import numpy as np
 import pytest
 
+
 def test_parameter_set_transform():
     ps = ParameterSet()
     ps.add_float("x", 1.0, 10.0, transform="log")
     ps.add_float("y", 1.0, 10.0, transform="log(x)")
     ps.add_float("z", 1.0, 10.0, transform="pow(x, 2)")
-    
+
     assert ps.var_trans == ["log", "log(x)", "pow(x, 2)"]
-    
+
     # Check repr
     r = repr(ps)
     assert "transform='log'" in r
     assert "transform='log(x)'" in r
     assert "transform='pow(x, 2)'" in r
 
+
 def test_spotoptim_dynamic_transforms():
     spot = SpotOptim(fun=lambda x: np.sum(x), bounds=[(1, 10)])
-    
+
     # Test log(x)
     x = 10.0
     val = spot.transform_value(x, "log(x)")
@@ -58,7 +60,8 @@ def test_spotoptim_dynamic_transforms():
     assert np.isclose(val, 2.0)
     inv = spot.inverse_transform_value(val, "log(x, 10)")
     assert np.isclose(inv, x)
-    
+
+
 def test_unknown_transform():
     spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
     with pytest.raises(ValueError):

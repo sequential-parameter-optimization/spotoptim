@@ -5,7 +5,7 @@
 import pytest
 import numpy as np
 from spotoptim.SpotOptim import SpotOptim
-from sklearn.gaussian_process import GaussianProcessRegressor
+
 
 class TestSpotOptimReproducibility:
     """
@@ -15,7 +15,7 @@ class TestSpotOptimReproducibility:
 
     def test_deterministic_objective_reproducibility(self):
         """Test reproducibility with a deterministic objective function."""
-        
+
         def objective(X):
             return np.sum(X**2, axis=1)
 
@@ -30,7 +30,7 @@ class TestSpotOptimReproducibility:
             bounds=bounds,
             max_iter=max_iter,
             n_initial=n_initial,
-            seed=seed
+            seed=seed,
         )
         result1 = opt1.optimize()
 
@@ -40,22 +40,28 @@ class TestSpotOptimReproducibility:
             bounds=bounds,
             max_iter=max_iter,
             n_initial=n_initial,
-            seed=seed
+            seed=seed,
         )
-        result2 = opt2.optimize()
+        _ = opt2.optimize()
 
         # Assertions
-        np.testing.assert_array_equal(result1.x, result2.x, err_msg="Best x should be identical")
-        assert result1.fun == result2.fun, "Best fun value should be identical"
-        np.testing.assert_array_equal(opt1.X_, opt2.X_, err_msg="All evaluated points X_ should be identical")
-        np.testing.assert_array_equal(opt1.y_, opt2.y_, err_msg="All evaluated values y_ should be identical")
+        np.testing.assert_array_equal(
+            result1.x, opt2.best_x_, err_msg="Best x should be identical"
+        )
+        assert result1.fun == opt2.best_y_, "Best fun value should be identical"
+        np.testing.assert_array_equal(
+            opt1.X_, opt2.X_, err_msg="All evaluated points X_ should be identical"
+        )
+        np.testing.assert_array_equal(
+            opt1.y_, opt2.y_, err_msg="All evaluated values y_ should be identical"
+        )
 
     def test_noisy_objective_reproducibility(self):
         """Test reproducibility with a noisy objective using repeats."""
-        
+
         def objective(X):
             # Noise is handled inside the function, but for reproducibility checks
-            # we rely on the optimizer's internal seeding if it creates noise? 
+            # we rely on the optimizer's internal seeding if it creates noise?
             # NO, the user function generates noise. The seed must control numpy's random state
             # globally for this to be reproducible if the user function uses np.random.
             # SpotOptim._set_seed() sets np.random.seed().
@@ -76,13 +82,13 @@ class TestSpotOptimReproducibility:
             n_initial=n_initial,
             repeats_initial=repeats_initial,
             repeats_surrogate=repeats_surrogate,
-            seed=seed
+            seed=seed,
         )
         # Note: optimize() calls _set_seed() internally upon init.
-        # But if we run sequentially, we rely on SpotOptim resetting the seed or 
+        # But if we run sequentially, we rely on SpotOptim resetting the seed or
         # maintaining deterministic state.
         # Wait, SpotOptim sets seed in __init__. So optimization starts with deterministic state.
-        result1 = opt1.optimize()
+        _ = opt1.optimize()
 
         # Run 2
         opt2 = SpotOptim(
@@ -92,27 +98,35 @@ class TestSpotOptimReproducibility:
             n_initial=n_initial,
             repeats_initial=repeats_initial,
             repeats_surrogate=repeats_surrogate,
-            seed=seed
+            seed=seed,
         )
-        result2 = opt2.optimize()
+        _ = opt2.optimize()
 
         # Assertions
-        np.testing.assert_array_equal(opt1.X_, opt2.X_, err_msg="X_ should be identical with noise")
-        np.testing.assert_array_equal(opt1.y_, opt2.y_, err_msg="y_ should be identical with noise")
-        np.testing.assert_array_equal(opt1.mean_X, opt2.mean_X, err_msg="mean_X should be identical")
-        
+        np.testing.assert_array_equal(
+            opt1.X_, opt2.X_, err_msg="X_ should be identical with noise"
+        )
+        np.testing.assert_array_equal(
+            opt1.y_, opt2.y_, err_msg="y_ should be identical with noise"
+        )
+        np.testing.assert_array_equal(
+            opt1.mean_X, opt2.mean_X, err_msg="mean_X should be identical"
+        )
+
         # Check if variances match (sensitive to noise reproducibility)
-        np.testing.assert_array_almost_equal(opt1.var_y, opt2.var_y, decimal=10, err_msg="var_y should be identical")
+        np.testing.assert_array_almost_equal(
+            opt1.var_y, opt2.var_y, decimal=10, err_msg="var_y should be identical"
+        )
 
     def test_ocba_reproducibility(self):
         """Test reproducibility with OCBA enabled."""
-        
+
         def objective(X):
             return np.sum(X**2, axis=1) + np.random.normal(0, 0.1, size=X.shape[0])
 
         bounds = [(-5, 5)]
         seed = 999
-        max_iter = 20  
+        max_iter = 20
         # Provide enough budget for OCBA to trigger
         n_initial = 5
         repeats_initial = 3
@@ -127,9 +141,9 @@ class TestSpotOptimReproducibility:
             repeats_initial=repeats_initial,
             ocba_delta=ocba_delta,
             # noise=True is derived from repeats_initial > 1
-            seed=seed
+            seed=seed,
         )
-        result1 = opt1.optimize()
+        _ = opt1.optimize()
 
         # Run 2
         opt2 = SpotOptim(
@@ -140,20 +154,22 @@ class TestSpotOptimReproducibility:
             repeats_initial=repeats_initial,
             ocba_delta=ocba_delta,
             # noise=True is derived
-            seed=seed
+            seed=seed,
         )
-        result2 = opt2.optimize()
+        _ = opt2.optimize()
 
         # Assertions
-        np.testing.assert_array_equal(opt1.X_, opt2.X_, err_msg="X_ with OCBA should be identical")
-        
+        np.testing.assert_array_equal(
+            opt1.X_, opt2.X_, err_msg="X_ with OCBA should be identical"
+        )
+
         # Check if OCBA triggered (if not, test is valid but less useful)
-        # We can't easily check if OCBA triggered without inspecting logs, 
+        # We can't easily check if OCBA triggered without inspecting logs,
         # but reproducibility is key regardless of trigger path.
 
     def test_penalty_handling_reproducibility(self):
         """Test reproducibility of penalty values (random noise addition)."""
-        
+
         def objective_with_nan(X):
             # Return NaN for some region, but ensure we have valid points
             # X values are in [-5, 5]
@@ -171,7 +187,7 @@ class TestSpotOptimReproducibility:
         bounds = [(-5, 5), (-5, 5)]
         seed = 555
         max_iter = 15
-        n_initial = 10 # Increase initial points to ensure we have enough valid ones
+        n_initial = 10  # Increase initial points to ensure we have enough valid ones
         penalty = True
         penalty_val = 100.0
 
@@ -183,9 +199,9 @@ class TestSpotOptimReproducibility:
             n_initial=n_initial,
             penalty=penalty,
             penalty_val=penalty_val,
-            seed=seed
+            seed=seed,
         )
-        result1 = opt1.optimize()
+        _ = opt1.optimize()
 
         # Run 2
         opt2 = SpotOptim(
@@ -195,17 +211,19 @@ class TestSpotOptimReproducibility:
             n_initial=n_initial,
             penalty=penalty,
             penalty_val=penalty_val,
-            seed=seed
+            seed=seed,
         )
-        result2 = opt2.optimize()
+        _ = opt2.optimize()
 
         # Assertions
         # Since _apply_penalty_NA adds random noise, this MUST be reproducible with fixed seed
-        np.testing.assert_array_equal(opt1.y_, opt2.y_, err_msg="Penalized y values should be identical")
-        
+        np.testing.assert_array_equal(
+            opt1.y_, opt2.y_, err_msg="Penalized y values should be identical"
+        )
+
     def test_different_seeds_produce_different_results(self):
         """Verify that different seeds produce different outcomes (sanity check)."""
-        
+
         def objective(X):
             return np.sum(X**2, axis=1)
 
@@ -215,29 +233,21 @@ class TestSpotOptimReproducibility:
 
         # Run 1 (Seed 1)
         opt1 = SpotOptim(
-            fun=objective,
-            bounds=bounds,
-            max_iter=max_iter,
-            n_initial=n_initial,
-            seed=1
+            fun=objective, bounds=bounds, max_iter=max_iter, n_initial=n_initial, seed=1
         )
-        result1 = opt1.optimize()
+        _ = opt1.optimize()
 
         # Run 2 (Seed 2)
         opt2 = SpotOptim(
-            fun=objective,
-            bounds=bounds,
-            max_iter=max_iter,
-            n_initial=n_initial,
-            seed=2
+            fun=objective, bounds=bounds, max_iter=max_iter, n_initial=n_initial, seed=2
         )
-        result2 = opt2.optimize()
+        _ = opt2.optimize()
 
         # Assertions
         # Initial designs should be different
         with pytest.raises(AssertionError):
             np.testing.assert_array_equal(opt1.X_[:n_initial], opt2.X_[:n_initial])
-            
+
     def test_k_means_reproducibility_in_selection(self):
         """
         Verify that point selection using K-Means is reproducible.
@@ -250,20 +260,20 @@ class TestSpotOptimReproducibility:
 
     def test_surrogate_training_reproducibility(self):
         """Test direct surrogate fitting/predicting reproducibility."""
-        
+
         seed = 777
         X = np.random.RandomState(seed).rand(10, 2)
         y = np.random.RandomState(seed).rand(10)
-        
+
         # Instance 1
-        opt1 = SpotOptim(fun=lambda x: x, bounds=[(0,1)], seed=seed)
+        opt1 = SpotOptim(fun=lambda x: x, bounds=[(0, 1)], seed=seed)
         opt1._fit_surrogate(X, y)
         pred1_mu, pred1_sigma = opt1._predict_with_uncertainty(X)
-        
+
         # Instance 2
-        opt2 = SpotOptim(fun=lambda x: x, bounds=[(0,1)], seed=seed)
+        opt2 = SpotOptim(fun=lambda x: x, bounds=[(0, 1)], seed=seed)
         opt2._fit_surrogate(X, y)
         pred2_mu, pred2_sigma = opt2._predict_with_uncertainty(X)
-        
+
         np.testing.assert_array_equal(pred1_mu, pred2_mu)
         np.testing.assert_array_equal(pred1_sigma, pred2_sigma)

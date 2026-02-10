@@ -5,7 +5,6 @@
 """Tests for the _apply_penalty_NA method with y_history parameter."""
 
 import numpy as np
-import pytest
 from spotoptim import SpotOptim
 
 

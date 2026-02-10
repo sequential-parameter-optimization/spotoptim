@@ -125,7 +125,7 @@ class TestProcessFactorBoundsEdgeCases:
 
         assert len(opt._factor_maps[0]) == 20
         assert opt.bounds[0] == (0, 19)
-        
+
         # Check first and last mappings
         assert opt._factor_maps[0][0] == "level_0"
         assert opt._factor_maps[0][19] == "level_19"
@@ -258,7 +258,7 @@ class TestProcessFactorBoundsVerbose:
 
     def test_verbose_output(self, capsys):
         """Test that verbose mode prints factor information."""
-        opt = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[("a", "b", "c")],
             max_iter=5,
@@ -273,14 +273,13 @@ class TestProcessFactorBoundsVerbose:
 
     def test_no_verbose_output(self, capsys):
         """Test that non-verbose mode doesn't print factor information."""
-        opt = SpotOptim(
+        _ = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[("a", "b", "c")],
             max_iter=5,
             n_initial=3,
             verbose=False,
         )
-
         captured = capsys.readouterr()
         assert "Factor variable" not in captured.out
 
@@ -358,7 +357,7 @@ class TestProcessFactorBoundsIntegration:
         # This is an edge case - a factor with only one level
         # While unusual, it should work (essentially a fixed dimension)
         opt = SpotOptim(
-            fun=lambda X: np.sum(X[:, 1:]**2, axis=1),  # Ignore factor dimension
+            fun=lambda X: np.sum(X[:, 1:] ** 2, axis=1),  # Ignore factor dimension
             bounds=[
                 ("only_option",),  # Single level factor
                 (0.0, 10.0),
@@ -374,8 +373,8 @@ class TestProcessFactorBoundsIntegration:
         assert opt.all_lower[0] == 0
         assert opt.all_upper[0] == 0
         # The dimension is fixed, so red_dim should be True
-        assert opt.red_dim == True
-        assert opt.ident[0] == True  # First dimension is fixed
+        assert opt.red_dim
+        assert opt.ident[0]  # First dimension is fixed
 
 
 class TestProcessFactorBoundsSpecialCharacters:

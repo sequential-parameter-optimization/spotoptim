@@ -20,12 +20,12 @@ class TestGetInitialDesignBasic:
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # Check shape
         assert X0.shape == (10, 2)
-        
+
         # Check bounds (internal scale)
         assert np.all(X0 >= opt.lower)
         assert np.all(X0 <= opt.upper)
@@ -33,14 +33,14 @@ class TestGetInitialDesignBasic:
     def test_get_initial_design_single_dimension(self):
         """Test get_initial_design() with single dimension."""
         opt = SpotOptim(
-            fun=lambda X: X.flatten()**2,
+            fun=lambda X: X.flatten() ** 2,
             bounds=[(-10, 10)],
             n_initial=5,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (5, 1)
         assert np.all(X0 >= -10)
         assert np.all(X0 <= 10)
@@ -54,9 +54,9 @@ class TestGetInitialDesignBasic:
             n_initial=20,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (20, n_dims)
         assert np.all(X0 >= 0)
         assert np.all(X0 <= 1)
@@ -71,7 +71,7 @@ class TestGetInitialDesignBasic:
                 max_iter=max(50, n_init),  # Ensure max_iter >= n_initial
                 seed=42,
             )
-            
+
             X0 = opt.get_initial_design()
             assert X0.shape == (n_init, 2)
 
@@ -87,10 +87,10 @@ class TestGetInitialDesignCustomX0:
             n_initial=10,
             seed=42,
         )
-        
+
         X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
         X0 = opt.get_initial_design(X0_custom)
-        
+
         # Should return 3 points (custom design)
         assert X0.shape == (3, 2)
 
@@ -102,10 +102,10 @@ class TestGetInitialDesignCustomX0:
             n_initial=10,
             seed=42,
         )
-        
+
         X0_custom = np.array([[1.5, 2.5]])
         X0 = opt.get_initial_design(X0_custom)
-        
+
         assert X0.shape == (1, 2)
 
     def test_get_initial_design_custom_x0_transformed(self):
@@ -113,15 +113,15 @@ class TestGetInitialDesignCustomX0:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100)],
-            var_trans=['log10'],
+            var_trans=["log10"],
             n_initial=10,
             seed=42,
         )
-        
+
         # Provide X0 in original scale (use floats to avoid numpy type issues)
         X0_custom = np.array([[10.0], [50.0], [100.0]])
         X0 = opt.get_initial_design(X0_custom)
-        
+
         # Should be transformed to log10 scale
         assert X0.shape == (3, 1)
         # log10(10) = 1, log10(100) = 2
@@ -133,14 +133,14 @@ class TestGetInitialDesignCustomX0:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0, 10), (0, 10)],
-            var_type=['int', 'float'],
+            var_type=["int", "float"],
             n_initial=10,
             seed=42,
         )
-        
+
         X0_custom = np.array([[1.5, 2.5], [3.7, 4.2]])
         X0 = opt.get_initial_design(X0_custom)
-        
+
         # First column should be rounded
         assert X0[0, 0] == 2.0
         assert X0[1, 0] == 4.0
@@ -161,12 +161,12 @@ class TestGetInitialDesignWithStartingPoint:
             x0=np.array([1.0, 2.0]),
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # Should have n_initial points
         assert X0.shape == (10, 2)
-        
+
         # First point should be x0 (in internal scale)
         assert X0[0, 0] == pytest.approx(1.0)
         assert X0[0, 1] == pytest.approx(2.0)
@@ -176,14 +176,14 @@ class TestGetInitialDesignWithStartingPoint:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100)],
-            var_trans=['log10'],
+            var_trans=["log10"],
             n_initial=5,
             x0=np.array([10.0]),
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (5, 1)
         # First point should be x0 in internal scale (log10(10) = 1)
         assert X0[0, 0] == pytest.approx(1.0)
@@ -197,10 +197,10 @@ class TestGetInitialDesignWithStartingPoint:
             x0=np.array([1.0, 2.0]),  # This should be ignored
             seed=42,
         )
-        
+
         X0_custom = np.array([[0, 0], [3, 3]])
         X0 = opt.get_initial_design(X0_custom)
-        
+
         # Should use custom X0, not include x0
         assert X0.shape == (2, 2)
         # First point should be from custom X0, not x0
@@ -219,9 +219,9 @@ class TestGetInitialDesignDimensionReduction:
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # Should have reduced dimensions (fixed dimension removed)
         assert X0.shape == (10, 2)
 
@@ -233,11 +233,11 @@ class TestGetInitialDesignDimensionReduction:
             n_initial=10,
             seed=42,
         )
-        
+
         # Provide X0 in full dimensions
         X0_custom = np.array([[1, 3, 2], [0, 3, 1]])
         X0 = opt.get_initial_design(X0_custom)
-        
+
         # Should be reduced to 2 dimensions
         assert X0.shape == (2, 2)
         # Middle dimension (fixed at 3) should be removed
@@ -253,13 +253,13 @@ class TestGetInitialDesignVarTypes:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0, 10), (0, 10)],
-            var_type=['int', 'int'],
+            var_type=["int", "int"],
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # All values should be integers
         assert np.all(X0 == np.round(X0))
 
@@ -268,13 +268,13 @@ class TestGetInitialDesignVarTypes:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0, 10), (0.0, 1.0), (5, 15)],
-            var_type=['int', 'float', 'int'],
+            var_type=["int", "float", "int"],
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # First and third columns should be integers
         assert np.all(X0[:, 0] == np.round(X0[:, 0]))
         assert np.all(X0[:, 2] == np.round(X0[:, 2]))
@@ -283,13 +283,13 @@ class TestGetInitialDesignVarTypes:
         """Test get_initial_design() with factor variables."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[('red', 'green', 'blue'), (0, 10)],
+            bounds=[("red", "green", "blue"), (0, 10)],
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # Factor variable should be integer indices
         assert np.all(X0[:, 0] == np.round(X0[:, 0]))
         assert np.all(X0[:, 0] >= 0)
@@ -304,13 +304,13 @@ class TestGetInitialDesignTransformations:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100)],
-            var_trans=['log10'],
+            var_trans=["log10"],
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # Should be in transformed (log10) scale
         assert X0.shape == (10, 1)
         # log10(1) = 0, log10(100) = 2
@@ -322,13 +322,13 @@ class TestGetInitialDesignTransformations:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100)],
-            var_trans=['sqrt'],
+            var_trans=["sqrt"],
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         # Should be in transformed (sqrt) scale
         # sqrt(1) = 1, sqrt(100) = 10
         assert np.all(X0 >= 1)
@@ -339,13 +339,13 @@ class TestGetInitialDesignTransformations:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100), (0, 10), (0.1, 10)],
-            var_trans=['log10', None, 'sqrt'],
+            var_trans=["log10", None, "sqrt"],
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (10, 3)
         # First column: log10 transformed
         assert np.all(X0[:, 0] >= 0)
@@ -366,17 +366,17 @@ class TestGetInitialDesignReproducibility:
             n_initial=10,
             seed=42,
         )
-        
+
         opt2 = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             n_initial=10,
             seed=42,
         )
-        
+
         X0_1 = opt1.get_initial_design()
         X0_2 = opt2.get_initial_design()
-        
+
         np.testing.assert_array_almost_equal(X0_1, X0_2)
 
     def test_get_initial_design_different_seeds(self):
@@ -387,17 +387,17 @@ class TestGetInitialDesignReproducibility:
             n_initial=10,
             seed=42,
         )
-        
+
         opt2 = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
             n_initial=10,
             seed=123,
         )
-        
+
         X0_1 = opt1.get_initial_design()
         X0_2 = opt2.get_initial_design()
-        
+
         # Should be different
         assert not np.allclose(X0_1, X0_2)
 
@@ -413,9 +413,9 @@ class TestGetInitialDesignEdgeCases:
             n_initial=1,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (1, 2)
 
     def test_get_initial_design_large_n_initial(self):
@@ -427,9 +427,9 @@ class TestGetInitialDesignEdgeCases:
             max_iter=100,  # Ensure max_iter >= n_initial
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (100, 2)
 
     def test_get_initial_design_narrow_bounds(self):
@@ -440,9 +440,9 @@ class TestGetInitialDesignEdgeCases:
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (10, 2)
         assert np.all(X0 >= 0)
         assert np.all(X0 <= 0.001)
@@ -455,9 +455,9 @@ class TestGetInitialDesignEdgeCases:
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.shape == (10, 2)
         assert np.all(X0[:, 0] >= -100)
         assert np.all(X0[:, 0] <= 10)
@@ -476,9 +476,9 @@ class TestGetInitialDesignReturnTypes:
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert isinstance(X0, np.ndarray)
 
     def test_get_initial_design_returns_2d_array(self):
@@ -489,9 +489,9 @@ class TestGetInitialDesignReturnTypes:
             n_initial=10,
             seed=42,
         )
-        
+
         X0 = opt.get_initial_design()
-        
+
         assert X0.ndim == 2
 
 
@@ -501,11 +501,11 @@ class TestGetInitialDesignIntegration:
     def test_get_initial_design_used_in_optimize(self):
         """Test that get_initial_design() is properly used in optimize()."""
         call_log = []
-        
+
         def objective(X):
             call_log.extend(X.tolist())
             return np.sum(X**2, axis=1)
-        
+
         opt = SpotOptim(
             fun=objective,
             bounds=[(-5, 5), (-5, 5)],
@@ -513,13 +513,13 @@ class TestGetInitialDesignIntegration:
             max_iter=5,
             seed=42,
         )
-        
+
         # Get initial design
-        X0 = opt.get_initial_design()
-        
+        _ = opt.get_initial_design()
+
         # Run optimization
-        result = opt.optimize()
-        
+        _ = opt.optimize()
+
         # Check that initial design points were evaluated
         assert len(call_log) >= 5
 
@@ -532,13 +532,13 @@ class TestGetInitialDesignIntegration:
             max_iter=10,  # Ensure max_iter >= n_initial
             seed=42,
         )
-        
+
         # Provide custom initial design
         X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
-        
+
         # This should work in optimize() method
-        result = opt.optimize(X0=X0_custom)
-        
+        _ = opt.optimize(X0=X0_custom)
+
         # Should have evaluated at least the 3 custom points
         assert opt.counter >= 3
 
@@ -549,9 +549,7 @@ class TestGetInitialDesignDocstring:
     def test_docstring_example_default_lhs(self):
         """Test the default LHS example from docstring."""
         opt = SpotOptim(
-            fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[(-5, 5), (-5, 5)],
-            n_initial=10
+            fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5), (-5, 5)], n_initial=10
         )
         # Generate default LHS design
         X0 = opt.get_initial_design()
@@ -560,9 +558,7 @@ class TestGetInitialDesignDocstring:
     def test_docstring_example_custom_x0(self):
         """Test the custom X0 example from docstring."""
         opt = SpotOptim(
-            fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[(-5, 5), (-5, 5)],
-            n_initial=10
+            fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5), (-5, 5)], n_initial=10
         )
         # Provide custom initial design
         X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
@@ -583,8 +579,8 @@ class TestGetInitialDesignVerbose:
             seed=42,
             verbose=True,
         )
-        
-        X0 = opt.get_initial_design()
-        
+
+        _ = opt.get_initial_design()
+
         captured = capsys.readouterr()
         assert "starting point x0" in captured.out.lower()

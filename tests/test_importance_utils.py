@@ -8,7 +8,7 @@ Tests for importance utilities in spotoptim.sensitivity.importance:
 - generate_imp
 - plot_importances
 """
-import numpy as np
+
 import pandas as pd
 import pytest
 from unittest.mock import patch
@@ -63,7 +63,9 @@ class TestGenerateIMP:
         # Create simple train/test split
         X_train, X_test = X[:90], X[90:]
         y_train, y_test = y[:90], y[90:]
-        perm_imp = generate_imp(X_train, X_test, y_train, y_test, n_repeats=5, use_test=True)
+        perm_imp = generate_imp(
+            X_train, X_test, y_train, y_test, n_repeats=5, use_test=True
+        )
         # Check structure
         assert hasattr(perm_imp, "importances")
         assert hasattr(perm_imp, "importances_mean")
@@ -74,15 +76,21 @@ class TestGenerateIMP:
         _, _, X_df, y_series = regression_splits
         X_train, X_test = X_df.iloc[:90], X_df.iloc[90:]
         y_train, y_test = y_series.iloc[:90], y_series.iloc[90:]
-        perm_imp = generate_imp(X_train, X_test, y_train, y_test, n_repeats=3, use_test=False)
+        perm_imp = generate_imp(
+            X_train, X_test, y_train, y_test, n_repeats=3, use_test=False
+        )
         assert hasattr(perm_imp, "importances_mean")
 
     def test_use_train_vs_test_flag(self, regression_splits):
         X, y, _, _ = regression_splits
         X_train, X_test = X[:90], X[90:]
         y_train, y_test = y[:90], y[90:]
-        perm_test = generate_imp(X_train, X_test, y_train, y_test, n_repeats=3, use_test=True)
-        perm_train = generate_imp(X_train, X_test, y_train, y_test, n_repeats=3, use_test=False)
+        perm_test = generate_imp(
+            X_train, X_test, y_train, y_test, n_repeats=3, use_test=True
+        )
+        perm_train = generate_imp(
+            X_train, X_test, y_train, y_test, n_repeats=3, use_test=False
+        )
         # Means may differ but shapes should match
         assert perm_test.importances.shape == perm_train.importances.shape
 
@@ -105,7 +113,7 @@ class TestGenerateIMP:
 
 
 class TestPlotImportances:
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_basic_plot(self, mock_show, regression_splits):
         X, y, X_df, y_series = regression_splits
         # Prepare inputs
@@ -126,7 +134,7 @@ class TestPlotImportances:
         )
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_plot_raises_on_k_bigger_than_features(self, mock_show, regression_splits):
         X, y, X_df, y_series = regression_splits
         df_mdi = generate_mdi(X_df, y_series)
@@ -146,7 +154,7 @@ class TestPlotImportances:
         )
         mock_show.assert_called_once()
 
-    @patch('matplotlib.pyplot.show')
+    @patch("matplotlib.pyplot.show")
     def test_plot_without_feature_names(self, mock_show, regression_splits):
         X, y, X_df, y_series = regression_splits
         df_mdi = generate_mdi(X_df, y_series)

@@ -79,7 +79,7 @@ class TestMaxIterTermination:
         max_iter = 15
 
         with pytest.raises(ValueError, match="max_iter.*must be >= n_initial"):
-            optimizer = SpotOptim(
+            _ = SpotOptim(
                 fun=simple_sphere,
                 bounds=[(-5, 5), (-5, 5)],
                 max_iter=max_iter,

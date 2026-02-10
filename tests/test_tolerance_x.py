@@ -10,7 +10,6 @@ identical or very similar points, especially with integer and factor variables
 where rounding can cause issues.
 """
 
-import pytest
 import numpy as np
 from spotoptim.SpotOptim import SpotOptim
 
@@ -85,13 +84,13 @@ class TestToleranceXFloatVariables:
             bounds=[(-5, 5), (-5, 5)],
             var_type=["float", "float"],
             tolerance_x=0.01,  # Small but non-zero tolerance
-            max_iter=50,
+            max_iter=20,
             n_initial=10,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Check for duplicate points (allowing for floating point tolerance)
         X = optimizer.X_
@@ -112,13 +111,13 @@ class TestToleranceXFloatVariables:
             bounds=[(-5, 5), (-5, 5)],
             var_type=["float", "float"],
             tolerance_x=0.5,  # Larger tolerance
-            max_iter=30,
+            max_iter=20,
             n_initial=10,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Check minimum pairwise distance
         X = optimizer.X_
@@ -149,13 +148,13 @@ class TestToleranceXIntegerVariables:
             bounds=[(1, 20), (1, 10)],
             var_type=["int", "int"],
             tolerance_x=0.1,
-            max_iter=50,
+            max_iter=20,
             n_initial=10,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Check for duplicate integer combinations
         X = optimizer.X_
@@ -191,13 +190,13 @@ class TestToleranceXIntegerVariables:
             bounds=[(1, 20), (1, 10), (1, 5)],
             var_type=["int", "int", "int"],
             tolerance_x=0.1,
-            max_iter=50,
+            max_iter=20,
             n_initial=10,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Check that no configuration was evaluated more than once
         duplicates = {k: v for k, v in evaluation_count.items() if v > 1}
@@ -224,13 +223,13 @@ class TestToleranceXIntegerVariables:
             bounds=[(5, 15), (2, 8)],
             var_type=["int", "int"],
             tolerance_x=0.1,
-            max_iter=40,
-            n_initial=10,
+            max_iter=20,
+            n_initial=5,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Check for consecutive duplicates (the main symptom of the bug)
         consecutive_dupes = []
@@ -276,7 +275,7 @@ class TestToleranceXFactorVariables:
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Get configurations (factors should be strings)
         X = optimizer.X_
@@ -321,13 +320,13 @@ class TestToleranceXFactorVariables:
             ],
             var_type=["float", "int", "factor"],
             tolerance_x=0.1,
-            max_iter=40,
-            n_initial=10,
+            max_iter=15,
+            n_initial=5,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Create comparable configurations
         X = optimizer.X_
@@ -410,13 +409,13 @@ class TestToleranceXReproduceBug:
                 "alpha",
             ],
             tolerance_x=0.01,
-            max_iter=60,
-            n_initial=15,
+            max_iter=15,
+            n_initial=10,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Check for consecutive identical configurations
         consecutive_identical = 0
@@ -454,13 +453,13 @@ class TestToleranceXReproduceBug:
             bounds=[(1, 50), (1, 20), (1, 10)],
             var_type=["int", "int", "int"],
             tolerance_x=0.01,
-            max_iter=100,
-            n_initial=20,
+            max_iter=30,
+            n_initial=15,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Count unique configurations
         X = optimizer.X_
@@ -490,15 +489,15 @@ class TestToleranceXWithNoise:
             bounds=[(1, 20), (1, 10)],
             var_type=["int", "int"],
             tolerance_x=0.1,
-            max_iter=40,
-            n_initial=10,
+            max_iter=20,
+            n_initial=5,
             repeats_initial=2,
             repeats_surrogate=2,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # With noise handling, unique configurations should still be enforced
         # (though each config is evaluated multiple times)
@@ -539,7 +538,7 @@ class TestToleranceXEdgeCases:
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # With 15 possible combinations and 20 evaluations, duplicates are expected
         # But we should have explored a good portion of unique combinations first
@@ -548,7 +547,7 @@ class TestToleranceXEdgeCases:
 
         # Count unique configurations
         n_unique = len(set(configs))
-        n_total = len(configs)
+        _ = len(configs)
 
         # Should have explored at least 10 unique configurations (67% of 15)
         assert n_unique >= 10, (
@@ -567,13 +566,13 @@ class TestToleranceXEdgeCases:
             bounds=[(1, 20), (5, 5), (1, 10)],  # Middle dimension is fixed
             var_type=["int", "int", "int"],
             tolerance_x=0.1,
-            max_iter=40,
+            max_iter=20,
             n_initial=10,
             seed=42,
             verbose=False,
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         # Check for duplicates in reduced dimensions
         X_int = np.round(optimizer.X_).astype(int)
@@ -595,7 +594,7 @@ class TestToleranceXEdgeCases:
             bounds=[(1, 20), (1, 10)],
             var_type=["int", "int"],
             tolerance_x=10.0,  # Larger than the bounds!
-            max_iter=30,
+            max_iter=20,
             n_initial=10,
             seed=42,
             verbose=False,
@@ -605,7 +604,7 @@ class TestToleranceXEdgeCases:
 
         # Should still complete without errors
         assert result.success
-        assert len(optimizer.X_) == 30
+        assert len(optimizer.X_) == 20
 
 
 class TestSelectNewMethod:

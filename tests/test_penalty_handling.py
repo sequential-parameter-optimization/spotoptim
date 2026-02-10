@@ -13,7 +13,6 @@ This test suite validates the _apply_penalty_NA() method, ensuring:
 - Random noise is added to avoid identical penalty values
 """
 
-import pytest
 import numpy as np
 from spotoptim.SpotOptim import SpotOptim
 
@@ -535,7 +534,7 @@ class TestApplyPenaltyNAVerboseOutput:
         )
 
         y = np.array([1.0, 2.0, 3.0, np.nan])
-        y_result = optimizer._apply_penalty_NA(y)
+        _ = optimizer._apply_penalty_NA(y)
 
         captured = capsys.readouterr()
         assert "adaptive penalty" in captured.out.lower()
@@ -559,7 +558,7 @@ class TestApplyPenaltyNAVerboseOutput:
         )
 
         y = np.array([5.0, np.nan])
-        y_result = optimizer._apply_penalty_NA(y)
+        _ = optimizer._apply_penalty_NA(y)
 
         captured = capsys.readouterr()
         assert "insufficient finite values" in captured.out.lower()
@@ -582,7 +581,7 @@ class TestApplyPenaltyNAVerboseOutput:
 
         y = np.array([1.0, 2.0, np.nan])
         custom_penalty = 999.0
-        y_result = optimizer._apply_penalty_NA(y, penalty_value=custom_penalty)
+        _ = optimizer._apply_penalty_NA(y, penalty_value=custom_penalty)
 
         captured = capsys.readouterr()
         assert "999" in captured.out or "999.0" in captured.out

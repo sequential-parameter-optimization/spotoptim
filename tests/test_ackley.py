@@ -65,11 +65,7 @@ class TestAckleyMultiplePoints:
 
     def test_ackley_multiple_points_3d(self):
         """Test multiple points evaluation in 3D."""
-        X = np.array([
-            [0.0, 0.0, 0.0],
-            [1.0, 1.0, 1.0],
-            [0.5, -0.5, 0.0]
-        ])
+        X = np.array([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0], [0.5, -0.5, 0.0]])
         result = ackley(X)
         assert result.shape == (3,)
         assert result[0] == pytest.approx(0.0, abs=1e-10)
@@ -162,11 +158,7 @@ class TestAckleyBoundaryValues:
     def test_ackley_at_typical_bounds(self):
         """Test Ackley at typical search domain boundaries."""
         # Typical domain: [-32.768, 32.768]
-        X = np.array([
-            [32.768, 32.768],
-            [-32.768, -32.768],
-            [32.768, -32.768]
-        ])
+        X = np.array([[32.768, 32.768], [-32.768, -32.768], [32.768, -32.768]])
         result = ackley(X)
         assert result.shape == (3,)
         assert np.all(result > 0)
@@ -205,7 +197,7 @@ class TestAckleyNumericalProperties:
         X_far = np.array([10.0, 10.0])
         result_near = ackley(X_near)
         result_far = ackley(X_far)
-        
+
         # Far from origin should generally have higher values
         assert result_far[0] > result_near[0]
 
@@ -249,17 +241,13 @@ class TestAckleyOptimization:
     def test_ackley_with_spotoptim(self):
         """Test that Ackley can be used with SpotOptim."""
         from spotoptim import SpotOptim
-        
+
         opt = SpotOptim(
-            fun=ackley,
-            bounds=[(-5, 5), (-5, 5)],
-            n_initial=5,
-            max_iter=10,
-            seed=42
+            fun=ackley, bounds=[(-5, 5), (-5, 5)], n_initial=5, max_iter=10, seed=42
         )
-        
+
         result = opt.optimize()
-        
+
         # Should find a solution close to origin
         assert result.fun < 5.0  # Should be much better than random
         assert np.all(np.abs(result.x) < 5.0)
@@ -269,11 +257,11 @@ class TestAckleyOptimization:
         X1 = np.array([5.0, 5.0])
         X2 = np.array([2.5, 2.5])
         X3 = np.array([1.0, 1.0])
-        
+
         result1 = ackley(X1)
         result2 = ackley(X2)
         result3 = ackley(X3)
-        
+
         # Moving toward origin should decrease value
         assert result1[0] > result2[0]
         assert result2[0] > result3[0]

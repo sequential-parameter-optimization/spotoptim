@@ -319,7 +319,7 @@ def test_initial_design_no_penalty_applied():
         verbose=False,
     )
 
-    result = optimizer.optimize()
+    _ = optimizer.optimize()
 
     # Check that no penalty values appear in stored results
     # (all values should be from actual objective function, not penalties)
@@ -391,7 +391,7 @@ def test_initial_design_verbose_warnings(capsys):
         verbose=True,  # Enable verbose output
     )
 
-    result = optimizer.optimize()
+    _ = optimizer.optimize()
 
     # Capture output
     captured = capsys.readouterr()

@@ -6,7 +6,6 @@
 Tests for the optimize_acquisition_func method in SpotOptim.
 """
 
-import pytest
 import numpy as np
 from unittest.mock import MagicMock, patch
 from spotoptim.SpotOptim import SpotOptim
@@ -17,7 +16,7 @@ class TestOptimizeAcquisitionFunc:
 
     def test_optimize_acquisition_func_returns_valid_point(self):
         """Test that optimize_acquisition_func returns a point within bounds."""
-        
+
         def simple_func(X):
             return np.sum(X**2, axis=1)
 
@@ -47,7 +46,7 @@ class TestOptimizeAcquisitionFunc:
     @patch("spotoptim.SpotOptim.differential_evolution")
     def test_optimize_acquisition_func_calls_differential_evolution(self, mock_de):
         """Test that optimize_acquisition_func calls differential_evolution with correct args."""
-        
+
         def simple_func(X):
             return np.sum(X**2, axis=1)
 
@@ -71,19 +70,19 @@ class TestOptimizeAcquisitionFunc:
         # Check call arguments
         mock_de.assert_called_once()
         call_kwargs = mock_de.call_args[1]
-        
+
         # Check specific arguments that are important
         assert call_kwargs["bounds"] == optimizer.bounds
         assert call_kwargs["seed"] == optimizer.rng
         assert call_kwargs["maxiter"] == 10000
         assert call_kwargs["func"] == optimizer._acquisition_function
-        
+
         # Check return value
         np.testing.assert_array_equal(x_opt, np.array([1.2, 3.4]))
 
     def test_optimize_acquisition_func_respects_bounds(self):
         """Verify optimized point respects different bounds."""
-        
+
         def simple_func(X):
             return np.sum(X**2, axis=1)
 

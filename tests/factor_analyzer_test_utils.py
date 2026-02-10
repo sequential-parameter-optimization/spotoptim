@@ -387,7 +387,7 @@ def calculate_py_output_cfa(
     cfa.fit(data.values)
     transform = cfa.transform(data.values)
 
-    (loadingsse, errorcovsse) = cfa.get_standard_errors()
+    loadingsse, errorcovsse = cfa.get_standard_errors()
 
     outputs = {
         "loadings": cfa.loadings_.copy(),
@@ -427,7 +427,7 @@ def check_cfa(
         "transform",
     ]
 
-    (outputs_p, factors) = calculate_py_output_cfa(
+    outputs_p, factors = calculate_py_output_cfa(
         json_name_input,
         data_name_input,
         is_cov=is_cov,

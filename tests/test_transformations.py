@@ -370,7 +370,7 @@ class TestTransformationTables:
             seed=42,
         )
 
-        result = opt.optimize()
+        _ = opt.optimize()
         table = opt.print_results_table()
 
         # Check that table contains trans column
@@ -456,7 +456,7 @@ class TestTransformationStorage:
             seed=42,
         )
 
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # Check that all X_ values are in original scale
         assert np.all(opt.X_ >= 0.001)

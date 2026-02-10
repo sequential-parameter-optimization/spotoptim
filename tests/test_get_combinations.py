@@ -5,6 +5,7 @@
 """
 Tests for spotoptim.utils.stats.get_combinations
 """
+
 import pytest
 
 from spotoptim.utils.stats import get_combinations
@@ -72,5 +73,5 @@ class TestDocstringExamples:
 
     def test_doc_example_values(self):
         ind_list = [0, 10, 20, 30]
-        combos = get_combinations(ind_list, type='values')
+        combos = get_combinations(ind_list, type="values")
         assert combos == [(0, 10), (0, 20), (0, 30), (10, 20), (10, 30), (20, 30)]

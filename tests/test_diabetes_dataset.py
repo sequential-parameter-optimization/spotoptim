@@ -6,7 +6,6 @@
 Tests for diabetes dataset utilities.
 """
 
-import pytest
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
@@ -105,9 +104,12 @@ class TestDiabetesDataset:
         X = np.random.randn(10, 10)
         y = np.random.randn(10)
 
-        # Simple transform that multiplies by 2
-        transform = lambda x: x * 2
-        target_transform = lambda x: x * 3
+        # Simple transform functions
+        def transform(x):
+            return x * 2
+
+        def target_transform(x):
+            return x * 3
 
         dataset = DiabetesDataset(
             X, y, transform=transform, target_transform=target_transform
@@ -247,8 +249,8 @@ class TestGetDiabetesDataloaders:
         train_loader2, test_loader2, _ = get_diabetes_dataloaders(random_state=42)
 
         # Get first batch from each train loader
-        batch1 = next(iter(train_loader1))
-        batch2 = next(iter(train_loader2))
+        _ = next(iter(train_loader1))
+        _ = next(iter(train_loader2))
 
         # Should be identical when shuffle is disabled
         # Note: DataLoader shuffle is not controlled by random_state,

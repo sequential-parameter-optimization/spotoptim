@@ -4,12 +4,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pytest
 import importlib
 
 # Import the submodule via importlib to avoid any name masking in package __init__
 mm_module = importlib.import_module("spotoptim.sampling.mm")
-from spotoptim.sampling.mm import mm_improvement_contour
+from spotoptim.sampling.mm import mm_improvement_contour  # noqa: E402
 
 
 def test_mm_improvement_contour_small_grid(monkeypatch):
@@ -26,7 +25,10 @@ def test_mm_improvement_contour_small_grid(monkeypatch):
         captured["X2"] = X2
         captured["Z"] = Z
         captured["kwargs"] = kwargs
-        class _Dummy: ...
+
+        class _Dummy:
+            pass
+
         return _Dummy()
 
     monkeypatch.setattr(plt, "contourf", fake_contourf)
@@ -57,7 +59,10 @@ def test_mm_improvement_contour_default_grid_shapes(monkeypatch):
 
     def fake_contourf(X1, X2, Z, **kwargs):
         shape_holder["Z_shape"] = Z.shape
-        class _Dummy: ...
+
+        class _Dummy:
+            pass
+
         return _Dummy()
 
     monkeypatch.setattr(plt, "contourf", fake_contourf)
@@ -80,7 +85,10 @@ def test_mm_improvement_contour_scatter_called_with_base(monkeypatch):
     def fake_scatter(x, y, **kwargs):
         scatter_calls["x"] = np.asarray(x)
         scatter_calls["y"] = np.asarray(y)
-        class _Dummy: ...
+
+        class _Dummy:
+            pass
+
         return _Dummy()
 
     # Keep other plotting calls lightweight

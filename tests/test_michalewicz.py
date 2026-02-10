@@ -69,7 +69,7 @@ class TestMichalewiczSteepness:
         result_m5 = michalewicz(X, m=5)
         result_m10 = michalewicz(X, m=10)
         result_m20 = michalewicz(X, m=20)
-        
+
         # Higher m should give steeper valleys (more extreme values)
         # All should be negative and different
         assert result_m5[0] < 0
@@ -90,11 +90,13 @@ class TestMichalewiczMultiplePoints:
 
     def test_michalewicz_multiple_points_5d(self):
         """Test multiple points evaluation in 5D."""
-        X = np.array([
-            [1.5, 1.5, 1.5, 1.5, 1.5],
-            [2.0, 2.0, 2.0, 2.0, 2.0],
-            [1.0, 1.0, 1.0, 1.0, 1.0]
-        ])
+        X = np.array(
+            [
+                [1.5, 1.5, 1.5, 1.5, 1.5],
+                [2.0, 2.0, 2.0, 2.0, 2.0],
+                [1.0, 1.0, 1.0, 1.0, 1.0],
+            ]
+        )
         result = michalewicz(X)
         assert result.shape == (3,)
         assert np.all(np.isfinite(result))
@@ -188,11 +190,7 @@ class TestMichalewiczBoundaryValues:
 
     def test_michalewicz_at_upper_bound(self):
         """Test Michalewicz at upper boundary (π)."""
-        X = np.array([
-            [np.pi, np.pi],
-            [np.pi, 1.5],
-            [1.5, np.pi]
-        ])
+        X = np.array([[np.pi, np.pi], [np.pi, 1.5], [1.5, np.pi]])
         result = michalewicz(X)
         assert result.shape == (3,)
         assert np.all(np.isfinite(result))
@@ -220,14 +218,9 @@ class TestMichalewiczNumericalProperties:
     def test_michalewicz_multimodal(self):
         """Test that Michalewicz is multimodal with multiple local minima."""
         # Test different regions
-        points = [
-            [0.5, 0.5],
-            [1.5, 1.5],
-            [2.5, 1.5],
-            [1.5, 2.5]
-        ]
+        points = [[0.5, 0.5], [1.5, 1.5], [2.5, 1.5], [1.5, 2.5]]
         results = [michalewicz(np.array([p]))[0] for p in points]
-        
+
         # Should have variation indicating multiple modes
         assert max(results) - min(results) > 0.5
 
@@ -277,17 +270,17 @@ class TestMichalewiczOptimization:
     def test_michalewicz_with_spotoptim_2d(self):
         """Test that Michalewicz can be used with SpotOptim in 2D."""
         from spotoptim import SpotOptim
-        
+
         opt = SpotOptim(
             fun=michalewicz,
             bounds=[(0, np.pi), (0, np.pi)],
             n_initial=10,
             max_iter=20,
-            seed=42
+            seed=42,
         )
-        
+
         result = opt.optimize()
-        
+
         # Should find a reasonably good solution
         # 2D global minimum is approximately -1.8013
         # With limited iterations, may not reach global minimum
@@ -298,18 +291,18 @@ class TestMichalewiczOptimization:
     def test_michalewicz_with_spotoptim_5d(self):
         """Test that Michalewicz can be used with SpotOptim in 5D."""
         from spotoptim import SpotOptim
-        
+
         opt = SpotOptim(
             fun=michalewicz,
             bounds=[(0, np.pi)] * 5,
             n_initial=15,
             max_iter=30,
             seed=42,
-            de_x0_prob=0.0, # do not use best point as starting point
+            de_x0_prob=0.0,  # do not use best point as starting point
         )
-        
+
         result = opt.optimize()
-        
+
         # Should find a reasonably good solution
         # 5D global minimum is approximately -4.687658
         assert result.fun < -2.0  # Should be better than -2
@@ -327,7 +320,7 @@ class TestMichalewiczDimensionDependence:
             X = np.ones(dim) * 1.5
             result = michalewicz(X)
             results.append(result[0])
-        
+
         # Higher dimensions should give more negative values
         assert results[0] > results[1] > results[2]
 
@@ -335,10 +328,10 @@ class TestMichalewiczDimensionDependence:
         """Test that function scales appropriately with dimension."""
         X_2d = np.array([1.5, 1.5])
         X_4d = np.array([1.5, 1.5, 1.5, 1.5])
-        
+
         result_2d = michalewicz(X_2d)
         result_4d = michalewicz(X_4d)
-        
+
         # 4D should be more negative than 2D
         assert result_4d[0] < result_2d[0]
 
@@ -365,7 +358,7 @@ class TestMichalewiczDocstring:
         result_m5 = michalewicz(X, m=5)
         result_m10 = michalewicz(X, m=10)
         result_m20 = michalewicz(X, m=20)
-        
+
         # Different m values should give different results
         assert result_m5[0] != result_m10[0]
         assert result_m10[0] != result_m20[0]
@@ -378,7 +371,7 @@ class TestMichalewiczMathematicalProperties:
     def test_michalewicz_sine_behavior(self):
         """Test that function exhibits expected sine-based behavior."""
         # At π/2, sin(π/2) = 1, should contribute to negative value
-        X = np.array([np.pi/2, np.pi/2])
+        X = np.array([np.pi / 2, np.pi / 2])
         result = michalewicz(X)
         assert result[0] < 0
 
@@ -387,10 +380,10 @@ class TestMichalewiczMathematicalProperties:
         # Single dimension
         X_1d = np.array([1.5])
         result_1d = michalewicz(X_1d)
-        
+
         # Same value in all dimensions
         X_2d = np.array([1.5, 1.5])
         result_2d = michalewicz(X_2d)
-        
+
         # 2D should be more negative (sum of contributions)
         assert result_2d[0] < result_1d[0]

@@ -6,9 +6,11 @@ import numpy as np
 import pytest
 from spotoptim import SpotOptim
 
+
 def noisy_sphere(X):
     X = np.atleast_2d(X)
     return np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0])
+
 
 def test_ocba_negative_repeats_repro_seed_86():
     """
@@ -25,9 +27,9 @@ def test_ocba_negative_repeats_repro_seed_86():
         repeats_initial=2,
         ocba_delta=5,
         seed=seed,
-        verbose=False
+        verbose=False,
     )
-    
+
     # This should not raise ValueError: repeats may not contain negative values
     try:
         result = opt.optimize()
@@ -36,6 +38,7 @@ def test_ocba_negative_repeats_repro_seed_86():
         if "repeats may not contain negative values" in str(e):
             pytest.fail(f"OCBA failed with negative repeats on seed {seed}: {e}")
         raise e
+
 
 def test_ocba_various_seeds():
     """
@@ -50,7 +53,7 @@ def test_ocba_various_seeds():
             repeats_initial=2,
             ocba_delta=5,
             seed=seed,
-            verbose=False
+            verbose=False,
         )
         try:
             opt.optimize()

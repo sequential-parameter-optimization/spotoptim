@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import pytest
 import numpy as np
 from spotoptim.SpotOptim import SpotOptim
 
@@ -316,7 +315,7 @@ class TestVarType:
         )
 
         # Run optimization
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # Check that all suggested points (including those after initial design)
         # respect the variable types
@@ -350,7 +349,7 @@ class TestVarType:
             seed=42,
         )
 
-        result = opt.optimize(X0=X0)
+        _ = opt.optimize(X0=X0)
 
         # Initial design should have been rounded
         assert np.allclose(opt.X_[:3], np.round(X0), atol=1e-10)
@@ -374,7 +373,7 @@ class TestVarType:
             seed=42,
         )
 
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # All values should be valid integer categories
         assert np.all(opt.X_[:, 0] >= 0)
@@ -401,7 +400,7 @@ class TestVarType:
             seed=42,
         )
 
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # Just check that plotting doesn't fail with mixed types
         # (testing actual plot would require display)

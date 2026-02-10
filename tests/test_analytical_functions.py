@@ -255,7 +255,7 @@ class TestRobotArmHard:
     def test_correct_dimension(self):
         """Test that function requires exactly 10 dimensions."""
         from spotoptim.function import robot_arm_hard
-        
+
         # Correct dimension (10)
         X = np.random.rand(1, 10)
         result = robot_arm_hard(X)
@@ -265,26 +265,30 @@ class TestRobotArmHard:
     def test_single_point_evaluation(self):
         """Test evaluation at a single point."""
         from spotoptim.function import robot_arm_hard
-        
+
         # Mid-range configuration (all angles at 0.5)
         X = np.full(10, 0.5)
         result = robot_arm_hard(X)
-        
+
         assert result.shape == (1,), f"Expected shape (1,), got {result.shape}"
-        assert isinstance(result, np.ndarray), f"Expected numpy array, got {type(result)}"
+        assert isinstance(
+            result, np.ndarray
+        ), f"Expected numpy array, got {type(result)}"
         assert result[0] > 0, "Cost should be positive for non-optimal configuration"
 
     def test_multiple_points_evaluation(self):
         """Test batch evaluation of multiple points."""
         from spotoptim.function import robot_arm_hard
-        
-        X = np.array([
-            np.full(10, 0.5),  # Mid-range
-            np.full(10, 0.3),  # Lower range
-            np.full(10, 0.7),  # Upper range
-        ])
+
+        X = np.array(
+            [
+                np.full(10, 0.5),  # Mid-range
+                np.full(10, 0.3),  # Lower range
+                np.full(10, 0.7),  # Upper range
+            ]
+        )
         result = robot_arm_hard(X)
-        
+
         assert len(result) == 3, f"Expected 3 results, got {len(result)}"
         assert all(np.isfinite(result)), "All results should be finite"
         assert all(result > 0), "All costs should be positive"
@@ -292,7 +296,7 @@ class TestRobotArmHard:
     def test_input_shape_1d(self):
         """Test that 1D input is correctly converted to 2D."""
         from spotoptim.function import robot_arm_hard
-        
+
         X_1d = np.random.rand(10)
         result = robot_arm_hard(X_1d)
         assert result.shape == (1,), f"Expected shape (1,), got {result.shape}"
@@ -300,7 +304,7 @@ class TestRobotArmHard:
     def test_input_shape_2d(self):
         """Test that 2D input is handled correctly."""
         from spotoptim.function import robot_arm_hard
-        
+
         X_2d = np.random.rand(5, 10)
         result = robot_arm_hard(X_2d)
         assert result.shape == (5,), f"Expected shape (5,), got {result.shape}"
@@ -308,63 +312,73 @@ class TestRobotArmHard:
     def test_output_type(self):
         """Test that output is always a numpy array."""
         from spotoptim.function import robot_arm_hard
-        
+
         X = np.random.rand(10)
         result = robot_arm_hard(X)
-        assert isinstance(result, np.ndarray), f"Expected numpy array, got {type(result)}"
+        assert isinstance(
+            result, np.ndarray
+        ), f"Expected numpy array, got {type(result)}"
 
     def test_output_dtype(self):
         """Test that output has float dtype."""
         from spotoptim.function import robot_arm_hard
-        
+
         X = np.random.rand(10)
         result = robot_arm_hard(X)
-        assert np.issubdtype(result.dtype, np.floating), f"Expected float dtype, got {result.dtype}"
+        assert np.issubdtype(
+            result.dtype, np.floating
+        ), f"Expected float dtype, got {result.dtype}"
 
     def test_boundary_values(self):
         """Test with boundary values (0 and 1)."""
         from spotoptim.function import robot_arm_hard
-        
+
         # All zeros (maps to -1.2π)
         X_zeros = np.zeros(10)
         result_zeros = robot_arm_hard(X_zeros)
         assert np.isfinite(result_zeros[0]), "Result should be finite for all zeros"
-        
+
         # All ones (maps to 1.2π)
         X_ones = np.ones(10)
         result_ones = robot_arm_hard(X_ones)
         assert np.isfinite(result_ones[0]), "Result should be finite for all ones"
-        
+
         # Mixed boundaries
         X_mixed = np.array([0.0, 1.0, 0.0, 1.0, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0])
         result_mixed = robot_arm_hard(X_mixed)
-        assert np.isfinite(result_mixed[0]), "Result should be finite for mixed boundaries"
+        assert np.isfinite(
+            result_mixed[0]
+        ), "Result should be finite for mixed boundaries"
 
     def test_constraint_penalty_effect(self):
         """Test that constraint violations result in high penalties."""
         from spotoptim.function import robot_arm_hard
-        
+
         # A straight configuration (all angles = 0.5 → 0 radians)
         # This will likely hit obstacles and have high penalty
         X_straight = np.full(10, 0.5)
         cost_straight = robot_arm_hard(X_straight)
-        
+
         # The cost should be substantial due to obstacles
-        assert cost_straight[0] > 100, "Straight arm should have high cost due to obstacles"
+        assert (
+            cost_straight[0] > 100
+        ), "Straight arm should have high cost due to obstacles"
 
     def test_vectorized_computation(self):
         """Test that vectorized computation matches individual evaluations."""
         from spotoptim.function import robot_arm_hard
-        
+
         np.random.seed(42)
         points = np.random.rand(5, 10)
-        
+
         # Batch evaluation
         batch_result = robot_arm_hard(points)
-        
+
         # Individual evaluations
-        individual_results = [robot_arm_hard(point.reshape(1, -1))[0] for point in points]
-        
+        individual_results = [
+            robot_arm_hard(point.reshape(1, -1))[0] for point in points
+        ]
+
         np.testing.assert_allclose(
             batch_result,
             individual_results,
@@ -374,13 +388,13 @@ class TestRobotArmHard:
     def test_reproducibility(self):
         """Test that function is deterministic (same input -> same output)."""
         from spotoptim.function import robot_arm_hard
-        
+
         np.random.seed(123)
         X = np.random.rand(10, 10)
-        
+
         result1 = robot_arm_hard(X.copy())
         result2 = robot_arm_hard(X.copy())
-        
+
         np.testing.assert_array_equal(
             result1, result2, err_msg="Function should be deterministic"
         )
@@ -388,11 +402,11 @@ class TestRobotArmHard:
     def test_cost_components_present(self):
         """Test that cost has all three components (distance, penalty, energy)."""
         from spotoptim.function import robot_arm_hard
-        
+
         # Very small configuration (low energy)
         X_small = np.full(10, 0.5)  # Maps to 0 radians
         cost_small = robot_arm_hard(X_small)
-        
+
         # The cost should include distance to target, obstacle penalties, and energy
         # For a straight arm from origin, end effector is at (10, 0) far from target (5, 5)
         # Distance cost alone: (10-5)^2 + (0-5)^2 = 25 + 25 = 50
@@ -402,59 +416,65 @@ class TestRobotArmHard:
     def test_different_configurations_different_costs(self):
         """Test that different configurations yield different costs."""
         from spotoptim.function import robot_arm_hard
-        
+
         np.random.seed(42)
         X1 = np.random.rand(10)
         X2 = np.random.rand(10)
-        
+
         cost1 = robot_arm_hard(X1)
         cost2 = robot_arm_hard(X2)
-        
+
         # Very unlikely to be exactly equal for random configurations
-        assert not np.isclose(cost1[0], cost2[0]), "Different configurations should have different costs"
+        assert not np.isclose(
+            cost1[0], cost2[0]
+        ), "Different configurations should have different costs"
 
     def test_all_positive_costs(self):
         """Test that all cost components result in non-negative total cost."""
         from spotoptim.function import robot_arm_hard
-        
+
         np.random.seed(999)
         X = np.random.rand(20, 10)
         results = robot_arm_hard(X)
-        
+
         assert all(results >= 0), "All costs should be non-negative"
 
     def test_random_sample_finiteness(self):
         """Test that random samples all produce finite costs."""
         from spotoptim.function import robot_arm_hard
-        
+
         np.random.seed(777)
         X = np.random.rand(100, 10)
         results = robot_arm_hard(X)
-        
-        assert all(np.isfinite(results)), "All random samples should produce finite costs"
+
+        assert all(
+            np.isfinite(results)
+        ), "All random samples should produce finite costs"
 
     def test_performance_large_batch(self):
         """Test that function can handle large batches efficiently."""
         from spotoptim.function import robot_arm_hard
-        
+
         n_points = 1000
         X = np.random.rand(n_points, 10)
         result = robot_arm_hard(X)
-        
-        assert len(result) == n_points, f"Expected {n_points} results, got {len(result)}"
+
+        assert (
+            len(result) == n_points
+        ), f"Expected {n_points} results, got {len(result)}"
         assert all(np.isfinite(result)), "All results should be finite"
 
     def test_atleast_2d_behavior(self):
         """Test that atleast_2d conversion works as expected."""
         from spotoptim.function import robot_arm_hard
-        
+
         # Test various input shapes
         inputs = [
             np.random.rand(10),  # 1D
             np.random.rand(1, 10),  # 2D single row
             np.random.rand(3, 10),  # 2D multiple rows
         ]
-        
+
         for X in inputs:
             result = robot_arm_hard(X)
             assert isinstance(result, np.ndarray), "Result should be numpy array"
@@ -463,16 +483,16 @@ class TestRobotArmHard:
     def test_energy_component(self):
         """Test that energy regularization affects cost."""
         from spotoptim.function import robot_arm_hard
-        
+
         # Configuration with small angles (low energy)
         X_low_energy = np.full(10, 0.5)  # All mapped to 0 radians
-        
+
         # Configuration with extreme angles (high energy)
         X_high_energy = np.array([0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0])
-        
+
         cost_low = robot_arm_hard(X_low_energy)
         cost_high = robot_arm_hard(X_high_energy)
-        
+
         # Both should be finite
         assert np.isfinite(cost_low[0]), "Low energy cost should be finite"
         assert np.isfinite(cost_high[0]), "High energy cost should be finite"
@@ -480,7 +500,7 @@ class TestRobotArmHard:
     def test_empty_array_handling(self):
         """Test behavior with empty array (edge case)."""
         from spotoptim.function import robot_arm_hard
-        
+
         X = np.array([]).reshape(0, 10)
         result = robot_arm_hard(X)
         assert len(result) == 0, "Empty input should produce empty output"
@@ -489,46 +509,48 @@ class TestRobotArmHard:
     def test_parametrized_reproducibility(self, seed):
         """Test deterministic behavior with multiple random seeds."""
         from spotoptim.function import robot_arm_hard
-        
+
         np.random.seed(seed)
         X = np.random.rand(5, 10)
-        
+
         result1 = robot_arm_hard(X.copy())
         result2 = robot_arm_hard(X.copy())
-        
+
         np.testing.assert_array_equal(
-            result1, result2, err_msg=f"Function should be deterministic for seed {seed}"
+            result1,
+            result2,
+            err_msg=f"Function should be deterministic for seed {seed}",
         )
 
     def test_target_proximity_affects_cost(self):
         """Test that configurations closer to target conceptually have potential for lower cost."""
         from spotoptim.function import robot_arm_hard
-        
+
         # We can't easily construct a configuration that reaches the target
         # without solving the inverse kinematics, but we can verify the
         # distance component exists and affects the cost
-        
+
         # Random configurations will have varying distances
         np.random.seed(555)
         X = np.random.rand(10, 10)
         costs = robot_arm_hard(X)
-        
+
         # There should be variation in costs
         assert np.std(costs) > 0, "Different configurations should have varying costs"
 
     def test_input_range_validity(self):
         """Test that function handles full [0, 1] input range."""
         from spotoptim.function import robot_arm_hard
-        
+
         # Test various points in [0, 1]^10
         test_points = [
-            np.full(10, 0.0),   # Lower bound
+            np.full(10, 0.0),  # Lower bound
             np.full(10, 0.25),  # Quarter
-            np.full(10, 0.5),   # Middle
+            np.full(10, 0.5),  # Middle
             np.full(10, 0.75),  # Three-quarters
-            np.full(10, 1.0),   # Upper bound
+            np.full(10, 1.0),  # Upper bound
         ]
-        
+
         for X in test_points:
             result = robot_arm_hard(X)
             assert np.isfinite(result[0]), f"Result should be finite for input {X[0]}"

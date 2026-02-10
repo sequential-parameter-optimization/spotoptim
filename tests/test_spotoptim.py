@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import pytest
 import numpy as np
 from scipy.optimize import OptimizeResult
 from spotoptim.SpotOptim import SpotOptim
@@ -323,7 +322,7 @@ class TestSpotOptimOptimize:
             fun=test_func, bounds=bounds, max_iter=3, n_initial=2, seed=42, verbose=True
         )
 
-        result = optimizer.optimize()
+        _ = optimizer.optimize()
 
         captured = capsys.readouterr()
 

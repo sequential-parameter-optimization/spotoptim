@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from spotoptim.sampling.lhs import rlh
 
+
 class TestRlh:
     """Test suite for rlh (Random Latin Hypercube) function."""
 
@@ -35,12 +36,12 @@ class TestRlh:
         # Edges=1 means 0 and 1 should be reachable potentially (or at least full range)
         # Specifically: (x)/(n-1). so if x=0 -> 0, x=n-1 -> 1.
         X = rlh(n, k, edges=1, seed=42)
-        
+
         # Check that we can map back to integers
         # X * (n-1) should be close to integers
         X_int = X * (n - 1)
         np.testing.assert_allclose(X_int, np.round(X_int))
-        
+
         # Check that in each column we have a permutation of 0..n-1
         for col in range(k):
             vals = np.round(X[:, col] * (n - 1)).astype(int)
@@ -50,12 +51,12 @@ class TestRlh:
         """Test default edges=0 (midpoints)."""
         n, k = 5, 2
         X = rlh(n, k, edges=0, seed=42)
-        
+
         # (x + 0.5) / n
         # X * n - 0.5 should be integers
         X_int = X * n - 0.5
         np.testing.assert_allclose(X_int, np.round(X_int))
-        
+
         for col in range(k):
             vals = np.round(X_int[:, col]).astype(int)
             assert set(vals) == set(range(n))

@@ -21,7 +21,7 @@ class TestTransformBoundsBasic:
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Bounds should remain unchanged
         assert opt.bounds == [(0.0, 10.0), (-5.0, 5.0)]
         assert opt.lower[0] == 0.0
@@ -34,17 +34,17 @@ class TestTransformBoundsBasic:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 10), (0.1, 100)],
-            var_trans=['log10', 'log10'],
+            var_trans=["log10", "log10"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check bounds are transformed
         assert opt.lower[0] == pytest.approx(np.log10(1.0))
         assert opt.upper[0] == pytest.approx(np.log10(10.0))
         assert opt.lower[1] == pytest.approx(np.log10(0.1))
         assert opt.upper[1] == pytest.approx(np.log10(100.0))
-        
+
         # Check bounds list is updated
         assert opt.bounds[0] == (pytest.approx(0.0), pytest.approx(1.0))
         assert opt.bounds[1] == (pytest.approx(-1.0), pytest.approx(2.0))
@@ -54,17 +54,17 @@ class TestTransformBoundsBasic:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100), (4, 16)],
-            var_trans=['sqrt', 'sqrt'],
+            var_trans=["sqrt", "sqrt"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check bounds are transformed
         assert opt.lower[0] == pytest.approx(np.sqrt(1.0))
         assert opt.upper[0] == pytest.approx(np.sqrt(100.0))
         assert opt.lower[1] == pytest.approx(np.sqrt(4.0))
         assert opt.upper[1] == pytest.approx(np.sqrt(16.0))
-        
+
         # Check bounds list
         assert opt.bounds[0] == (pytest.approx(1.0), pytest.approx(10.0))
         assert opt.bounds[1] == (pytest.approx(2.0), pytest.approx(4.0))
@@ -74,11 +74,11 @@ class TestTransformBoundsBasic:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0.1, 10.0)],
-            var_trans=['log'],
+            var_trans=["log"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check bounds are transformed
         assert opt.lower[0] == pytest.approx(np.log(0.1))
         assert opt.upper[0] == pytest.approx(np.log(10.0))
@@ -88,11 +88,11 @@ class TestTransformBoundsBasic:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0.1, 2.0)],
-            var_trans=['exp'],
+            var_trans=["exp"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check bounds are transformed
         assert opt.lower[0] == pytest.approx(np.exp(0.1))
         assert opt.upper[0] == pytest.approx(np.exp(2.0))
@@ -102,39 +102,39 @@ class TestTransformBoundsBasic:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1.0, 10.0)],
-            var_trans=['square'],
+            var_trans=["square"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check bounds are transformed
-        assert opt.lower[0] == pytest.approx(1.0 ** 2)
-        assert opt.upper[0] == pytest.approx(10.0 ** 2)
+        assert opt.lower[0] == pytest.approx(1.0**2)
+        assert opt.upper[0] == pytest.approx(10.0**2)
 
     def test_transform_bounds_cube(self):
         """Test transform_bounds() with cube transformation."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1.0, 5.0)],
-            var_trans=['cube'],
+            var_trans=["cube"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check bounds are transformed
-        assert opt.lower[0] == pytest.approx(1.0 ** 3)
-        assert opt.upper[0] == pytest.approx(5.0 ** 3)
+        assert opt.lower[0] == pytest.approx(1.0**3)
+        assert opt.upper[0] == pytest.approx(5.0**3)
 
     def test_transform_bounds_reciprocal(self):
         """Test transform_bounds() with reciprocal transformation."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0.1, 10.0)],
-            var_trans=['inv'],
+            var_trans=["inv"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Reciprocal reverses bounds: 1/0.1 = 10, 1/10 = 0.1
         # After swap: lower = 0.1, upper = 10
         assert opt.lower[0] == pytest.approx(1.0 / 10.0)
@@ -149,21 +149,21 @@ class TestTransformBoundsMixed:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 10), (0.1, 100), (0, 5), (1, 4)],
-            var_trans=['log10', 'sqrt', None, 'log'],
+            var_trans=["log10", "sqrt", None, "log"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check each dimension separately
         assert opt.lower[0] == pytest.approx(np.log10(1.0))
         assert opt.upper[0] == pytest.approx(np.log10(10.0))
-        
+
         assert opt.lower[1] == pytest.approx(np.sqrt(0.1))
         assert opt.upper[1] == pytest.approx(np.sqrt(100.0))
-        
+
         assert opt.lower[2] == 0.0
         assert opt.upper[2] == 5.0
-        
+
         assert opt.lower[3] == pytest.approx(np.log(1.0))
         assert opt.upper[3] == pytest.approx(np.log(4.0))
 
@@ -176,15 +176,15 @@ class TestTransformBoundsMixed:
             max_iter=1,
             n_initial=1,
         )
-        
+
         opt2 = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0, 10), (-5, 5)],
-            var_trans=['id', 'id'],
+            var_trans=["id", "id"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Both should have identical bounds
         assert opt1.lower[0] == opt2.lower[0]
         assert opt1.upper[0] == opt2.upper[0]
@@ -201,11 +201,11 @@ class TestTransformBoundsVarType:
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1.0, 100.0)],
             var_trans=[None],  # No transformation
-            var_type=['int'],
+            var_type=["int"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Bounds should be converted to int
         assert opt.bounds[0] == (1, 100)
         assert isinstance(opt.bounds[0][0], int)
@@ -216,12 +216,12 @@ class TestTransformBoundsVarType:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100)],
-            var_trans=['sqrt'],
-            var_type=['float'],
+            var_trans=["sqrt"],
+            var_type=["float"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # sqrt(1) = 1.0, sqrt(100) = 10.0
         assert opt.bounds[0] == (pytest.approx(1.0), pytest.approx(10.0))
         assert isinstance(opt.bounds[0][0], float)
@@ -231,17 +231,17 @@ class TestTransformBoundsVarType:
         """Test that factor var_type produces integer bounds."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[('red', 'green', 'blue'), (1, 100)],
-            var_trans=[None, 'sqrt'],
+            bounds=[("red", "green", "blue"), (1, 100)],
+            var_trans=[None, "sqrt"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Factor variable should have int bounds
         assert opt.bounds[0] == (0, 2)
         assert isinstance(opt.bounds[0][0], int)
         assert isinstance(opt.bounds[0][1], int)
-        
+
         # Second dimension with sqrt transformation and auto-detected float type
         assert isinstance(opt.bounds[1][0], float)
         assert isinstance(opt.bounds[1][1], float)
@@ -251,21 +251,21 @@ class TestTransformBoundsVarType:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100), (0.1, 10.0), (1, 16)],
-            var_trans=['sqrt', 'log10', 'sqrt'],
-            var_type=['int', 'float', 'int'],
+            var_trans=["sqrt", "log10", "sqrt"],
+            var_type=["int", "float", "int"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # First dimension: int
         assert isinstance(opt.bounds[0][0], int)
         assert isinstance(opt.bounds[0][1], int)
         assert opt.bounds[0] == (1, 10)
-        
+
         # Second dimension: float
         assert isinstance(opt.bounds[1][0], float)
         assert isinstance(opt.bounds[1][1], float)
-        
+
         # Third dimension: int
         assert isinstance(opt.bounds[2][0], int)
         assert isinstance(opt.bounds[2][1], int)
@@ -280,11 +280,11 @@ class TestTransformBoundsBoundSwapping:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0.5, 10.0)],
-            var_trans=['inv'],
+            var_trans=["inv"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # 1/0.5 = 2.0, 1/10.0 = 0.1
         # After swap: lower = 0.1, upper = 2.0
         assert opt.lower[0] < opt.upper[0]
@@ -296,11 +296,11 @@ class TestTransformBoundsBoundSwapping:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-10.0, -1.0)],
-            var_trans=['inv'],
+            var_trans=["inv"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # 1/-10 = -0.1, 1/-1 = -1.0
         # After swap: lower = -1.0, upper = -0.1
         assert opt.lower[0] < opt.upper[0]
@@ -316,17 +316,17 @@ class TestTransformBoundsOriginalBounds:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 10), (0.1, 100)],
-            var_trans=['log10', 'sqrt'],
+            var_trans=["log10", "sqrt"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Original bounds should be preserved
         assert opt._original_lower[0] == 1.0
         assert opt._original_upper[0] == 10.0
         assert opt._original_lower[1] == 0.1
         assert opt._original_upper[1] == 100.0
-        
+
         # Internal bounds should be transformed
         assert opt.lower[0] != 1.0
         assert opt.upper[0] != 10.0
@@ -338,14 +338,14 @@ class TestTransformBoundsOriginalBounds:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 10), (0.1, 1.0), (0, 5)],
-            var_trans=['log10', 'log10', None],
+            var_trans=["log10", "log10", None],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Check that bounds list has same length
         assert len(opt.bounds) == 3
-        
+
         # Check each bound is a tuple
         for bound in opt.bounds:
             assert isinstance(bound, tuple)
@@ -361,14 +361,18 @@ class TestTransformBoundsReturnTypes:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 10)],
-            var_trans=['log10'],
-            var_type=['float'],
+            var_trans=["log10"],
+            var_type=["float"],
             max_iter=1,
             n_initial=1,
         )
-        
-        assert type(opt.bounds[0][0]) == float
-        assert type(opt.bounds[0][1]) == float
+
+        assert isinstance(opt.bounds[0][0], float) and not isinstance(
+            opt.bounds[0][0], np.floating
+        )
+        assert isinstance(opt.bounds[0][1], float) and not isinstance(
+            opt.bounds[0][1], np.floating
+        )
         assert not isinstance(opt.bounds[0][0], np.floating)
         assert not isinstance(opt.bounds[0][1], np.floating)
 
@@ -378,13 +382,17 @@ class TestTransformBoundsReturnTypes:
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1.0, 100.0)],
             var_trans=[None],  # No transformation
-            var_type=['int'],
+            var_type=["int"],
             max_iter=1,
             n_initial=1,
         )
-        
-        assert type(opt.bounds[0][0]) == int
-        assert type(opt.bounds[0][1]) == int
+
+        assert isinstance(opt.bounds[0][0], int) and not isinstance(
+            opt.bounds[0][0], np.integer
+        )
+        assert isinstance(opt.bounds[0][1], int) and not isinstance(
+            opt.bounds[0][1], np.integer
+        )
         assert not isinstance(opt.bounds[0][0], np.integer)
         assert not isinstance(opt.bounds[0][1], np.integer)
 
@@ -392,13 +400,13 @@ class TestTransformBoundsReturnTypes:
         """Test that factor bounds are Python int, not numpy types."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[('a', 'b', 'c')],
+            bounds=[("a", "b", "c")],
             max_iter=1,
             n_initial=1,
         )
-        
-        assert type(opt.bounds[0][0]) == int
-        assert type(opt.bounds[0][1]) == int
+
+        assert isinstance(opt.bounds[0][0], int)
+        assert isinstance(opt.bounds[0][1], int)
         assert opt.bounds[0] == (0, 2)
 
 
@@ -410,11 +418,11 @@ class TestTransformBoundsEdgeCases:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100)],
-            var_trans=['log10'],
+            var_trans=["log10"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         assert len(opt.bounds) == 1
         assert opt.lower[0] == pytest.approx(np.log10(1.0))
         assert opt.upper[0] == pytest.approx(np.log10(100.0))
@@ -423,8 +431,8 @@ class TestTransformBoundsEdgeCases:
         """Test transform_bounds() with many dimensions."""
         n_dims = 10
         bounds = [(1, 10) for _ in range(n_dims)]
-        var_trans = ['log10' if i % 2 == 0 else 'sqrt' for i in range(n_dims)]
-        
+        var_trans = ["log10" if i % 2 == 0 else "sqrt" for i in range(n_dims)]
+
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=bounds,
@@ -432,9 +440,9 @@ class TestTransformBoundsEdgeCases:
             max_iter=1,
             n_initial=1,
         )
-        
+
         assert len(opt.bounds) == n_dims
-        
+
         for i in range(n_dims):
             if i % 2 == 0:
                 # log10 transformation
@@ -450,20 +458,20 @@ class TestTransformBoundsEdgeCases:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 10), (5, 5)],
-            var_trans=['log10', 'sqrt'],
+            var_trans=["log10", "sqrt"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # After dimension reduction, only the first dimension remains
         # (fixed dimensions are removed from lower/upper arrays)
         assert len(opt.lower) == 1
         assert len(opt.upper) == 1
-        
+
         # First dimension should be transformed normally
         assert opt.lower[0] == pytest.approx(np.log10(1.0))
         assert opt.upper[0] == pytest.approx(np.log10(10.0))
-        
+
         # Check that the original (pre-reduction) bounds include the fixed dimension
         assert opt.all_lower[0] == pytest.approx(np.log10(1.0))
         assert opt.all_upper[0] == pytest.approx(np.log10(10.0))
@@ -477,27 +485,27 @@ class TestTransformBoundsIntegration:
     def test_transform_bounds_used_in_optimization(self):
         """Test that transformed bounds are actually used during optimization."""
         call_log = []
-        
+
         def objective(X):
             # Log calls in original scale
             call_log.extend(X.tolist())
             return np.sum(X**2, axis=1)
-        
+
         opt = SpotOptim(
             fun=objective,
             bounds=[(1, 100)],
-            var_trans=['log10'],
+            var_trans=["log10"],
             max_iter=5,
             n_initial=3,
             seed=42,
         )
-        
+
         result = opt.optimize()
-        
+
         # Check that all calls were in original scale (1 to 100)
         for x_val in call_log:
             assert 1.0 <= x_val[0] <= 100.0
-        
+
         # Check result is in original scale
         assert 1.0 <= result.x[0] <= 100.0
 
@@ -506,17 +514,17 @@ class TestTransformBoundsIntegration:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 10)],
-            var_trans=['log10'],
+            var_trans=["log10"],
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Create a point in internal scale
         x_internal = np.array([[0.5]])  # log10(sqrt(10)) ≈ 0.5
-        
+
         # Inverse transform should give original scale
         x_original = opt._inverse_transform_X(x_internal)
-        
+
         # Should be approximately sqrt(10) ≈ 3.162
         assert x_original[0, 0] == pytest.approx(10**0.5, rel=1e-5)
 
@@ -529,15 +537,15 @@ class TestTransformBoundsIntegration:
             max_iter=1,
             n_initial=1,
         )
-        
+
         # Store original bounds
         original_lower = opt.lower.copy()
         original_upper = opt.upper.copy()
-        
+
         # Manually change transformation and call transform_bounds
-        opt.var_trans = ['log10']
+        opt.var_trans = ["log10"]
         opt.transform_bounds()
-        
+
         # Bounds should now be transformed
         assert opt.lower[0] != original_lower[0]
         assert opt.upper[0] != original_upper[0]
@@ -551,9 +559,12 @@ class TestTransformBoundsDocstring:
     def test_docstring_example(self):
         """Test the example from the transform_bounds() docstring."""
         spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (0.1, 100)])
-        spot.var_trans = ['log10', 'sqrt']
+        spot.var_trans = ["log10", "sqrt"]
         spot.transform_bounds()
-        
+
         # Expected: [(0.0, 1.0), (0.31622776601683794, 10.0)]
         assert spot.bounds[0] == (pytest.approx(0.0), pytest.approx(1.0))
-        assert spot.bounds[1] == (pytest.approx(0.31622776601683794), pytest.approx(10.0))
+        assert spot.bounds[1] == (
+            pytest.approx(0.31622776601683794),
+            pytest.approx(10.0),
+        )

@@ -5,7 +5,6 @@
 """Tests for variable names (var_name) feature in SpotOptim."""
 
 import numpy as np
-import pytest
 from spotoptim import SpotOptim
 
 
@@ -135,7 +134,7 @@ class TestVarName:
             seed=42,
         )
 
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # This should use instance var_name (param1, param2)
         # We can't easily test the plot labels directly without inspecting the figure,
@@ -167,7 +166,7 @@ class TestVarName:
             seed=42,
         )
 
-        result = opt.optimize()
+        _ = opt.optimize()
 
         # This should use override names
         try:

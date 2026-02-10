@@ -147,6 +147,31 @@ def _gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
         tuple: A tuple containing:
             - theta_opt (np.ndarray): The optimized hyperparameters.
             - func_min (float): The value of the objective function at the minimum.
+
+    Raises:
+        ValueError: If an unsupported optimization method is specified.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.SpotOptim import _gpr_minimize_wrapper
+        >>> def obj_func(theta):
+        ...     value = np.sum(theta**2)
+        ...     grad = 2 * theta
+        ...     return value, grad
+        ...
+        >>> initial_theta = np.array([1.0, 1.0])
+        >>> bounds = [(-5, 5), (-5, 5)]
+        >>> theta_opt, func_min = _gpr_minimize_wrapper(
+        ...     obj_func,
+        ...     initial_theta,
+        ...     bounds,
+        ...     method="L-BFGS-B",
+        ...     options={'maxiter': 100}
+        ... )
+        >>> np.allclose(theta_opt, [0.0, 0.0], atol=1e-6)
+        True
+        >>> np.isclose(func_min, 0.0, atol=1e-10)
+        True
     """
     # Default parameters if not specified
     if "method" not in kwargs:
@@ -215,6 +240,38 @@ def _remote_eval_wrapper(pickled_args):
     """
     Helper function for parallel evaluation with dill.
     Accepts a single argument (pickled tuple) to bypass standard pickling limitations.
+
+    Args:
+        pickled_args (bytes): A pickled tuple containing (optimizer, x) where:
+            - optimizer: The SpotOptim instance (or surrogate model) to use for evaluation.
+            - x: The point at which to evaluate the objective function.
+
+    Returns:
+        tuple: A tuple containing:
+            - x (ndarray): The input point at which the function was evaluated.
+            - y (ndarray or Exception): The function value(s) at x, or an Exception if evaluation failed.
+
+    Raises:
+        Exception: Any exception raised during the evaluation of the objective function is caught and returned as part of the output tuple.
+        This allows the optimization process to continue even if some evaluations fail, and provides information about the failure for debugging.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.SpotOptim import _remote_eval_wrapper
+        >>> class DummyOptimizer:
+        ...     def _evaluate_function(self, X):
+        ...         return np.sum(X**2, axis=1)
+        ...
+        >>> optimizer = DummyOptimizer()
+        >>> x = np.array([1.0, 2.0])
+        >>> import dill
+        >>> pickled_args = dill.dumps((optimizer, x))
+        >>> x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+        >>> np.allclose(x_eval, x)
+        True
+        >>> np.isclose(y_eval, 5.0)
+        True
+
     """
     try:
         # Import dill locally to ensure it's available in workers
@@ -233,6 +290,52 @@ def _remote_eval_wrapper(pickled_args):
 def _remote_search_task(pickled_optimizer):
     """
     Helper function for parallel search with dill.
+
+    Args:
+        pickled_optimizer (bytes): A pickled SpotOptim instance that has been initialized with data
+            and a fitted surrogate model (via X_, y_, and _fit_surrogate).
+
+    Returns:
+        ndarray or Exception: The suggested next infill point(s) as an array of shape (n_infill_points, n_features),
+            or an Exception if the operation failed. When n_infill_points=1 (default), shape is (1, n_features).
+
+    Raises:
+        Exception: Any exception raised during the operation is caught and returned rather than raised,
+            allowing parallel execution to continue. The calling code can check if the return value is an
+            Exception instance and handle it appropriately.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.SpotOptim import _remote_search_task
+        >>> from spotoptim import SpotOptim
+        >>> import dill
+        >>>
+        >>> # Create and initialize an optimizer
+        >>> opt = SpotOptim(
+        ...     fun=lambda X: np.sum(X**2, axis=1),
+        ...     bounds=[(-5, 5), (-5, 5)],
+        ...     n_initial=5,
+        ...     max_iter=10,
+        ...     seed=0,
+        ...     verbose=False
+        ... )
+        >>> # Initialize with some data
+        >>> np.random.seed(0)
+        >>> opt.X_ = np.random.rand(10, 2) * 10 - 5
+        >>> opt.y_ = np.sum(opt.X_**2, axis=1)
+        >>> opt._fit_surrogate(opt.X_, opt.y_)
+        >>>
+        >>> # Use the function
+        >>> pickled_optimizer = dill.dumps(opt)
+        >>> x_next = _remote_search_task(pickled_optimizer)
+        >>> isinstance(x_next, np.ndarray)
+        True
+        >>> x_next.shape
+        (1, 2)
+        >>> # Verify the point is within bounds
+        >>> (-5 <= x_next[0, 0] <= 5) and (-5 <= x_next[0, 1] <= 5)
+        True
+
     """
     try:
         import dill
@@ -3832,8 +3935,9 @@ class SpotOptim(BaseEstimator):
                 else None
             )
 
-            # Perform single optimization run
-            # Pass known best value if injecting
+            # Compute injected best value for restarts, then run one optimization cycle.
+            # y0_known_val carries the current global best objective so the next
+            # run can skip re-evaluating that known point when restart injection is on.
             y0_known_val = (
                 best_res.fun
                 if (
@@ -3854,7 +3958,8 @@ class SpotOptim(BaseEstimator):
                     print("Global budget exhausted. Stopping restarts.")
                 break
 
-            # Proceed with optimization run (Sequential or Parallel)
+            # Execute one optimization run using the remaining budget; dispatcher
+            # selects sequential vs parallel based on `n_jobs` and returns status/result.
             status, result = self._execute_optimization_run(
                 timeout_start,
                 current_X0,
@@ -3866,19 +3971,20 @@ class SpotOptim(BaseEstimator):
             if status == "FINISHED":
                 break
             elif status == "RESTART":
-                # Prepare for restart
-                current_X0 = None  # Default loop behavior
+                # Prepare for a clean restart: let get_initial_design() regenerate the full design.
+                current_X0 = None
 
-                # Identify best result so far (including current restart)
+                # Find the global best result across completed restarts.
                 if self.restarts_results_:
                     best_res = min(self.restarts_results_, key=lambda r: r.fun)
 
                     if self.restart_inject_best:
-                        # Use global best result as starting point for next run
-                        # We update self.x0 directly (in internal scale) so gets mixed with LHS
-                        # best_res.x is in natural scale, _validate_x0 converts to internal
+                        # Inject the current global best into the next run's initial design.
+                        # best_res.x is in natural scale; _validate_x0 converts to internal scale
+                        # so the injected point can be mixed with LHS samples.
                         self.x0 = self._validate_x0(best_res.x)
-                        current_X0 = None  # Ensure we generate full design including x0
+                        # Keep current_X0 unset so the initial design is rebuilt around the injected x0.
+                        current_X0 = None
 
                         if self.verbose:
                             print(
@@ -3886,9 +3992,9 @@ class SpotOptim(BaseEstimator):
                             )
 
                 if self.seed is not None and self.n_jobs == 1:
-                    # Only increment manually here if sequential.
-                    # In parallel block, we already incremented.
-                    self.seed += 1  # Change seed to ensure variation
+                    # In sequential mode we advance the seed between restarts to diversify the LHS.
+                    # Parallel mode increments seeds per worker during dispatch.
+                    self.seed += 1
                 # Continue loop
             else:
                 # Should not happen
@@ -3941,6 +4047,25 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+        Examples:
+            >>> import time
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     max_iter=20,
+            ...     seed=0,
+            ...     n_jobs=1,  # Use sequential optimization for deterministic output
+            ...     verbose=True
+            ... )
+            >>> status, result = opt._execute_optimization_run(timeout_start=time.time())
+            >>> print(status)
+            FINISHED
+            >>> print(result.message.splitlines()[0])
+            Optimization terminated: maximum evaluations (20) reached
         """
 
         # Dispatch to steady-state optimizer if proper parallelization is requested
@@ -3984,6 +4109,28 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+        Raises:
+            ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
+
+        Examples:
+            >>> import time
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     max_iter=20,
+            ...     seed=0,
+            ...     n_jobs=1,  # Use sequential optimization for deterministic output
+            ...     verbose=True
+            ... )
+            >>> status, result = opt._optimize_sequential_run(timeout_start=time.time())
+            >>> print(status)
+            FINISHED
+            >>> print(result.message.splitlines()[0])
+            Optimization terminated: maximum evaluations (20) reached
         """
 
         # Store shared variable if provided
@@ -4031,6 +4178,26 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             Tuple[np.ndarray, np.ndarray]: Tuple containing initial design and corresponding objective values.
+
+        Raises:
+            ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     seed=0,
+            ...     x0=np.array([0.0, 0.0]),
+            ...     verbose=True
+            ... )
+            >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
+            >>> X0.shape
+            (5, 2)
+            >>> np.allclose(y0, np.sum(X0**2, axis=1))
+            True
         """
         # Set seed for reproducibility
         self._set_seed()
@@ -4075,7 +4242,46 @@ class SpotOptim(BaseEstimator):
     def _run_sequential_loop(
         self, timeout_start: float, effective_max_iter: int
     ) -> Tuple[str, OptimizeResult]:
-        """Execute the main sequential optimization loop."""
+        """Execute the main sequential optimization loop.
+
+        Args:
+             timeout_start (float): Start time for timeout.
+             effective_max_iter (int): Maximum number of iterations for this run (may be overridden for restarts).
+
+         Returns:
+             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+         Raises:
+             ValueError:
+                If excessive consecutive failures occur (e.g., due to NaN/inf values in evaluations), indicating a potential issue with the objective function.
+
+         Examples:
+             >>> import time
+             >>> import numpy as np
+             >>> from spotoptim import SpotOptim
+             >>> opt = SpotOptim(
+             ...     fun=lambda X: np.sum(X**2, axis=1),
+             ...     bounds=[(-5, 5), (-5, 5)],
+             ...     n_initial=5,
+             ...     max_iter=20,
+             ...     seed=0,
+             ...     n_jobs=1,  # Use sequential optimization for deterministic output
+             ...     verbose=True
+             ... )
+             >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
+             >>> X0, y0, n_evaluated = opt._rm_NA_values(X0, y0)
+             >>> opt._check_size_initial_design(y0, n_evaluated)
+             >>> opt._init_storage(X0, y0)
+             >>> opt._zero_success_count = 0
+             >>> opt._success_history = []
+             >>> opt.update_stats()
+             >>> opt._get_best_xy_initial_design()
+             >>> status, result = opt._run_sequential_loop(timeout_start=time.time(), effective_max_iter=20)
+             >>> print(status)
+             FINISHED
+             >>> print(result.message.splitlines()[0])
+             Optimization terminated: maximum evaluations (20) reached
+        """
         consecutive_failures = 0
 
         while (len(self.y_) < effective_max_iter) and (
@@ -4236,7 +4442,47 @@ class SpotOptim(BaseEstimator):
         )
 
     def _update_storage_steady(self, x, y):
-        """Helper to safely append single point (for steady state)."""
+        """Helper to safely append single point (for steady state).
+
+            This method is designed for the steady-state parallel optimization scenario, where new points are evaluated and returned asynchronously.
+            It safely appends new points to the existing storage of evaluated points and their function values,
+            while also updating the current best solution if the new point is better.
+
+        Args:
+            x (ndarray):
+                New point(s) in original scale, shape (n_features,) or (N, n_features).
+            y (float or ndarray):
+                Corresponding function value(s).
+
+        Returns:
+            None. This method updates the internal state of the optimizer.
+
+        Note:
+           - This method assumes that the caller handles any necessary synchronization if used in a parallel context
+           (e.g., using locks when updating shared state).
+
+        Raises:
+            ValueError: If the input shapes are inconsistent or if y is not a scalar when x is a single point.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_jobs=2
+            ... )
+            >>> opt._update_storage_steady(np.array([1.0, 2.0]), 5.0)
+            >>> print(opt.X_)
+            [[1. 2.]]
+            >>> print(opt.y_)
+            [5.]
+            >>> print(opt.best_x_)
+            [1. 2.]
+            >>> print(opt.best_y_)
+            5.0
+
+        """
         x = np.atleast_2d(x)
         if self.X_ is None:
             self.X_ = x
@@ -4264,25 +4510,60 @@ class SpotOptim(BaseEstimator):
 
         This method implements a steady-state parallelization strategy:
 
-        1.  **Parallel Initial Design**:
+        1.  Parallel Initial Design:
             The first class of `n_initial * repeats_initial` runs are managed by the executor.
             The first `n_jobs` are sent to separate processors. If the first job is ready,
             its result is returned and the next of the initial design runs is dispatched.
             This is continued until all `n_initial * repeats_initial` runs have returned their values.
 
-        2.  **First Surrogate Fit**:
+        2.  First Surrogate Fit:
             The first surrogate model is built (fitted) using the `n_initial * repeats_initial` evaluations
             collected in step 1.
 
-        3.  **Parallel Search**:
+        3.  Parallel Search:
             `n_jobs` searches (optimizations) on this surrogate are initially performed in parallel.
 
-        4.  **Steady-State Loop**:
-            - If a **Search** task is ready, the candidate point `x_cand` is immediately sent
-              to the evaluation function to get `y_new`.
+        4.  Steady-State Loop:
+            - If a Search task is ready, the candidate point `x_cand` is immediately sent to the evaluation function to get `y_new`.
             - As soon as `y_new` is available, the surrogate is fitted again (including the new `x_cand`, `y_new`).
-            - A new **Search** task is dispatched with this continuously updated model.
+            - A new Search task is dispatched with this continuously updated model.
             - This cycle ensures the surrogate is continuously updated as new points are available.
+
+        The optimization terminates when either:
+        - Total function evaluations reach `max_iter` (including initial design), OR
+        - Runtime exceeds `max_time` minutes
+
+        Args:
+            timeout_start (float): Start time for timeout.
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known (Optional[float]): Known best value for initial design.
+            max_iter_override (Optional[int]): Override for maximum number of iterations.
+
+        Raises:
+            RuntimeError: If all initial design evaluations fail, likely due to pickling issues or missing imports in the worker process.
+            The error message provides guidance on how to address this issue.
+
+        Returns:
+            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+        Examples:
+            >>> import time
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     max_iter=10,
+            ...     seed=0,
+            ...     n_jobs=2,  # Use parallel optimization
+            ...     verbose=True
+            ... )
+            >>> status, result = opt._optimize_steady_state(timeout_start=time.time(), X0=None)
+            >>> print(status)
+            FINISHED
+            >>> print(result.message.splitlines()[0])
+            Optimization finished (Steady State)
         """
         # Setup similar to _optimize_single_run
         self._set_seed()
@@ -4502,6 +4783,7 @@ class SpotOptim(BaseEstimator):
             ... )
             >>> # Need to initialize optimization state (X_, y_, surrogate)
             >>> # Normally done inside optimize()
+            >>> np.random.seed(0)
             >>> opt.X_ = np.random.rand(10, 2)
             >>> opt.y_ = np.random.rand(10)
             >>> opt._fit_surrogate(opt.X_, opt.y_)
