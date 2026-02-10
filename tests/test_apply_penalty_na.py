@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for the _apply_penalty_NA method with y_history parameter."""
 
 import numpy as np

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Factor analysis using MINRES or ML, with optional rotation using Varimax or Promax.
 

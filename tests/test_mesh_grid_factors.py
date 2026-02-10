@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for _generate_mesh_grid_with_factors method."""
 
 import pytest

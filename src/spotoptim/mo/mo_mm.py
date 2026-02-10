@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from spotoptim.sampling.mm import mm_improvement, mmphi_intensive
 from scipy.optimize import dual_annealing
 import numpy as np

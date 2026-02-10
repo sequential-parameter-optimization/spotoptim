@@ -4,7 +4,16 @@ SPDX-PackageSupplier = "bartzbeielstein <32470350+bartzbeielstein@users.noreply.
 SPDX-PackageDownloadLocation = "https://github.com/sequential-parameter-optimization/spotoptim"
 
 [[annotations]]
-path = [".flake8", ".gitignore", ".python-version", ".releaserc.json", "mkdocs.yml", "pyproject.toml", "uv.lock"]
+path = [
+    ".flake8",
+    ".gitignore",
+    ".python-version",
+    ".releaserc.json",
+    "mkdocs.yml",
+    "pyproject.toml",
+    "uv.lock",
+    "spotoptim.code-workspace"
+]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 bartzbeielstein"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
@@ -16,31 +25,26 @@ SPDX-FileCopyrightText = "2026 bartzbeielstein"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
-path = ["docs/**", "README.md", "CHANGELOG.md"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 bartzbeielstein"
-SPDX-License-Identifier = "AGPL-3.0-or-later"
-
-[[annotations]]
-path = ["examples/**", "notebooks/**", "local/**", "site/**"]
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 bartzbeielstein"
-SPDX-License-Identifier = "AGPL-3.0-or-later"
-
-[[annotations]]
-path = "scripts/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 bartzbeielstein"
-SPDX-License-Identifier = "AGPL-3.0-or-later"
-
-[[annotations]]
-path = "src/**"
-precedence = "aggregate"
-SPDX-FileCopyrightText = "2026 bartzbeielstein"
-SPDX-License-Identifier = "AGPL-3.0-or-later"
-
-[[annotations]]
-path = "tests/**"
+path = [
+    "**/*.md",
+    "**/*.html",
+    "**/*.css",
+    "**/*.js",
+    "**/*.woff",
+    "**/*.csv",
+    "**/*.sh",
+    "**/*.bat",
+    "**/*.qmd",
+    "**/*.ipynb",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.svg",
+    "**/*.toml",
+    "**/*.txt",
+    "**/*.yml",
+    "**/*.yaml",
+    "**/*.json"
+]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 bartzbeielstein"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

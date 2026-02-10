@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from abc import ABC, abstractmethod
 from typing import Any, Tuple, Optional, Union
 import numpy as np

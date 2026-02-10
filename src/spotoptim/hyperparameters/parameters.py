@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 from typing import List, Dict, Any, Optional, Tuple, Union
 from .repr_helpers import Parameter, Bounds
 

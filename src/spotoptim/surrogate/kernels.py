@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 import numpy as np
 from abc import ABC, abstractmethod
 from sklearn.metrics.pairwise import euclidean_distances

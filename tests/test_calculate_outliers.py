@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for calculate_outliers supporting Series and DataFrame."""
 
 import numpy as np

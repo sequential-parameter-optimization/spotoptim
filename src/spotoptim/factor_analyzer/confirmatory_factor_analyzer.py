@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """
 Confirmatory factor analysis using machine learning methods.
 Re-implementation of the factor-analyzer package.

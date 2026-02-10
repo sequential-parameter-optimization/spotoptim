@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Tests for dimension reduction (to_red_dim and to_all_dim) in SpotOptim."""
 
 import numpy as np

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Utility functions for spotoptim."""
 
 from .boundaries import get_boundaries, map_to_original_scale

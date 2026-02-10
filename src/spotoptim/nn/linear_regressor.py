@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 # generate a pytorch linear regression model for supervised learning
 import torch
 import torch.nn as nn

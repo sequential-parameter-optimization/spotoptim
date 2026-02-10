@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Learning rate mapping functions for unified optimizer interface.
 
 This module provides utilities to map a unified learning rate scale to
