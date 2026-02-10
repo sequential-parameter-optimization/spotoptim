@@ -3803,23 +3803,24 @@ class SpotOptim(BaseEstimator):
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
             ...     max_iter=20,
+            ...     seed=0,
+            ...     x0=np.array([0.0, 0.0]),
             ...     verbose=True
             ... )
             >>> result = opt.optimize()
-            >>> print(result.message)
-            Optimization finished successfully
-                     Current function value: ...
-                     Iterations: ...
-                     Function evaluations: ...
+            >>> print(result.message.splitlines()[0])
+            Optimization terminated: maximum evaluations (20) reached
             >>> print("Best point:", result.x)
-            Best point: [some point close to [0, 0]]
+            Best point: [0. 0.]
             >>> print("Best value:", result.fun)
-            Best value: [some value close to 0]
+            Best value: 0.0
         """
+        # Track results across restarts for final aggregation.
         self.restarts_results_ = []
+        # Capture start time for timeout enforcement.
         timeout_start = time.time()
 
-        # Initial run
+        # Initial run state.
         current_X0 = X0
         status = "START"
 
