@@ -2043,11 +2043,7 @@ arranged in a grid.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/sampling/effects.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -2122,7 +2118,11 @@ arranged in a grid.</p>
 <span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
-<span class="normal">387</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_all_partial_dependence</span><span class="p">(</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_all_partial_dependence</span><span class="p">(</span>
     <span class="n">df</span><span class="p">,</span>
     <span class="n">df_target</span><span class="p">,</span>
     <span class="n">model</span><span class="o">=</span><span class="s2">&quot;GradientBoostingRegressor&quot;</span><span class="p">,</span>
@@ -2345,11 +2345,7 @@ array([[0. , 0. ],
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/sampling/effects.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
 <span class="normal">16</span>
@@ -2414,7 +2410,11 @@ array([[0. , 0. ],
 <span class="normal">75</span>
 <span class="normal">76</span>
 <span class="normal">77</span>
-<span class="normal">78</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">randorient</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">randorient</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a random orientation of a sampling matrix.</span>
 <span class="sd">    This function creates a random sampling matrix for a given number of</span>
 <span class="sd">    dimensions (k), number of levels (p), and step length (xi). The</span>
@@ -2692,11 +2692,7 @@ the second row contains upper bounds for each variable.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/sampling/effects.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
@@ -2760,7 +2756,11 @@ the second row contains upper bounds for each variable.</p>
 <span class="normal">302</span>
 <span class="normal">303</span>
 <span class="normal">304</span>
-<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">screening_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">screening_plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a plot with elementary effect screening metrics.</span>
 
 <span class="sd">    This function calculates the mean and standard deviation of the</span>
@@ -3040,11 +3040,7 @@ generated instead of returning a DataFrame.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/spotoptim/sampling/effects.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
@@ -3105,7 +3101,11 @@ generated instead of returning a DataFrame.</p>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
-<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">screening_print</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">screening_print</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a DataFrame with elementary effect screening metrics.</span>
 
 <span class="sd">    This function calculates the mean and standard deviation of the</span>
