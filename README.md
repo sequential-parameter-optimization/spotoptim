@@ -1,6 +1,45 @@
-# SpotOptim
+<div align="left">
+  <img src="https://raw.githubusercontent.com/sequential-parameter-optimization/spotoptim/main/img/spotLogo.png" alt="spotoptim Logo" width="300">
+</div>
 
-Sequential Parameter Optimization 
+
+# spotoptim
+
+Sequential Parameter Optimization Toolbox
+
+
+[![Python Version](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/downloads/)
+[![PyPI Version](https://img.shields.io/pypi/v/spotoptim)](https://pypi.org/project/spotoptim/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/spotoptim)](https://pypi.org/project/spotoptim/)
+[![Total Downloads](https://static.pepy.tech/badge/spotoptim)](https://pepy.tech/project/spotoptim)
+[![License](https://img.shields.io/github/license/sequential-parameter-optimization/spotoptim)](LICENSE)
+
+**Testing & Quality**
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/sequential-parameter-optimization/spotoptim/ci.yml?branch=main&label=Tests)](https://github.com/sequential-parameter-optimization/spotoptim/actions/workflows/ci.yml)
+[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen)](https://sequential-parameter-optimization.github.io/spotoptim/)
+[![GitHub Release](https://img.shields.io/github/v/release/sequential-parameter-optimization/spotoptim)](https://github.com/sequential-parameter-optimization/spotoptim/releases)
+
+**Status**
+
+[![Maintenance](https://img.shields.io/badge/maintenance-active-green)](https://github.com/sequential-parameter-optimization/spotoptim)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+## About spotoptim
+
+`spotoptim` is a Python toolbox for Sequential Parameter Optimization (SPO), designed for robust and efficient optimization of expensive-to-evaluate functions.
+
+
+## Documentation
+
+ Documentation (API) is available at: [https://sequential-parameter-optimization.github.io/spotoptim/](https://sequential-parameter-optimization.github.io/spotoptim/)
+
+## License
+
+`spotoptim` software: [AGPL-3.0-or-later License](LICENSE)
+
+
+
 
 ## Features
 
