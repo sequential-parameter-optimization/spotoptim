@@ -138,12 +138,6 @@
             }
         ],
         [
-            "@semantic-release/exec",
-            {
-                "prepareCmd": "python -m twine upload dist/* -u __token__ -p $PYPI_TOKEN"
-            }
-        ],
-        [
             "@semantic-release/github",
             {
                 "assets": [
