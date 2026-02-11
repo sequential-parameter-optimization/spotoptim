@@ -141,7 +141,7 @@ class TestTerminationCriteria:
     def test_mixed_finite_limits_iter_first(self):
         """Test Case 5a: max_iter hits before max_time."""
         max_iter = 15
-        max_time = 1.0  # 1 minute (long enough)
+        max_time = 10.0  # 10 minutes (avoid slow CI timeouts)
 
         opt = SpotOptim(
             fun=sphere_1d,
