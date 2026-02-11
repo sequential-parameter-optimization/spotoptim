@@ -14,7 +14,7 @@ Sequential Parameter Optimization Toolbox
 [![Total Downloads](https://static.pepy.tech/badge/spotoptim)](https://pepy.tech/project/spotoptim)
 [![License](https://img.shields.io/github/license/sequential-parameter-optimization/spotoptim)](LICENSE)
 
-**Testing & Quality**
+### Testing & Quality
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/sequential-parameter-optimization/spotoptim/ci.yml?branch=main&label=Tests)](https://github.com/sequential-parameter-optimization/spotoptim/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sequential-parameter-optimization/spotoptim/branch/main/graph/badge.svg)](https://codecov.io/gh/sequential-parameter-optimization/spotoptim)
@@ -23,7 +23,7 @@ Sequential Parameter Optimization Toolbox
 [![Documentation](https://img.shields.io/badge/docs-passing-brightgreen)](https://sequential-parameter-optimization.github.io/spotoptim/)
 [![GitHub Release](https://img.shields.io/github/v/release/sequential-parameter-optimization/spotoptim)](https://github.com/sequential-parameter-optimization/spotoptim/releases)
 
-**Status**
+### Status
 
 [![Maintenance](https://img.shields.io/badge/maintenance-active-green)](https://github.com/sequential-parameter-optimization/spotoptim)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -168,7 +168,7 @@ optimizer = SpotOptim(
 - **Maintained accuracy**: Carefully selected points preserve model quality
 - **Scalability**: Enables optimization with hundreds or thousands of function evaluations
 
-See `examples/point_selection_example.py` for a complete demonstration.
+See the test suite in tests/ for detailed implementation examples, including point selection logic.
 
 ### Kriging
 
@@ -214,31 +214,22 @@ For higher-dimensional problems, the method visualizes a 2D slice by fixing othe
 
 ### Notebooks
 
-See `notebooks/demos.ipynb` for interactive examples:
+See notebooks/spotoptim_tests.ipynb for interactive examples and API usage demonstrations.
 
-1. 2D Rosenbrock function optimization
-2. 6D Rosenbrock with budget constraints
-3. Using Kriging surrogate vs default GP
-4. Visualizing surrogate models with `plot_surrogate()`
+### Real-World Applications & Tutorials
 
-### Real-World Applications
+Detailed documentation and tutorials are available in the docs/ directory and on the official documentation site.
 
-The `examples/` directory contains detailed tutorials:
+- [SPOT Examples](docs/examples.md) - Simple runs and visualization
+- [Step-by-Step Tutorial](https://sequential-parameter-optimization.github.io/spotoptim/qmd/spot_step_by_step.html) - Comprehensive optimization guide
 
-**Aircraft Wing Weight Optimization (AWWE)**
-
-- `awwe.qmd` - Comprehensive Quarto tutorial teaching surrogate-based optimization
-- `awwe_optimization.py` - Standalone Python script demonstrating complete workflow
-- 9-dimensional optimization problem from engineering design
-- Includes homework exercise for 10-dimensional extension
-
-Run the example:
+Run the test-based examples:
 ```bash
-cd examples
-python awwe_optimization.py
+# Run all tests including example-based tests
+uv run pytest tests/
 ```
 
-See `examples/README.md` for more details and additional examples.
+See docs/examples.md for more details and additional examples.
 
 ## Development
 
