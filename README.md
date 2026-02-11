@@ -8,7 +8,7 @@
 Sequential Parameter Optimization Toolbox
 
 
-[![Python Version](https://img.shields.io/badge/python-3.13%2B-blue)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.14%2B-blue)](https://www.python.org/downloads/)
 [![PyPI Version](https://img.shields.io/pypi/v/spotoptim)](https://pypi.org/project/spotoptim/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/spotoptim)](https://pypi.org/project/spotoptim/)
 [![Total Downloads](https://static.pepy.tech/badge/spotoptim)](https://pepy.tech/project/spotoptim)
