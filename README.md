@@ -18,7 +18,7 @@ Sequential Parameter Optimization Toolbox
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/sequential-parameter-optimization/spotoptim/ci.yml?branch=main&label=Tests)](https://github.com/sequential-parameter-optimization/spotoptim/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sequential-parameter-optimization/spotoptim/branch/main/graph/badge.svg)](https://codecov.io/gh/sequential-parameter-optimization/spotoptim)
-[![REUSE Compliance](https://api.reuse.software/badge/github.com/sequential-parameter-optimization/spotoptim)](https://api.reuse.software/project/github.com/sequential-parameter-optimization/spotoptim)
+[![REUSE status](https://api.reuse.software/badge/github.com/sequential-parameter-optimization/spotoptim)](https://api.reuse.software/info/github.com/sequential-parameter-optimization/spotoptim)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/sequential-parameter-optimization/spotoptim/badge)](https://scorecard.dev/viewer/?uri=github.com/sequential-parameter-optimization/spotoptim)
 [![Documentation](https://img.shields.io/badge/docs-passing-brightgreen)](https://sequential-parameter-optimization.github.io/spotoptim/)
 [![GitHub Release](https://img.shields.io/github/v/release/sequential-parameter-optimization/spotoptim)](https://github.com/sequential-parameter-optimization/spotoptim/releases)
