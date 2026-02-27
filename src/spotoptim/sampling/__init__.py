@@ -23,6 +23,24 @@ from spotoptim.sampling.mm import (
 
 from spotoptim.sampling.lhs import rlh
 
+from spotoptim.sampling.design import (
+    generate_uniform_design,
+    generate_collinear_design,
+    generate_clustered_design,
+    generate_sobol_design,
+    generate_qmc_lhs_design,
+    generate_grid_design,
+    fullfactorial,
+)
+
+from spotoptim.sampling.effects import (
+    randorient,
+    screeningplan,
+    screening_print,
+    screening_plot,
+    plot_all_partial_dependence,
+)
+
 __all__ = [
     "rlh",
     "jd",
@@ -39,4 +57,16 @@ __all__ = [
     "bestlh",
     "plot_mmphi_vs_n_lhs",
     "mm_improvement_contour",
+    "generate_uniform_design",
+    "generate_collinear_design",
+    "generate_clustered_design",
+    "generate_sobol_design",
+    "generate_qmc_lhs_design",
+    "generate_grid_design",
+    "fullfactorial",
+    "randorient",
+    "screeningplan",
+    "screening_print",
+    "screening_plot",
+    "plot_all_partial_dependence",
 ]

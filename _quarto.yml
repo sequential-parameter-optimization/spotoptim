@@ -37,8 +37,6 @@ website:
         href: docs/download.qmd
       - text: "Examples"
         href: docs/examples.qmd
-      - text: "About"
-        href: docs/about.qmd
     right:
       - icon: twitter
         href: https://twitter.com/bartzbeielstein
@@ -67,12 +65,10 @@ website:
         href: docs/download.qmd
       - section: "Examples"
         href: docs/examples.qmd
-      - section: "About"
-        href: docs/about.qmd
 
   # ── Footer ──────────────────────────────────────────────────────────────────
   page-footer:
-    left: "Copyright © 2004–2025 Thomas Bartz-Beielstein"
+    left: "Copyright © 2004–2026 Thomas Bartz-Beielstein"
     right:
       - icon: github
         href: https://github.com/sequential-parameter-optimization/spotoptim
@@ -98,8 +94,8 @@ format:
     # Inline: $…$   Display: $$…$$  — no extra CDN or JS files needed
     html-math-method: mathjax
     # Typography matching mkdocs.yml font settings
-    mainfont: "Roboto"
-    monofont: "Fira Code"
+    # mainfont: "Roboto"
+    # monofont: "Fira Code"
 
 # ── Code execution ──────────────────────────────────────────────────────────
 execute:
@@ -126,20 +122,16 @@ quartodoc:
   dynamic: false
 
   sections:
-    # Contents are paths RELATIVE to the package root (package: spotoptim).
-    # Do NOT repeat the 'spotoptim.' prefix — quartodoc adds it automatically.
-    # Format: <module>.<ClassName>  or  <subpackage>  for the whole module.
-
     - title: "Core"
-      desc: "Central SpotOptim class and core infrastructure"
       contents:
-        - SpotOptim               # spotoptim.SpotOptim (the class)
-        - core.data               # spotoptim.core.data module
-        - core.experiment         # spotoptim.core.experiment module
+        - SpotOptim
+        - core
+        - core.data
+        - core.experiment
 
     - title: "Surrogate Models"
-      desc: "Gaussian process, Kriging, and related surrogate infrastructure"
       contents:
+        - surrogate
         - surrogate.kriging
         - surrogate.simple_kriging
         - surrogate.mlp_surrogate
@@ -148,40 +140,40 @@ quartodoc:
         - surrogate.pipeline
 
     - title: "Sampling"
-      desc: "Design-of-experiment and sampling strategies"
       contents:
+        - sampling
         - sampling.design
         - sampling.effects
         - sampling.lhs
         - sampling.mm
 
     - title: "Optimization"
-      desc: "Local optimizer wrappers"
       contents:
+        - optimizer
         - optimizer.schedule_free
 
     - title: "Hyperparameters"
-      desc: "Hyperparameter type system and search-space bounds"
       contents:
+        - hyperparameters
         - hyperparameters.parameters
         - hyperparameters.repr_helpers
 
     - title: "Neural Networks"
-      desc: "Neural network wrappers and training utilities"
       contents:
+        - nn
         - nn.linear_regressor
         - nn.mlp
 
     - title: "Plotting & Visualization"
-      desc: "All visualization helpers"
       contents:
+        - plot
         - plot.contour
         - plot.mo
         - plot.visualization
 
     - title: "Utilities"
-      desc: "General-purpose helper functions"
       contents:
+        - utils
         - utils.boundaries
         - utils.eval
         - utils.file
@@ -191,39 +183,39 @@ quartodoc:
         - utils.stats
 
     - title: "Data"
-      desc: "Data loading and preprocessing"
       contents:
+        - data
         - data.base
         - data.diabetes
 
     - title: "Exploratory Data Analysis"
-      desc: "EDA tools"
       contents:
+        - eda
         - eda.plots
 
     - title: "Multi-Objective"
-      desc: "Pareto-front and multi-objective optimization helpers"
       contents:
+        - mo
         - mo.mo_mm
         - mo.pareto
 
     - title: "Inspection"
-      desc: "Model inspection and explanation"
       contents:
+        - inspection
         - inspection.importance
         - inspection.predictions
 
     - title: "Factor Analyzer"
-      desc: "Factor analysis utilities"
       contents:
+        - factor_analyzer
         - factor_analyzer.confirmatory_factor_analyzer
         - factor_analyzer.factor_analyzer
         - factor_analyzer.factor_analyzer_rotator
         - factor_analyzer.factor_analyzer_utils
 
     - title: "Functions"
-      desc: "Objective and benchmark test functions"
       contents:
+        - function
         - function.forr08a
         - function.mo
         - function.remote
@@ -231,6 +223,6 @@ quartodoc:
         - function.torch_objective
 
     - title: "Tricands"
-      desc: "Tricands sampling and optimization"
       contents:
+        - tricands
         - tricands.tricands

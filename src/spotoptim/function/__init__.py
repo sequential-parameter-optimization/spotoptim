@@ -6,7 +6,15 @@
 Analytical test functions for optimization.
 """
 
-from .so import rosenbrock, ackley, michalewicz, robot_arm_hard
+from .so import (
+    rosenbrock,
+    ackley,
+    michalewicz,
+    robot_arm_hard,
+    lennard_jones,
+    robot_arm_obstacle,
+    wingwt,
+)
 from .mo import (
     activity_pred,
     conversion_pred,
@@ -26,12 +34,16 @@ from .mo import (
 )
 from .forr08a import aerofoilcd, branin, onevar
 from .torch_objective import TorchObjective
+from .remote import objective_remote
 
 __all__ = [
     "rosenbrock",
     "ackley",
     "michalewicz",
     "robot_arm_hard",
+    "lennard_jones",
+    "robot_arm_obstacle",
+    "wingwt",
     "mo_conv2_min",
     "fonseca_fleming",
     "kursawe",
@@ -51,4 +63,5 @@ __all__ = [
     "branin",
     "onevar",
     "TorchObjective",
+    "objective_remote",
 ]

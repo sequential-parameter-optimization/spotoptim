@@ -1,3 +1,14 @@
-# Install spotpython
+# Install spotoptim
 
-    pip install spotoptim
+## Using pip
+
+```bash
+pip install spotoptim
+```
+
+## Using uv
+
+```bash
+uv pip install spotoptim
+```
+
