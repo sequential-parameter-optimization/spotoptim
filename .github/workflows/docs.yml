@@ -34,9 +34,9 @@ on:
       - "requirements-docs.txt"
   workflow_dispatch:           # allow manual re-runs from the GitHub Actions UI
 
-# Least-privilege permissions: only write access to push to gh-pages
+# Restricted top-level permissions: only read access to the repository.
 permissions:
-  contents: write
+  contents: read
 
 env:
   # ── Pin the Quarto CLI version here. ──────────────────────────────────────
@@ -48,6 +48,9 @@ jobs:
   build-deploy:
     name: Build & Deploy Documentation
     runs-on: ubuntu-latest
+    # Elevated permissions for this specific job to push to gh-pages
+    permissions:
+      contents: write
 
     steps:
       # ── 1. Checkout (full history required by the publish action) ────────────
