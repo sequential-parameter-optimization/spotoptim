@@ -154,7 +154,9 @@ venv.bak/
 # mkdocs documentation
 /site
 
-# Quarto documentation build output
+# Quarto / Documentation
+objects.json
+.quarto_ipynb
 # _site/ is published via gh-pages — do NOT commit it to main
 _site/
 # Auto-generated API stubs (recreated by quartodoc on every build)

@@ -13,7 +13,6 @@ import pytest
 from scipy.optimize import OptimizeResult
 from spotoptim import SpotOptim, Kriging
 
-
 # ---------------------------------------------------------------------------
 # Shared fixtures and helpers
 # ---------------------------------------------------------------------------
@@ -63,9 +62,11 @@ class TestInit:
 
     def test_bounds_from_function_attribute(self):
         """Bounds are inferred from fun.bounds when not supplied explicitly."""
+
         def fun_with_bounds(X):
             X = np.atleast_2d(X)
             return np.sum(X**2, axis=1)
+
         fun_with_bounds.bounds = [(-1, 1), (-1, 1)]
         opt = SpotOptim(fun=fun_with_bounds)
         assert opt.bounds == [(-1, 1), (-1, 1)]
@@ -216,9 +217,9 @@ class TestTransformValue:
         """inverse_transform_value(transform_value(x)) == x."""
         tx = self.opt.transform_value(x, trans)
         x_back = self.opt.inverse_transform_value(tx, trans)
-        assert np.isclose(x_back, x, rtol=1e-9), (
-            f"Roundtrip failed for trans={trans!r}: {x} -> {tx} -> {x_back}"
-        )
+        assert np.isclose(
+            x_back, x, rtol=1e-9
+        ), f"Roundtrip failed for trans={trans!r}: {x} -> {tx} -> {x_back}"
 
     def test_log10_known_value(self):
         """log10(10) == 1."""
@@ -304,9 +305,9 @@ class TestOptimizeContract:
     def test_x_within_bounds(self):
         """Best point must lie within the original bounds."""
         for i, (lo, hi) in enumerate([(-3, 3), (-3, 3)]):
-            assert lo <= self.result.x[i] <= hi, (
-                f"Dimension {i}: {self.result.x[i]} not in [{lo}, {hi}]"
-            )
+            assert (
+                lo <= self.result.x[i] <= hi
+            ), f"Dimension {i}: {self.result.x[i]} not in [{lo}, {hi}]"
 
     def test_all_X_within_bounds(self):
         """Every evaluated point must lie within bounds."""
@@ -345,8 +346,12 @@ class TestSeedReproducibility:
 
     def test_different_seeds_different_initial_designs(self):
         """Different seeds produce different initial designs (with very high probability)."""
-        r1 = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], max_iter=5, n_initial=5, seed=1).optimize()
-        r2 = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], max_iter=5, n_initial=5, seed=2).optimize()
+        r1 = SpotOptim(
+            fun=sphere, bounds=[(-5, 5), (-5, 5)], max_iter=5, n_initial=5, seed=1
+        ).optimize()
+        r2 = SpotOptim(
+            fun=sphere, bounds=[(-5, 5), (-5, 5)], max_iter=5, n_initial=5, seed=2
+        ).optimize()
         # The initial designs should differ
         assert not np.array_equal(r1.X, r2.X)
 
@@ -408,9 +413,9 @@ class TestVariableTypes:
             seed=0,
         )
         result = opt.optimize()
-        assert np.allclose(result.x, np.round(result.x), atol=1e-9), (
-            f"Expected integer-valued x, got {result.x}"
-        )
+        assert np.allclose(
+            result.x, np.round(result.x), atol=1e-9
+        ), f"Expected integer-valued x, got {result.x}"
 
     def test_integer_vars_stored_X_are_integers(self):
         """All stored X points must be integers when var_type=['int', 'int']."""
@@ -450,15 +455,19 @@ class TestCustomInitialDesign:
 
     def test_custom_X0_shape_respected(self):
         X0 = np.array([[0.0, 0.0], [1.0, 1.0], [-1.0, -1.0]])
-        opt = SpotOptim(fun=sphere, bounds=[(-3, 3), (-3, 3)], max_iter=3, n_initial=3, seed=0)
+        opt = SpotOptim(
+            fun=sphere, bounds=[(-3, 3), (-3, 3)], max_iter=3, n_initial=3, seed=0
+        )
         result = opt.optimize(X0=X0)
         assert result.nfev == 3  # all budget used for initial design
-        assert result.nit == 0   # no sequential iterations
+        assert result.nit == 0  # no sequential iterations
 
     def test_custom_X0_influences_first_evaluations(self):
         """When X0 is supplied, the first n_initial rows of result.X equal X0."""
         X0 = np.array([[0.5, 0.5], [-0.5, -0.5], [1.0, -1.0], [-1.0, 1.0], [0.0, 0.0]])
-        opt = SpotOptim(fun=sphere, bounds=[(-3, 3), (-3, 3)], max_iter=5, n_initial=5, seed=0)
+        opt = SpotOptim(
+            fun=sphere, bounds=[(-3, 3), (-3, 3)], max_iter=5, n_initial=5, seed=0
+        )
         result = opt.optimize(X0=X0)
         np.testing.assert_array_almost_equal(result.X[:5], X0)
 

@@ -196,7 +196,7 @@ class SimpleKriging(BaseEstimator, RegressorMixin):
 
             return neg_log_like
 
-        except (LinAlgError, ValueError):
+        except LinAlgError, ValueError:
             return 1e10
 
     def fit(self, X: np.ndarray, y: np.ndarray) -> "SimpleKriging":
