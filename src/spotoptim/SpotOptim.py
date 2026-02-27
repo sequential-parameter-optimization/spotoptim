@@ -1647,7 +1647,7 @@ class SpotOptim(BaseEstimator):
         if not isinstance(x, float):
             try:
                 x = float(x)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 raise TypeError(
                     f"transform_value expects a float, got {type(x).__name__} (value: {x})"
                 )
@@ -1718,7 +1718,7 @@ class SpotOptim(BaseEstimator):
         if not isinstance(x, float):
             try:
                 x = float(x)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 raise TypeError(
                     f"transform_value expects a float, got {type(x).__name__} (value: {x})"
                 )
@@ -2692,7 +2692,7 @@ class SpotOptim(BaseEstimator):
             # Try to get uncertainty estimates
             y_pred, y_std = self.surrogate.predict(X, return_std=True)
             return y_pred, y_std
-        except (TypeError, AttributeError):
+        except TypeError, AttributeError:
             # Surrogate doesn't support return_std (e.g., Random Forest, XGBoost)
             y_pred = self.surrogate.predict(X)
             y_std = np.zeros_like(y_pred)
@@ -4916,7 +4916,7 @@ class SpotOptim(BaseEstimator):
             def _safe_float(v):
                 try:
                     return float(v)
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     return np.nan
 
             # Reconstruct as float array
@@ -5281,7 +5281,7 @@ class SpotOptim(BaseEstimator):
         def _safe_float(v):
             try:
                 return float(v)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return np.nan
 
         y_flat = np.array(y).flatten()
@@ -6749,7 +6749,7 @@ class SpotOptim(BaseEstimator):
                         np.log10(param_values_numeric[valid_mask]),
                         np.log10(history[valid_mask]),
                     )
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     print(f"  {name:20s}: (error computing log correlation)")
                     continue
             else:
@@ -6757,7 +6757,7 @@ class SpotOptim(BaseEstimator):
                 try:
                     param_values_numeric = param_values.astype(float)
                     corr, p_value = spearmanr(param_values_numeric, history)
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     print(f"  {name:20s}: (error computing correlation)")
                     continue
 
@@ -7311,7 +7311,7 @@ class SpotOptim(BaseEstimator):
                         # Direct correlation for non-transformed parameters
                         param_values_numeric = param_values.astype(float)
                         corr, p_value = spearmanr(param_values_numeric, history)
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     pass  # Keep corr as nan
 
             # Handle factor variables differently

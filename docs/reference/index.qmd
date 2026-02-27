@@ -1,0 +1,36 @@
+---
+title: "API Reference"
+description: "Complete auto-generated API reference for spotoptim."
+---
+
+This section is generated automatically from the `spotoptim` source code.
+Docstrings follow the **Google style** and are parsed by
+[quartodoc](https://machow.github.io/quartodoc/) using the
+[griffe](https://mkdocstrings.github.io/griffe/) engine.
+
+Use the sidebar to navigate by module, or search for a specific symbol
+using the search bar above.
+
+## Modules
+
+| Module | Description |
+|--------|-------------|
+| `spotoptim.SpotOptim` | Central optimizer class |
+| `spotoptim.core` | Core infrastructure |
+| `spotoptim.surrogate` | Surrogate model implementations |
+| `spotoptim.sampling` | Design-of-experiment and sampling |
+| `spotoptim.optimizer` | Local optimizer wrappers |
+| `spotoptim.hyperparameters` | Hyperparameter type system |
+| `spotoptim.nn` | Neural network utilities |
+| `spotoptim.plot` | Plotting and visualization |
+| `spotoptim.utils` | General-purpose helpers |
+| `spotoptim.data` | Data loading and preprocessing |
+| `spotoptim.eda` | Exploratory data analysis |
+| `spotoptim.mo` | Multi-objective optimization |
+| `spotoptim.inspection` | Model inspection |
+| `spotoptim.factor_analyzer` | Factor analysis |
+| `spotoptim.function` | Objective and benchmark functions |
+
+> **Note**: Run `python -m quartodoc build --config _quarto.yml` from the
+> project root to regenerate the stubs in this directory whenever the source
+> code changes.

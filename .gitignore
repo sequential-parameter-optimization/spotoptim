@@ -154,6 +154,15 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Quarto documentation build output
+# _site/ is published via gh-pages — do NOT commit it to main
+_site/
+# Auto-generated API stubs (recreated by quartodoc on every build)
+docs/reference/*.qmd
+# Do NOT ignore these — they must be committed:
+#   _freeze/        → frozen computation cache required by CI
+#   _publish.yml    → Quarto publish target config required by CI
+
 # mypy
 .mypy_cache/
 .dmypy.json

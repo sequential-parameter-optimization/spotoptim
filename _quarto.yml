@@ -1,0 +1,194 @@
+# _quarto.yml
+# =============================================================================
+# Quarto project configuration for spotoptim
+# Replaces: mkdocs.yml
+# Generated: 2026-02-27
+# =============================================================================
+
+project:
+  type: website
+  output-dir: _site
+  # Build API stubs from source before every render
+  pre-render: python -m quartodoc build --config _quarto.yml
+
+website:
+  title: "spotoptim"
+  description: "spotoptim — Sequential Parameter Optimization Toolbox in Python"
+  site-url: "https://sequential-parameter-optimization.github.io/spotoptim/"
+  repo-url: "https://github.com/sequential-parameter-optimization/spotoptim"
+  repo-actions: [edit, issue]
+  favicon: docs/images/favicon.png
+  logo: docs/images/spotlogo.png
+
+  # ── Navigation bar ──────────────────────────────────────────────────────────
+  navbar:
+    background: dark
+    logo: docs/images/spotlogo.png
+    left:
+      - text: "Home"
+        href: docs/index.qmd
+      - text: "API Reference"
+        href: docs/reference/index.qmd
+      - text: "Documentation"
+        href: docs/sequential-parameter-optimization-cookbook.qmd
+      - text: "Download"
+        href: docs/download.qmd
+      - text: "Examples"
+        href: docs/examples.qmd
+      - text: "About"
+        href: docs/about.qmd
+    right:
+      - icon: twitter
+        href: https://twitter.com/bartzbeielstein
+        aria-label: Twitter
+      - icon: linkedin
+        href: https://www.linkedin.com/in/thomas-bartz-beielstein-3157b541/
+        aria-label: LinkedIn
+      - icon: github
+        href: https://github.com/sequential-parameter-optimization/spotoptim
+        aria-label: GitHub
+
+  # ── Sidebar ─────────────────────────────────────────────────────────────────
+  sidebar:
+    style: "docked"
+    search: true
+    collapse-level: 2
+    contents:
+      - section: "Home"
+        href: docs/index.qmd
+      - section: "API Reference"
+        href: docs/reference/index.qmd
+        contents: auto            # auto-populated by quartodoc via _sidebar.yml
+      - section: "Documentation"
+        href: docs/sequential-parameter-optimization-cookbook.qmd
+      - section: "Download"
+        href: docs/download.qmd
+      - section: "Examples"
+        href: docs/examples.qmd
+      - section: "About"
+        href: docs/about.qmd
+
+  # ── Footer ──────────────────────────────────────────────────────────────────
+  page-footer:
+    left: "Copyright © 2004–2025 Thomas Bartz-Beielstein"
+    right:
+      - icon: github
+        href: https://github.com/sequential-parameter-optimization/spotoptim
+
+  # ── Search ──────────────────────────────────────────────────────────────────
+  search:
+    location: navbar
+    type: overlay
+
+# ── Output format ───────────────────────────────────────────────────────────
+format:
+  html:
+    theme:
+      light: cosmo              # close to Material default; alternatives: flatly, lux
+      dark:  darkly
+    highlight-style: github
+    code-copy: true
+    code-overflow: wrap
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    # Math: built-in MathJax — identical delimiters to pymdownx.arithmatex
+    # Inline: $…$   Display: $$…$$  — no extra CDN or JS files needed
+    html-math-method: mathjax
+    # Typography matching mkdocs.yml font settings
+    mainfont: "Roboto"
+    monofont: "Fira Code"
+
+# ── Code execution ──────────────────────────────────────────────────────────
+execute:
+  # freeze: auto — execute code locally; CI renders pre-frozen results only.
+  # This means the GitHub Action does NOT need the full runtime deps (torch, etc.)
+  # To execute code in CI instead, set `freeze: false` and uncomment the
+  # "Install runtime packages" step in .github/workflows/docs.yml.
+  freeze: auto
+  warning: false
+  echo: true
+
+# ── quartodoc: API documentation generator ──────────────────────────────────
+# Replaces: mkdocstrings + mkdocs-gen-files + mkdocs-literate-nav
+# Parser "google" matches the project's Google-style docstring format.
+# Output is written to docs/reference/ before Quarto renders the site.
+quartodoc:
+  package: spotoptim
+  source_dir: src
+  title: "API Reference"
+  dir: docs/reference
+  parser: google                # must match docstring style
+  sidebar: docs/reference/_sidebar.yml   # consumed by `contents: auto`
+
+  sections:
+    - title: "Core"
+      desc: "Central SpotOptim class and core infrastructure"
+      contents:
+        - spotoptim.SpotOptim
+        - spotoptim.core
+
+    - title: "Surrogate Models"
+      desc: "Gaussian process, RBFN, and related surrogate infrastructure"
+      contents:
+        - spotoptim.surrogate
+
+    - title: "Sampling"
+      desc: "Design-of-experiment and sampling strategies"
+      contents:
+        - spotoptim.sampling
+
+    - title: "Optimization"
+      desc: "Local optimizer wrappers"
+      contents:
+        - spotoptim.optimizer
+
+    - title: "Hyperparameters"
+      desc: "Hyperparameter type system and search-space bounds"
+      contents:
+        - spotoptim.hyperparameters
+
+    - title: "Neural Networks"
+      desc: "Neural network wrappers and training utilities"
+      contents:
+        - spotoptim.nn
+
+    - title: "Plotting & Visualization"
+      desc: "All visualization helpers"
+      contents:
+        - spotoptim.plot
+
+    - title: "Utilities"
+      desc: "General-purpose helper functions"
+      contents:
+        - spotoptim.utils
+
+    - title: "Data"
+      desc: "Data loading and preprocessing"
+      contents:
+        - spotoptim.data
+
+    - title: "Exploratory Data Analysis"
+      desc: "EDA tools"
+      contents:
+        - spotoptim.eda
+
+    - title: "Multi-Objective"
+      desc: "Pareto-front and multi-objective optimization helpers"
+      contents:
+        - spotoptim.mo
+
+    - title: "Inspection"
+      desc: "Model inspection and explanation"
+      contents:
+        - spotoptim.inspection
+
+    - title: "Factor Analyzer"
+      desc: "Factor analysis utilities"
+      contents:
+        - spotoptim.factor_analyzer
+
+    - title: "Functions"
+      desc: "Objective and benchmark test functions"
+      contents:
+        - spotoptim.function

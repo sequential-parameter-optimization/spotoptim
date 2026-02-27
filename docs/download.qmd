@@ -1,0 +1,16 @@
+---
+title: "Download"
+description: "Download and installation instructions for spotoptim."
+---
+
+Install `spotoptim` from PyPI using pip:
+
+```bash
+pip install spotoptim
+```
+
+Or with [uv](https://github.com/astral-sh/uv):
+
+```bash
+uv add spotoptim
+```
