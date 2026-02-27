@@ -1,3 +1,25 @@
+# .github/workflows/docs.yml
+# =============================================================================
+# Renders the Quarto documentation site and publishes it to the gh-pages branch.
+#
+# Trigger: push to `main` touching docs, source, workflow, or dependency files;
+#          manual re-run via workflow_dispatch.
+#
+# Execution strategy: FREEZE mode
+#   Code is executed LOCALLY and results are stored in _freeze/ (committed to
+#   git). This Action only *renders* frozen results — it does NOT need the full
+#   runtime stack (numpy, torch, scipy, etc.).
+#
+#   To switch to CI execution: set `execute.freeze: false` in _quarto.yml and
+#   uncomment the "Install runtime packages" step below.
+#
+# Key design decisions for production reliability:
+#   - Quarto version is pinned via QUARTO_VERSION env var.
+#   - Python deps installed from requirements-docs.txt (pinned versions).
+#   - quartodoc runs explicitly as a separate step for clear failure attribution.
+#   - render + publish are separated so a render failure doesn't silently deploy.
+# =============================================================================
+
 name: Documentation
 
 on:
@@ -5,45 +27,88 @@ on:
     branches:
       - main
     paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - 'src/spotoptim/**'
-  workflow_dispatch:
+      - "docs/**"
+      - "_quarto.yml"
+      - "src/spotoptim/**"
+      - ".github/workflows/docs.yml"
+      - "requirements-docs.txt"
+  workflow_dispatch:           # allow manual re-runs from the GitHub Actions UI
 
+# Least-privilege permissions: only write access to push to gh-pages
 permissions:
   contents: write
 
+env:
+  # ── Pin the Quarto CLI version here. ──────────────────────────────────────
+  # Bump intentionally after local testing. Check releases at:
+  # https://github.com/quarto-dev/quarto-cli/releases
+  QUARTO_VERSION: "1.6.42"
+
 jobs:
-  deploy-docs:
-    name: Deploy Documentation
+  build-deploy:
+    name: Build & Deploy Documentation
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout code
+      # ── 1. Checkout (full history required by the publish action) ────────────
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Set up Python
+
+      # ── 2. Install Quarto CLI (pinned version) ───────────────────────────────
+      - name: Set up Quarto ${{ env.QUARTO_VERSION }}
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: ${{ env.QUARTO_VERSION }}
+
+      # ── 3. Set up Python + uv ────────────────────────────────────────────────
+      # IMPORTANT: Use Python 3.13, NOT 3.14.
+      # quartodoc depends on pydantic v1, which is incompatible with 3.14+.
+      # The runtime package (spotoptim) supports 3.14+ but doc tools do not.
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
-          cache: 'pip'
-      
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-      
-      - name: Build documentation
-        run: |
-          mkdocs build --strict
-      
-      - name: Deploy to GitHub Pages
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      # ── 4. Install doc-build dependencies (pinned via requirements-docs.txt) ─
+      # `uv pip sync` removes any extraneous packages, guaranteeing the exact
+      # environment declared in requirements-docs.txt.
+      - name: Install documentation dependencies
+        run: uv pip sync requirements-docs.txt --system
+
+      # ── 5. (Optional) Install runtime packages for in-CI code execution ───────
+      # Uncomment this block AND set `execute.freeze: false` in _quarto.yml
+      # if you want the Action to execute Python cells rather than use freeze.
+      #
+      # - name: Install runtime packages
+      #   run: |
+      #     pip install -e "."
+
+      # ── 6. Build API reference stubs using quartodoc ─────────────────────────
+      # This step is also triggered by the `pre-render` hook in _quarto.yml,
+      # but running it explicitly here makes failures immediately visible in
+      # the Actions log with a clear step name.
+      - name: Generate API reference stubs (quartodoc)
+        run: python -m quartodoc build --config _quarto.yml
+
+      # ── 7. Render the Quarto site ─────────────────────────────────────────────
+      - name: Render Quarto site
+        uses: quarto-dev/quarto-actions/render@v2
+
+      # ── 8. Publish to gh-pages ────────────────────────────────────────────────
+      # Requires _publish.yml to exist (created by running `quarto publish
+      # gh-pages` once locally before enabling this workflow).
+      - name: Publish to GitHub Pages
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+          render: "false"          # already rendered in step 7; avoid double-render
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-          mkdocs gh-deploy --force

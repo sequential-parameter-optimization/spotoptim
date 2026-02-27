@@ -1,0 +1,55 @@
+website:
+  sidebar:
+  - contents:
+    - docs/reference/index.qmd
+    - contents:
+      - docs/reference/SpotOptim.qmd
+      - docs/reference/core.data.qmd
+      - docs/reference/core.experiment.qmd
+      section: Core
+    - contents:
+      - docs/reference/surrogate.kriging.qmd
+      - docs/reference/surrogate.simple_kriging.qmd
+      - docs/reference/surrogate.mlp_surrogate.qmd
+      - docs/reference/surrogate.nystroem.qmd
+      - docs/reference/surrogate.kernels.qmd
+      - docs/reference/surrogate.pipeline.qmd
+      section: Surrogate Models
+    - contents:
+      - docs/reference/sampling.qmd
+      section: Sampling
+    - contents:
+      - docs/reference/optimizer.qmd
+      section: Optimization
+    - contents:
+      - docs/reference/hyperparameters.qmd
+      section: Hyperparameters
+    - contents:
+      - docs/reference/nn.qmd
+      section: Neural Networks
+    - contents:
+      - docs/reference/plot.qmd
+      section: Plotting & Visualization
+    - contents:
+      - docs/reference/utils.qmd
+      section: Utilities
+    - contents:
+      - docs/reference/data.qmd
+      section: Data
+    - contents:
+      - docs/reference/eda.qmd
+      section: Exploratory Data Analysis
+    - contents:
+      - docs/reference/mo.qmd
+      section: Multi-Objective
+    - contents:
+      - docs/reference/inspection.qmd
+      section: Inspection
+    - contents:
+      - docs/reference/factor_analyzer.qmd
+      section: Factor Analyzer
+    - contents:
+      - docs/reference/function.qmd
+      section: Functions
+    id: docs/reference
+  - id: dummy-sidebar

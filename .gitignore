@@ -154,6 +154,17 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Quarto / Documentation
+objects.json
+.quarto_ipynb
+# _site/ is published via gh-pages — do NOT commit it to main
+_site/
+# Auto-generated API stubs (recreated by quartodoc on every build)
+docs/reference/*.qmd
+# Do NOT ignore these — they must be committed:
+#   _freeze/        → frozen computation cache required by CI
+#   _publish.yml    → Quarto publish target config required by CI
+
 # mypy
 .mypy_cache/
 .dmypy.json
@@ -182,9 +193,9 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
+#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#  and can be added to the global gitignore or merged into this file. However, if you prefer,
 #  you could uncomment the following to ignore the entire vscode folder
 # .vscode/
 
@@ -231,3 +242,6 @@ reproduce_issue.py
 local:Challenge.d/007-14.qmd
 /runs
 009_robot_arm_res.pkl
+
+/.quarto/
+**/*.quarto_ipynb

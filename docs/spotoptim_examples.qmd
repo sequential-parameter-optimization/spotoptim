@@ -1,0 +1,336 @@
+---
+title: "SpotOptim: Living Examples"
+description: "Executable examples for the SpotOptim class, validated by pytest."
+---
+
+This document contains fully executable code examples for the `SpotOptim` class.
+Every example is a `{python}` code block and is covered by a corresponding pytest
+in `tests/test_spotoptim_deep.py`.
+
+Run all examples with:
+
+```bash
+uv run pytest tests/test_spotoptim_deep.py -v
+```
+
+---
+
+## Quick Start: Sphere Function
+
+The sphere function $f(x) = \sum_{i=1}^{n} x_i^2$ has its global minimum at
+$x^* = 0$ with $f(x^*) = 0$.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+
+def sphere(X):
+    X = np.atleast_2d(X)
+    return np.sum(X**2, axis=1)
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Evaluations: {result.nfev}")
+```
+
+Corresponding test (`test_sphere_2d_converges_near_origin`):
+
+```{python}
+assert result.fun < 0.5, f"Expected convergence near 0, got f={result.fun}"
+print("Convergence check passed.")
+```
+
+---
+
+## Result Contract
+
+Every call to `optimize()` returns a `scipy.optimize.OptimizeResult` satisfying
+these invariants:
+
+```{python}
+from scipy.optimize import OptimizeResult
+
+assert isinstance(result, OptimizeResult)
+
+# Required fields
+for field in ("x", "fun", "nfev", "nit", "success", "message", "X", "y"):
+    assert hasattr(result, field), f"Missing: {field}"
+
+# Shape invariants
+assert result.x.ndim == 1            # best point is 1-D
+assert result.X.shape == (20, 2)     # (max_iter, n_dim)
+assert result.y.shape == (20,)       # one y per evaluation
+
+# Optimality
+assert np.isclose(result.fun, np.min(result.y))
+best_idx = np.argmin(result.y)
+np.testing.assert_array_almost_equal(result.x, result.X[best_idx])
+
+print("All result contract checks passed.")
+```
+
+---
+
+## Acquisition Functions
+
+SpotOptim supports three acquisition functions:
+
+| Acquisition | Description |
+|---|---|
+| `"y"` (default) | Best observed value |
+| `"ei"` | Expected Improvement |
+| `"pi"` | Probability of Improvement |
+
+```{python}
+results = {}
+for acq in ["y", "ei", "pi"]:
+    r = SpotOptim(
+        fun=sphere,
+        bounds=[(-3, 3), (-3, 3)],
+        max_iter=12,
+        n_initial=7,
+        acquisition=acq,
+        seed=0,
+    ).optimize()
+    results[acq] = r
+    print(f"  acq={acq!r:4s}  f(x*)={r.fun:.4f}  nfev={r.nfev}")
+```
+
+```{python}
+for acq, r in results.items():
+    assert isinstance(r, OptimizeResult), f"{acq} did not return OptimizeResult"
+    assert r.success is True
+    assert np.isfinite(r.fun)
+print("All acquisition checks passed.")
+```
+
+---
+
+## Seed Reproducibility
+
+The same seed produces byte-identical results across independent runs:
+
+```{python}
+common_kwargs = dict(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=12,
+    n_initial=6,
+    seed=42,
+)
+r1 = SpotOptim(**common_kwargs).optimize()
+r2 = SpotOptim(**common_kwargs).optimize()
+
+np.testing.assert_array_equal(r1.X, r2.X)
+np.testing.assert_array_equal(r1.y, r2.y)
+assert r1.fun == r2.fun
+print(f"Seed 42 result: f(x*)={r1.fun:.6f} — fully reproducible.")
+```
+
+---
+
+## Integer Variables
+
+Use `var_type=["int", ...]` to restrict variables to integer domains.
+
+The optimum of $f(x_1, x_2) = x_1^2 + x_2^2$ over $\mathbb{Z}^2$ is at $x^* = (0, 0)$.
+
+```{python}
+opt_int = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=12,
+    n_initial=7,
+    var_type=["int", "int"],
+    seed=0,
+)
+result_int = opt_int.optimize()
+
+print(f"Best x    : {result_int.x}  (should be integers)")
+print(f"Best f(x) : {result_int.fun}")
+
+# All stored X values must be integers
+assert np.allclose(result_int.X, np.round(result_int.X), atol=1e-9)
+assert np.allclose(result_int.x, np.round(result_int.x), atol=1e-9)
+print("Integer domain check passed.")
+```
+
+---
+
+## Log-Scaled Variables (var_trans)
+
+For variables spanning multiple orders of magnitude, use `var_trans`:
+
+```{python}
+def log_objective(X):
+    """Minimum at x = 10 (log10 scale: minimum at log10(x) = 1)."""
+    X = np.atleast_2d(X)
+    return (np.log10(X[:, 0]) - 1.0) ** 2
+
+opt_log = SpotOptim(
+    fun=log_objective,
+    bounds=[(1e-3, 1e3)],
+    max_iter=12,
+    n_initial=6,
+    var_trans=["log10"],
+    seed=0,
+)
+result_log = opt_log.optimize()
+
+print(f"Best x      : {result_log.x[0]:.4f}  (expected ~10)")
+print(f"Best f(x)   : {result_log.fun:.6f}")
+
+assert 1e-3 <= result_log.x[0] <= 1e3, "Result out of bounds"
+assert np.isfinite(result_log.fun)
+print("Log-transform checks passed.")
+```
+
+---
+
+## Factor (Categorical) Variables
+
+Tuple bounds define categorical levels that are mapped to integers internally:
+
+```{python}
+call_log = []
+
+def cat_sphere(X):
+    """Records (color, value) pairs; minimises value regardless of color."""
+    X = np.atleast_2d(X)
+    call_log.append(X.copy())
+    return X[:, 1].astype(float) ** 2
+
+opt_cat = SpotOptim(
+    fun=cat_sphere,
+    bounds=[("red", "green", "blue"), (-5.0, 5.0)],
+    max_iter=10,
+    n_initial=6,
+    seed=0,
+)
+
+# Factor dimension mapped to integers 0..2 internally
+assert opt_cat.bounds[0] == (0, 2)
+assert opt_cat._factor_maps[0] == {0: "red", 1: "green", 2: "blue"}
+
+result_cat = opt_cat.optimize()
+print(f"Best value : {result_cat.fun:.4f}")
+print("Factor variable checks passed.")
+```
+
+---
+
+## Custom Kriging Surrogate
+
+Replace the default GP surrogate with `Kriging`:
+
+```{python}
+from spotoptim import Kriging
+
+kriging = Kriging(noise=1e-6, min_theta=-3.0, max_theta=2.0, seed=42)
+
+opt_k = SpotOptim(
+    fun=sphere,
+    bounds=[(-3, 3), (-3, 3)],
+    surrogate=kriging,
+    max_iter=12,
+    n_initial=6,
+    seed=0,
+)
+result_k = opt_k.optimize()
+
+print(f"Kriging best f(x) : {result_k.fun:.6f}")
+assert isinstance(result_k, OptimizeResult)
+assert result_k.success is True
+assert np.isfinite(result_k.fun)
+print("Kriging surrogate checks passed.")
+```
+
+---
+
+## get_best_hyperparameters
+
+After optimization, retrieve the best point as a labelled dict:
+
+```{python}
+opt_named = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=12,
+    n_initial=6,
+    var_name=["x0", "x1"],
+    seed=0,
+)
+result_named = opt_named.optimize()
+best = opt_named.get_best_hyperparameters(as_dict=True)
+
+print(f"result.x           : {result_named.x}")
+print(f"get_best_hyperparams: {best}")
+
+# Values in the dict must match result.x
+values_arr = np.array(list(best.values()), dtype=float)
+np.testing.assert_array_almost_equal(values_arr, result_named.x)
+print("get_best_hyperparameters check passed.")
+```
+
+---
+
+## transform_value Roundtrip
+
+All supported variable transformations satisfy the roundtrip identity
+$\text{inverse}(\text{transform}(x)) = x$:
+
+```{python}
+opt_t = SpotOptim(fun=sphere, bounds=[(1e-6, 100)])
+
+transforms = ["log10", "log", "ln", "sqrt", "exp", "square", "cube", "inv", None]
+x_test = 4.0
+
+for trans in transforms:
+    tx = opt_t.transform_value(x_test, trans)
+    x_back = opt_t.inverse_transform_value(tx, trans)
+    ok = np.isclose(x_back, x_test, rtol=1e-9)
+    status = "OK" if ok else "FAIL"
+    print(f"  trans={str(trans):<10}  {x_test} -> {tx:.4f} -> {x_back:.6f}  [{status}]")
+    assert ok, f"Roundtrip failed for {trans!r}"
+
+print("All transform roundtrip checks passed.")
+```
+
+---
+
+## Convergence on Rosenbrock
+
+The Rosenbrock function $f(x,y) = (1-x)^2 + 100(y-x^2)^2$ has its minimum at
+$(1, 1)$ with $f(1,1) = 0$.
+
+```{python}
+def rosenbrock(X):
+    X = np.atleast_2d(X)
+    x, y = X[:, 0], X[:, 1]
+    return (1.0 - x)**2 + 100.0 * (y - x**2)**2
+
+opt_rb = SpotOptim(
+    fun=rosenbrock,
+    bounds=[(-2, 2), (-2, 2)],
+    max_iter=30,
+    n_initial=10,
+    acquisition="ei",
+    seed=0,
+)
+result_rb = opt_rb.optimize()
+
+print(f"Best x    : {result_rb.x}")
+print(f"Best f(x) : {result_rb.fun:.6f}  (global min = 0 at [1, 1])")
+
+assert result_rb.fun < 10.0, f"Rosenbrock did not converge: f={result_rb.fun}"
+print("Rosenbrock convergence check passed.")
+```

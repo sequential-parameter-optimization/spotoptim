@@ -1,0 +1,120 @@
+# API Reference {.doc .doc-index}
+
+## Core
+
+Central SpotOptim class and core infrastructure
+
+| | |
+| --- | --- |
+| [SpotOptim](SpotOptim.qmd#spotoptim.SpotOptim) |  |
+| [core.data](core.data.qmd#spotoptim.core.data) |  |
+| [core.experiment](core.experiment.qmd#spotoptim.core.experiment) |  |
+
+## Surrogate Models
+
+Gaussian process, Kriging, and related surrogate infrastructure
+
+| | |
+| --- | --- |
+| [surrogate.kriging](surrogate.kriging.qmd#spotoptim.surrogate.kriging) | Kriging (Gaussian Process) surrogate model for SpotOptim. |
+| [surrogate.simple_kriging](surrogate.simple_kriging.qmd#spotoptim.surrogate.simple_kriging) | Simplified SimpleKriging surrogate model for SpotOptim. |
+| [surrogate.mlp_surrogate](surrogate.mlp_surrogate.qmd#spotoptim.surrogate.mlp_surrogate) | MLP Surrogate model for SpotOptim. |
+| [surrogate.nystroem](surrogate.nystroem.qmd#spotoptim.surrogate.nystroem) |  |
+| [surrogate.kernels](surrogate.kernels.qmd#spotoptim.surrogate.kernels) |  |
+| [surrogate.pipeline](surrogate.pipeline.qmd#spotoptim.surrogate.pipeline) |  |
+
+## Sampling
+
+Design-of-experiment and sampling strategies
+
+| | |
+| --- | --- |
+| [sampling](sampling.qmd#spotoptim.sampling) | Sampling methods for design of experiments. |
+
+## Optimization
+
+Local optimizer wrappers
+
+| | |
+| --- | --- |
+| [optimizer](optimizer.qmd#spotoptim.optimizer) |  |
+
+## Hyperparameters
+
+Hyperparameter type system and search-space bounds
+
+| | |
+| --- | --- |
+| [hyperparameters](hyperparameters.qmd#spotoptim.hyperparameters) |  |
+
+## Neural Networks
+
+Neural network wrappers and training utilities
+
+| | |
+| --- | --- |
+| [nn](nn.qmd#spotoptim.nn) | Neural network models for spotoptim. |
+
+## Plotting & Visualization
+
+All visualization helpers
+
+| | |
+| --- | --- |
+| [plot](plot.qmd#spotoptim.plot) |  |
+
+## Utilities
+
+General-purpose helper functions
+
+| | |
+| --- | --- |
+| [utils](utils.qmd#spotoptim.utils) | Utility functions for spotoptim. |
+
+## Data
+
+Data loading and preprocessing
+
+| | |
+| --- | --- |
+| [data](data.qmd#spotoptim.data) | Data utilities for spotoptim package. |
+
+## Exploratory Data Analysis
+
+EDA tools
+
+| | |
+| --- | --- |
+| [eda](eda.qmd#spotoptim.eda) | Exploratory Data Analysis (EDA) module for spotoptim. |
+
+## Multi-Objective
+
+Pareto-front and multi-objective optimization helpers
+
+| | |
+| --- | --- |
+| [mo](mo.qmd#spotoptim.mo) |  |
+
+## Inspection
+
+Model inspection and explanation
+
+| | |
+| --- | --- |
+| [inspection](inspection.qmd#spotoptim.inspection) | Inspection (sensitivity analysis) module for spotoptim. |
+
+## Factor Analyzer
+
+Factor analysis utilities
+
+| | |
+| --- | --- |
+| [factor_analyzer](factor_analyzer.qmd#spotoptim.factor_analyzer) | This module performs exploratory and confirmatory factor analyses. |
+
+## Functions
+
+Objective and benchmark test functions
+
+| | |
+| --- | --- |
+| [function](function.qmd#spotoptim.function) | Analytical test functions for optimization. |

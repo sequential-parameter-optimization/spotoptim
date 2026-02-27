@@ -33,7 +33,7 @@ class ExperimentControl:
         experiment_name (str): The name of the experiment.
         verbosity (int): The verbosity level.
 
-    Methods:
+    Public Methods:
         to_dict(): Convert the object to a dictionary.
         torch_device(): Return the torch device object.
 
