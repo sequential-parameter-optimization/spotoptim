@@ -5,5 +5,6 @@
 """Neural network models for spotoptim."""
 
 from .linear_regressor import LinearRegressor
+from .mlp import MLP
 
-__all__ = ["LinearRegressor"]
+__all__ = ["LinearRegressor", "MLP"]

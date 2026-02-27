@@ -8,6 +8,7 @@ from .boundaries import get_boundaries, map_to_original_scale
 from .mapping import map_lr
 from .stats import normalize_X, calculate_outliers, get_combinations
 from .eval import mo_eval_models, mo_cv_models
+from .file import get_experiment_filename
 from .pca import (
     get_pca,
     plot_pca_scree,
@@ -26,6 +27,7 @@ __all__ = [
     "get_combinations",
     "mo_eval_models",
     "mo_cv_models",
+    "get_experiment_filename",
     "get_pca",
     "plot_pca_scree",
     "plot_pca1vs2",

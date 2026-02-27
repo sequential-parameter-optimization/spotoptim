@@ -1,0 +1,106 @@
+  sections:
+    - title: "Core"
+      contents:
+        - SpotOptim
+        - core
+        - core.data
+        - core.experiment
+
+    - title: "Surrogate Models"
+      contents:
+        - surrogate
+        - surrogate.kriging
+        - surrogate.simple_kriging
+        - surrogate.mlp_surrogate
+        - surrogate.nystroem
+        - surrogate.kernels
+        - surrogate.pipeline
+
+    - title: "Sampling"
+      contents:
+        - sampling
+        - sampling.design
+        - sampling.effects
+        - sampling.lhs
+        - sampling.mm
+
+    - title: "Optimization"
+      contents:
+        - optimizer
+        - optimizer.schedule_free
+
+    - title: "Hyperparameters"
+      contents:
+        - hyperparameters
+        - hyperparameters.parameters
+        - hyperparameters.repr_helpers
+
+    - title: "Neural Networks"
+      contents:
+        - nn
+        - nn.linear_regressor
+        - nn.mlp
+
+    - title: "Plotting & Visualization"
+      contents:
+        - plot
+        - plot.contour
+        - plot.mo
+        - plot.visualization
+
+    - title: "Utilities"
+      contents:
+        - utils
+        - utils.boundaries
+        - utils.eval
+        - utils.file
+        - utils.mapping
+        - utils.pca
+        - utils.scaler
+        - utils.stats
+
+    - title: "Data"
+      contents:
+        - data
+        - data.base
+        - data.diabetes
+
+    - title: "Exploratory Data Analysis"
+      contents:
+        - eda
+        - eda.plots
+
+    - title: "Multi-Objective"
+      contents:
+        - mo
+        - mo.mo_mm
+        - mo.pareto
+
+    - title: "Inspection"
+      contents:
+        - inspection
+        - inspection.importance
+        - inspection.predictions
+
+    - title: "Factor Analyzer"
+      contents:
+        - factor_analyzer
+        - factor_analyzer.confirmatory_factor_analyzer
+        - factor_analyzer.factor_analyzer
+        - factor_analyzer.factor_analyzer_rotator
+        - factor_analyzer.factor_analyzer_utils
+
+    - title: "Functions"
+      contents:
+        - function
+        - function.forr08a
+        - function.mo
+        - function.remote
+        - function.so
+        - function.torch_objective
+
+    - title: "Tricands"
+      contents:
+        - tricands
+        - tricands.tricands
+
