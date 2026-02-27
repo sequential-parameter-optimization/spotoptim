@@ -3188,6 +3188,7 @@ name = "spotoptim"
 version = "0.0.190"
 source = { editable = "." }
 dependencies = [
+    { name = "colorama" },
     { name = "dill" },
     { name = "flake8" },
     { name = "jupyter" },
@@ -3220,6 +3221,7 @@ dev = [
     { name = "safety" },
 ]
 docs = [
+    { name = "colorama" },
     { name = "griffe" },
     { name = "jupyter" },
     { name = "quartodoc" },
@@ -3240,6 +3242,8 @@ dev = [
 requires-dist = [
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.8.0" },
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.1.0" },
+    { name = "colorama", specifier = ">=0.4.6" },
+    { name = "colorama", marker = "extra == 'docs'", specifier = ">=0.4.6" },
     { name = "dill", specifier = ">=0.4.0" },
     { name = "flake8", specifier = ">=7.3.0" },
     { name = "griffe", marker = "extra == 'docs'", specifier = ">=1.7.3" },
