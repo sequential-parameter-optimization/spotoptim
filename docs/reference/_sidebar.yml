@@ -16,40 +16,66 @@ website:
       - docs/reference/surrogate.pipeline.qmd
       section: Surrogate Models
     - contents:
-      - docs/reference/sampling.qmd
+      - docs/reference/sampling.design.qmd
+      - docs/reference/sampling.effects.qmd
+      - docs/reference/sampling.lhs.qmd
+      - docs/reference/sampling.mm.qmd
       section: Sampling
     - contents:
-      - docs/reference/optimizer.qmd
+      - docs/reference/optimizer.schedule_free.qmd
       section: Optimization
     - contents:
-      - docs/reference/hyperparameters.qmd
+      - docs/reference/hyperparameters.parameters.qmd
+      - docs/reference/hyperparameters.repr_helpers.qmd
       section: Hyperparameters
     - contents:
-      - docs/reference/nn.qmd
+      - docs/reference/nn.linear_regressor.qmd
+      - docs/reference/nn.mlp.qmd
       section: Neural Networks
     - contents:
-      - docs/reference/plot.qmd
+      - docs/reference/plot.contour.qmd
+      - docs/reference/plot.mo.qmd
+      - docs/reference/plot.visualization.qmd
       section: Plotting & Visualization
     - contents:
-      - docs/reference/utils.qmd
+      - docs/reference/utils.boundaries.qmd
+      - docs/reference/utils.eval.qmd
+      - docs/reference/utils.file.qmd
+      - docs/reference/utils.mapping.qmd
+      - docs/reference/utils.pca.qmd
+      - docs/reference/utils.scaler.qmd
+      - docs/reference/utils.stats.qmd
       section: Utilities
     - contents:
-      - docs/reference/data.qmd
+      - docs/reference/data.base.qmd
+      - docs/reference/data.diabetes.qmd
       section: Data
     - contents:
-      - docs/reference/eda.qmd
+      - docs/reference/eda.plots.qmd
       section: Exploratory Data Analysis
     - contents:
-      - docs/reference/mo.qmd
+      - docs/reference/mo.mo_mm.qmd
+      - docs/reference/mo.pareto.qmd
       section: Multi-Objective
     - contents:
-      - docs/reference/inspection.qmd
+      - docs/reference/inspection.importance.qmd
+      - docs/reference/inspection.predictions.qmd
       section: Inspection
     - contents:
-      - docs/reference/factor_analyzer.qmd
+      - docs/reference/factor_analyzer.confirmatory_factor_analyzer.qmd
+      - docs/reference/factor_analyzer.factor_analyzer.qmd
+      - docs/reference/factor_analyzer.factor_analyzer_rotator.qmd
+      - docs/reference/factor_analyzer.factor_analyzer_utils.qmd
       section: Factor Analyzer
     - contents:
-      - docs/reference/function.qmd
+      - docs/reference/function.forr08a.qmd
+      - docs/reference/function.mo.qmd
+      - docs/reference/function.remote.qmd
+      - docs/reference/function.so.qmd
+      - docs/reference/function.torch_objective.qmd
       section: Functions
+    - contents:
+      - docs/reference/tricands.tricands.qmd
+      section: Tricands
     id: docs/reference
   - id: dummy-sidebar

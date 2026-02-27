@@ -1124,10 +1124,19 @@ class SpotOptim(BaseEstimator):
                   Dimensions with factor mappings are assigned 'factor', others 'float'.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[('red', 'green', 'blue'), (0, 10)])
-            >>> spot.detect_var_type()
-            ['factor', 'float']
+            ```{python}
+            from spotoptim import SpotOptim
+
+            # Define a simple objective mapping names to values for demonstration
+            def objective(X):
+                # X has shape (n_samples, n_dimensions)
+                return X[:, 0] + X[:, 1]
+            
+            # The first dimension has factor levels ('red', 'green', 'blue')
+            # The second dimension is continuous bounds (0, 10)
+            spot = SpotOptim(fun=objective, bounds=[('red', 'green', 'blue'), (0, 10)])
+            print(spot.detect_var_type())
+            ```
         """
         return [
             "factor" if i in self._factor_maps else "float" for i in range(self.n_dim)

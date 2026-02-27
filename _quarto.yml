@@ -150,59 +150,87 @@ quartodoc:
     - title: "Sampling"
       desc: "Design-of-experiment and sampling strategies"
       contents:
-        - sampling
+        - sampling.design
+        - sampling.effects
+        - sampling.lhs
+        - sampling.mm
 
     - title: "Optimization"
       desc: "Local optimizer wrappers"
       contents:
-        - optimizer
+        - optimizer.schedule_free
 
     - title: "Hyperparameters"
       desc: "Hyperparameter type system and search-space bounds"
       contents:
-        - hyperparameters
+        - hyperparameters.parameters
+        - hyperparameters.repr_helpers
 
     - title: "Neural Networks"
       desc: "Neural network wrappers and training utilities"
       contents:
-        - nn
+        - nn.linear_regressor
+        - nn.mlp
 
     - title: "Plotting & Visualization"
       desc: "All visualization helpers"
       contents:
-        - plot
+        - plot.contour
+        - plot.mo
+        - plot.visualization
 
     - title: "Utilities"
       desc: "General-purpose helper functions"
       contents:
-        - utils
+        - utils.boundaries
+        - utils.eval
+        - utils.file
+        - utils.mapping
+        - utils.pca
+        - utils.scaler
+        - utils.stats
 
     - title: "Data"
       desc: "Data loading and preprocessing"
       contents:
-        - data
+        - data.base
+        - data.diabetes
 
     - title: "Exploratory Data Analysis"
       desc: "EDA tools"
       contents:
-        - eda
+        - eda.plots
 
     - title: "Multi-Objective"
       desc: "Pareto-front and multi-objective optimization helpers"
       contents:
-        - mo
+        - mo.mo_mm
+        - mo.pareto
 
     - title: "Inspection"
       desc: "Model inspection and explanation"
       contents:
-        - inspection
+        - inspection.importance
+        - inspection.predictions
 
     - title: "Factor Analyzer"
       desc: "Factor analysis utilities"
       contents:
-        - factor_analyzer
+        - factor_analyzer.confirmatory_factor_analyzer
+        - factor_analyzer.factor_analyzer
+        - factor_analyzer.factor_analyzer_rotator
+        - factor_analyzer.factor_analyzer_utils
 
     - title: "Functions"
       desc: "Objective and benchmark test functions"
       contents:
-        - function
+        - function.forr08a
+        - function.mo
+        - function.remote
+        - function.so
+        - function.torch_objective
+
+    - title: "Tricands"
+      desc: "Tricands sampling and optimization"
+      contents:
+        - tricands.tricands
