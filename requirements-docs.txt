@@ -35,6 +35,12 @@ quartodoc==0.11.1
 # Pin to <2.0 until quartodoc ships a compatible release.
 griffe<2.0
 
+# ── quartodoc transitive dependencies (explicitly added for CI) ────────────────
+# These are required by quartodoc but sometimes missed by system pip sync.
+pyyaml==6.0.3
+plum-dispatch==2.7.1
+typing-extensions==4.15.0
+
 # ── Minimal stubs needed for quartodoc to import spotoptim without error ──────
 # quartodoc imports the package to resolve type annotations; keep these in
 # sync with the lower bounds in pyproject.toml.
