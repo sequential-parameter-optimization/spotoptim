@@ -1,69 +1,43 @@
----
-title: "Examples"
-description: "Worked examples for the spotoptim Sequential Parameter Optimization Toolbox."
----
+# SPOT Examples
 
-## Simple spotpython Run
+## Simple SpotOptim run
+
+The following example demonstrates how to use `SpotOptim` with the Sphere function.
 
 ```{python}
-#| eval: false
 import numpy as np
-from spotpython.spot import spot
-from spotpython.fun.objectivefunctions import analytical
-from spotpython.utils.init import fun_control_init, design_control_init, surrogate_control_init
+from spotoptim import SpotOptim
 
-fun = analytical().fun_branin
-fun_control = fun_control_init(lower = np.array([-5, 0]),
-                               upper = np.array([10, 15]),
-                               fun_evals=20)
-design_control = design_control_init(init_size=10)
-surrogate_control = surrogate_control_init(n_theta=2)
-S = spot.Spot(fun=fun, fun_control=fun_control, design_control=design_control)
-S.run()
+def sphere(X):
+    X = np.atleast_2d(X)
+    return np.sum(X**2, axis=1)
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Evaluations: {result.nfev}")
 ```
 
-```raw
-spotpython tuning: 3.146824136952164 [######----] 55.00% 
-spotpython tuning: 3.146824136952164 [######----] 60.00% 
-spotpython tuning: 3.146824136952164 [######----] 65.00% 
-spotpython tuning: 3.146824136952164 [#######---] 70.00% 
-spotpython tuning: 1.1487233101571483 [########--] 75.00% 
-spotpython tuning: 1.0236891516766402 [########--] 80.00% 
-spotpython tuning: 0.41994270072214057 [########--] 85.00% 
-spotpython tuning: 0.40193544341108023 [#########-] 90.00% 
-spotpython tuning: 0.3991519598268951 [##########] 95.00% 
-spotpython tuning: 0.3991519598268951 [##########] 100.00% Done...
-```
-
+## Convergence Plot
 
 ```{python}
-#| eval: false
-S.print_results()
+import matplotlib.pyplot as plt
+plt.plot(result.y)
+plt.xlabel("Evaluation Number")
+plt.ylabel("Objective Value")
+plt.title("Optimization Progress")
+plt.grid(True)
+plt.show()
 ```
-
-```raw
-min y: 0.3991519598268951
-x0: 3.1546575195040987
-x1: 2.285931113926263
-```
-
-
-```{python}
-#| eval: false
-S.plot_progress(log_y=True)
-```
-
-![spotpython progress plot](./images/plot-progress.png)
-
-
-```{python}
-#| eval: false
-S.surrogate.plot()
-```
-
-![spotpython surrogate plot](./images/surrogate-plot.png)
-
 
 ## Further Examples
 
-Examples can be found in the Hyperparameter Tuning Cookbook, e.g., [Documentation of the Sequential Parameter Optimization](https://sequential-parameter-optimization.github.io/Hyperparameter-Tuning-Cookbook/a_04_spot_doc.html).
+More detailed examples showing acquisition functions, integer variables, and categorical variables can be found in the [Living Examples](spotoptim_examples.qmd) document.

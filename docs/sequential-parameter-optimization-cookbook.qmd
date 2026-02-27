@@ -1,13 +1,5 @@
----
-title: "Documentation"
-description: "Sequential Parameter Optimization Cookbook and related documentation."
----
+# Sequential Parameter Optimization Cookbook
 
-The full documentation for the Sequential Parameter Optimization methodology
-is maintained in the **SPO Cookbook**:
+The following is a cookbook of optimization and hyperparameter tuning recipes. It is not meant to be exhaustive, but instead act as a place to capture a number of the common patterns used in hyperparameter tuning.
 
-* [Sequential Parameter Optimization Cookbook](https://sequential-parameter-optimization.github.io/spotoptim-cookbook/)
-
-For background theory and news:
-
-* [SPOTSeven Lab](https://www.spotseven.de)
+[Sequential Parameter Optimization Cookbook](https://sequential-parameter-optimization.github.io/spotoptim-cookbook/)

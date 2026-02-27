@@ -8,6 +8,8 @@
 project:
   type: website
   output-dir: _site
+  render: 
+    - docs/
   # Build API stubs from source before every render
   pre-render: python -m quartodoc build --config _quarto.yml
 
@@ -18,7 +20,7 @@ website:
   repo-url: "https://github.com/sequential-parameter-optimization/spotoptim"
   repo-actions: [edit, issue]
   favicon: docs/images/favicon.png
-  logo: docs/images/spotlogo.png
+  # Note: 'logo' is only valid under navbar:, not directly under website:
 
   # ── Navigation bar ──────────────────────────────────────────────────────────
   navbar:
@@ -121,74 +123,86 @@ quartodoc:
   parser: google                # must match docstring style
   sidebar: docs/reference/_sidebar.yml   # consumed by `contents: auto`
 
+  dynamic: false
+
   sections:
+    # Contents are paths RELATIVE to the package root (package: spotoptim).
+    # Do NOT repeat the 'spotoptim.' prefix — quartodoc adds it automatically.
+    # Format: <module>.<ClassName>  or  <subpackage>  for the whole module.
+
     - title: "Core"
       desc: "Central SpotOptim class and core infrastructure"
       contents:
-        - spotoptim.SpotOptim
-        - spotoptim.core
+        - SpotOptim               # spotoptim.SpotOptim (the class)
+        - core.data               # spotoptim.core.data module
+        - core.experiment         # spotoptim.core.experiment module
 
     - title: "Surrogate Models"
-      desc: "Gaussian process, RBFN, and related surrogate infrastructure"
+      desc: "Gaussian process, Kriging, and related surrogate infrastructure"
       contents:
-        - spotoptim.surrogate
+        - surrogate.kriging
+        - surrogate.simple_kriging
+        - surrogate.mlp_surrogate
+        - surrogate.nystroem
+        - surrogate.kernels
+        - surrogate.pipeline
 
     - title: "Sampling"
       desc: "Design-of-experiment and sampling strategies"
       contents:
-        - spotoptim.sampling
+        - sampling
 
     - title: "Optimization"
       desc: "Local optimizer wrappers"
       contents:
-        - spotoptim.optimizer
+        - optimizer
 
     - title: "Hyperparameters"
       desc: "Hyperparameter type system and search-space bounds"
       contents:
-        - spotoptim.hyperparameters
+        - hyperparameters
 
     - title: "Neural Networks"
       desc: "Neural network wrappers and training utilities"
       contents:
-        - spotoptim.nn
+        - nn
 
     - title: "Plotting & Visualization"
       desc: "All visualization helpers"
       contents:
-        - spotoptim.plot
+        - plot
 
     - title: "Utilities"
       desc: "General-purpose helper functions"
       contents:
-        - spotoptim.utils
+        - utils
 
     - title: "Data"
       desc: "Data loading and preprocessing"
       contents:
-        - spotoptim.data
+        - data
 
     - title: "Exploratory Data Analysis"
       desc: "EDA tools"
       contents:
-        - spotoptim.eda
+        - eda
 
     - title: "Multi-Objective"
       desc: "Pareto-front and multi-objective optimization helpers"
       contents:
-        - spotoptim.mo
+        - mo
 
     - title: "Inspection"
       desc: "Model inspection and explanation"
       contents:
-        - spotoptim.inspection
+        - inspection
 
     - title: "Factor Analyzer"
       desc: "Factor analysis utilities"
       contents:
-        - spotoptim.factor_analyzer
+        - factor_analyzer
 
     - title: "Functions"
       desc: "Objective and benchmark test functions"
       contents:
-        - spotoptim.function
+        - function

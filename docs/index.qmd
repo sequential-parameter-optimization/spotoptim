@@ -1,13 +1,11 @@
----
-title: "spotoptim"
-description: "Sequential Parameter Optimization Toolbox in Python"
----
-
 <div align="left">
   <img src="https://raw.githubusercontent.com/sequential-parameter-optimization/spotoptim/main/img/spotLogo.png" alt="spotoptim Logo" width="300">
 </div>
 
+
+
 Sequential Parameter Optimization Toolbox
+
 
 [![Python Version](https://img.shields.io/badge/python-3.14%2B-blue)](https://www.python.org/downloads/)
 [![PyPI Version](https://img.shields.io/pypi/v/spotoptim)](https://pypi.org/project/spotoptim/)
@@ -36,5 +34,7 @@ Sequential Parameter Optimization Toolbox
 
 ## Surrogate Model Based Optimization
 
-* Documentation for spotpython see [Sequential Parameter Optimization Cookbook](https://sequential-parameter-optimization.github.io/spotoptim-cookbook/).
+* Documentation for spotoptim see [Sequential Parameter Optimization Cookbook](https://sequential-parameter-optimization.github.io/spotoptim-cookbook/).
 * News and updates related to SPOT see [SPOTSeven](https://www.spotseven.de)
+
+
