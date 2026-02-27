@@ -504,172 +504,253 @@ class SpotOptim(BaseEstimator):
         prob_de_tricands (float): Probability of using differential evolution as an optimizer on the surrogate model.
 
     Examples:
-        >>> import numpy as np
-        >>> from spotoptim import SpotOptim
-        >>> def objective(X):
-        ...     return np.sum(X**2, axis=1)
-        ...
-        >>> # Example 1: Basic usage (deterministic function)
-        >>> bounds = [(-5, 5), (-5, 5)]
-        >>> optimizer = SpotOptim(fun=objective, bounds=bounds, max_iter=10, n_initial=5, verbose=True)
-        >>> result = optimizer.optimize()
-        >>> print("Best x:", result.x)
-        >>> print("Best f(x):", result.fun)
-        >>>
-        >>> # Example 2: With custom variable names
-        >>> optimizer = SpotOptim(
-        ...     fun=objective,
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     var_name=["param1", "param2"],
-        ...     max_iter=10,
-        ...     n_initial=5
-        ... )
-        >>> result = optimizer.optimize()
-        >>> optimizer.plot_surrogate()  # Uses custom names in plot labels
-        >>>
-        >>> # Example 3: Noisy function with repeated evaluations
-        >>> def noisy_objective(X):
-        ...     import numpy as np
-        ...     base = np.sum(X**2, axis=1)
-        ...     noise = np.random.normal(0, 0.1, size=base.shape)
-        ...     return base + noise
-        ...
-        >>> optimizer = SpotOptim(
-        ...     fun=noisy_objective,
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     max_iter=30,
-        ...     n_initial=10,
-        ...     repeats_initial=3,      # Evaluate each initial point 3 times
-        ...     repeats_surrogate=2,    # Evaluate each new point 2 times
-        ...     seed=42,                # For reproducibility
-        ...     verbose=True
-        ... )
-        >>> result = optimizer.optimize()
-        >>> # Access noise statistics
-        >>> print("Unique design points:", optimizer.mean_X.shape[0])
-        >>> print("Best mean value:", optimizer.min_mean_y)
-        >>> print("Variance at best point:", optimizer.min_var_y)
-        >>>
-        >>> # Example 4: Noisy function with OCBA (Optimal Computing Budget Allocation)
-        >>> optimizer_ocba = SpotOptim(
-        ...     fun=noisy_objective,
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     max_iter=50,
-        ...     n_initial=10,
-        ...     repeats_initial=2,      # Initial repeats
-        ...     repeats_surrogate=1,    # Surrogate repeats
-        ...     ocba_delta=3,           # Allocate 3 additional evaluations per iteration
-        ...     seed=42,
-        ...     verbose=True
-        ... )
-        >>> result = optimizer_ocba.optimize()
-        >>> # OCBA intelligently re-evaluates promising points to reduce uncertainty
-        >>> print("Total evaluations:", result.nfev)
-        >>> print("Unique design points:", optimizer_ocba.mean_X.shape[0])
-        >>> print("Best mean value:", optimizer.min_mean_y)
-        >>> print("Variance at best point:", optimizer.min_var_y)
-        >>>
-        >>> # Example 5: With TensorBoard logging
-        >>> optimizer_tb = SpotOptim(
-        ...     fun=objective,
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     max_iter=30,
-        ...     n_initial=10,
-        ...     tensorboard_log=True,   # Enable TensorBoard
-        ...     tensorboard_path="runs/my_optimization",  # Optional custom path
-        ...     verbose=True
-        ... )
-        >>> result = optimizer_tb.optimize()
-        >>> # View logs in browser: tensorboard --logdir=runs/my_optimization
-        >>> print("Logs saved to:", optimizer_tb.tensorboard_path)
-        >>>
-        >>> # Example 6: Using SpotOptim's Kriging surrogate
-        >>> from spotoptim.surrogate import Kriging
-        >>> kriging_model = Kriging(
-        ...     noise=1e-10,           # Regularization parameter
-        ...     kernel='gauss',         # Gaussian/RBF kernel
-        ...     min_theta=-3.0,         # Min log10(theta) bound
-        ...     max_theta=2.0,          # Max log10(theta) bound
-        ...     seed=42
-        ... )
-        >>> optimizer_kriging = SpotOptim(
-        ...     fun=objective,
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     surrogate=kriging_model,
-        ...     max_iter=30,
-        ...     n_initial=10,
-        ...     seed=42,
-        ...     verbose=True
-        ... )
-        >>> result = optimizer_kriging.optimize()
-        >>> print("Best solution found:", result.x)
-        >>> print("Best value:", result.fun)
-        >>>
-        >>> # Example 7: Using sklearn Gaussian Process with custom kernel
-        >>> from sklearn.gaussian_process import GaussianProcessRegressor
-        >>> from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
-        >>> # Custom kernel: constant * RBF + white noise
-        >>> custom_kernel = ConstantKernel(1.0, (1e-2, 1e2)) * RBF(
-        ...     length_scale=1.0, length_scale_bounds=(1e-1, 10.0)
-        ... ) + WhiteKernel(noise_level=1e-5, noise_level_bounds=(1e-10, 1e-1))
-        >>> gp_custom = GaussianProcessRegressor(
-        ...     kernel=custom_kernel,
-        ...     n_restarts_optimizer=15,
-        ...     normalize_y=True,
-        ...     random_state=42
-        ... )
-        >>> optimizer_custom_gp = SpotOptim(
-        ...     fun=objective,
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     surrogate=gp_custom,
-        ...     max_iter=30,
-        ...     n_initial=10,
-        ...     seed=42
-        ... )
-        >>> result = optimizer_custom_gp.optimize()
-        >>>
-        >>> # Example 8: Using Random Forest as surrogate
-        >>> from sklearn.ensemble import RandomForestRegressor
-        >>> rf_model = RandomForestRegressor(
-        ...     n_estimators=100,
-        ...     max_depth=10,
-        ...     random_state=42
-        ... )
-        >>> optimizer_rf = SpotOptim(
-        ...     fun=objective,
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     surrogate=rf_model,
-        ...     max_iter=30,
-        ...     n_initial=10,
-        ...     seed=42
-        ... )
-        >>> result = optimizer_rf.optimize()
-        >>> # Note: Random Forests don't provide uncertainty estimates,
-        >>> # so Expected Improvement (EI) may be less effective.
-        >>> # Consider using acquisition='y' for pure exploitation.
-        >>>
-        >>> # Example 9: Comparing different kernels for Gaussian Process
-        >>> from sklearn.gaussian_process.kernels import Matern, RationalQuadratic
-        >>> # Matern kernel with nu=1.5 (once differentiable)
-        >>> kernel_matern15 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=1.5)
-        >>> gp_matern15 = GaussianProcessRegressor(kernel=kernel_matern15, normalize_y=True)
-        >>>
-        >>> # Matern kernel with nu=2.5 (twice differentiable, DEFAULT)
-        >>> kernel_matern25 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=2.5)
-        >>> gp_matern25 = GaussianProcessRegressor(kernel=kernel_matern25, normalize_y=True)
-        >>>
-        >>> # RBF kernel (infinitely differentiable, smooth)
-        >>> kernel_rbf = ConstantKernel(1.0) * RBF(length_scale=1.0)
-        >>> gp_rbf = GaussianProcessRegressor(kernel=kernel_rbf, normalize_y=True)
-        >>>
-        >>> # Rational Quadratic kernel (mixture of RBF kernels)
-        >>> kernel_rq = ConstantKernel(1.0) * RationalQuadratic(length_scale=1.0, alpha=1.0)
-        >>> gp_rq = GaussianProcessRegressor(kernel=kernel_rq, normalize_y=True)
-        >>>
-        >>> # Use any of these as surrogate
-        >>> optimizer_rbf = SpotOptim(fun=objective, bounds=[(-5, 5), (-5, 5)],
-        ...                           surrogate=gp_rbf, max_iter=30, n_initial=10)
-        >>> result = optimizer_rbf.optimize()
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+
+        def objective(X):
+            return np.sum(X**2, axis=1)
+
+        # Example 1: Basic usage (deterministic function)
+        bounds = [(-5, 5), (-5, 5)]
+        optimizer = SpotOptim(fun=objective, bounds=bounds, max_iter=10, n_initial=5, verbose=True)
+        result = optimizer.optimize()
+        print("Best x:", result.x)
+        print("Best f(x):", result.fun)
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+
+        def objective(X):
+            return np.sum(X**2, axis=1)
+
+        # Example 2: With custom variable names
+        optimizer = SpotOptim(
+            fun=objective,
+            bounds=[(-5, 5), (-5, 5)],
+            var_name=["param1", "param2"],
+            max_iter=10,
+            n_initial=5
+        )
+        result = optimizer.optimize()
+        # Ensure we can use custom names in plots
+        optimizer.plot_surrogate(show=False)
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+
+        # Example 3: Noisy function with repeated evaluations
+        def noisy_objective(X):
+            base = np.sum(X**2, axis=1)
+            noise = np.random.normal(0, 0.1, size=base.shape)
+            return base + noise
+
+        optimizer = SpotOptim(
+            fun=noisy_objective,
+            bounds=[(-5, 5), (-5, 5)],
+            max_iter=30,
+            n_initial=10,
+            repeats_initial=3,      # Evaluate each initial point 3 times
+            repeats_surrogate=2,    # Evaluate each new point 2 times
+            seed=42,                # For reproducibility
+            verbose=True
+        )
+        result = optimizer.optimize()
+
+        # Access noise statistics
+        print("Unique design points:", optimizer.mean_X.shape[0])
+        print("Best mean value:", optimizer.min_mean_y)
+        print("Variance at best point:", optimizer.min_var_y)
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+
+        def noisy_objective(X):
+            base = np.sum(X**2, axis=1)
+            noise = np.random.normal(0, 0.1, size=base.shape)
+            return base + noise
+
+        # Example 4: Noisy function with OCBA (Optimal Computing Budget Allocation)
+        optimizer_ocba = SpotOptim(
+            fun=noisy_objective,
+            bounds=[(-5, 5), (-5, 5)],
+            max_iter=50,
+            n_initial=10,
+            repeats_initial=2,      # Initial repeats
+            repeats_surrogate=1,    # Surrogate repeats
+            ocba_delta=3,           # Allocate 3 additional evaluations per iteration
+            seed=42,
+            verbose=True
+        )
+        result = optimizer_ocba.optimize()
+
+        # OCBA intelligently re-evaluates promising points to reduce uncertainty
+        print("Total evaluations:", result.nfev)
+        print("Unique design points:", optimizer_ocba.mean_X.shape[0])
+        print("Best mean value:", optimizer_ocba.min_mean_y)
+        print("Variance at best point:", optimizer_ocba.min_var_y)
+        ```
+
+        ```{python}
+        import numpy as np
+        import shutil
+        import os
+        from spotoptim import SpotOptim
+
+        def objective(X):
+            return np.sum(X**2, axis=1)
+
+        # Example 5: With TensorBoard logging
+        tb_dir = "runs/my_optimization"
+        optimizer_tb = SpotOptim(
+            fun=objective,
+            bounds=[(-5, 5), (-5, 5)],
+            max_iter=15,
+            n_initial=5,
+            tensorboard_log=True,   # Enable TensorBoard
+            tensorboard_path=tb_dir,  # Optional custom path
+            verbose=True
+        )
+        result = optimizer_tb.optimize()
+
+        # View logs in browser: tensorboard --logdir=runs/my_optimization
+        print("Logs saved to:", optimizer_tb.tensorboard_path)
+        
+        # Cleanup log dir
+        if os.path.exists(tb_dir):
+            shutil.rmtree(tb_dir)
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from spotoptim.surrogate import Kriging
+
+        def objective(X):
+            return np.sum(X**2, axis=1)
+
+        # Example 6: Using SpotOptim's Kriging surrogate
+        kriging_model = Kriging(
+            noise=1e-10,           # Regularization parameter
+            kernel='gauss',         # Gaussian/RBF kernel
+            min_theta=-3.0,         # Min log10(theta) bound
+            max_theta=2.0,          # Max log10(theta) bound
+            seed=42
+        )
+        optimizer_kriging = SpotOptim(
+            fun=objective,
+            bounds=[(-5, 5), (-5, 5)],
+            surrogate=kriging_model,
+            max_iter=15,
+            n_initial=5,
+            seed=42,
+            verbose=True
+        )
+        result = optimizer_kriging.optimize()
+        print("Best solution found:", result.x)
+        print("Best value:", result.fun)
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from sklearn.gaussian_process import GaussianProcessRegressor
+        from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
+
+        def objective(X):
+            return np.sum(X**2, axis=1)
+
+        # Example 7: Using sklearn Gaussian Process with custom kernel
+        # Custom kernel: constant * RBF + white noise
+        custom_kernel = ConstantKernel(1.0, (1e-2, 1e2)) * RBF(
+            length_scale=1.0, length_scale_bounds=(1e-1, 10.0)
+        ) + WhiteKernel(noise_level=1e-5, noise_level_bounds=(1e-10, 1e-1))
+
+        gp_custom = GaussianProcessRegressor(
+            kernel=custom_kernel,
+            n_restarts_optimizer=15,
+            normalize_y=True,
+            random_state=42
+        )
+
+        optimizer_custom_gp = SpotOptim(
+            fun=objective,
+            bounds=[(-5, 5), (-5, 5)],
+            surrogate=gp_custom,
+            max_iter=15,
+            n_initial=5,
+            seed=42
+        )
+        result = optimizer_custom_gp.optimize()
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from sklearn.ensemble import RandomForestRegressor
+
+        def objective(X):
+            return np.sum(X**2, axis=1)
+
+        # Example 8: Using Random Forest as surrogate
+        rf_model = RandomForestRegressor(
+            n_estimators=100,
+            max_depth=10,
+            random_state=42
+        )
+
+        optimizer_rf = SpotOptim(
+            fun=objective,
+            bounds=[(-5, 5), (-5, 5)],
+            surrogate=rf_model,
+            max_iter=15,
+            n_initial=5,
+            seed=42
+        )
+        result = optimizer_rf.optimize()
+
+        # Note: Random Forests don't provide uncertainty estimates,
+        # so Expected Improvement (EI) may be less effective.
+        # Consider using acquisition='y' for pure exploitation.
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from sklearn.gaussian_process import GaussianProcessRegressor
+        from sklearn.gaussian_process.kernels import Matern, RationalQuadratic, ConstantKernel, RBF
+
+        def objective(X):
+            return np.sum(X**2, axis=1)
+
+        # Example 9: Comparing different kernels for Gaussian Process
+        # Matern kernel with nu=1.5 (once differentiable)
+        kernel_matern15 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=1.5)
+        gp_matern15 = GaussianProcessRegressor(kernel=kernel_matern15, normalize_y=True)
+
+        # Matern kernel with nu=2.5 (twice differentiable, DEFAULT)
+        kernel_matern25 = ConstantKernel(1.0) * Matern(length_scale=1.0, nu=2.5)
+        gp_matern25 = GaussianProcessRegressor(kernel=kernel_matern25, normalize_y=True)
+
+        # RBF kernel (infinitely differentiable, smooth)
+        kernel_rbf = ConstantKernel(1.0) * RBF(length_scale=1.0)
+        gp_rbf = GaussianProcessRegressor(kernel=kernel_rbf, normalize_y=True)
+
+        # Rational Quadratic kernel (mixture of RBF kernels)
+        kernel_rq = ConstantKernel(1.0) * RationalQuadratic(length_scale=1.0, alpha=1.0)
+        gp_rq = GaussianProcessRegressor(kernel=kernel_rq, normalize_y=True)
+
+        # Use any of these as surrogate
+        optimizer_rbf = SpotOptim(fun=objective, bounds=[(-5, 5), (-5, 5)],
+                                  surrogate=gp_rbf, max_iter=15, n_initial=5)
+        result = optimizer_rbf.optimize()
+        ```
     """
 
     # ====================
@@ -1647,7 +1728,7 @@ class SpotOptim(BaseEstimator):
         if not isinstance(x, float):
             try:
                 x = float(x)
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 raise TypeError(
                     f"transform_value expects a float, got {type(x).__name__} (value: {x})"
                 )
@@ -1718,7 +1799,7 @@ class SpotOptim(BaseEstimator):
         if not isinstance(x, float):
             try:
                 x = float(x)
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 raise TypeError(
                     f"transform_value expects a float, got {type(x).__name__} (value: {x})"
                 )
@@ -2692,7 +2773,7 @@ class SpotOptim(BaseEstimator):
             # Try to get uncertainty estimates
             y_pred, y_std = self.surrogate.predict(X, return_std=True)
             return y_pred, y_std
-        except TypeError, AttributeError:
+        except (TypeError, AttributeError):
             # Surrogate doesn't support return_std (e.g., Random Forest, XGBoost)
             y_pred = self.surrogate.predict(X)
             y_std = np.zeros_like(y_pred)
@@ -4916,7 +4997,7 @@ class SpotOptim(BaseEstimator):
             def _safe_float(v):
                 try:
                     return float(v)
-                except ValueError, TypeError:
+                except (ValueError, TypeError):
                     return np.nan
 
             # Reconstruct as float array
@@ -5281,7 +5362,7 @@ class SpotOptim(BaseEstimator):
         def _safe_float(v):
             try:
                 return float(v)
-            except ValueError, TypeError:
+            except (ValueError, TypeError):
                 return np.nan
 
         y_flat = np.array(y).flatten()
@@ -6749,7 +6830,7 @@ class SpotOptim(BaseEstimator):
                         np.log10(param_values_numeric[valid_mask]),
                         np.log10(history[valid_mask]),
                     )
-                except ValueError, TypeError:
+                except (ValueError, TypeError):
                     print(f"  {name:20s}: (error computing log correlation)")
                     continue
             else:
@@ -6757,7 +6838,7 @@ class SpotOptim(BaseEstimator):
                 try:
                     param_values_numeric = param_values.astype(float)
                     corr, p_value = spearmanr(param_values_numeric, history)
-                except ValueError, TypeError:
+                except (ValueError, TypeError):
                     print(f"  {name:20s}: (error computing correlation)")
                     continue
 
@@ -7311,7 +7392,7 @@ class SpotOptim(BaseEstimator):
                         # Direct correlation for non-transformed parameters
                         param_values_numeric = param_values.astype(float)
                         corr, p_value = spearmanr(param_values_numeric, history)
-                except ValueError, TypeError:
+                except (ValueError, TypeError):
                     pass  # Keep corr as nan
 
             # Handle factor variables differently
