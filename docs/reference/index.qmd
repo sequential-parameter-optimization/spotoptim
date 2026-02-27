@@ -29,7 +29,10 @@ Design-of-experiment and sampling strategies
 
 | | |
 | --- | --- |
-| [sampling](sampling.qmd#spotoptim.sampling) | Sampling methods for design of experiments. |
+| [sampling.design](sampling.design.qmd#spotoptim.sampling.design) |  |
+| [sampling.effects](sampling.effects.qmd#spotoptim.sampling.effects) |  |
+| [sampling.lhs](sampling.lhs.qmd#spotoptim.sampling.lhs) |  |
+| [sampling.mm](sampling.mm.qmd#spotoptim.sampling.mm) |  |
 
 ## Optimization
 
@@ -37,7 +40,7 @@ Local optimizer wrappers
 
 | | |
 | --- | --- |
-| [optimizer](optimizer.qmd#spotoptim.optimizer) |  |
+| [optimizer.schedule_free](optimizer.schedule_free.qmd#spotoptim.optimizer.schedule_free) |  |
 
 ## Hyperparameters
 
@@ -45,7 +48,8 @@ Hyperparameter type system and search-space bounds
 
 | | |
 | --- | --- |
-| [hyperparameters](hyperparameters.qmd#spotoptim.hyperparameters) |  |
+| [hyperparameters.parameters](hyperparameters.parameters.qmd#spotoptim.hyperparameters.parameters) |  |
+| [hyperparameters.repr_helpers](hyperparameters.repr_helpers.qmd#spotoptim.hyperparameters.repr_helpers) |  |
 
 ## Neural Networks
 
@@ -53,7 +57,8 @@ Neural network wrappers and training utilities
 
 | | |
 | --- | --- |
-| [nn](nn.qmd#spotoptim.nn) | Neural network models for spotoptim. |
+| [nn.linear_regressor](nn.linear_regressor.qmd#spotoptim.nn.linear_regressor) |  |
+| [nn.mlp](nn.mlp.qmd#spotoptim.nn.mlp) |  |
 
 ## Plotting & Visualization
 
@@ -61,7 +66,9 @@ All visualization helpers
 
 | | |
 | --- | --- |
-| [plot](plot.qmd#spotoptim.plot) |  |
+| [plot.contour](plot.contour.qmd#spotoptim.plot.contour) |  |
+| [plot.mo](plot.mo.qmd#spotoptim.plot.mo) |  |
+| [plot.visualization](plot.visualization.qmd#spotoptim.plot.visualization) |  |
 
 ## Utilities
 
@@ -69,7 +76,13 @@ General-purpose helper functions
 
 | | |
 | --- | --- |
-| [utils](utils.qmd#spotoptim.utils) | Utility functions for spotoptim. |
+| [utils.boundaries](utils.boundaries.qmd#spotoptim.utils.boundaries) |  |
+| [utils.eval](utils.eval.qmd#spotoptim.utils.eval) |  |
+| [utils.file](utils.file.qmd#spotoptim.utils.file) |  |
+| [utils.mapping](utils.mapping.qmd#spotoptim.utils.mapping) | Learning rate mapping functions for unified optimizer interface. |
+| [utils.pca](utils.pca.qmd#spotoptim.utils.pca) |  |
+| [utils.scaler](utils.scaler.qmd#spotoptim.utils.scaler) |  |
+| [utils.stats](utils.stats.qmd#spotoptim.utils.stats) |  |
 
 ## Data
 
@@ -77,7 +90,8 @@ Data loading and preprocessing
 
 | | |
 | --- | --- |
-| [data](data.qmd#spotoptim.data) | Data utilities for spotoptim package. |
+| [data.base](data.base.qmd#spotoptim.data.base) |  |
+| [data.diabetes](data.diabetes.qmd#spotoptim.data.diabetes) |  |
 
 ## Exploratory Data Analysis
 
@@ -85,7 +99,7 @@ EDA tools
 
 | | |
 | --- | --- |
-| [eda](eda.qmd#spotoptim.eda) | Exploratory Data Analysis (EDA) module for spotoptim. |
+| [eda.plots](eda.plots.qmd#spotoptim.eda.plots) |  |
 
 ## Multi-Objective
 
@@ -93,7 +107,8 @@ Pareto-front and multi-objective optimization helpers
 
 | | |
 | --- | --- |
-| [mo](mo.qmd#spotoptim.mo) |  |
+| [mo.mo_mm](mo.mo_mm.qmd#spotoptim.mo.mo_mm) |  |
+| [mo.pareto](mo.pareto.qmd#spotoptim.mo.pareto) |  |
 
 ## Inspection
 
@@ -101,7 +116,8 @@ Model inspection and explanation
 
 | | |
 | --- | --- |
-| [inspection](inspection.qmd#spotoptim.inspection) | Inspection (sensitivity analysis) module for spotoptim. |
+| [inspection.importance](inspection.importance.qmd#spotoptim.inspection.importance) |  |
+| [inspection.predictions](inspection.predictions.qmd#spotoptim.inspection.predictions) |  |
 
 ## Factor Analyzer
 
@@ -109,7 +125,10 @@ Factor analysis utilities
 
 | | |
 | --- | --- |
-| [factor_analyzer](factor_analyzer.qmd#spotoptim.factor_analyzer) | This module performs exploratory and confirmatory factor analyses. |
+| [factor_analyzer.confirmatory_factor_analyzer](factor_analyzer.confirmatory_factor_analyzer.qmd#spotoptim.factor_analyzer.confirmatory_factor_analyzer) | Confirmatory factor analysis using machine learning methods. |
+| [factor_analyzer.factor_analyzer](factor_analyzer.factor_analyzer.qmd#spotoptim.factor_analyzer.factor_analyzer) | Factor analysis using MINRES or ML, with optional rotation using Varimax or Promax. |
+| [factor_analyzer.factor_analyzer_rotator](factor_analyzer.factor_analyzer_rotator.qmd#spotoptim.factor_analyzer.factor_analyzer_rotator) | Class to perform various rotations of factor loading matrices. |
+| [factor_analyzer.factor_analyzer_utils](factor_analyzer.factor_analyzer_utils.qmd#spotoptim.factor_analyzer.factor_analyzer_utils) | Utility functions, used primarily by the confirmatory factor analysis module. |
 
 ## Functions
 
@@ -117,4 +136,16 @@ Objective and benchmark test functions
 
 | | |
 | --- | --- |
-| [function](function.qmd#spotoptim.function) | Analytical test functions for optimization. |
+| [function.forr08a](function.forr08a.qmd#spotoptim.function.forr08a) |  |
+| [function.mo](function.mo.qmd#spotoptim.function.mo) | Analytical multi-objective test functions for optimization benchmarking. |
+| [function.remote](function.remote.qmd#spotoptim.function.remote) |  |
+| [function.so](function.so.qmd#spotoptim.function.so) | Analytical single-objective test functions for optimization benchmarking. |
+| [function.torch_objective](function.torch_objective.qmd#spotoptim.function.torch_objective) |  |
+
+## Tricands
+
+Tricands sampling and optimization
+
+| | |
+| --- | --- |
+| [tricands.tricands](tricands.tricands.qmd#spotoptim.tricands.tricands) |  |
