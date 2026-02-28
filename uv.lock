@@ -626,6 +626,15 @@ wheels = [
 ]
 
 [[package]]
+name = "dill"
+version = "0.4.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/e1/56027a71e31b02ddc53c7d65b01e68edf64dea2932122fe7746a516f75d5/dill-0.4.1.tar.gz", hash = "sha256:423092df4182177d4d8ba8290c8a5b640c66ab35ec7da59ccfa00f6fa3eea5fa", size = 187315, upload-time = "2026-01-19T02:36:56.85Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/77/dc8c558f7593132cf8fefec57c4f60c83b16941c574ac5f619abb3ae7933/dill-0.4.1-py3-none-any.whl", hash = "sha256:1e1ce33e978ae97fcfcff5638477032b801c46c7c65cf717f95fbc2248f79a9d", size = 120019, upload-time = "2026-01-19T02:36:55.663Z" },
+]
+
+[[package]]
 name = "dparse"
 version = "0.6.4"
 source = { registry = "https://pypi.org/simple" }
@@ -941,11 +950,11 @@ wheels = [
 
 [[package]]
 name = "isort"
-version = "8.0.0"
+version = "8.0.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/bf/e3/e72b0b3a85f24cf5fc2cd8e92b996592798f896024c5cdf3709232e6e377/isort-8.0.0.tar.gz", hash = "sha256:fddea59202f231e170e52e71e3510b99c373b6e571b55d9c7b31b679c0fed47c", size = 769482, upload-time = "2026-02-19T16:31:59.716Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/7c/ec4ab396d31b3b395e2e999c8f46dec78c5e29209fac49d1f4dace04041d/isort-8.0.1.tar.gz", hash = "sha256:171ac4ff559cdc060bcfff550bc8404a486fee0caab245679c2abe7cb253c78d", size = 769592, upload-time = "2026-02-28T10:08:20.685Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/ea/cf3aad99dd12c026e2d6835d559efb6fc50ccfd5b46d42d5fec2608b116a/isort-8.0.0-py3-none-any.whl", hash = "sha256:184916a933041c7cf718787f7e52064f3c06272aff69a5cb4dc46497bd8911d9", size = 89715, upload-time = "2026-02-19T16:31:57.745Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/95/c7c34aa53c16353c56d0b802fba48d5f5caa2cdee7958acbcb795c830416/isort-8.0.1-py3-none-any.whl", hash = "sha256:28b89bc70f751b559aeca209e6120393d43fbe2490de0559662be7a9787e3d75", size = 89733, upload-time = "2026-02-28T10:08:19.466Z" },
 ]
 
 [[package]]
@@ -2826,7 +2835,7 @@ wheels = [
 
 [[package]]
 name = "spotdesirability"
-version = "0.0.25"
+version = "0.0.26"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build" },
@@ -2842,9 +2851,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/39/e444f6030895b5f931dcc89ed7b506bd4e46fd38e70839227102b8256ae9/spotdesirability-0.0.25.tar.gz", hash = "sha256:410f4ae60e615e34c385202f4adff470e00e269d501000bc1a4c13b103fb13d9", size = 11435, upload-time = "2026-02-27T14:55:02.675Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/73/e9/87879ea340520c8c50293eb89e2affddb1f1a76b8e3552e617cce1d99352/spotdesirability-0.0.26.tar.gz", hash = "sha256:5f7192ab67ddeccbc3e3fc3b779664e8b806004414613393d3089f500ef84da9", size = 11437, upload-time = "2026-02-28T16:14:32.057Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ac/85/6b38b788890464b95de3cfd7b11ca769879d5c67cc8eae59e7a0634c1ff5/spotdesirability-0.0.25-py3-none-any.whl", hash = "sha256:6b4455111570f00039a75a0efe4657534661068299a49b1c5f1c89109b97e344", size = 14249, upload-time = "2026-02-27T14:55:01.411Z" },
+    { url = "https://files.pythonhosted.org/packages/41/5c/1d6ec0ac894959b42e551bc733998ecf9bf21ad800f649dd764373f483a6/spotdesirability-0.0.26-py3-none-any.whl", hash = "sha256:c079d1ddca7d150e1a39438cb499e38daca66625146edc829e766334ce401874", size = 14259, upload-time = "2026-02-28T16:14:30.618Z" },
 ]
 
 [[package]]
@@ -2852,6 +2861,7 @@ name = "spotoptim"
 version = "0.0.190"
 source = { editable = "." }
 dependencies = [
+    { name = "dill" },
     { name = "jupyter" },
     { name = "matplotlib" },
     { name = "numpy" },
@@ -2901,6 +2911,7 @@ requires-dist = [
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.8.0" },
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.1.0" },
     { name = "colorama", marker = "extra == 'docs'", specifier = ">=0.4.6" },
+    { name = "dill", specifier = ">=0.4.1" },
     { name = "griffe", marker = "extra == 'docs'", specifier = ">=1.7.3" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.13.0" },
     { name = "jupyter", specifier = ">=1.1.1" },
