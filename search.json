@@ -1,0 +1,1121 @@
+[
+  {
+    "objectID": "docs/spotoptim_examples.html",
+    "href": "docs/spotoptim_examples.html",
+    "title": "SpotOptim: Living Examples",
+    "section": "",
+    "text": "This document contains fully executable code examples for the SpotOptim class. Every example is a {python} code block and is covered by a corresponding pytest in tests/test_spotoptim_deep.py.\nRun all examples with:"
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#quick-start-sphere-function",
+    "href": "docs/spotoptim_examples.html#quick-start-sphere-function",
+    "title": "SpotOptim: Living Examples",
+    "section": "Quick Start: Sphere Function",
+    "text": "Quick Start: Sphere Function\nThe sphere function \\(f(x) = \\sum_{i=1}^{n} x_i^2\\) has its global minimum at \\(x^* = 0\\) with \\(f(x^*) = 0\\).\n\nimport numpy as np\nfrom spotoptim import SpotOptim\n\ndef sphere(X):\n    X = np.atleast_2d(X)\n    return np.sum(X**2, axis=1)\n\nopt = SpotOptim(\n    fun=sphere,\n    bounds=[(-5, 5), (-5, 5)],\n    max_iter=20,\n    n_initial=10,\n    seed=0,\n)\nresult = opt.optimize()\n\nprint(f\"Best x    : {result.x}\")\nprint(f\"Best f(x) : {result.fun:.6f}\")\nprint(f\"Evaluations: {result.nfev}\")\n\nBest x    : [-1.07968718e-04  9.05044427e-05]\nBest f(x) : 0.000000\nEvaluations: 20\n\n\nCorresponding test (test_sphere_2d_converges_near_origin):\n\nassert result.fun &lt; 0.5, f\"Expected convergence near 0, got f={result.fun}\"\nprint(\"Convergence check passed.\")\n\nConvergence check passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#result-contract",
+    "href": "docs/spotoptim_examples.html#result-contract",
+    "title": "SpotOptim: Living Examples",
+    "section": "Result Contract",
+    "text": "Result Contract\nEvery call to optimize() returns a scipy.optimize.OptimizeResult satisfying these invariants:\n\nfrom scipy.optimize import OptimizeResult\n\nassert isinstance(result, OptimizeResult)\n\n# Required fields\nfor field in (\"x\", \"fun\", \"nfev\", \"nit\", \"success\", \"message\", \"X\", \"y\"):\n    assert hasattr(result, field), f\"Missing: {field}\"\n\n# Shape invariants\nassert result.x.ndim == 1            # best point is 1-D\nassert result.X.shape == (20, 2)     # (max_iter, n_dim)\nassert result.y.shape == (20,)       # one y per evaluation\n\n# Optimality\nassert np.isclose(result.fun, np.min(result.y))\nbest_idx = np.argmin(result.y)\nnp.testing.assert_array_almost_equal(result.x, result.X[best_idx])\n\nprint(\"All result contract checks passed.\")\n\nAll result contract checks passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#acquisition-functions",
+    "href": "docs/spotoptim_examples.html#acquisition-functions",
+    "title": "SpotOptim: Living Examples",
+    "section": "Acquisition Functions",
+    "text": "Acquisition Functions\nSpotOptim supports three acquisition functions:\n\n\n\nAcquisition\nDescription\n\n\n\n\n\"y\" (default)\nBest observed value\n\n\n\"ei\"\nExpected Improvement\n\n\n\"pi\"\nProbability of Improvement\n\n\n\n\nresults = {}\nfor acq in [\"y\", \"ei\", \"pi\"]:\n    r = SpotOptim(\n        fun=sphere,\n        bounds=[(-3, 3), (-3, 3)],\n        max_iter=12,\n        n_initial=7,\n        acquisition=acq,\n        seed=0,\n    ).optimize()\n    results[acq] = r\n    print(f\"  acq={acq!r:4s}  f(x*)={r.fun:.4f}  nfev={r.nfev}\")\n\n  acq='y'   f(x*)=0.0000  nfev=12\n  acq='ei'  f(x*)=0.0000  nfev=12\n  acq='pi'  f(x*)=0.0155  nfev=12\n\n\n\nfor acq, r in results.items():\n    assert isinstance(r, OptimizeResult), f\"{acq} did not return OptimizeResult\"\n    assert r.success is True\n    assert np.isfinite(r.fun)\nprint(\"All acquisition checks passed.\")\n\nAll acquisition checks passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#seed-reproducibility",
+    "href": "docs/spotoptim_examples.html#seed-reproducibility",
+    "title": "SpotOptim: Living Examples",
+    "section": "Seed Reproducibility",
+    "text": "Seed Reproducibility\nThe same seed produces byte-identical results across independent runs:\n\ncommon_kwargs = dict(\n    fun=sphere,\n    bounds=[(-5, 5), (-5, 5)],\n    max_iter=12,\n    n_initial=6,\n    seed=42,\n)\nr1 = SpotOptim(**common_kwargs).optimize()\nr2 = SpotOptim(**common_kwargs).optimize()\n\nnp.testing.assert_array_equal(r1.X, r2.X)\nnp.testing.assert_array_equal(r1.y, r2.y)\nassert r1.fun == r2.fun\nprint(f\"Seed 42 result: f(x*)={r1.fun:.6f} — fully reproducible.\")\n\nSeed 42 result: f(x*)=0.000007 — fully reproducible."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#integer-variables",
+    "href": "docs/spotoptim_examples.html#integer-variables",
+    "title": "SpotOptim: Living Examples",
+    "section": "Integer Variables",
+    "text": "Integer Variables\nUse var_type=[\"int\", ...] to restrict variables to integer domains.\nThe optimum of \\(f(x_1, x_2) = x_1^2 + x_2^2\\) over \\(\\mathbb{Z}^2\\) is at \\(x^* = (0, 0)\\).\n\nopt_int = SpotOptim(\n    fun=sphere,\n    bounds=[(-5, 5), (-5, 5)],\n    max_iter=12,\n    n_initial=7,\n    var_type=[\"int\", \"int\"],\n    seed=0,\n)\nresult_int = opt_int.optimize()\n\nprint(f\"Best x    : {result_int.x}  (should be integers)\")\nprint(f\"Best f(x) : {result_int.fun}\")\n\n# All stored X values must be integers\nassert np.allclose(result_int.X, np.round(result_int.X), atol=1e-9)\nassert np.allclose(result_int.x, np.round(result_int.x), atol=1e-9)\nprint(\"Integer domain check passed.\")\n\nBest x    : [-0.  0.]  (should be integers)\nBest f(x) : 0.0\nInteger domain check passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#log-scaled-variables-var_trans",
+    "href": "docs/spotoptim_examples.html#log-scaled-variables-var_trans",
+    "title": "SpotOptim: Living Examples",
+    "section": "Log-Scaled Variables (var_trans)",
+    "text": "Log-Scaled Variables (var_trans)\nFor variables spanning multiple orders of magnitude, use var_trans:\n\ndef log_objective(X):\n    \"\"\"Minimum at x = 10 (log10 scale: minimum at log10(x) = 1).\"\"\"\n    X = np.atleast_2d(X)\n    return (np.log10(X[:, 0]) - 1.0) ** 2\n\nopt_log = SpotOptim(\n    fun=log_objective,\n    bounds=[(1e-3, 1e3)],\n    max_iter=12,\n    n_initial=6,\n    var_trans=[\"log10\"],\n    seed=0,\n)\nresult_log = opt_log.optimize()\n\nprint(f\"Best x      : {result_log.x[0]:.4f}  (expected ~10)\")\nprint(f\"Best f(x)   : {result_log.fun:.6f}\")\n\nassert 1e-3 &lt;= result_log.x[0] &lt;= 1e3, \"Result out of bounds\"\nassert np.isfinite(result_log.fun)\nprint(\"Log-transform checks passed.\")\n\nBest x      : 9.9999  (expected ~10)\nBest f(x)   : 0.000000\nLog-transform checks passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#factor-categorical-variables",
+    "href": "docs/spotoptim_examples.html#factor-categorical-variables",
+    "title": "SpotOptim: Living Examples",
+    "section": "Factor (Categorical) Variables",
+    "text": "Factor (Categorical) Variables\nTuple bounds define categorical levels that are mapped to integers internally:\n\ncall_log = []\n\ndef cat_sphere(X):\n    \"\"\"Records (color, value) pairs; minimises value regardless of color.\"\"\"\n    X = np.atleast_2d(X)\n    call_log.append(X.copy())\n    return X[:, 1].astype(float) ** 2\n\nopt_cat = SpotOptim(\n    fun=cat_sphere,\n    bounds=[(\"red\", \"green\", \"blue\"), (-5.0, 5.0)],\n    max_iter=10,\n    n_initial=6,\n    seed=0,\n)\n\n# Factor dimension mapped to integers 0..2 internally\nassert opt_cat.bounds[0] == (0, 2)\nassert opt_cat._factor_maps[0] == {0: \"red\", 1: \"green\", 2: \"blue\"}\n\nresult_cat = opt_cat.optimize()\nprint(f\"Best value : {result_cat.fun:.4f}\")\nprint(\"Factor variable checks passed.\")\n\nBest value : 0.0000\nFactor variable checks passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#custom-kriging-surrogate",
+    "href": "docs/spotoptim_examples.html#custom-kriging-surrogate",
+    "title": "SpotOptim: Living Examples",
+    "section": "Custom Kriging Surrogate",
+    "text": "Custom Kriging Surrogate\nReplace the default GP surrogate with Kriging:\n\nfrom spotoptim import Kriging\n\nkriging = Kriging(noise=1e-6, min_theta=-3.0, max_theta=2.0, seed=42)\n\nopt_k = SpotOptim(\n    fun=sphere,\n    bounds=[(-3, 3), (-3, 3)],\n    surrogate=kriging,\n    max_iter=12,\n    n_initial=6,\n    seed=0,\n)\nresult_k = opt_k.optimize()\n\nprint(f\"Kriging best f(x) : {result_k.fun:.6f}\")\nassert isinstance(result_k, OptimizeResult)\nassert result_k.success is True\nassert np.isfinite(result_k.fun)\nprint(\"Kriging surrogate checks passed.\")\n\nKriging best f(x) : 0.000665\nKriging surrogate checks passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#get_best_hyperparameters",
+    "href": "docs/spotoptim_examples.html#get_best_hyperparameters",
+    "title": "SpotOptim: Living Examples",
+    "section": "get_best_hyperparameters",
+    "text": "get_best_hyperparameters\nAfter optimization, retrieve the best point as a labelled dict:\n\nopt_named = SpotOptim(\n    fun=sphere,\n    bounds=[(-5, 5), (-5, 5)],\n    max_iter=12,\n    n_initial=6,\n    var_name=[\"x0\", \"x1\"],\n    seed=0,\n)\nresult_named = opt_named.optimize()\nbest = opt_named.get_best_hyperparameters(as_dict=True)\n\nprint(f\"result.x           : {result_named.x}\")\nprint(f\"get_best_hyperparams: {best}\")\n\n# Values in the dict must match result.x\nvalues_arr = np.array(list(best.values()), dtype=float)\nnp.testing.assert_array_almost_equal(values_arr, result_named.x)\nprint(\"get_best_hyperparameters check passed.\")\n\nresult.x           : [0.03919328 0.02660746]\nget_best_hyperparams: {'x0': np.float64(0.039193282891963555), 'x1': np.float64(0.02660746414451208)}\nget_best_hyperparameters check passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#transform_value-roundtrip",
+    "href": "docs/spotoptim_examples.html#transform_value-roundtrip",
+    "title": "SpotOptim: Living Examples",
+    "section": "transform_value Roundtrip",
+    "text": "transform_value Roundtrip\nAll supported variable transformations satisfy the roundtrip identity \\(\\text{inverse}(\\text{transform}(x)) = x\\):\n\nopt_t = SpotOptim(fun=sphere, bounds=[(1e-6, 100)])\n\ntransforms = [\"log10\", \"log\", \"ln\", \"sqrt\", \"exp\", \"square\", \"cube\", \"inv\", None]\nx_test = 4.0\n\nfor trans in transforms:\n    tx = opt_t.transform_value(x_test, trans)\n    x_back = opt_t.inverse_transform_value(tx, trans)\n    ok = np.isclose(x_back, x_test, rtol=1e-9)\n    status = \"OK\" if ok else \"FAIL\"\n    print(f\"  trans={str(trans):&lt;10}  {x_test} -&gt; {tx:.4f} -&gt; {x_back:.6f}  [{status}]\")\n    assert ok, f\"Roundtrip failed for {trans!r}\"\n\nprint(\"All transform roundtrip checks passed.\")\n\n  trans=log10       4.0 -&gt; 0.6021 -&gt; 4.000000  [OK]\n  trans=log         4.0 -&gt; 1.3863 -&gt; 4.000000  [OK]\n  trans=ln          4.0 -&gt; 1.3863 -&gt; 4.000000  [OK]\n  trans=sqrt        4.0 -&gt; 2.0000 -&gt; 4.000000  [OK]\n  trans=exp         4.0 -&gt; 54.5982 -&gt; 4.000000  [OK]\n  trans=square      4.0 -&gt; 16.0000 -&gt; 4.000000  [OK]\n  trans=cube        4.0 -&gt; 64.0000 -&gt; 4.000000  [OK]\n  trans=inv         4.0 -&gt; 0.2500 -&gt; 4.000000  [OK]\n  trans=None        4.0 -&gt; 4.0000 -&gt; 4.000000  [OK]\nAll transform roundtrip checks passed."
+  },
+  {
+    "objectID": "docs/spotoptim_examples.html#convergence-on-rosenbrock",
+    "href": "docs/spotoptim_examples.html#convergence-on-rosenbrock",
+    "title": "SpotOptim: Living Examples",
+    "section": "Convergence on Rosenbrock",
+    "text": "Convergence on Rosenbrock\nThe Rosenbrock function \\(f(x,y) = (1-x)^2 + 100(y-x^2)^2\\) has its minimum at \\((1, 1)\\) with \\(f(1,1) = 0\\).\n\ndef rosenbrock(X):\n    X = np.atleast_2d(X)\n    x, y = X[:, 0], X[:, 1]\n    return (1.0 - x)**2 + 100.0 * (y - x**2)**2\n\nopt_rb = SpotOptim(\n    fun=rosenbrock,\n    bounds=[(-2, 2), (-2, 2)],\n    max_iter=30,\n    n_initial=10,\n    acquisition=\"ei\",\n    seed=0,\n)\nresult_rb = opt_rb.optimize()\n\nprint(f\"Best x    : {result_rb.x}\")\nprint(f\"Best f(x) : {result_rb.fun:.6f}  (global min = 0 at [1, 1])\")\n\nassert result_rb.fun &lt; 10.0, f\"Rosenbrock did not converge: f={result_rb.fun}\"\nprint(\"Rosenbrock convergence check passed.\")\n\nBest x    : [0.8746919  0.83489777]\nBest f(x) : 0.503071  (global min = 0 at [1, 1])\nRosenbrock convergence check passed."
+  },
+  {
+    "objectID": "docs/reference/utils.stats.html",
+    "href": "docs/reference/utils.stats.html",
+    "title": "utils.stats",
+    "section": "",
+    "text": "utils.stats\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nCalculate the number of outliers using the IQR method.\n\n\n\n\n\n\n\nComputes standardized (beta) coefficients for a fitted statsmodels OLS model.\n\n\n\nCalculates the Condition Index for a DataFrame to assess multicollinearity.\n\n\n\nConvert a covariance matrix to a correlation matrix.\n\n\n\nFit a linear regression model for all possible combinations of independent variables.\n\n\n\nUtility function to extract variables from a formula.\n\n\n\nGenerates all possible combinations of two values from a list of values. Order is not important.\n\n\n\nCalculate sample size n for comparing two means.\n\n\n\nNormalize array X to [0, 1] in each dimension.\n\n\n\nCalculate the partial correlation matrix for a given data set.\n\n\n\nThe partial correlation coefficient between x and y given z.\n\n\n\nPlot the coefficient estimates from fit_all_lm against the corresponding p-values.\n\n\n\nGenerates a panel of scatter plots with effect estimates of all possible models against p-values.\n\n\n\nPreprocesses a df for fiitting an OLS regression model using the specified target column and predictors.\n\n\n\nCalculates the Variance Inflation Factor (VIF) for each feature in a DataFrame."
+  },
+  {
+    "objectID": "docs/reference/utils.stats.html#functions",
+    "href": "docs/reference/utils.stats.html#functions",
+    "title": "utils.stats",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nCalculate the number of outliers using the IQR method.\n\n\n\n\n\n\n\nComputes standardized (beta) coefficients for a fitted statsmodels OLS model.\n\n\n\nCalculates the Condition Index for a DataFrame to assess multicollinearity.\n\n\n\nConvert a covariance matrix to a correlation matrix.\n\n\n\nFit a linear regression model for all possible combinations of independent variables.\n\n\n\nUtility function to extract variables from a formula.\n\n\n\nGenerates all possible combinations of two values from a list of values. Order is not important.\n\n\n\nCalculate sample size n for comparing two means.\n\n\n\nNormalize array X to [0, 1] in each dimension.\n\n\n\nCalculate the partial correlation matrix for a given data set.\n\n\n\nThe partial correlation coefficient between x and y given z.\n\n\n\nPlot the coefficient estimates from fit_all_lm against the corresponding p-values.\n\n\n\nGenerates a panel of scatter plots with effect estimates of all possible models against p-values.\n\n\n\nPreprocesses a df for fiitting an OLS regression model using the specified target column and predictors.\n\n\n\nCalculates the Variance Inflation Factor (VIF) for each feature in a DataFrame."
+  },
+  {
+    "objectID": "docs/reference/utils.html",
+    "href": "docs/reference/utils.html",
+    "title": "utils",
+    "section": "",
+    "text": "utils\nutils\nUtility functions for spotoptim."
+  },
+  {
+    "objectID": "docs/reference/utils.mapping.html",
+    "href": "docs/reference/utils.mapping.html",
+    "title": "utils.mapping",
+    "section": "",
+    "text": "utils.mapping\nLearning rate mapping functions for unified optimizer interface.\nThis module provides utilities to map a unified learning rate scale to optimizer-specific learning rates, accounting for the different default and typical ranges used by different PyTorch optimizers.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nMap a unified learning rate to an optimizer-specific learning rate."
+  },
+  {
+    "objectID": "docs/reference/utils.mapping.html#functions",
+    "href": "docs/reference/utils.mapping.html#functions",
+    "title": "utils.mapping",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nMap a unified learning rate to an optimizer-specific learning rate."
+  },
+  {
+    "objectID": "docs/reference/utils.eval.html",
+    "href": "docs/reference/utils.eval.html",
+    "title": "utils.eval",
+    "section": "",
+    "text": "utils.eval\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nPerforms cross-validation for separate models for each target in a multi-output problem.\n\n\n\nTrains and evaluates separate models for each target in a multi-output regression problem."
+  },
+  {
+    "objectID": "docs/reference/utils.eval.html#functions",
+    "href": "docs/reference/utils.eval.html#functions",
+    "title": "utils.eval",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nPerforms cross-validation for separate models for each target in a multi-output problem.\n\n\n\nTrains and evaluates separate models for each target in a multi-output regression problem."
+  },
+  {
+    "objectID": "docs/reference/tricands.tricands.html",
+    "href": "docs/reference/tricands.tricands.html",
+    "title": "tricands.tricands",
+    "section": "",
+    "text": "tricands.tricands\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerate Triangulation Candidates for Bayesian Optimization.\n\n\n\nGenerate fringe candidates outside the convex hull.\n\n\n\nGenerate interior candidates using Delaunay triangulation."
+  },
+  {
+    "objectID": "docs/reference/tricands.tricands.html#functions",
+    "href": "docs/reference/tricands.tricands.html#functions",
+    "title": "tricands.tricands",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerate Triangulation Candidates for Bayesian Optimization.\n\n\n\nGenerate fringe candidates outside the convex hull.\n\n\n\nGenerate interior candidates using Delaunay triangulation."
+  },
+  {
+    "objectID": "docs/reference/surrogate.simple_kriging.html",
+    "href": "docs/reference/surrogate.simple_kriging.html",
+    "title": "surrogate.simple_kriging",
+    "section": "",
+    "text": "surrogate.simple_kriging\nSimplified SimpleKriging surrogate model for SpotOptim.\nThis is a streamlined version adapted from spotpython.surrogate.kriging for use with the SpotOptim optimizer.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nA simplified Kriging (Gaussian Process) surrogate model for SpotOptim."
+  },
+  {
+    "objectID": "docs/reference/surrogate.simple_kriging.html#classes",
+    "href": "docs/reference/surrogate.simple_kriging.html#classes",
+    "title": "surrogate.simple_kriging",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nA simplified Kriging (Gaussian Process) surrogate model for SpotOptim."
+  },
+  {
+    "objectID": "docs/reference/surrogate.pipeline.html",
+    "href": "docs/reference/surrogate.pipeline.html",
+    "title": "surrogate.pipeline",
+    "section": "",
+    "text": "surrogate.pipeline\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nPipeline of transforms with a final estimator."
+  },
+  {
+    "objectID": "docs/reference/surrogate.pipeline.html#classes",
+    "href": "docs/reference/surrogate.pipeline.html#classes",
+    "title": "surrogate.pipeline",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nPipeline of transforms with a final estimator."
+  },
+  {
+    "objectID": "docs/reference/surrogate.mlp_surrogate.html",
+    "href": "docs/reference/surrogate.mlp_surrogate.html",
+    "title": "surrogate.mlp_surrogate",
+    "section": "",
+    "text": "surrogate.mlp_surrogate\nMLP Surrogate model for SpotOptim.\nThis module implements a standard Multi-Layer Perceptron (MLP) surrogate that enables uncertainty estimation via Monte Carlo Dropout (MC Dropout). It is designed to be a drop-in alternative to the Kriging surrogate within the SpotOptim framework.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nA scikit-learn compatible MLP surrogate model with uncertainty estimation."
+  },
+  {
+    "objectID": "docs/reference/surrogate.mlp_surrogate.html#classes",
+    "href": "docs/reference/surrogate.mlp_surrogate.html#classes",
+    "title": "surrogate.mlp_surrogate",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nA scikit-learn compatible MLP surrogate model with uncertainty estimation."
+  },
+  {
+    "objectID": "docs/reference/surrogate.kernels.html",
+    "href": "docs/reference/surrogate.kernels.html",
+    "title": "surrogate.kernels",
+    "section": "",
+    "text": "surrogate.kernels\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nConstant kernel.\n\n\n\nBase class for Kernels.\n\n\n\nThe Product kernel k1 * k2.\n\n\n\nRadial Basis Function (RBF) kernel.\n\n\n\nKernel designed for SpotOptim’s Kriging with mixed variable support.\n\n\n\nThe Sum kernel k1 + k2.\n\n\n\nWhite kernel."
+  },
+  {
+    "objectID": "docs/reference/surrogate.kernels.html#classes",
+    "href": "docs/reference/surrogate.kernels.html#classes",
+    "title": "surrogate.kernels",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nConstant kernel.\n\n\n\nBase class for Kernels.\n\n\n\nThe Product kernel k1 * k2.\n\n\n\nRadial Basis Function (RBF) kernel.\n\n\n\nKernel designed for SpotOptim’s Kriging with mixed variable support.\n\n\n\nThe Sum kernel k1 + k2.\n\n\n\nWhite kernel."
+  },
+  {
+    "objectID": "docs/reference/sampling.mm.html",
+    "href": "docs/reference/sampling.mm.html",
+    "title": "sampling.mm",
+    "section": "",
+    "text": "sampling.mm\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerates an optimized Latin hypercube by evolving the Morris-Mitchell\n\n\n\nComputes and counts the distinct p-norm distances between all pairs of points in X.\n\n\n\nDetermines which of two sampling plans has better space-filling properties\n\n\n\nCalculates the Morris-Mitchell improvement for a candidate point x.\n\n\n\nGenerates a contour plot of the Morris-Mitchell improvement over a grid defined by x1 and x2.\n\n\n\nPerforms an evolutionary search (using perturbations) to find a Morris-Mitchell\n\n\n\nCalculates the Morris-Mitchell sampling plan quality criterion.\n\n\n\nCalculates a size-invariant Morris-Mitchell criterion.\n\n\n\nUpdates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.\n\n\n\nRanks multiple sampling plans stored in a 3D array according to the\n\n\n\nPerforms a specified number of random element swaps on a sampling plan.\n\n\n\nRanks multiple sampling plans stored in a 3D array by the Morris-Mitchell\n\n\n\nGenerates LHS designs for varying n, calculates mmphi and mmphi_intensive,\n\n\n\nPlot the Morris-Mitchell criterion versus the number of added points.\n\n\n\nPropose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion.\n\n\n\nReturns a space-filling subset of a given size from a sampling plan, along with"
+  },
+  {
+    "objectID": "docs/reference/sampling.mm.html#functions",
+    "href": "docs/reference/sampling.mm.html#functions",
+    "title": "sampling.mm",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerates an optimized Latin hypercube by evolving the Morris-Mitchell\n\n\n\nComputes and counts the distinct p-norm distances between all pairs of points in X.\n\n\n\nDetermines which of two sampling plans has better space-filling properties\n\n\n\nCalculates the Morris-Mitchell improvement for a candidate point x.\n\n\n\nGenerates a contour plot of the Morris-Mitchell improvement over a grid defined by x1 and x2.\n\n\n\nPerforms an evolutionary search (using perturbations) to find a Morris-Mitchell\n\n\n\nCalculates the Morris-Mitchell sampling plan quality criterion.\n\n\n\nCalculates a size-invariant Morris-Mitchell criterion.\n\n\n\nUpdates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.\n\n\n\nRanks multiple sampling plans stored in a 3D array according to the\n\n\n\nPerforms a specified number of random element swaps on a sampling plan.\n\n\n\nRanks multiple sampling plans stored in a 3D array by the Morris-Mitchell\n\n\n\nGenerates LHS designs for varying n, calculates mmphi and mmphi_intensive,\n\n\n\nPlot the Morris-Mitchell criterion versus the number of added points.\n\n\n\nPropose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion.\n\n\n\nReturns a space-filling subset of a given size from a sampling plan, along with"
+  },
+  {
+    "objectID": "docs/reference/sampling.effects.html",
+    "href": "docs/reference/sampling.effects.html",
+    "title": "sampling.effects",
+    "section": "",
+    "text": "sampling.effects\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerates Partial Dependence Plots (PDPs) for every feature in a DataFrame against a target variable,\n\n\n\nGenerates a random orientation of a sampling matrix.\n\n\n\nGenerates a plot with elementary effect screening metrics.\n\n\n\nGenerates a DataFrame with elementary effect screening metrics."
+  },
+  {
+    "objectID": "docs/reference/sampling.effects.html#functions",
+    "href": "docs/reference/sampling.effects.html#functions",
+    "title": "sampling.effects",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerates Partial Dependence Plots (PDPs) for every feature in a DataFrame against a target variable,\n\n\n\nGenerates a random orientation of a sampling matrix.\n\n\n\nGenerates a plot with elementary effect screening metrics.\n\n\n\nGenerates a DataFrame with elementary effect screening metrics."
+  },
+  {
+    "objectID": "docs/reference/plot.visualization.html",
+    "href": "docs/reference/plot.visualization.html",
+    "title": "plot.visualization",
+    "section": "",
+    "text": "plot.visualization\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nPlot surrogate contours for all combinations of the top max_imp important parameters.\n\n\n\nPlot optimization progress showing all evaluations and best-so-far curve.\n\n\n\nPlot the surrogate model for two dimensions."
+  },
+  {
+    "objectID": "docs/reference/plot.visualization.html#functions",
+    "href": "docs/reference/plot.visualization.html#functions",
+    "title": "plot.visualization",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nPlot surrogate contours for all combinations of the top max_imp important parameters.\n\n\n\nPlot optimization progress showing all evaluations and best-so-far curve.\n\n\n\nPlot the surrogate model for two dimensions."
+  },
+  {
+    "objectID": "docs/reference/plot.mo.html",
+    "href": "docs/reference/plot.mo.html",
+    "title": "plot.mo",
+    "section": "",
+    "text": "plot.mo\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerates scatter plots for each combination of two targets from a multi-output prediction while highlighting Pareto optimal points."
+  },
+  {
+    "objectID": "docs/reference/plot.mo.html#functions",
+    "href": "docs/reference/plot.mo.html#functions",
+    "title": "plot.mo",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerates scatter plots for each combination of two targets from a multi-output prediction while highlighting Pareto optimal points."
+  },
+  {
+    "objectID": "docs/reference/optimizer.schedule_free.html",
+    "href": "docs/reference/optimizer.schedule_free.html",
+    "title": "optimizer.schedule_free",
+    "section": "",
+    "text": "optimizer.schedule_free\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nSchedule-Free AdamW in PyTorch."
+  },
+  {
+    "objectID": "docs/reference/optimizer.schedule_free.html#classes",
+    "href": "docs/reference/optimizer.schedule_free.html#classes",
+    "title": "optimizer.schedule_free",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nSchedule-Free AdamW in PyTorch."
+  },
+  {
+    "objectID": "docs/reference/nn.html",
+    "href": "docs/reference/nn.html",
+    "title": "nn",
+    "section": "",
+    "text": "nn\nnn\nNeural network models for spotoptim."
+  },
+  {
+    "objectID": "docs/reference/nn.linear_regressor.html",
+    "href": "docs/reference/nn.linear_regressor.html",
+    "title": "nn.linear_regressor",
+    "section": "",
+    "text": "nn.linear_regressor\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nPyTorch neural network for regression with configurable architecture."
+  },
+  {
+    "objectID": "docs/reference/nn.linear_regressor.html#classes",
+    "href": "docs/reference/nn.linear_regressor.html#classes",
+    "title": "nn.linear_regressor",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nPyTorch neural network for regression with configurable architecture."
+  },
+  {
+    "objectID": "docs/reference/mo.pareto.html",
+    "href": "docs/reference/mo.pareto.html",
+    "title": "mo.pareto",
+    "section": "",
+    "text": "mo.pareto\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nFind the Pareto-efficient points from a set of points.\n\n\n\nVisualizes the Pareto-optimal points in the input space for each pair of inputs\n\n\n\nGenerates contour plots of every combination of two input variables x_i and x_j\n\n\n\nGenerates surface plots of every combination of two input variables x_i and x_j"
+  },
+  {
+    "objectID": "docs/reference/mo.pareto.html#functions",
+    "href": "docs/reference/mo.pareto.html#functions",
+    "title": "mo.pareto",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nFind the Pareto-efficient points from a set of points.\n\n\n\nVisualizes the Pareto-optimal points in the input space for each pair of inputs\n\n\n\nGenerates contour plots of every combination of two input variables x_i and x_j\n\n\n\nGenerates surface plots of every combination of two input variables x_i and x_j"
+  },
+  {
+    "objectID": "docs/reference/inspection.html",
+    "href": "docs/reference/inspection.html",
+    "title": "inspection",
+    "section": "",
+    "text": "inspection\ninspection\nInspection (sensitivity analysis) module for spotoptim.\nProvides feature importance utilities based on impurity (MDI) and permutation importance, plus plotting helpers."
+  },
+  {
+    "objectID": "docs/reference/inspection.importance.html",
+    "href": "docs/reference/inspection.importance.html",
+    "title": "inspection.importance",
+    "section": "",
+    "text": "inspection.importance\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerates permutation importances from a RandomForestRegressor.\n\n\n\nGenerates a DataFrame with Gini importances from a RandomForestRegressor.\n\n\n\nGenerate and plot feature importances using MDI and permutation importance.\n\n\n\nGenerate scatter plot matrix for the most important features.\n\n\n\nPlots the impurity-based and permutation-based feature importances for a given classifier."
+  },
+  {
+    "objectID": "docs/reference/inspection.importance.html#functions",
+    "href": "docs/reference/inspection.importance.html#functions",
+    "title": "inspection.importance",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerates permutation importances from a RandomForestRegressor.\n\n\n\nGenerates a DataFrame with Gini importances from a RandomForestRegressor.\n\n\n\nGenerate and plot feature importances using MDI and permutation importance.\n\n\n\nGenerate scatter plot matrix for the most important features.\n\n\n\nPlots the impurity-based and permutation-based feature importances for a given classifier."
+  },
+  {
+    "objectID": "docs/reference/hyperparameters.repr_helpers.html",
+    "href": "docs/reference/hyperparameters.repr_helpers.html",
+    "title": "hyperparameters.repr_helpers",
+    "section": "",
+    "text": "hyperparameters.repr_helpers\nhyperparameters.repr_helpers"
+  },
+  {
+    "objectID": "docs/reference/hyperparameters.parameters.html",
+    "href": "docs/reference/hyperparameters.parameters.html",
+    "title": "hyperparameters.parameters",
+    "section": "",
+    "text": "hyperparameters.parameters\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nUser-friendly interface for defining hyperparameters."
+  },
+  {
+    "objectID": "docs/reference/hyperparameters.parameters.html#classes",
+    "href": "docs/reference/hyperparameters.parameters.html#classes",
+    "title": "hyperparameters.parameters",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nUser-friendly interface for defining hyperparameters."
+  },
+  {
+    "objectID": "docs/reference/function.so.html",
+    "href": "docs/reference/function.so.html",
+    "title": "function.so",
+    "section": "",
+    "text": "function.so\nAnalytical single-objective test functions for optimization benchmarking.\nThis module provides well-known analytical test functions commonly used for evaluating and benchmarking optimization algorithms.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nN-dimensional Ackley function.\n\n\n\nLennard-Jones Atomic Cluster Potential Energy.\n\n\n\nN-dimensional Michalewicz function.\n\n\n\n10-Link Robot Arm with Maze-Like Hard Constraints.\n\n\n\n10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.\n\n\n\nN-dimensional Rosenbrock function.\n\n\n\nAircraft Wing Weight function."
+  },
+  {
+    "objectID": "docs/reference/function.so.html#functions",
+    "href": "docs/reference/function.so.html#functions",
+    "title": "function.so",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nN-dimensional Ackley function.\n\n\n\nLennard-Jones Atomic Cluster Potential Energy.\n\n\n\nN-dimensional Michalewicz function.\n\n\n\n10-Link Robot Arm with Maze-Like Hard Constraints.\n\n\n\n10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.\n\n\n\nN-dimensional Rosenbrock function.\n\n\n\nAircraft Wing Weight function."
+  },
+  {
+    "objectID": "docs/reference/function.html",
+    "href": "docs/reference/function.html",
+    "title": "function",
+    "section": "",
+    "text": "function\nfunction\nAnalytical test functions for optimization."
+  },
+  {
+    "objectID": "docs/reference/function.forr08a.html",
+    "href": "docs/reference/function.forr08a.html",
+    "title": "function.forr08a",
+    "section": "",
+    "text": "function.forr08a\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nComputes the drag coefficient (cd) of an aerofoil based on the shape parameter X.\n\n\n\nBranin’s test function that takes a 2D input vector x in the range [0, 1] for each dimension\n\n\n\nOne-variable test function that takes a scalar or 1D array input x in the range [0, 1]"
+  },
+  {
+    "objectID": "docs/reference/function.forr08a.html#functions",
+    "href": "docs/reference/function.forr08a.html#functions",
+    "title": "function.forr08a",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nComputes the drag coefficient (cd) of an aerofoil based on the shape parameter X.\n\n\n\nBranin’s test function that takes a 2D input vector x in the range [0, 1] for each dimension\n\n\n\nOne-variable test function that takes a scalar or 1D array input x in the range [0, 1]"
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.factor_analyzer_utils.html",
+    "href": "docs/reference/factor_analyzer.factor_analyzer_utils.html",
+    "title": "factor_analyzer.factor_analyzer_utils",
+    "section": "",
+    "text": "factor_analyzer.factor_analyzer_utils\nUtility functions, used primarily by the confirmatory factor analysis module.\nConfirmatory factor analysis using machine learning methods. Re-implementation of the factor-analyzer package.\nSee https://factor-analyzer.readthedocs.io/en/latest/introduction.html for more details.\nAuthors of the original implementation: * Jeremy Biggs (jeremy.m.biggs@gmail.com) * Nitin Madnani (nmadnani@ets.org) Organization: Educational Testing Service Date: 2022-09-05\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nApply a function to impute np.nan values with the mean or the median.\n\n\n\nCalculate the commutation matrix.\n\n\n\nCalculate the correlation matrix.\n\n\n\nCalculate the covariance matrix.\n\n\n\nCompute cross-correlations from the given covariance matrix.\n\n\n\nCalculate the duplication matrix.\n\n\n\nTransform given input symmetric matrix using pre-post duplication.\n\n\n\nFill the lower diagonal of a square matrix, given a 1-D input array.\n\n\n\nGet the indexes for a given value.\n\n\n\nGet the free parameter indices from the flattened matrix.\n\n\n\nGet the indices for the lower triangle of a symmetric matrix.\n\n\n\nGet the indices for the upper triangle of a symmetric matrix.\n\n\n\nImpute np.nan values with the mean or median, or drop the containing rows.\n\n\n\nCalculate matrix inverse using Cholesky decomposition.\n\n\n\nMerge variances and covariances into a single variance-covariance matrix.\n\n\n\nCompute partial correlations between variable pairs.\n\n\n\nCalculate the squared multiple correlations.\n\n\n\nGet first unique instance of every list element, while maintaining order."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.factor_analyzer_utils.html#functions",
+    "href": "docs/reference/factor_analyzer.factor_analyzer_utils.html#functions",
+    "title": "factor_analyzer.factor_analyzer_utils",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nApply a function to impute np.nan values with the mean or the median.\n\n\n\nCalculate the commutation matrix.\n\n\n\nCalculate the correlation matrix.\n\n\n\nCalculate the covariance matrix.\n\n\n\nCompute cross-correlations from the given covariance matrix.\n\n\n\nCalculate the duplication matrix.\n\n\n\nTransform given input symmetric matrix using pre-post duplication.\n\n\n\nFill the lower diagonal of a square matrix, given a 1-D input array.\n\n\n\nGet the indexes for a given value.\n\n\n\nGet the free parameter indices from the flattened matrix.\n\n\n\nGet the indices for the lower triangle of a symmetric matrix.\n\n\n\nGet the indices for the upper triangle of a symmetric matrix.\n\n\n\nImpute np.nan values with the mean or median, or drop the containing rows.\n\n\n\nCalculate matrix inverse using Cholesky decomposition.\n\n\n\nMerge variances and covariances into a single variance-covariance matrix.\n\n\n\nCompute partial correlations between variable pairs.\n\n\n\nCalculate the squared multiple correlations.\n\n\n\nGet first unique instance of every list element, while maintaining order."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.factor_analyzer.html",
+    "href": "docs/reference/factor_analyzer.factor_analyzer.html",
+    "title": "factor_analyzer.factor_analyzer",
+    "section": "",
+    "text": "factor_analyzer.factor_analyzer\nFactor analysis using MINRES or ML, with optional rotation using Varimax or Promax.\nConfirmatory factor analysis using machine learning methods. Re-implementation of the factor-analyzer package.\nSee https://factor-analyzer.readthedocs.io/en/latest/introduction.html for more details.\nAuthors of the original implementation: * Jeremy Biggs (jeremy.m.biggs@gmail.com) * Nitin Madnani (nmadnani@ets.org) Organization: Educational Testing Service Date: 2022-09-05\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nThe main exploratory factor analysis class.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nCompute the Bartlett sphericity test.\n\n\n\nCalculate the Kaiser-Meyer-Olkin criterion for items and overall."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.factor_analyzer.html#classes",
+    "href": "docs/reference/factor_analyzer.factor_analyzer.html#classes",
+    "title": "factor_analyzer.factor_analyzer",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nThe main exploratory factor analysis class."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.factor_analyzer.html#functions",
+    "href": "docs/reference/factor_analyzer.factor_analyzer.html#functions",
+    "title": "factor_analyzer.factor_analyzer",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nCompute the Bartlett sphericity test.\n\n\n\nCalculate the Kaiser-Meyer-Olkin criterion for items and overall."
+  },
+  {
+    "objectID": "docs/reference/eda.html",
+    "href": "docs/reference/eda.html",
+    "title": "eda",
+    "section": "",
+    "text": "eda\neda\nExploratory Data Analysis (EDA) module for spotoptim.\nThis module provides visualization and analysis tools for exploring optimization results and data distributions."
+  },
+  {
+    "objectID": "docs/reference/data.html",
+    "href": "docs/reference/data.html",
+    "title": "data",
+    "section": "",
+    "text": "data\ndata\nData utilities for spotoptim package.\nThis module provides ready-to-use datasets and data loaders for common machine learning tasks."
+  },
+  {
+    "objectID": "docs/reference/data.base.html",
+    "href": "docs/reference/data.base.html",
+    "title": "data.base",
+    "section": "",
+    "text": "data.base\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nBase class for all configurations.\n\n\n\nBase class for configurations that are stored in a local file."
+  },
+  {
+    "objectID": "docs/reference/data.base.html#classes",
+    "href": "docs/reference/data.base.html#classes",
+    "title": "data.base",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nBase class for all configurations.\n\n\n\nBase class for configurations that are stored in a local file."
+  },
+  {
+    "objectID": "docs/reference/core.experiment.html",
+    "href": "docs/reference/core.experiment.html",
+    "title": "core.experiment",
+    "section": "",
+    "text": "core.experiment\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nControls the experiment configuration, replacing the legacy fun_control dictionary."
+  },
+  {
+    "objectID": "docs/reference/core.experiment.html#classes",
+    "href": "docs/reference/core.experiment.html#classes",
+    "title": "core.experiment",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nControls the experiment configuration, replacing the legacy fun_control dictionary."
+  },
+  {
+    "objectID": "docs/reference/SpotOptim.html",
+    "href": "docs/reference/SpotOptim.html",
+    "title": "SpotOptim",
+    "section": "",
+    "text": "SpotOptim\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nSPOT optimizer compatible with scipy.optimize interface.\n\n\n\nConfiguration parameters for SpotOptim.\n\n\n\nMutable state of the optimization process."
+  },
+  {
+    "objectID": "docs/reference/SpotOptim.html#classes",
+    "href": "docs/reference/SpotOptim.html#classes",
+    "title": "SpotOptim",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nSPOT optimizer compatible with scipy.optimize interface.\n\n\n\nConfiguration parameters for SpotOptim.\n\n\n\nMutable state of the optimization process."
+  },
+  {
+    "objectID": "docs/download.html",
+    "href": "docs/download.html",
+    "title": "Install spotoptim",
+    "section": "",
+    "text": "pip install spotoptim\n\n\n\nuv pip install spotoptim",
+    "crumbs": [
+      "Download"
+    ]
+  },
+  {
+    "objectID": "docs/download.html#using-pip",
+    "href": "docs/download.html#using-pip",
+    "title": "Install spotoptim",
+    "section": "",
+    "text": "pip install spotoptim",
+    "crumbs": [
+      "Download"
+    ]
+  },
+  {
+    "objectID": "docs/download.html#using-uv",
+    "href": "docs/download.html#using-uv",
+    "title": "Install spotoptim",
+    "section": "",
+    "text": "uv pip install spotoptim",
+    "crumbs": [
+      "Download"
+    ]
+  },
+  {
+    "objectID": "docs/index.html",
+    "href": "docs/index.html",
+    "title": "spotoptim",
+    "section": "",
+    "text": "Sequential Parameter Optimization Toolbox",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "docs/index.html#about-spotoptim",
+    "href": "docs/index.html#about-spotoptim",
+    "title": "spotoptim",
+    "section": "About spotoptim",
+    "text": "About spotoptim\nspotoptim is a Python toolbox for Sequential Parameter Optimization (SPO), designed for robust and efficient optimization of expensive-to-evaluate functions.",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "docs/index.html#surrogate-model-based-optimization",
+    "href": "docs/index.html#surrogate-model-based-optimization",
+    "title": "spotoptim",
+    "section": "Surrogate Model Based Optimization",
+    "text": "Surrogate Model Based Optimization\n\nDocumentation for spotoptim see Sequential Parameter Optimization Cookbook.\nNews and updates related to SPOT see SPOTSeven",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "docs/examples.html",
+    "href": "docs/examples.html",
+    "title": "SPOT Examples",
+    "section": "",
+    "text": "The following example demonstrates how to use SpotOptim with the Sphere function.\n\nimport numpy as np\nfrom spotoptim import SpotOptim\n\ndef sphere(X):\n    X = np.atleast_2d(X)\n    return np.sum(X**2, axis=1)\n\nopt = SpotOptim(\n    fun=sphere,\n    bounds=[(-5, 5), (-5, 5)],\n    max_iter=20,\n    n_initial=10,\n    seed=0,\n)\nresult = opt.optimize()\n\nprint(f\"Best x    : {result.x}\")\nprint(f\"Best f(x) : {result.fun:.6f}\")\nprint(f\"Evaluations: {result.nfev}\")\n\nBest x    : [-1.07968718e-04  9.05044427e-05]\nBest f(x) : 0.000000\nEvaluations: 20",
+    "crumbs": [
+      "Examples"
+    ]
+  },
+  {
+    "objectID": "docs/examples.html#simple-spotoptim-run",
+    "href": "docs/examples.html#simple-spotoptim-run",
+    "title": "SPOT Examples",
+    "section": "",
+    "text": "The following example demonstrates how to use SpotOptim with the Sphere function.\n\nimport numpy as np\nfrom spotoptim import SpotOptim\n\ndef sphere(X):\n    X = np.atleast_2d(X)\n    return np.sum(X**2, axis=1)\n\nopt = SpotOptim(\n    fun=sphere,\n    bounds=[(-5, 5), (-5, 5)],\n    max_iter=20,\n    n_initial=10,\n    seed=0,\n)\nresult = opt.optimize()\n\nprint(f\"Best x    : {result.x}\")\nprint(f\"Best f(x) : {result.fun:.6f}\")\nprint(f\"Evaluations: {result.nfev}\")\n\nBest x    : [-1.07968718e-04  9.05044427e-05]\nBest f(x) : 0.000000\nEvaluations: 20",
+    "crumbs": [
+      "Examples"
+    ]
+  },
+  {
+    "objectID": "docs/examples.html#convergence-plot",
+    "href": "docs/examples.html#convergence-plot",
+    "title": "SPOT Examples",
+    "section": "Convergence Plot",
+    "text": "Convergence Plot\n\nimport matplotlib.pyplot as plt\nplt.plot(result.y)\nplt.xlabel(\"Evaluation Number\")\nplt.ylabel(\"Objective Value\")\nplt.title(\"Optimization Progress\")\nplt.grid(True)\nplt.show()",
+    "crumbs": [
+      "Examples"
+    ]
+  },
+  {
+    "objectID": "docs/examples.html#further-examples",
+    "href": "docs/examples.html#further-examples",
+    "title": "SPOT Examples",
+    "section": "Further Examples",
+    "text": "Further Examples\nMore detailed examples showing acquisition functions, integer variables, and categorical variables can be found in the Living Examples document.",
+    "crumbs": [
+      "Examples"
+    ]
+  },
+  {
+    "objectID": "docs/reference/core.data.html",
+    "href": "docs/reference/core.data.html",
+    "title": "core.data",
+    "section": "",
+    "text": "core.data\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nData handler for numpy arrays or torch tensors.\n\n\n\nData handler for PyTorch Datasets.\n\n\n\nAbstract base class for data handling in SpotOptim."
+  },
+  {
+    "objectID": "docs/reference/core.data.html#classes",
+    "href": "docs/reference/core.data.html#classes",
+    "title": "core.data",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nData handler for numpy arrays or torch tensors.\n\n\n\nData handler for PyTorch Datasets.\n\n\n\nAbstract base class for data handling in SpotOptim."
+  },
+  {
+    "objectID": "docs/reference/core.html",
+    "href": "docs/reference/core.html",
+    "title": "core",
+    "section": "",
+    "text": "core\ncore"
+  },
+  {
+    "objectID": "docs/reference/data.diabetes.html",
+    "href": "docs/reference/data.diabetes.html",
+    "title": "data.diabetes",
+    "section": "",
+    "text": "data.diabetes\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nDiabetes dataset wrapping sklearn’s diabetes dataset or custom data.\n\n\n\n\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nReturns train and test dataloaders for the Diabetes dataset."
+  },
+  {
+    "objectID": "docs/reference/data.diabetes.html#classes",
+    "href": "docs/reference/data.diabetes.html#classes",
+    "title": "data.diabetes",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nDiabetes dataset wrapping sklearn’s diabetes dataset or custom data."
+  },
+  {
+    "objectID": "docs/reference/data.diabetes.html#functions",
+    "href": "docs/reference/data.diabetes.html#functions",
+    "title": "data.diabetes",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nReturns train and test dataloaders for the Diabetes dataset."
+  },
+  {
+    "objectID": "docs/reference/eda.plots.html",
+    "href": "docs/reference/eda.plots.html",
+    "title": "eda.plots",
+    "section": "",
+    "text": "eda.plots\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid.\n\n\n\nGenerate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure."
+  },
+  {
+    "objectID": "docs/reference/eda.plots.html#functions",
+    "href": "docs/reference/eda.plots.html#functions",
+    "title": "eda.plots",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid.\n\n\n\nGenerate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.confirmatory_factor_analyzer.html",
+    "href": "docs/reference/factor_analyzer.confirmatory_factor_analyzer.html",
+    "title": "factor_analyzer.confirmatory_factor_analyzer",
+    "section": "",
+    "text": "factor_analyzer.confirmatory_factor_analyzer\nConfirmatory factor analysis using machine learning methods. Re-implementation of the factor-analyzer package.\nSee https://factor-analyzer.readthedocs.io/en/latest/introduction.html for more details.\nAuthors of the original implementation: * Jeremy Biggs (jeremy.m.biggs@gmail.com) * Nitin Madnani (nmadnani@ets.org) Organization: Educational Testing Service Date: 2022-09-05\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nFit a confirmatory factor analysis model using maximum likelihood.\n\n\n\nEncapsulate the model specification for CFA.\n\n\n\nGenerate the model specification for CFA."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.confirmatory_factor_analyzer.html#classes",
+    "href": "docs/reference/factor_analyzer.confirmatory_factor_analyzer.html#classes",
+    "title": "factor_analyzer.confirmatory_factor_analyzer",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nFit a confirmatory factor analysis model using maximum likelihood.\n\n\n\nEncapsulate the model specification for CFA.\n\n\n\nGenerate the model specification for CFA."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.factor_analyzer_rotator.html",
+    "href": "docs/reference/factor_analyzer.factor_analyzer_rotator.html",
+    "title": "factor_analyzer.factor_analyzer_rotator",
+    "section": "",
+    "text": "factor_analyzer.factor_analyzer_rotator\nClass to perform various rotations of factor loading matrices.\nConfirmatory factor analysis using machine learning methods. Re-implementation of the factor-analyzer package.\nSee https://factor-analyzer.readthedocs.io/en/latest/introduction.html for more details.\nAuthors of the original implementation: * Jeremy Biggs (jeremy.m.biggs@gmail.com) * Nitin Madnani (nmadnani@ets.org) Organization: Educational Testing Service Date: 2022-09-05\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nPerform rotations on an unrotated factor loading matrix."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.factor_analyzer_rotator.html#classes",
+    "href": "docs/reference/factor_analyzer.factor_analyzer_rotator.html#classes",
+    "title": "factor_analyzer.factor_analyzer_rotator",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nPerform rotations on an unrotated factor loading matrix."
+  },
+  {
+    "objectID": "docs/reference/factor_analyzer.html",
+    "href": "docs/reference/factor_analyzer.html",
+    "title": "factor_analyzer",
+    "section": "",
+    "text": "factor_analyzer\nfactor_analyzer\nThis module performs exploratory and confirmatory factor analyses.\n:author: Jeremy Biggs (jeremy.m.biggs@gmail.com) :author: Nitin Madnani (nmadnani@ets.org) :organization: Educational Testing Service :date: 2022-09-05\nThis program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\nYou should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA."
+  },
+  {
+    "objectID": "docs/reference/function.mo.html",
+    "href": "docs/reference/function.mo.html",
+    "title": "function.mo",
+    "section": "",
+    "text": "function.mo\nAnalytical multi-objective test functions for optimization benchmarking.\nThis module provides well-known multi-objective analytical test functions commonly used for evaluating and benchmarking multiobjective optimization algorithms.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nCompute activity predictions for each row in the input array.\n\n\n\nCompute conversion predictions for each row in the input array.\n\n\n\nDTLZ1 multi-objective test function (scalable objectives).\n\n\n\nDTLZ2 multi-objective test function (scalable objectives).\n\n\n\nFonseca-Fleming multi-objective test function (2 objectives).\n\n\n\nCompute both conversion and activity predictions for each row in the input array.\n\n\n\nKursawe multi-objective test function (2 objectives, minimization).\n\n\n\nConvex bi-objective maximization test function (2 objectives).\n\n\n\nConvex bi-objective minimization test function (2 objectives).\n\n\n\nSchaffer N1 multi-objective test function (2 objectives).\n\n\n\nZDT1 multi-objective test function (2 objectives).\n\n\n\nZDT2 multi-objective test function (2 objectives).\n\n\n\nZDT3 multi-objective test function (2 objectives).\n\n\n\nZDT4 multi-objective test function (2 objectives).\n\n\n\nZDT6 multi-objective test function (2 objectives)."
+  },
+  {
+    "objectID": "docs/reference/function.mo.html#functions",
+    "href": "docs/reference/function.mo.html#functions",
+    "title": "function.mo",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nCompute activity predictions for each row in the input array.\n\n\n\nCompute conversion predictions for each row in the input array.\n\n\n\nDTLZ1 multi-objective test function (scalable objectives).\n\n\n\nDTLZ2 multi-objective test function (scalable objectives).\n\n\n\nFonseca-Fleming multi-objective test function (2 objectives).\n\n\n\nCompute both conversion and activity predictions for each row in the input array.\n\n\n\nKursawe multi-objective test function (2 objectives, minimization).\n\n\n\nConvex bi-objective maximization test function (2 objectives).\n\n\n\nConvex bi-objective minimization test function (2 objectives).\n\n\n\nSchaffer N1 multi-objective test function (2 objectives).\n\n\n\nZDT1 multi-objective test function (2 objectives).\n\n\n\nZDT2 multi-objective test function (2 objectives).\n\n\n\nZDT3 multi-objective test function (2 objectives).\n\n\n\nZDT4 multi-objective test function (2 objectives).\n\n\n\nZDT6 multi-objective test function (2 objectives)."
+  },
+  {
+    "objectID": "docs/reference/function.remote.html",
+    "href": "docs/reference/function.remote.html",
+    "title": "function.remote",
+    "section": "",
+    "text": "function.remote\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nEvaluates an objective function remotely via an HTTP POST request."
+  },
+  {
+    "objectID": "docs/reference/function.remote.html#functions",
+    "href": "docs/reference/function.remote.html#functions",
+    "title": "function.remote",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nEvaluates an objective function remotely via an HTTP POST request."
+  },
+  {
+    "objectID": "docs/reference/function.torch_objective.html",
+    "href": "docs/reference/function.torch_objective.html",
+    "title": "function.torch_objective",
+    "section": "",
+    "text": "function.torch_objective\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nA callable objective function for SpotOptim that trains and evaluates a PyTorch model."
+  },
+  {
+    "objectID": "docs/reference/function.torch_objective.html#classes",
+    "href": "docs/reference/function.torch_objective.html#classes",
+    "title": "function.torch_objective",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nA callable objective function for SpotOptim that trains and evaluates a PyTorch model."
+  },
+  {
+    "objectID": "docs/reference/hyperparameters.html",
+    "href": "docs/reference/hyperparameters.html",
+    "title": "hyperparameters",
+    "section": "",
+    "text": "hyperparameters\nhyperparameters"
+  },
+  {
+    "objectID": "docs/reference/index.html",
+    "href": "docs/reference/index.html",
+    "title": "Function reference",
+    "section": "",
+    "text": "SpotOptim\n\n\n\ncore\n\n\n\ncore.data\n\n\n\ncore.experiment\n\n\n\n\n\n\n\n\n\n\nsurrogate\nSurrogate models for SpotOptim.\n\n\nsurrogate.kriging\nKriging (Gaussian Process) surrogate model for SpotOptim.\n\n\nsurrogate.simple_kriging\nSimplified SimpleKriging surrogate model for SpotOptim.\n\n\nsurrogate.mlp_surrogate\nMLP Surrogate model for SpotOptim.\n\n\nsurrogate.nystroem\n\n\n\nsurrogate.kernels\n\n\n\nsurrogate.pipeline\n\n\n\n\n\n\n\n\n\n\nsampling\nSampling methods for design of experiments.\n\n\nsampling.design\n\n\n\nsampling.effects\n\n\n\nsampling.lhs\n\n\n\nsampling.mm\n\n\n\n\n\n\n\n\n\n\noptimizer\n\n\n\noptimizer.schedule_free\n\n\n\n\n\n\n\n\n\n\nhyperparameters\n\n\n\nhyperparameters.parameters\n\n\n\nhyperparameters.repr_helpers\n\n\n\n\n\n\n\n\n\n\nnn\nNeural network models for spotoptim.\n\n\nnn.linear_regressor\n\n\n\nnn.mlp\n\n\n\n\n\n\n\n\n\n\nplot\n\n\n\nplot.contour\n\n\n\nplot.mo\n\n\n\nplot.visualization\n\n\n\n\n\n\n\n\n\n\nutils\nUtility functions for spotoptim.\n\n\nutils.boundaries\n\n\n\nutils.eval\n\n\n\nutils.file\n\n\n\nutils.mapping\nLearning rate mapping functions for unified optimizer interface.\n\n\nutils.pca\n\n\n\nutils.scaler\n\n\n\nutils.stats\n\n\n\n\n\n\n\n\n\n\ndata\nData utilities for spotoptim package.\n\n\ndata.base\n\n\n\ndata.diabetes\n\n\n\n\n\n\n\n\n\n\neda\nExploratory Data Analysis (EDA) module for spotoptim.\n\n\neda.plots\n\n\n\n\n\n\n\n\n\n\nmo\n\n\n\nmo.mo_mm\n\n\n\nmo.pareto\n\n\n\n\n\n\n\n\n\n\ninspection\nInspection (sensitivity analysis) module for spotoptim.\n\n\ninspection.importance\n\n\n\ninspection.predictions\n\n\n\n\n\n\n\n\n\n\nfactor_analyzer\nThis module performs exploratory and confirmatory factor analyses.\n\n\nfactor_analyzer.confirmatory_factor_analyzer\nConfirmatory factor analysis using machine learning methods.\n\n\nfactor_analyzer.factor_analyzer\nFactor analysis using MINRES or ML, with optional rotation using Varimax or Promax.\n\n\nfactor_analyzer.factor_analyzer_rotator\nClass to perform various rotations of factor loading matrices.\n\n\nfactor_analyzer.factor_analyzer_utils\nUtility functions, used primarily by the confirmatory factor analysis module.\n\n\n\n\n\n\n\n\n\nfunction\nAnalytical test functions for optimization.\n\n\nfunction.forr08a\n\n\n\nfunction.mo\nAnalytical multi-objective test functions for optimization benchmarking.\n\n\nfunction.remote\n\n\n\nfunction.so\nAnalytical single-objective test functions for optimization benchmarking.\n\n\nfunction.torch_objective\n\n\n\n\n\n\n\n\n\n\ntricands\n\n\n\ntricands.tricands",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#core",
+    "href": "docs/reference/index.html#core",
+    "title": "Function reference",
+    "section": "",
+    "text": "SpotOptim\n\n\n\ncore\n\n\n\ncore.data\n\n\n\ncore.experiment",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#surrogate-models",
+    "href": "docs/reference/index.html#surrogate-models",
+    "title": "Function reference",
+    "section": "",
+    "text": "surrogate\nSurrogate models for SpotOptim.\n\n\nsurrogate.kriging\nKriging (Gaussian Process) surrogate model for SpotOptim.\n\n\nsurrogate.simple_kriging\nSimplified SimpleKriging surrogate model for SpotOptim.\n\n\nsurrogate.mlp_surrogate\nMLP Surrogate model for SpotOptim.\n\n\nsurrogate.nystroem\n\n\n\nsurrogate.kernels\n\n\n\nsurrogate.pipeline",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#sampling",
+    "href": "docs/reference/index.html#sampling",
+    "title": "Function reference",
+    "section": "",
+    "text": "sampling\nSampling methods for design of experiments.\n\n\nsampling.design\n\n\n\nsampling.effects\n\n\n\nsampling.lhs\n\n\n\nsampling.mm",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#optimization",
+    "href": "docs/reference/index.html#optimization",
+    "title": "Function reference",
+    "section": "",
+    "text": "optimizer\n\n\n\noptimizer.schedule_free",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#hyperparameters",
+    "href": "docs/reference/index.html#hyperparameters",
+    "title": "Function reference",
+    "section": "",
+    "text": "hyperparameters\n\n\n\nhyperparameters.parameters\n\n\n\nhyperparameters.repr_helpers",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#neural-networks",
+    "href": "docs/reference/index.html#neural-networks",
+    "title": "Function reference",
+    "section": "",
+    "text": "nn\nNeural network models for spotoptim.\n\n\nnn.linear_regressor\n\n\n\nnn.mlp",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#plotting-visualization",
+    "href": "docs/reference/index.html#plotting-visualization",
+    "title": "Function reference",
+    "section": "",
+    "text": "plot\n\n\n\nplot.contour\n\n\n\nplot.mo\n\n\n\nplot.visualization",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#utilities",
+    "href": "docs/reference/index.html#utilities",
+    "title": "Function reference",
+    "section": "",
+    "text": "utils\nUtility functions for spotoptim.\n\n\nutils.boundaries\n\n\n\nutils.eval\n\n\n\nutils.file\n\n\n\nutils.mapping\nLearning rate mapping functions for unified optimizer interface.\n\n\nutils.pca\n\n\n\nutils.scaler\n\n\n\nutils.stats",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#data",
+    "href": "docs/reference/index.html#data",
+    "title": "Function reference",
+    "section": "",
+    "text": "data\nData utilities for spotoptim package.\n\n\ndata.base\n\n\n\ndata.diabetes",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#exploratory-data-analysis",
+    "href": "docs/reference/index.html#exploratory-data-analysis",
+    "title": "Function reference",
+    "section": "",
+    "text": "eda\nExploratory Data Analysis (EDA) module for spotoptim.\n\n\neda.plots",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#multi-objective",
+    "href": "docs/reference/index.html#multi-objective",
+    "title": "Function reference",
+    "section": "",
+    "text": "mo\n\n\n\nmo.mo_mm\n\n\n\nmo.pareto",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#inspection",
+    "href": "docs/reference/index.html#inspection",
+    "title": "Function reference",
+    "section": "",
+    "text": "inspection\nInspection (sensitivity analysis) module for spotoptim.\n\n\ninspection.importance\n\n\n\ninspection.predictions",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#factor-analyzer",
+    "href": "docs/reference/index.html#factor-analyzer",
+    "title": "Function reference",
+    "section": "",
+    "text": "factor_analyzer\nThis module performs exploratory and confirmatory factor analyses.\n\n\nfactor_analyzer.confirmatory_factor_analyzer\nConfirmatory factor analysis using machine learning methods.\n\n\nfactor_analyzer.factor_analyzer\nFactor analysis using MINRES or ML, with optional rotation using Varimax or Promax.\n\n\nfactor_analyzer.factor_analyzer_rotator\nClass to perform various rotations of factor loading matrices.\n\n\nfactor_analyzer.factor_analyzer_utils\nUtility functions, used primarily by the confirmatory factor analysis module.",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#functions",
+    "href": "docs/reference/index.html#functions",
+    "title": "Function reference",
+    "section": "",
+    "text": "function\nAnalytical test functions for optimization.\n\n\nfunction.forr08a\n\n\n\nfunction.mo\nAnalytical multi-objective test functions for optimization benchmarking.\n\n\nfunction.remote\n\n\n\nfunction.so\nAnalytical single-objective test functions for optimization benchmarking.\n\n\nfunction.torch_objective",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/index.html#tricands",
+    "href": "docs/reference/index.html#tricands",
+    "title": "Function reference",
+    "section": "",
+    "text": "tricands\n\n\n\ntricands.tricands",
+    "crumbs": [
+      "API Reference",
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "docs/reference/inspection.predictions.html",
+    "href": "docs/reference/inspection.predictions.html",
+    "title": "inspection.predictions",
+    "section": "",
+    "text": "inspection.predictions\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nPlot actual vs. predicted values."
+  },
+  {
+    "objectID": "docs/reference/inspection.predictions.html#functions",
+    "href": "docs/reference/inspection.predictions.html#functions",
+    "title": "inspection.predictions",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nPlot actual vs. predicted values."
+  },
+  {
+    "objectID": "docs/reference/mo.mo_mm.html",
+    "href": "docs/reference/mo.mo_mm.html",
+    "title": "mo.mo_mm",
+    "section": "",
+    "text": "mo.mo_mm\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nCalculates the negative combined desirability for a candidate point x. Can be used by the mo_mm_desirability_optimizer.\n\n\n\nOptimizes the multi-objective function to find the next best point.\n\n\n\nGenerates a plot of the desirability landscape."
+  },
+  {
+    "objectID": "docs/reference/mo.mo_mm.html#functions",
+    "href": "docs/reference/mo.mo_mm.html#functions",
+    "title": "mo.mo_mm",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nCalculates the negative combined desirability for a candidate point x. Can be used by the mo_mm_desirability_optimizer.\n\n\n\nOptimizes the multi-objective function to find the next best point.\n\n\n\nGenerates a plot of the desirability landscape."
+  },
+  {
+    "objectID": "docs/reference/mo.html",
+    "href": "docs/reference/mo.html",
+    "title": "mo",
+    "section": "",
+    "text": "mo\nmo"
+  },
+  {
+    "objectID": "docs/reference/nn.mlp.html",
+    "href": "docs/reference/nn.mlp.html",
+    "title": "nn.mlp",
+    "section": "",
+    "text": "nn.mlp\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nThis block implements the multi-layer perceptron (MLP) module."
+  },
+  {
+    "objectID": "docs/reference/nn.mlp.html#classes",
+    "href": "docs/reference/nn.mlp.html#classes",
+    "title": "nn.mlp",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nThis block implements the multi-layer perceptron (MLP) module."
+  },
+  {
+    "objectID": "docs/reference/optimizer.html",
+    "href": "docs/reference/optimizer.html",
+    "title": "optimizer",
+    "section": "",
+    "text": "optimizer\noptimizer"
+  },
+  {
+    "objectID": "docs/reference/plot.contour.html",
+    "href": "docs/reference/plot.contour.html",
+    "title": "plot.contour",
+    "section": "",
+    "text": "plot.contour\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nCreates contour plots (single or faceted) using matplotlib.\n\n\n\nGenerate a grid of input variables and apply objective functions.\n\n\n\nGenerate 2D contour and optionally 3D surface plots for a model’s predictions.\n\n\n\nSimple contour plot"
+  },
+  {
+    "objectID": "docs/reference/plot.contour.html#functions",
+    "href": "docs/reference/plot.contour.html#functions",
+    "title": "plot.contour",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nCreates contour plots (single or faceted) using matplotlib.\n\n\n\nGenerate a grid of input variables and apply objective functions.\n\n\n\nGenerate 2D contour and optionally 3D surface plots for a model’s predictions.\n\n\n\nSimple contour plot"
+  },
+  {
+    "objectID": "docs/reference/plot.html",
+    "href": "docs/reference/plot.html",
+    "title": "plot",
+    "section": "",
+    "text": "plot\nplot"
+  },
+  {
+    "objectID": "docs/reference/sampling.design.html",
+    "href": "docs/reference/sampling.design.html",
+    "title": "sampling.design",
+    "section": "",
+    "text": "sampling.design\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerates a full factorial sampling plan in the unit cube.\n\n\n\nGenerates a clustered design.\n\n\n\nGenerates a collinear design (poorly projected).\n\n\n\nGenerates a regular grid design.\n\n\n\nGenerates a Latin Hypercube Sampling design using QMC.\n\n\n\nGenerates a Sobol sequence design.\n\n\n\nGenerate a uniform random experimental design."
+  },
+  {
+    "objectID": "docs/reference/sampling.design.html#functions",
+    "href": "docs/reference/sampling.design.html#functions",
+    "title": "sampling.design",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerates a full factorial sampling plan in the unit cube.\n\n\n\nGenerates a clustered design.\n\n\n\nGenerates a collinear design (poorly projected).\n\n\n\nGenerates a regular grid design.\n\n\n\nGenerates a Latin Hypercube Sampling design using QMC.\n\n\n\nGenerates a Sobol sequence design.\n\n\n\nGenerate a uniform random experimental design."
+  },
+  {
+    "objectID": "docs/reference/sampling.lhs.html",
+    "href": "docs/reference/sampling.lhs.html",
+    "title": "sampling.lhs",
+    "section": "",
+    "text": "sampling.lhs\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerates a random Latin hypercube within the [0,1]^k hypercube."
+  },
+  {
+    "objectID": "docs/reference/sampling.lhs.html#functions",
+    "href": "docs/reference/sampling.lhs.html#functions",
+    "title": "sampling.lhs",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerates a random Latin hypercube within the [0,1]^k hypercube."
+  },
+  {
+    "objectID": "docs/reference/sampling.html",
+    "href": "docs/reference/sampling.html",
+    "title": "sampling",
+    "section": "",
+    "text": "sampling\nsampling\nSampling methods for design of experiments."
+  },
+  {
+    "objectID": "docs/reference/surrogate.kriging.html",
+    "href": "docs/reference/surrogate.kriging.html",
+    "title": "surrogate.kriging",
+    "section": "",
+    "text": "surrogate.kriging\nKriging (Gaussian Process) surrogate model for SpotOptim.\nAdapted from spotpython.surrogate.kriging_basic for compatibility with SpotOptim. This implementation follows Forrester et al. (2008) “Engineering Design via Surrogate Modelling”.\nSpecific references: - Section 2.4 “Kriging”: Core implementation of the Kriging predictor and likelihood. - Section 6 “Surrogate Modeling of Noisy Data”: Implementation of “regression” and “reinterpolation” methods. - Validated against the book’s Matlab implementation: - likelihood.m: Concentrated log-likelihood calculation. - pred.m: Prediction and error estimation.\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nA scikit-learn compatible Kriging model class for regression tasks."
+  },
+  {
+    "objectID": "docs/reference/surrogate.kriging.html#classes",
+    "href": "docs/reference/surrogate.kriging.html#classes",
+    "title": "surrogate.kriging",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nA scikit-learn compatible Kriging model class for regression tasks."
+  },
+  {
+    "objectID": "docs/reference/surrogate.nystroem.html",
+    "href": "docs/reference/surrogate.nystroem.html",
+    "title": "surrogate.nystroem",
+    "section": "",
+    "text": "surrogate.nystroem\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nApproximate a feature map of a kernel using a subset of data."
+  },
+  {
+    "objectID": "docs/reference/surrogate.nystroem.html#classes",
+    "href": "docs/reference/surrogate.nystroem.html#classes",
+    "title": "surrogate.nystroem",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nApproximate a feature map of a kernel using a subset of data."
+  },
+  {
+    "objectID": "docs/reference/surrogate.html",
+    "href": "docs/reference/surrogate.html",
+    "title": "surrogate",
+    "section": "",
+    "text": "surrogate\nSurrogate models for SpotOptim.\nThis module provides two Kriging (Gaussian Process) implementations:\n\nKriging: Full-featured implementation with:\n\nMultiple methods: interpolation, regression, reinterpolation\nMixed variable types: float/num, int, factor\nIsotropic/anisotropic correlation\nLambda (nugget) optimization for regression\nCompatible with SpotOptim’s variable type conventions\n\nSimpleKriging: Lightweight implementation with:\n\nGaussian kernel only\nBasic hyperparameter optimization\nFaster for simple problems\nLimited to continuous variables\n\n\nFor most SpotOptim applications, use Kriging (the default). Use SimpleKriging for quick prototyping or simple continuous problems.\n\n\n&gt;&gt;&gt; from spotoptim.surrogate import Kriging\n&gt;&gt;&gt; model = Kriging(method='regression', seed=42)\n&gt;&gt;&gt; model.fit(X_train, y_train)\n&gt;&gt;&gt; predictions = model.predict(X_test)\n&gt;&gt;&gt; from spotoptim.surrogate import SimpleKriging\n&gt;&gt;&gt; simple_model = SimpleKriging(noise=1e-10, seed=42)\n&gt;&gt;&gt; simple_model.fit(X_train, y_train)"
+  },
+  {
+    "objectID": "docs/reference/surrogate.html#examples",
+    "href": "docs/reference/surrogate.html#examples",
+    "title": "surrogate",
+    "section": "",
+    "text": "&gt;&gt;&gt; from spotoptim.surrogate import Kriging\n&gt;&gt;&gt; model = Kriging(method='regression', seed=42)\n&gt;&gt;&gt; model.fit(X_train, y_train)\n&gt;&gt;&gt; predictions = model.predict(X_test)\n&gt;&gt;&gt; from spotoptim.surrogate import SimpleKriging\n&gt;&gt;&gt; simple_model = SimpleKriging(noise=1e-10, seed=42)\n&gt;&gt;&gt; simple_model.fit(X_train, y_train)"
+  },
+  {
+    "objectID": "docs/reference/tricands.html",
+    "href": "docs/reference/tricands.html",
+    "title": "tricands",
+    "section": "",
+    "text": "tricands\ntricands"
+  },
+  {
+    "objectID": "docs/reference/utils.boundaries.html",
+    "href": "docs/reference/utils.boundaries.html",
+    "title": "utils.boundaries",
+    "section": "",
+    "text": "utils.boundaries\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nCalculates the minimum and maximum values for each column in a NumPy array.\n\n\n\nMaps the values in X_search from the range [0, 1] to the original scale defined by x_min and x_max."
+  },
+  {
+    "objectID": "docs/reference/utils.boundaries.html#functions",
+    "href": "docs/reference/utils.boundaries.html#functions",
+    "title": "utils.boundaries",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nCalculates the minimum and maximum values for each column in a NumPy array.\n\n\n\nMaps the values in X_search from the range [0, 1] to the original scale defined by x_min and x_max."
+  },
+  {
+    "objectID": "docs/reference/utils.file.html",
+    "href": "docs/reference/utils.file.html",
+    "title": "utils.file",
+    "section": "",
+    "text": "utils.file\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nGenerates a standardized filename for experiments."
+  },
+  {
+    "objectID": "docs/reference/utils.file.html#functions",
+    "href": "docs/reference/utils.file.html#functions",
+    "title": "utils.file",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nGenerates a standardized filename for experiments."
+  },
+  {
+    "objectID": "docs/reference/utils.pca.html",
+    "href": "docs/reference/utils.pca.html",
+    "title": "utils.pca",
+    "section": "",
+    "text": "utils.pca\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nComputes the loading scores matrix for Principal Component Analysis (PCA).\n\n\n\nScale the numeric data and perform PCA.\n\n\n\nIdentify the top k features that have the strongest influence on PC1 and PC2.\n\n\n\nCreates a heatmap visualization of PCA loading scores.\n\n\n\nCreate a scatter plot of the first two principal components from PCA.\n\n\n\nPlot the scree plot for Principal Component Analysis (PCA)."
+  },
+  {
+    "objectID": "docs/reference/utils.pca.html#functions",
+    "href": "docs/reference/utils.pca.html#functions",
+    "title": "utils.pca",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nComputes the loading scores matrix for Principal Component Analysis (PCA).\n\n\n\nScale the numeric data and perform PCA.\n\n\n\nIdentify the top k features that have the strongest influence on PC1 and PC2.\n\n\n\nCreates a heatmap visualization of PCA loading scores.\n\n\n\nCreate a scatter plot of the first two principal components from PCA.\n\n\n\nPlot the scree plot for Principal Component Analysis (PCA)."
+  },
+  {
+    "objectID": "docs/reference/utils.scaler.html",
+    "href": "docs/reference/utils.scaler.html",
+    "title": "utils.scaler",
+    "section": "",
+    "text": "utils.scaler\n\n\n\n\n\nName\nDescription\n\n\n\n\n\nA class for scaling data using standardization with torch tensors."
+  },
+  {
+    "objectID": "docs/reference/utils.scaler.html#classes",
+    "href": "docs/reference/utils.scaler.html#classes",
+    "title": "utils.scaler",
+    "section": "",
+    "text": "Name\nDescription\n\n\n\n\n\nA class for scaling data using standardization with torch tensors."
+  },
+  {
+    "objectID": "docs/sequential-parameter-optimization-cookbook.html",
+    "href": "docs/sequential-parameter-optimization-cookbook.html",
+    "title": "Sequential Parameter Optimization Cookbook",
+    "section": "",
+    "text": "Sequential Parameter Optimization Cookbook\nThe following is a cookbook of optimization and hyperparameter tuning recipes. It is not meant to be exhaustive, but instead act as a place to capture a number of the common patterns used in hyperparameter tuning.\nSequential Parameter Optimization Cookbook",
+    "crumbs": [
+      "Getting Started"
+    ]
+  }
+]
