@@ -29,14 +29,9 @@ dependencies = [
     "xgboost>=3.1.1",
     "seaborn>=0.13.2",
     "spotdesirability>=0.0.1",
-    "jupyter-cache>=1.0.1",
-    "flake8>=7.3.0",
-    "dill>=0.4.0",
     "statsmodels>=0.14.6",
-    "pytest-cov>=7.0.0",
-    "quartodoc>=0.11.1",
-    "colorama>=0.4.6",
-    "griffe>=2.0.0",
+    "dill>=0.4.1",
+    "flake8>=7.3.0",
 ]
 
 [dependency-groups]
@@ -62,7 +57,7 @@ dev = [
 ]
 docs = [
     # Quarto API documentation generator (replaces mkdocstrings)
-    "quartodoc>=0.9.3",
+    "quartodoc>=0.11.1",
     # Google-style docstring parser used by quartodoc
     "griffe>=1.7.3",
     # Quarto Jupyter integration
