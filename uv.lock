@@ -2835,7 +2835,7 @@ wheels = [
 
 [[package]]
 name = "spotdesirability"
-version = "0.0.26"
+version = "0.0.27"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build" },
@@ -2851,9 +2851,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/73/e9/87879ea340520c8c50293eb89e2affddb1f1a76b8e3552e617cce1d99352/spotdesirability-0.0.26.tar.gz", hash = "sha256:5f7192ab67ddeccbc3e3fc3b779664e8b806004414613393d3089f500ef84da9", size = 11437, upload-time = "2026-02-28T16:14:32.057Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/73/fe5fc6cb4aba8b13a23f1c00257d5d2f6546f372624dbb0a930ef0d2e5bc/spotdesirability-0.0.27.tar.gz", hash = "sha256:f9932bbfefa7926607a79165de78b1528f1bbc15b1ce0e570e6216812b6cea86", size = 11435, upload-time = "2026-02-28T16:42:09.513Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/41/5c/1d6ec0ac894959b42e551bc733998ecf9bf21ad800f649dd764373f483a6/spotdesirability-0.0.26-py3-none-any.whl", hash = "sha256:c079d1ddca7d150e1a39438cb499e38daca66625146edc829e766334ce401874", size = 14259, upload-time = "2026-02-28T16:14:30.618Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/04/98343ddce9ef5b16a7f3765c87e48ce70b31b3a7671c1c5c54ea6f0efed9/spotdesirability-0.0.27-py3-none-any.whl", hash = "sha256:e11dea8e53b59833f26ba2e1fb0fcaa7e1e544b32ef78d556518b1d554aedf2e", size = 14258, upload-time = "2026-02-28T16:42:08.194Z" },
 ]
 
 [[package]]
