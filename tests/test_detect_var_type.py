@@ -425,6 +425,7 @@ class TestDetectVarTypeIntegration:
         assert hasattr(result, "x")
         assert hasattr(result, "fun")
 
+
 class TestDetectVarTypeDocstringExample:
     """Validate the living code example in the detect_var_type docstring."""
 
@@ -436,12 +437,12 @@ class TestDetectVarTypeDocstringExample:
         def objective(X):
             # X has shape (n_samples, n_dimensions)
             return X[:, 0] + X[:, 1]
-        
+
         # The first dimension has factor levels ('red', 'green', 'blue')
         # The second dimension is continuous bounds (0, 10)
-        spot = SpotOptim(fun=objective, bounds=[('red', 'green', 'blue'), (0, 10)])
+        spot = SpotOptim(fun=objective, bounds=[("red", "green", "blue"), (0, 10)])
         detected_types = spot.detect_var_type()
-        
+
         # Verify the auto-detected types match the example output
-        assert detected_types == ['factor', 'float']
-        assert spot.var_type == ['factor', 'float']
+        assert detected_types == ["factor", "float"]
+        assert spot.var_type == ["factor", "float"]
