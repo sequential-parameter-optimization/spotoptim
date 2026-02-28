@@ -1,246 +1,580 @@
-# SPDX-FileCopyrightText: 2026 bartzbeielstein
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# =============================================================================
-# _quarto.yml  —  spotoptim Documentation
-# =============================================================================
-# Master project configuration for Quarto.
-#
-# Build pipeline:
-#   1. quartodoc build     → docs/reference/*.qmd  (API autodoc)
-#   2. quarto render       → _site/  (full HTML site)
-#   3. quarto publish      → gh-pages branch
-#
-# ⚠️ Safety-critical note: pin Quarto and quartodoc versions in CI to
-#     guarantee reproducible renders across audit cycles.
-# =============================================================================
-
 project:
   type: website
   output-dir: _site
-
-  # Explicitly allowlist what gets rendered.
   render:
-    - "docs/index.qmd"
-    - "docs/**/*.qmd"
-    - "docs/**/*.md"
-
+    - docs/index.qmd
+    - docs/**/*.qmd
+    - docs/**/*.md
 filters:
   - docs/interlinks.lua
-
 interlinks:
   sources:
     python:
-      url: "https://docs.python.org/3/"
+      url: https://docs.python.org/3/
     pandas:
-      url: "https://pandas.pydata.org/docs/"
+      url: https://pandas.pydata.org/docs/
     numpy:
-      url: "https://numpy.org/doc/stable/"
-
-# Website metadata & navigation
-# =============================================================================
+      url: https://numpy.org/doc/stable/
 website:
-  title: "spotoptim"
-  description: "Sequential Parameter Optimization Toolbox in Python"
-  site-url: "https://sequential-parameter-optimization.github.io/spotoptim/"
-  repo-url: "https://github.com/sequential-parameter-optimization/spotoptim"
-  repo-actions: [edit, issue]
-  favicon: "docs/images/favicon.png"
-
-  # ── Minimal top bar (search + GitHub icon only) ───────────────────────────
+  title: spotoptim
+  description: Sequential Parameter Optimization Toolbox in Python
+  site-url: https://sequential-parameter-optimization.github.io/spotoptim/
+  repo-url: https://github.com/sequential-parameter-optimization/spotoptim
+  repo-actions:
+    - edit
+    - issue
+  favicon: docs/images/favicon.png
   navbar:
     background: primary
     search: true
-    logo: "docs/images/spotlogo.png"
+    logo: docs/images/spotlogo.png
     right:
       - icon: github
-        href: "https://github.com/sequential-parameter-optimization/spotoptim"
-        aria-label: "GitHub repository"
-
-  # ── Left sidebar (primary navigation) ────────────────────────────────────
+        href: https://github.com/sequential-parameter-optimization/spotoptim
+        aria-label: GitHub repository
   sidebar:
-    style: "docked"       # matches MkDocs Material "navigation.sections" feel
-    search: false         # already in navbar
-    collapse-level: 1     # top-level sections default to collapsed
+    style: docked
+    search: false
+    collapse-level: 1
     contents:
-      - text: "Home"
+      - text: Home
         file: docs/index.qmd
-      - text: "Getting Started"
+      - text: Getting Started
         file: docs/sequential-parameter-optimization-cookbook.qmd
-      - text: "Examples"
+      - text: Examples
         file: docs/examples.qmd
-      - text: "Download"
+      - text: Download
         file: docs/download.qmd
-
-      - section: "API Reference"
+      - section: API Reference
         contents:
-          - text: "Overview"
+          - text: Overview
             file: docs/reference/index.qmd
-          - section: "Core"
+          - section: Core
             contents:
-              - text: "SpotOptim"
-                file: docs/reference/spotoptim.SpotOptim.qmd
-              - text: "core"
-                file: docs/reference/spotoptim.core.qmd
-              - text: "core.data"
-                file: docs/reference/spotoptim.core.data.qmd
-              - text: "core.experiment"
-                file: docs/reference/spotoptim.core.experiment.qmd
-          - section: "Surrogate Models"
+              - text: SpotOptim
+                file: docs/reference/SpotOptim.qmd
+              - text: SpotOptim
+                file: docs/reference/SpotOptim.SpotOptim.qmd
+              - text: SpotOptimConfig
+                file: docs/reference/SpotOptim.SpotOptimConfig.qmd
+              - text: SpotOptimState
+                file: docs/reference/SpotOptim.SpotOptimState.qmd
+              - text: core
+                file: docs/reference/core.qmd
+              - text: core.data
+                file: docs/reference/core.data.qmd
+              - text: SpotDataFromArray
+                file: docs/reference/core.data.SpotDataFromArray.qmd
+              - text: SpotDataFromTorchDataset
+                file: docs/reference/core.data.SpotDataFromTorchDataset.qmd
+              - text: SpotDataSet
+                file: docs/reference/core.data.SpotDataSet.qmd
+              - text: core.experiment
+                file: docs/reference/core.experiment.qmd
+              - text: ExperimentControl
+                file: docs/reference/core.experiment.ExperimentControl.qmd
+          - section: Surrogate Models
             contents:
-              - text: "surrogate"
-                file: docs/reference/spotoptim.surrogate.qmd
-              - text: "surrogate.kriging"
-                file: docs/reference/spotoptim.surrogate.kriging.qmd
-              - text: "surrogate.simple_kriging"
-                file: docs/reference/spotoptim.surrogate.simple_kriging.qmd
-              - text: "surrogate.mlp_surrogate"
-                file: docs/reference/spotoptim.surrogate.mlp_surrogate.qmd
-              - text: "surrogate.nystroem"
-                file: docs/reference/spotoptim.surrogate.nystroem.qmd
-              - text: "surrogate.kernels"
-                file: docs/reference/spotoptim.surrogate.kernels.qmd
-              - text: "surrogate.pipeline"
-                file: docs/reference/spotoptim.surrogate.pipeline.qmd
-          - section: "Sampling"
+              - text: surrogate
+                file: docs/reference/surrogate.qmd
+              - text: surrogate.kriging
+                file: docs/reference/surrogate.kriging.qmd
+              - text: Kriging
+                file: docs/reference/surrogate.kriging.Kriging.qmd
+              - text: surrogate.simple_kriging
+                file: docs/reference/surrogate.simple_kriging.qmd
+              - text: SimpleKriging
+                file: docs/reference/surrogate.simple_kriging.SimpleKriging.qmd
+              - text: surrogate.mlp_surrogate
+                file: docs/reference/surrogate.mlp_surrogate.qmd
+              - text: MLPSurrogate
+                file: docs/reference/surrogate.mlp_surrogate.MLPSurrogate.qmd
+              - text: surrogate.nystroem
+                file: docs/reference/surrogate.nystroem.qmd
+              - text: Nystroem
+                file: docs/reference/surrogate.nystroem.Nystroem.qmd
+              - text: surrogate.kernels
+                file: docs/reference/surrogate.kernels.qmd
+              - text: ConstantKernel
+                file: docs/reference/surrogate.kernels.ConstantKernel.qmd
+              - text: Kernel
+                file: docs/reference/surrogate.kernels.Kernel.qmd
+              - text: Product
+                file: docs/reference/surrogate.kernels.Product.qmd
+              - text: RBF
+                file: docs/reference/surrogate.kernels.RBF.qmd
+              - text: SpotOptimKernel
+                file: docs/reference/surrogate.kernels.SpotOptimKernel.qmd
+              - text: Sum
+                file: docs/reference/surrogate.kernels.Sum.qmd
+              - text: WhiteKernel
+                file: docs/reference/surrogate.kernels.WhiteKernel.qmd
+              - text: surrogate.pipeline
+                file: docs/reference/surrogate.pipeline.qmd
+              - text: Pipeline
+                file: docs/reference/surrogate.pipeline.Pipeline.qmd
+          - section: Sampling
             contents:
-              - text: "sampling"
-                file: docs/reference/spotoptim.sampling.qmd
-              - text: "sampling.design"
-                file: docs/reference/spotoptim.sampling.design.qmd
-              - text: "sampling.effects"
-                file: docs/reference/spotoptim.sampling.effects.qmd
-              - text: "sampling.lhs"
-                file: docs/reference/spotoptim.sampling.lhs.qmd
-              - text: "sampling.mm"
-                file: docs/reference/spotoptim.sampling.mm.qmd
-          - section: "Optimization"
+              - text: sampling
+                file: docs/reference/sampling.qmd
+              - text: sampling.design
+                file: docs/reference/sampling.design.qmd
+              - text: fullfactorial
+                file: docs/reference/sampling.design.fullfactorial.qmd
+              - text: generate_clustered_design
+                file: 
+                  docs/reference/sampling.design.generate_clustered_design.qmd
+              - text: generate_collinear_design
+                file: 
+                  docs/reference/sampling.design.generate_collinear_design.qmd
+              - text: generate_grid_design
+                file: docs/reference/sampling.design.generate_grid_design.qmd
+              - text: generate_qmc_lhs_design
+                file: docs/reference/sampling.design.generate_qmc_lhs_design.qmd
+              - text: generate_sobol_design
+                file: docs/reference/sampling.design.generate_sobol_design.qmd
+              - text: generate_uniform_design
+                file: docs/reference/sampling.design.generate_uniform_design.qmd
+              - text: sampling.effects
+                file: docs/reference/sampling.effects.qmd
+              - text: plot_all_partial_dependence
+                file: 
+                  docs/reference/sampling.effects.plot_all_partial_dependence.qmd
+              - text: randorient
+                file: docs/reference/sampling.effects.randorient.qmd
+              - text: screening_plot
+                file: docs/reference/sampling.effects.screening_plot.qmd
+              - text: screening_print
+                file: docs/reference/sampling.effects.screening_print.qmd
+              - text: screeningplan
+                file: docs/reference/sampling.effects.screeningplan.qmd
+              - text: sampling.lhs
+                file: docs/reference/sampling.lhs.qmd
+              - text: rlh
+                file: docs/reference/sampling.lhs.rlh.qmd
+              - text: sampling.mm
+                file: docs/reference/sampling.mm.qmd
+              - text: bestlh
+                file: docs/reference/sampling.mm.bestlh.qmd
+              - text: jd
+                file: docs/reference/sampling.mm.jd.qmd
+              - text: mm
+                file: docs/reference/sampling.mm.mm.qmd
+              - text: mm_improvement
+                file: docs/reference/sampling.mm.mm_improvement.qmd
+              - text: mm_improvement_contour
+                file: docs/reference/sampling.mm.mm_improvement_contour.qmd
+              - text: mmlhs
+                file: docs/reference/sampling.mm.mmlhs.qmd
+              - text: mmphi
+                file: docs/reference/sampling.mm.mmphi.qmd
+              - text: mmphi_intensive
+                file: docs/reference/sampling.mm.mmphi_intensive.qmd
+              - text: mmphi_intensive_update
+                file: docs/reference/sampling.mm.mmphi_intensive_update.qmd
+              - text: mmsort
+                file: docs/reference/sampling.mm.mmsort.qmd
+              - text: perturb
+                file: docs/reference/sampling.mm.perturb.qmd
+              - text: phisort
+                file: docs/reference/sampling.mm.phisort.qmd
+              - text: plot_mmphi_vs_n_lhs
+                file: docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.qmd
+              - text: plot_mmphi_vs_points
+                file: docs/reference/sampling.mm.plot_mmphi_vs_points.qmd
+              - text: propose_mmphi_intensive_minimizing_point
+                file: 
+                  docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.qmd
+              - text: subset
+                file: docs/reference/sampling.mm.subset.qmd
+          - section: Optimization
             contents:
-              - text: "optimizer"
-                file: docs/reference/spotoptim.optimizer.qmd
-              - text: "optimizer.schedule_free"
-                file: docs/reference/spotoptim.optimizer.schedule_free.qmd
-          - section: "Hyperparameters"
+              - text: optimizer
+                file: docs/reference/optimizer.qmd
+              - text: optimizer.schedule_free
+                file: docs/reference/optimizer.schedule_free.qmd
+              - text: AdamWScheduleFree
+                file: 
+                  docs/reference/optimizer.schedule_free.AdamWScheduleFree.qmd
+          - section: Hyperparameters
             contents:
-              - text: "hyperparameters"
-                file: docs/reference/spotoptim.hyperparameters.qmd
-              - text: "hyperparameters.parameters"
-                file: docs/reference/spotoptim.hyperparameters.parameters.qmd
-              - text: "hyperparameters.repr_helpers"
-                file: docs/reference/spotoptim.hyperparameters.repr_helpers.qmd
-          - section: "Neural Networks"
+              - text: hyperparameters
+                file: docs/reference/hyperparameters.qmd
+              - text: hyperparameters.parameters
+                file: docs/reference/hyperparameters.parameters.qmd
+              - text: ParameterSet
+                file: docs/reference/hyperparameters.parameters.ParameterSet.qmd
+              - text: hyperparameters.repr_helpers
+                file: docs/reference/hyperparameters.repr_helpers.qmd
+              - text: Bounds
+                file: docs/reference/hyperparameters.repr_helpers.Bounds.qmd
+              - text: Parameter
+                file: docs/reference/hyperparameters.repr_helpers.Parameter.qmd
+          - section: Neural Networks
             contents:
-              - text: "nn"
-                file: docs/reference/spotoptim.nn.qmd
-              - text: "nn.linear_regressor"
-                file: docs/reference/spotoptim.nn.linear_regressor.qmd
-              - text: "nn.mlp"
-                file: docs/reference/spotoptim.nn.mlp.qmd
-          - section: "Plotting & Visualization"
+              - text: nn
+                file: docs/reference/nn.qmd
+              - text: nn.linear_regressor
+                file: docs/reference/nn.linear_regressor.qmd
+              - text: LinearRegressor
+                file: docs/reference/nn.linear_regressor.LinearRegressor.qmd
+              - text: nn.mlp
+                file: docs/reference/nn.mlp.qmd
+              - text: MLP
+                file: docs/reference/nn.mlp.MLP.qmd
+          - section: Plotting & Visualization
             contents:
-              - text: "plot"
-                file: docs/reference/spotoptim.plot.qmd
-              - text: "plot.contour"
-                file: docs/reference/spotoptim.plot.contour.qmd
-              - text: "plot.mo"
-                file: docs/reference/spotoptim.plot.mo.qmd
-              - text: "plot.visualization"
-                file: docs/reference/spotoptim.plot.visualization.qmd
-          - section: "Utilities"
+              - text: plot
+                file: docs/reference/plot.qmd
+              - text: plot.contour
+                file: docs/reference/plot.contour.qmd
+              - text: contourf_plot
+                file: docs/reference/plot.contour.contourf_plot.qmd
+              - text: mo_generate_plot_grid
+                file: docs/reference/plot.contour.mo_generate_plot_grid.qmd
+              - text: plotModel
+                file: docs/reference/plot.contour.plotModel.qmd
+              - text: simple_contour
+                file: docs/reference/plot.contour.simple_contour.qmd
+              - text: plot.mo
+                file: docs/reference/plot.mo.qmd
+              - text: plot_mo
+                file: docs/reference/plot.mo.plot_mo.qmd
+              - text: plot.visualization
+                file: docs/reference/plot.visualization.qmd
+              - text: plot_important_hyperparameter_contour
+                file: 
+                  docs/reference/plot.visualization.plot_important_hyperparameter_contour.qmd
+              - text: plot_progress
+                file: docs/reference/plot.visualization.plot_progress.qmd
+              - text: plot_surrogate
+                file: docs/reference/plot.visualization.plot_surrogate.qmd
+          - section: Utilities
             contents:
-              - text: "utils"
-                file: docs/reference/spotoptim.utils.qmd
-              - text: "utils.boundaries"
-                file: docs/reference/spotoptim.utils.boundaries.qmd
-              - text: "utils.eval"
-                file: docs/reference/spotoptim.utils.eval.qmd
-              - text: "utils.file"
-                file: docs/reference/spotoptim.utils.file.qmd
-              - text: "utils.mapping"
-                file: docs/reference/spotoptim.utils.mapping.qmd
-              - text: "utils.pca"
-                file: docs/reference/spotoptim.utils.pca.qmd
-              - text: "utils.scaler"
-                file: docs/reference/spotoptim.utils.scaler.qmd
-              - text: "utils.stats"
-                file: docs/reference/spotoptim.utils.stats.qmd
-          - section: "Data"
+              - text: utils
+                file: docs/reference/utils.qmd
+              - text: utils.boundaries
+                file: docs/reference/utils.boundaries.qmd
+              - text: get_boundaries
+                file: docs/reference/utils.boundaries.get_boundaries.qmd
+              - text: map_to_original_scale
+                file: docs/reference/utils.boundaries.map_to_original_scale.qmd
+              - text: utils.eval
+                file: docs/reference/utils.eval.qmd
+              - text: mo_cv_models
+                file: docs/reference/utils.eval.mo_cv_models.qmd
+              - text: mo_eval_models
+                file: docs/reference/utils.eval.mo_eval_models.qmd
+              - text: utils.file
+                file: docs/reference/utils.file.qmd
+              - text: get_experiment_filename
+                file: docs/reference/utils.file.get_experiment_filename.qmd
+              - text: utils.mapping
+                file: docs/reference/utils.mapping.qmd
+              - text: map_lr
+                file: docs/reference/utils.mapping.map_lr.qmd
+              - text: utils.pca
+                file: docs/reference/utils.pca.qmd
+              - text: get_loading_scores
+                file: docs/reference/utils.pca.get_loading_scores.qmd
+              - text: get_pca
+                file: docs/reference/utils.pca.get_pca.qmd
+              - text: get_pca_topk
+                file: docs/reference/utils.pca.get_pca_topk.qmd
+              - text: plot_loading_scores
+                file: docs/reference/utils.pca.plot_loading_scores.qmd
+              - text: plot_pca1vs2
+                file: docs/reference/utils.pca.plot_pca1vs2.qmd
+              - text: plot_pca_scree
+                file: docs/reference/utils.pca.plot_pca_scree.qmd
+              - text: utils.scaler
+                file: docs/reference/utils.scaler.qmd
+              - text: TorchStandardScaler
+                file: docs/reference/utils.scaler.TorchStandardScaler.qmd
+              - text: utils.stats
+                file: docs/reference/utils.stats.qmd
+              - text: calculate_outliers
+                file: docs/reference/utils.stats.calculate_outliers.qmd
+              - text: compute_coefficients_table
+                file: docs/reference/utils.stats.compute_coefficients_table.qmd
+              - text: compute_standardized_betas
+                file: docs/reference/utils.stats.compute_standardized_betas.qmd
+              - text: condition_index
+                file: docs/reference/utils.stats.condition_index.qmd
+              - text: cov_to_cor
+                file: docs/reference/utils.stats.cov_to_cor.qmd
+              - text: fit_all_lm
+                file: docs/reference/utils.stats.fit_all_lm.qmd
+              - text: get_all_vars_from_formula
+                file: docs/reference/utils.stats.get_all_vars_from_formula.qmd
+              - text: get_combinations
+                file: docs/reference/utils.stats.get_combinations.qmd
+              - text: get_sample_size
+                file: docs/reference/utils.stats.get_sample_size.qmd
+              - text: normalize_X
+                file: docs/reference/utils.stats.normalize_X.qmd
+              - text: pairwise_semi_partial_correlation
+                file: 
+                  docs/reference/utils.stats.pairwise_semi_partial_correlation.qmd
+              - text: partial_correlation
+                file: docs/reference/utils.stats.partial_correlation.qmd
+              - text: partial_correlation_test
+                file: docs/reference/utils.stats.partial_correlation_test.qmd
+              - text: plot_coeff_vs_pvals
+                file: docs/reference/utils.stats.plot_coeff_vs_pvals.qmd
+              - text: plot_coeff_vs_pvals_by_included
+                file: 
+                  docs/reference/utils.stats.plot_coeff_vs_pvals_by_included.qmd
+              - text: preprocess_df_for_ols
+                file: docs/reference/utils.stats.preprocess_df_for_ols.qmd
+              - text: semi_partial_correlation
+                file: docs/reference/utils.stats.semi_partial_correlation.qmd
+              - text: vif
+                file: docs/reference/utils.stats.vif.qmd
+          - section: Data
             contents:
-              - text: "data"
-                file: docs/reference/spotoptim.data.qmd
-              - text: "data.base"
-                file: docs/reference/spotoptim.data.base.qmd
-              - text: "data.diabetes"
-                file: docs/reference/spotoptim.data.diabetes.qmd
-          - section: "Exploratory Data Analysis"
+              - text: data
+                file: docs/reference/data.qmd
+              - text: data.base
+                file: docs/reference/data.base.qmd
+              - text: Config
+                file: docs/reference/data.base.Config.qmd
+              - text: FileConfig
+                file: docs/reference/data.base.FileConfig.qmd
+              - text: data.diabetes
+                file: docs/reference/data.diabetes.qmd
+              - text: DiabetesDataset
+                file: docs/reference/data.diabetes.DiabetesDataset.qmd
+              - text: get_diabetes_dataloaders
+                file: docs/reference/data.diabetes.get_diabetes_dataloaders.qmd
+          - section: Exploratory Data Analysis
             contents:
-              - text: "eda"
-                file: docs/reference/spotoptim.eda.qmd
-              - text: "eda.plots"
-                file: docs/reference/spotoptim.eda.plots.qmd
-          - section: "Multi-Objective"
+              - text: eda
+                file: docs/reference/eda.qmd
+              - text: eda.plots
+                file: docs/reference/eda.plots.qmd
+              - text: plot_ip_boxplots
+                file: docs/reference/eda.plots.plot_ip_boxplots.qmd
+              - text: plot_ip_histograms
+                file: docs/reference/eda.plots.plot_ip_histograms.qmd
+          - section: Multi-Objective
             contents:
-              - text: "mo"
-                file: docs/reference/spotoptim.mo.qmd
-              - text: "mo.mo_mm"
-                file: docs/reference/spotoptim.mo.mo_mm.qmd
-              - text: "mo.pareto"
-                file: docs/reference/spotoptim.mo.pareto.qmd
-          - section: "Inspection"
+              - text: mo
+                file: docs/reference/mo.qmd
+              - text: mo.mo_mm
+                file: docs/reference/mo.mo_mm.qmd
+              - text: mo_mm_desirability_function
+                file: docs/reference/mo.mo_mm.mo_mm_desirability_function.qmd
+              - text: mo_mm_desirability_optimizer
+                file: docs/reference/mo.mo_mm.mo_mm_desirability_optimizer.qmd
+              - text: mo_xy_desirability_plot
+                file: docs/reference/mo.mo_mm.mo_xy_desirability_plot.qmd
+              - text: mo.pareto
+                file: docs/reference/mo.pareto.qmd
+              - text: is_pareto_efficient
+                file: docs/reference/mo.pareto.is_pareto_efficient.qmd
+              - text: mo_pareto_optx_plot
+                file: docs/reference/mo.pareto.mo_pareto_optx_plot.qmd
+              - text: mo_xy_contour
+                file: docs/reference/mo.pareto.mo_xy_contour.qmd
+              - text: mo_xy_surface
+                file: docs/reference/mo.pareto.mo_xy_surface.qmd
+          - section: Inspection
             contents:
-              - text: "inspection"
-                file: docs/reference/spotoptim.inspection.qmd
-              - text: "inspection.importance"
-                file: docs/reference/spotoptim.inspection.importance.qmd
-              - text: "inspection.predictions"
-                file: docs/reference/spotoptim.inspection.predictions.qmd
-          - section: "Factor Analyzer"
+              - text: inspection
+                file: docs/reference/inspection.qmd
+              - text: inspection.importance
+                file: docs/reference/inspection.importance.qmd
+              - text: generate_imp
+                file: docs/reference/inspection.importance.generate_imp.qmd
+              - text: generate_mdi
+                file: docs/reference/inspection.importance.generate_mdi.qmd
+              - text: plot_feature_importances
+                file: 
+                  docs/reference/inspection.importance.plot_feature_importances.qmd
+              - text: plot_feature_scatter_matrix
+                file: 
+                  docs/reference/inspection.importance.plot_feature_scatter_matrix.qmd
+              - text: plot_importances
+                file: docs/reference/inspection.importance.plot_importances.qmd
+              - text: inspection.predictions
+                file: docs/reference/inspection.predictions.qmd
+              - text: plot_actual_vs_predicted
+                file: 
+                  docs/reference/inspection.predictions.plot_actual_vs_predicted.qmd
+          - section: Factor Analyzer
             contents:
-              - text: "factor_analyzer"
-                file: docs/reference/spotoptim.factor_analyzer.qmd
-              - text: "factor_analyzer.confirmatory_factor_analyzer"
-                file: docs/reference/spotoptim.factor_analyzer.confirmatory_factor_analyzer.qmd
-              - text: "factor_analyzer.factor_analyzer"
-                file: docs/reference/spotoptim.factor_analyzer.factor_analyzer.qmd
-              - text: "factor_analyzer.factor_analyzer_rotator"
-                file: docs/reference/spotoptim.factor_analyzer.factor_analyzer_rotator.qmd
-              - text: "factor_analyzer.factor_analyzer_utils"
-                file: docs/reference/spotoptim.factor_analyzer.factor_analyzer_utils.qmd
-          - section: "Functions"
+              - text: factor_analyzer
+                file: docs/reference/factor_analyzer.qmd
+              - text: factor_analyzer.confirmatory_factor_analyzer
+                file: 
+                  docs/reference/factor_analyzer.confirmatory_factor_analyzer.qmd
+              - text: ConfirmatoryFactorAnalyzer
+                file: 
+                  docs/reference/factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer.qmd
+              - text: ModelSpecification
+                file: 
+                  docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.qmd
+              - text: ModelSpecificationParser
+                file: 
+                  docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.qmd
+              - text: factor_analyzer.factor_analyzer
+                file: docs/reference/factor_analyzer.factor_analyzer.qmd
+              - text: FactorAnalyzer
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer.FactorAnalyzer.qmd
+              - text: calculate_bartlett_sphericity
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.qmd
+              - text: calculate_kmo
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer.calculate_kmo.qmd
+              - text: factor_analyzer.factor_analyzer_rotator
+                file: docs/reference/factor_analyzer.factor_analyzer_rotator.qmd
+              - text: Rotator
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_rotator.Rotator.qmd
+              - text: factor_analyzer.factor_analyzer_utils
+                file: docs/reference/factor_analyzer.factor_analyzer_utils.qmd
+              - text: apply_impute_nan
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.apply_impute_nan.qmd
+              - text: commutation_matrix
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.commutation_matrix.qmd
+              - text: corr
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.corr.qmd
+              - text: cov
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.cov.qmd
+              - text: covariance_to_correlation
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.covariance_to_correlation.qmd
+              - text: duplication_matrix
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix.qmd
+              - text: duplication_matrix_pre_post
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.qmd
+              - text: fill_lower_diag
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.fill_lower_diag.qmd
+              - text: get_first_idxs_from_values
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.qmd
+              - text: get_free_parameter_idxs
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.qmd
+              - text: get_symmetric_lower_idxs
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.qmd
+              - text: get_symmetric_upper_idxs
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.qmd
+              - text: impute_values
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.impute_values.qmd
+              - text: inv_chol
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.inv_chol.qmd
+              - text: merge_variance_covariance
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.merge_variance_covariance.qmd
+              - text: partial_correlations
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.partial_correlations.qmd
+              - text: smc
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.smc.qmd
+              - text: unique_elements
+                file: 
+                  docs/reference/factor_analyzer.factor_analyzer_utils.unique_elements.qmd
+          - section: Functions
             contents:
-              - text: "function"
-                file: docs/reference/spotoptim.function.qmd
-              - text: "function.forr08a"
-                file: docs/reference/spotoptim.function.forr08a.qmd
-              - text: "function.mo"
-                file: docs/reference/spotoptim.function.mo.qmd
-              - text: "function.remote"
-                file: docs/reference/spotoptim.function.remote.qmd
-              - text: "function.so"
-                file: docs/reference/spotoptim.function.so.qmd
-              - text: "function.torch_objective"
-                file: docs/reference/spotoptim.function.torch_objective.qmd
-          - section: "Tricands"
+              - text: function
+                file: docs/reference/function.qmd
+              - text: function.forr08a
+                file: docs/reference/function.forr08a.qmd
+              - text: aerofoilcd
+                file: docs/reference/function.forr08a.aerofoilcd.qmd
+              - text: branin
+                file: docs/reference/function.forr08a.branin.qmd
+              - text: onevar
+                file: docs/reference/function.forr08a.onevar.qmd
+              - text: function.mo
+                file: docs/reference/function.mo.qmd
+              - text: activity_pred
+                file: docs/reference/function.mo.activity_pred.qmd
+              - text: conversion_pred
+                file: docs/reference/function.mo.conversion_pred.qmd
+              - text: dtlz1
+                file: docs/reference/function.mo.dtlz1.qmd
+              - text: dtlz2
+                file: docs/reference/function.mo.dtlz2.qmd
+              - text: fonseca_fleming
+                file: docs/reference/function.mo.fonseca_fleming.qmd
+              - text: fun_myer16a
+                file: docs/reference/function.mo.fun_myer16a.qmd
+              - text: kursawe
+                file: docs/reference/function.mo.kursawe.qmd
+              - text: mo_conv2_max
+                file: docs/reference/function.mo.mo_conv2_max.qmd
+              - text: mo_conv2_min
+                file: docs/reference/function.mo.mo_conv2_min.qmd
+              - text: schaffer_n1
+                file: docs/reference/function.mo.schaffer_n1.qmd
+              - text: zdt1
+                file: docs/reference/function.mo.zdt1.qmd
+              - text: zdt2
+                file: docs/reference/function.mo.zdt2.qmd
+              - text: zdt3
+                file: docs/reference/function.mo.zdt3.qmd
+              - text: zdt4
+                file: docs/reference/function.mo.zdt4.qmd
+              - text: zdt6
+                file: docs/reference/function.mo.zdt6.qmd
+              - text: function.remote
+                file: docs/reference/function.remote.qmd
+              - text: objective_remote
+                file: docs/reference/function.remote.objective_remote.qmd
+              - text: function.so
+                file: docs/reference/function.so.qmd
+              - text: ackley
+                file: docs/reference/function.so.ackley.qmd
+              - text: lennard_jones
+                file: docs/reference/function.so.lennard_jones.qmd
+              - text: michalewicz
+                file: docs/reference/function.so.michalewicz.qmd
+              - text: robot_arm_hard
+                file: docs/reference/function.so.robot_arm_hard.qmd
+              - text: robot_arm_obstacle
+                file: docs/reference/function.so.robot_arm_obstacle.qmd
+              - text: rosenbrock
+                file: docs/reference/function.so.rosenbrock.qmd
+              - text: wingwt
+                file: docs/reference/function.so.wingwt.qmd
+              - text: function.torch_objective
+                file: docs/reference/function.torch_objective.qmd
+              - text: TorchObjective
+                file: docs/reference/function.torch_objective.TorchObjective.qmd
+          - section: Tricands
             contents:
-              - text: "tricands"
-                file: docs/reference/spotoptim.tricands.qmd
-              - text: "tricands.tricands"
-                file: docs/reference/spotoptim.tricands.tricands.qmd
-
-  # ── Page footer ───────────────────────────────────────────────────────────
+              - text: tricands
+                file: docs/reference/tricands.qmd
+              - text: tricands.tricands
+                file: docs/reference/tricands.tricands.qmd
+              - text: tricands
+                file: docs/reference/tricands.tricands.tricands.qmd
+              - text: tricands_fringe
+                file: docs/reference/tricands.tricands.tricands_fringe.qmd
+              - text: tricands_interior
+                file: docs/reference/tricands.tricands.tricands_interior.qmd
   page-footer:
-    center: |
-      Copyright © 2004-2026 Thomas Bartz-Beielstein |
-      [AGPL-3.0-or-later](https://www.gnu.org/licenses/agpl-3.0.html)
-
+    center: "Copyright © 2004-2026 Thomas Bartz-Beielstein |\n[AGPL-3.0-or-later](https://www.gnu.org/licenses/agpl-3.0.html)\n"
   search:
     location: navbar
     type: overlay
-
-# =============================================================================
-# HTML output format
-# =============================================================================
 format:
   html:
     theme:
@@ -252,116 +586,273 @@ format:
     code-copy: true
     code-fold: false
     highlight-style: github
-    # Math: built-in MathJax allows $...$ and $$...$$ directly
     html-math-method: mathjax
     smooth-scroll: true
     link-external-icon: true
     link-external-newwindow: true
-
-# =============================================================================
-# quartodoc — API reference generation
-# =============================================================================
 quartodoc:
   package: spotoptim
   source_dir: src
   dir: docs/reference
   parser: google
   render_interlinks: true
-  
-  # CRITICAL FIX: The next two parameters force quartodoc to generate pages 
-  # for underlying module classes/functions.
   options:
     children: linked
-
-  # This section lists all top-level targets.
   sections:
-    - title: "Core"
+    - title: Core
       contents:
         - SpotOptim
+        - SpotOptim.SpotOptim
+        - SpotOptim.SpotOptimConfig
+        - SpotOptim.SpotOptimState
         - core
         - core.data
+        - core.data.SpotDataFromArray
+        - core.data.SpotDataFromTorchDataset
+        - core.data.SpotDataSet
         - core.experiment
-    - title: "Surrogate Models"
+        - core.experiment.ExperimentControl
+    - title: Surrogate Models
       contents:
         - surrogate
         - surrogate.kriging
+        - surrogate.kriging.Kriging
         - surrogate.simple_kriging
+        - surrogate.simple_kriging.SimpleKriging
         - surrogate.mlp_surrogate
+        - surrogate.mlp_surrogate.MLPSurrogate
         - surrogate.nystroem
+        - surrogate.nystroem.Nystroem
         - surrogate.kernels
+        - surrogate.kernels.ConstantKernel
+        - surrogate.kernels.Kernel
+        - surrogate.kernels.Product
+        - surrogate.kernels.RBF
+        - surrogate.kernels.SpotOptimKernel
+        - surrogate.kernels.Sum
+        - surrogate.kernels.WhiteKernel
         - surrogate.pipeline
-    - title: "Sampling"
+        - surrogate.pipeline.Pipeline
+    - title: Sampling
       contents:
         - sampling
         - sampling.design
+        - sampling.design.fullfactorial
+        - sampling.design.generate_clustered_design
+        - sampling.design.generate_collinear_design
+        - sampling.design.generate_grid_design
+        - sampling.design.generate_qmc_lhs_design
+        - sampling.design.generate_sobol_design
+        - sampling.design.generate_uniform_design
         - sampling.effects
+        - sampling.effects.plot_all_partial_dependence
+        - sampling.effects.randorient
+        - sampling.effects.screening_plot
+        - sampling.effects.screening_print
+        - sampling.effects.screeningplan
         - sampling.lhs
+        - sampling.lhs.rlh
         - sampling.mm
-    - title: "Optimization"
+        - sampling.mm.bestlh
+        - sampling.mm.jd
+        - sampling.mm.mm
+        - sampling.mm.mm_improvement
+        - sampling.mm.mm_improvement_contour
+        - sampling.mm.mmlhs
+        - sampling.mm.mmphi
+        - sampling.mm.mmphi_intensive
+        - sampling.mm.mmphi_intensive_update
+        - sampling.mm.mmsort
+        - sampling.mm.perturb
+        - sampling.mm.phisort
+        - sampling.mm.plot_mmphi_vs_n_lhs
+        - sampling.mm.plot_mmphi_vs_points
+        - sampling.mm.propose_mmphi_intensive_minimizing_point
+        - sampling.mm.subset
+    - title: Optimization
       contents:
         - optimizer
         - optimizer.schedule_free
-    - title: "Hyperparameters"
+        - optimizer.schedule_free.AdamWScheduleFree
+    - title: Hyperparameters
       contents:
         - hyperparameters
         - hyperparameters.parameters
+        - hyperparameters.parameters.ParameterSet
         - hyperparameters.repr_helpers
-    - title: "Neural Networks"
+        - hyperparameters.repr_helpers.Bounds
+        - hyperparameters.repr_helpers.Parameter
+    - title: Neural Networks
       contents:
         - nn
         - nn.linear_regressor
+        - nn.linear_regressor.LinearRegressor
         - nn.mlp
-    - title: "Plotting & Visualization"
+        - nn.mlp.MLP
+    - title: Plotting & Visualization
       contents:
         - plot
         - plot.contour
+        - plot.contour.contourf_plot
+        - plot.contour.mo_generate_plot_grid
+        - plot.contour.plotModel
+        - plot.contour.simple_contour
         - plot.mo
+        - plot.mo.plot_mo
         - plot.visualization
-    - title: "Utilities"
+        - plot.visualization.plot_important_hyperparameter_contour
+        - plot.visualization.plot_progress
+        - plot.visualization.plot_surrogate
+    - title: Utilities
       contents:
         - utils
         - utils.boundaries
+        - utils.boundaries.get_boundaries
+        - utils.boundaries.map_to_original_scale
         - utils.eval
+        - utils.eval.mo_cv_models
+        - utils.eval.mo_eval_models
         - utils.file
+        - utils.file.get_experiment_filename
         - utils.mapping
+        - utils.mapping.map_lr
         - utils.pca
+        - utils.pca.get_loading_scores
+        - utils.pca.get_pca
+        - utils.pca.get_pca_topk
+        - utils.pca.plot_loading_scores
+        - utils.pca.plot_pca1vs2
+        - utils.pca.plot_pca_scree
         - utils.scaler
+        - utils.scaler.TorchStandardScaler
         - utils.stats
-    - title: "Data"
+        - utils.stats.calculate_outliers
+        - utils.stats.compute_coefficients_table
+        - utils.stats.compute_standardized_betas
+        - utils.stats.condition_index
+        - utils.stats.cov_to_cor
+        - utils.stats.fit_all_lm
+        - utils.stats.get_all_vars_from_formula
+        - utils.stats.get_combinations
+        - utils.stats.get_sample_size
+        - utils.stats.normalize_X
+        - utils.stats.pairwise_semi_partial_correlation
+        - utils.stats.partial_correlation
+        - utils.stats.partial_correlation_test
+        - utils.stats.plot_coeff_vs_pvals
+        - utils.stats.plot_coeff_vs_pvals_by_included
+        - utils.stats.preprocess_df_for_ols
+        - utils.stats.semi_partial_correlation
+        - utils.stats.vif
+    - title: Data
       contents:
         - data
         - data.base
+        - data.base.Config
+        - data.base.FileConfig
         - data.diabetes
-    - title: "Exploratory Data Analysis"
+        - data.diabetes.DiabetesDataset
+        - data.diabetes.get_diabetes_dataloaders
+    - title: Exploratory Data Analysis
       contents:
         - eda
         - eda.plots
-    - title: "Multi-Objective"
+        - eda.plots.plot_ip_boxplots
+        - eda.plots.plot_ip_histograms
+    - title: Multi-Objective
       contents:
         - mo
         - mo.mo_mm
+        - mo.mo_mm.mo_mm_desirability_function
+        - mo.mo_mm.mo_mm_desirability_optimizer
+        - mo.mo_mm.mo_xy_desirability_plot
         - mo.pareto
-    - title: "Inspection"
+        - mo.pareto.is_pareto_efficient
+        - mo.pareto.mo_pareto_optx_plot
+        - mo.pareto.mo_xy_contour
+        - mo.pareto.mo_xy_surface
+    - title: Inspection
       contents:
         - inspection
         - inspection.importance
+        - inspection.importance.generate_imp
+        - inspection.importance.generate_mdi
+        - inspection.importance.plot_feature_importances
+        - inspection.importance.plot_feature_scatter_matrix
+        - inspection.importance.plot_importances
         - inspection.predictions
-    - title: "Factor Analyzer"
+        - inspection.predictions.plot_actual_vs_predicted
+    - title: Factor Analyzer
       contents:
         - factor_analyzer
         - factor_analyzer.confirmatory_factor_analyzer
+        - factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer
+        - factor_analyzer.confirmatory_factor_analyzer.ModelSpecification
+        - factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser
         - factor_analyzer.factor_analyzer
+        - factor_analyzer.factor_analyzer.FactorAnalyzer
+        - factor_analyzer.factor_analyzer.calculate_bartlett_sphericity
+        - factor_analyzer.factor_analyzer.calculate_kmo
         - factor_analyzer.factor_analyzer_rotator
+        - factor_analyzer.factor_analyzer_rotator.Rotator
         - factor_analyzer.factor_analyzer_utils
-    - title: "Functions"
+        - factor_analyzer.factor_analyzer_utils.apply_impute_nan
+        - factor_analyzer.factor_analyzer_utils.commutation_matrix
+        - factor_analyzer.factor_analyzer_utils.corr
+        - factor_analyzer.factor_analyzer_utils.cov
+        - factor_analyzer.factor_analyzer_utils.covariance_to_correlation
+        - factor_analyzer.factor_analyzer_utils.duplication_matrix
+        - factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post
+        - factor_analyzer.factor_analyzer_utils.fill_lower_diag
+        - factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values
+        - factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs
+        - factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs
+        - factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs
+        - factor_analyzer.factor_analyzer_utils.impute_values
+        - factor_analyzer.factor_analyzer_utils.inv_chol
+        - factor_analyzer.factor_analyzer_utils.merge_variance_covariance
+        - factor_analyzer.factor_analyzer_utils.partial_correlations
+        - factor_analyzer.factor_analyzer_utils.smc
+        - factor_analyzer.factor_analyzer_utils.unique_elements
+    - title: Functions
       contents:
         - function
         - function.forr08a
+        - function.forr08a.aerofoilcd
+        - function.forr08a.branin
+        - function.forr08a.onevar
         - function.mo
+        - function.mo.activity_pred
+        - function.mo.conversion_pred
+        - function.mo.dtlz1
+        - function.mo.dtlz2
+        - function.mo.fonseca_fleming
+        - function.mo.fun_myer16a
+        - function.mo.kursawe
+        - function.mo.mo_conv2_max
+        - function.mo.mo_conv2_min
+        - function.mo.schaffer_n1
+        - function.mo.zdt1
+        - function.mo.zdt2
+        - function.mo.zdt3
+        - function.mo.zdt4
+        - function.mo.zdt6
         - function.remote
+        - function.remote.objective_remote
         - function.so
+        - function.so.ackley
+        - function.so.lennard_jones
+        - function.so.michalewicz
+        - function.so.robot_arm_hard
+        - function.so.robot_arm_obstacle
+        - function.so.rosenbrock
+        - function.so.wingwt
         - function.torch_objective
-    - title: "Tricands"
+        - function.torch_objective.TorchObjective
+    - title: Tricands
       contents:
         - tricands
         - tricands.tricands
+        - tricands.tricands.tricands
+        - tricands.tricands.tricands_fringe
+        - tricands.tricands.tricands_interior
