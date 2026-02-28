@@ -621,7 +621,7 @@ class SpotOptim(BaseEstimator):
 
         # View logs in browser: tensorboard --logdir=runs/my_optimization
         print("Logs saved to:", optimizer_tb.tensorboard_path)
-        
+
         # Cleanup log dir
         if os.path.exists(tb_dir):
             shutil.rmtree(tb_dir)
@@ -1131,7 +1131,7 @@ class SpotOptim(BaseEstimator):
             def objective(X):
                 # X has shape (n_samples, n_dimensions)
                 return X[:, 0] + X[:, 1]
-            
+
             # The first dimension has factor levels ('red', 'green', 'blue')
             # The second dimension is continuous bounds (0, 10)
             spot = SpotOptim(fun=objective, bounds=[('red', 'green', 'blue'), (0, 10)])

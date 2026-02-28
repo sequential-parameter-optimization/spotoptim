@@ -1,126 +1,267 @@
-# _quarto.yml
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
 # =============================================================================
-# Quarto project configuration for spotoptim
-# Replaces: mkdocs.yml
-# Generated: 2026-02-27
+# _quarto.yml  —  spotoptim Documentation
+# =============================================================================
+# Master project configuration for Quarto.
+#
+# Build pipeline:
+#   1. quartodoc build     → docs/reference/*.qmd  (API autodoc)
+#   2. quarto render       → _site/  (full HTML site)
+#   3. quarto publish      → gh-pages branch
+#
+# ⚠️ Safety-critical note: pin Quarto and quartodoc versions in CI to
+#     guarantee reproducible renders across audit cycles.
 # =============================================================================
 
 project:
   type: website
   output-dir: _site
-  render: 
-    - docs/
-  # Build API stubs from source before every render
-  pre-render: python -m quartodoc build --config _quarto.yml
 
+  # Explicitly allowlist what gets rendered.
+  render:
+    - "docs/index.qmd"
+    - "docs/**/*.qmd"
+    - "docs/**/*.md"
+
+# Website metadata & navigation
+# =============================================================================
 website:
   title: "spotoptim"
-  description: "spotoptim — Sequential Parameter Optimization Toolbox in Python"
+  description: "Sequential Parameter Optimization Toolbox in Python"
   site-url: "https://sequential-parameter-optimization.github.io/spotoptim/"
   repo-url: "https://github.com/sequential-parameter-optimization/spotoptim"
   repo-actions: [edit, issue]
-  favicon: docs/images/favicon.png
-  # Note: 'logo' is only valid under navbar:, not directly under website:
+  favicon: "docs/images/favicon.png"
 
-  # ── Navigation bar ──────────────────────────────────────────────────────────
+  # ── Minimal top bar (search + GitHub icon only) ───────────────────────────
   navbar:
-    background: dark
-    logo: docs/images/spotlogo.png
-    left:
-      - text: "Home"
-        href: docs/index.qmd
-      - text: "API Reference"
-        href: docs/reference/index.qmd
-      - text: "Documentation"
-        href: docs/sequential-parameter-optimization-cookbook.qmd
-      - text: "Download"
-        href: docs/download.qmd
-      - text: "Examples"
-        href: docs/examples.qmd
-    right:
-      - icon: twitter
-        href: https://twitter.com/bartzbeielstein
-        aria-label: Twitter
-      - icon: linkedin
-        href: https://www.linkedin.com/in/thomas-bartz-beielstein-3157b541/
-        aria-label: LinkedIn
-      - icon: github
-        href: https://github.com/sequential-parameter-optimization/spotoptim
-        aria-label: GitHub
-
-  # ── Sidebar ─────────────────────────────────────────────────────────────────
-  sidebar:
-    style: "docked"
+    background: primary
     search: true
-    collapse-level: 2
-    contents:
-      - section: "Home"
-        href: docs/index.qmd
-      - section: "API Reference"
-        href: docs/reference/index.qmd
-        contents: auto            # auto-populated by quartodoc via _sidebar.yml
-      - section: "Documentation"
-        href: docs/sequential-parameter-optimization-cookbook.qmd
-      - section: "Download"
-        href: docs/download.qmd
-      - section: "Examples"
-        href: docs/examples.qmd
-
-  # ── Footer ──────────────────────────────────────────────────────────────────
-  page-footer:
-    left: "Copyright © 2004–2026 Thomas Bartz-Beielstein"
+    logo: "docs/images/spotlogo.png"
     right:
       - icon: github
-        href: https://github.com/sequential-parameter-optimization/spotoptim
+        href: "https://github.com/sequential-parameter-optimization/spotoptim"
+        aria-label: "GitHub repository"
 
-  # ── Search ──────────────────────────────────────────────────────────────────
+  # ── Left sidebar (primary navigation) ────────────────────────────────────
+  sidebar:
+    style: "docked"       # matches MkDocs Material "navigation.sections" feel
+    search: false         # already in navbar
+    collapse-level: 1     # top-level sections default to collapsed
+    contents:
+      - text: "Home"
+        file: docs/index.qmd
+      - text: "Getting Started"
+        file: docs/sequential-parameter-optimization-cookbook.qmd
+      - text: "Examples"
+        file: docs/examples.qmd
+      - text: "Download"
+        file: docs/download.qmd
+
+      - section: "API Reference"
+        contents:
+          - text: "Overview"
+            file: docs/reference/index.qmd
+          - section: "Core"
+            contents:
+              - text: "SpotOptim"
+                file: docs/reference/spotoptim.SpotOptim.qmd
+              - text: "core"
+                file: docs/reference/spotoptim.core.qmd
+              - text: "core.data"
+                file: docs/reference/spotoptim.core.data.qmd
+              - text: "core.experiment"
+                file: docs/reference/spotoptim.core.experiment.qmd
+          - section: "Surrogate Models"
+            contents:
+              - text: "surrogate"
+                file: docs/reference/spotoptim.surrogate.qmd
+              - text: "surrogate.kriging"
+                file: docs/reference/spotoptim.surrogate.kriging.qmd
+              - text: "surrogate.simple_kriging"
+                file: docs/reference/spotoptim.surrogate.simple_kriging.qmd
+              - text: "surrogate.mlp_surrogate"
+                file: docs/reference/spotoptim.surrogate.mlp_surrogate.qmd
+              - text: "surrogate.nystroem"
+                file: docs/reference/spotoptim.surrogate.nystroem.qmd
+              - text: "surrogate.kernels"
+                file: docs/reference/spotoptim.surrogate.kernels.qmd
+              - text: "surrogate.pipeline"
+                file: docs/reference/spotoptim.surrogate.pipeline.qmd
+          - section: "Sampling"
+            contents:
+              - text: "sampling"
+                file: docs/reference/spotoptim.sampling.qmd
+              - text: "sampling.design"
+                file: docs/reference/spotoptim.sampling.design.qmd
+              - text: "sampling.effects"
+                file: docs/reference/spotoptim.sampling.effects.qmd
+              - text: "sampling.lhs"
+                file: docs/reference/spotoptim.sampling.lhs.qmd
+              - text: "sampling.mm"
+                file: docs/reference/spotoptim.sampling.mm.qmd
+          - section: "Optimization"
+            contents:
+              - text: "optimizer"
+                file: docs/reference/spotoptim.optimizer.qmd
+              - text: "optimizer.schedule_free"
+                file: docs/reference/spotoptim.optimizer.schedule_free.qmd
+          - section: "Hyperparameters"
+            contents:
+              - text: "hyperparameters"
+                file: docs/reference/spotoptim.hyperparameters.qmd
+              - text: "hyperparameters.parameters"
+                file: docs/reference/spotoptim.hyperparameters.parameters.qmd
+              - text: "hyperparameters.repr_helpers"
+                file: docs/reference/spotoptim.hyperparameters.repr_helpers.qmd
+          - section: "Neural Networks"
+            contents:
+              - text: "nn"
+                file: docs/reference/spotoptim.nn.qmd
+              - text: "nn.linear_regressor"
+                file: docs/reference/spotoptim.nn.linear_regressor.qmd
+              - text: "nn.mlp"
+                file: docs/reference/spotoptim.nn.mlp.qmd
+          - section: "Plotting & Visualization"
+            contents:
+              - text: "plot"
+                file: docs/reference/spotoptim.plot.qmd
+              - text: "plot.contour"
+                file: docs/reference/spotoptim.plot.contour.qmd
+              - text: "plot.mo"
+                file: docs/reference/spotoptim.plot.mo.qmd
+              - text: "plot.visualization"
+                file: docs/reference/spotoptim.plot.visualization.qmd
+          - section: "Utilities"
+            contents:
+              - text: "utils"
+                file: docs/reference/spotoptim.utils.qmd
+              - text: "utils.boundaries"
+                file: docs/reference/spotoptim.utils.boundaries.qmd
+              - text: "utils.eval"
+                file: docs/reference/spotoptim.utils.eval.qmd
+              - text: "utils.file"
+                file: docs/reference/spotoptim.utils.file.qmd
+              - text: "utils.mapping"
+                file: docs/reference/spotoptim.utils.mapping.qmd
+              - text: "utils.pca"
+                file: docs/reference/spotoptim.utils.pca.qmd
+              - text: "utils.scaler"
+                file: docs/reference/spotoptim.utils.scaler.qmd
+              - text: "utils.stats"
+                file: docs/reference/spotoptim.utils.stats.qmd
+          - section: "Data"
+            contents:
+              - text: "data"
+                file: docs/reference/spotoptim.data.qmd
+              - text: "data.base"
+                file: docs/reference/spotoptim.data.base.qmd
+              - text: "data.diabetes"
+                file: docs/reference/spotoptim.data.diabetes.qmd
+          - section: "Exploratory Data Analysis"
+            contents:
+              - text: "eda"
+                file: docs/reference/spotoptim.eda.qmd
+              - text: "eda.plots"
+                file: docs/reference/spotoptim.eda.plots.qmd
+          - section: "Multi-Objective"
+            contents:
+              - text: "mo"
+                file: docs/reference/spotoptim.mo.qmd
+              - text: "mo.mo_mm"
+                file: docs/reference/spotoptim.mo.mo_mm.qmd
+              - text: "mo.pareto"
+                file: docs/reference/spotoptim.mo.pareto.qmd
+          - section: "Inspection"
+            contents:
+              - text: "inspection"
+                file: docs/reference/spotoptim.inspection.qmd
+              - text: "inspection.importance"
+                file: docs/reference/spotoptim.inspection.importance.qmd
+              - text: "inspection.predictions"
+                file: docs/reference/spotoptim.inspection.predictions.qmd
+          - section: "Factor Analyzer"
+            contents:
+              - text: "factor_analyzer"
+                file: docs/reference/spotoptim.factor_analyzer.qmd
+              - text: "factor_analyzer.confirmatory_factor_analyzer"
+                file: docs/reference/spotoptim.factor_analyzer.confirmatory_factor_analyzer.qmd
+              - text: "factor_analyzer.factor_analyzer"
+                file: docs/reference/spotoptim.factor_analyzer.factor_analyzer.qmd
+              - text: "factor_analyzer.factor_analyzer_rotator"
+                file: docs/reference/spotoptim.factor_analyzer.factor_analyzer_rotator.qmd
+              - text: "factor_analyzer.factor_analyzer_utils"
+                file: docs/reference/spotoptim.factor_analyzer.factor_analyzer_utils.qmd
+          - section: "Functions"
+            contents:
+              - text: "function"
+                file: docs/reference/spotoptim.function.qmd
+              - text: "function.forr08a"
+                file: docs/reference/spotoptim.function.forr08a.qmd
+              - text: "function.mo"
+                file: docs/reference/spotoptim.function.mo.qmd
+              - text: "function.remote"
+                file: docs/reference/spotoptim.function.remote.qmd
+              - text: "function.so"
+                file: docs/reference/spotoptim.function.so.qmd
+              - text: "function.torch_objective"
+                file: docs/reference/spotoptim.function.torch_objective.qmd
+          - section: "Tricands"
+            contents:
+              - text: "tricands"
+                file: docs/reference/spotoptim.tricands.qmd
+              - text: "tricands.tricands"
+                file: docs/reference/spotoptim.tricands.tricands.qmd
+
+  # ── Page footer ───────────────────────────────────────────────────────────
+  page-footer:
+    center: |
+      Copyright © 2004-2026 Thomas Bartz-Beielstein |
+      [AGPL-3.0-or-later](https://www.gnu.org/licenses/agpl-3.0.html)
+
   search:
     location: navbar
     type: overlay
 
-# ── Output format ───────────────────────────────────────────────────────────
+# =============================================================================
+# HTML output format
+# =============================================================================
 format:
   html:
     theme:
-      light: cosmo              # close to Material default; alternatives: flatly, lux
-      dark:  darkly
-    highlight-style: github
-    code-copy: true
-    code-overflow: wrap
+      light: cosmo
+      dark: darkly
     toc: true
     toc-depth: 3
-    number-sections: false
-    # Math: built-in MathJax — identical delimiters to pymdownx.arithmatex
-    # Inline: $…$   Display: $$…$$  — no extra CDN or JS files needed
+    toc-location: right
+    code-copy: true
+    code-fold: false
+    highlight-style: github
+    # Math: built-in MathJax allows $...$ and $$...$$ directly
     html-math-method: mathjax
-    # Typography matching mkdocs.yml font settings
-    # mainfont: "Roboto"
-    # monofont: "Fira Code"
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
 
-# ── Code execution ──────────────────────────────────────────────────────────
-execute:
-  # freeze: auto — execute code locally; CI renders pre-frozen results only.
-  # This means the GitHub Action does NOT need the full runtime deps (torch, etc.)
-  # To execute code in CI instead, set `freeze: false` and uncomment the
-  # "Install runtime packages" step in .github/workflows/docs.yml.
-  freeze: auto
-  warning: false
-  echo: true
-
-# ── quartodoc: API documentation generator ──────────────────────────────────
-# Replaces: mkdocstrings + mkdocs-gen-files + mkdocs-literate-nav
-# Parser "google" matches the project's Google-style docstring format.
-# Output is written to docs/reference/ before Quarto renders the site.
+# =============================================================================
+# quartodoc — API reference generation
+# =============================================================================
 quartodoc:
   package: spotoptim
   source_dir: src
-  title: "API Reference"
   dir: docs/reference
-  parser: google                # must match docstring style
-  sidebar: docs/reference/_sidebar.yml   # consumed by `contents: auto`
+  parser: google
+  render_interlinks: true
+  
+  # CRITICAL FIX: The next two parameters force quartodoc to generate pages 
+  # for underlying module classes/functions.
+  options:
+    children: linked
 
-  dynamic: false
-
+  # This section lists all top-level targets.
   sections:
     - title: "Core"
       contents:
@@ -128,7 +269,6 @@ quartodoc:
         - core
         - core.data
         - core.experiment
-
     - title: "Surrogate Models"
       contents:
         - surrogate
@@ -138,7 +278,6 @@ quartodoc:
         - surrogate.nystroem
         - surrogate.kernels
         - surrogate.pipeline
-
     - title: "Sampling"
       contents:
         - sampling
@@ -146,31 +285,26 @@ quartodoc:
         - sampling.effects
         - sampling.lhs
         - sampling.mm
-
     - title: "Optimization"
       contents:
         - optimizer
         - optimizer.schedule_free
-
     - title: "Hyperparameters"
       contents:
         - hyperparameters
         - hyperparameters.parameters
         - hyperparameters.repr_helpers
-
     - title: "Neural Networks"
       contents:
         - nn
         - nn.linear_regressor
         - nn.mlp
-
     - title: "Plotting & Visualization"
       contents:
         - plot
         - plot.contour
         - plot.mo
         - plot.visualization
-
     - title: "Utilities"
       contents:
         - utils
@@ -181,30 +315,25 @@ quartodoc:
         - utils.pca
         - utils.scaler
         - utils.stats
-
     - title: "Data"
       contents:
         - data
         - data.base
         - data.diabetes
-
     - title: "Exploratory Data Analysis"
       contents:
         - eda
         - eda.plots
-
     - title: "Multi-Objective"
       contents:
         - mo
         - mo.mo_mm
         - mo.pareto
-
     - title: "Inspection"
       contents:
         - inspection
         - inspection.importance
         - inspection.predictions
-
     - title: "Factor Analyzer"
       contents:
         - factor_analyzer
@@ -212,7 +341,6 @@ quartodoc:
         - factor_analyzer.factor_analyzer
         - factor_analyzer.factor_analyzer_rotator
         - factor_analyzer.factor_analyzer_utils
-
     - title: "Functions"
       contents:
         - function
@@ -221,7 +349,6 @@ quartodoc:
         - function.remote
         - function.so
         - function.torch_objective
-
     - title: "Tricands"
       contents:
         - tricands
