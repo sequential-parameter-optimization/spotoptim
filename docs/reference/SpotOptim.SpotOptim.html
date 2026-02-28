@@ -1,0 +1,3270 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>spotoptim.spotoptim – spotoptim</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../docs/images/favicon.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f1aadacce99040138bbb613f9330654f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-5e96725ad03142391c5bee3219fd5ffe.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo light-content">
+    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">spotoptim</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/sequential-parameter-optimization/spotoptim"> <i class="bi bi-github" role="img" aria-label="GitHub repository">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.html">Core</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptim.html">SpotOptim</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/sequential-parameter-optimization-cookbook.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Getting Started</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/examples.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Examples</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/download.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Download</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">API Reference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Overview</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Core</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptim</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.SpotOptim.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">SpotOptim</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.SpotOptimConfig.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimConfig</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.SpotOptimState.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimState</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">core</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">core.data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.SpotDataFromArray.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataFromArray</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.SpotDataFromTorchDataset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataFromTorchDataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.SpotDataSet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataSet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.experiment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">core.experiment</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.experiment.ExperimentControl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ExperimentControl</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Surrogate Models</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">surrogate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">surrogate.kriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kriging.Kriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.simple_kriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">surrogate.simple_kriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.simple_kriging.SimpleKriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SimpleKriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.mlp_surrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">surrogate.mlp_surrogate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.mlp_surrogate.MLPSurrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MLPSurrogate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.nystroem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">surrogate.nystroem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.nystroem.Nystroem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nystroem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">surrogate.kernels</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.ConstantKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ConstantKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Kernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Product.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Product</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.RBF.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RBF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.SpotOptimKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Sum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sum</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.WhiteKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">WhiteKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.pipeline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">surrogate.pipeline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.pipeline.Pipeline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pipeline</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">Sampling</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sampling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sampling.design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.fullfactorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fullfactorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_clustered_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_clustered_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_collinear_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_collinear_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_grid_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_grid_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_qmc_lhs_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_qmc_lhs_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_sobol_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_sobol_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_uniform_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_uniform_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sampling.effects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.plot_all_partial_dependence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_all_partial_dependence</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.randorient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">randorient</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screening_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screening_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screening_print.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screening_print</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screeningplan.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screeningplan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.lhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sampling.lhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.lhs.rlh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rlh</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sampling.mm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.bestlh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">bestlh</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.jd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">jd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_improvement.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_improvement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_improvement_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_improvement_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmlhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmlhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_intensive.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_intensive</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_intensive_update.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_intensive_update</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmsort.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmsort</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.perturb.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">perturb</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.phisort.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">phisort</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_vs_n_lhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_points.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_vs_points</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">propose_mmphi_intensive_minimizing_point</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.subset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">subset</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false">
+ <span class="menu-text">Optimization</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/optimizer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">optimizer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/optimizer.schedule_free.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">optimizer.schedule_free</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/optimizer.schedule_free.AdamWScheduleFree.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">AdamWScheduleFree</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false">
+ <span class="menu-text">Hyperparameters</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">hyperparameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.parameters.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">hyperparameters.parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.parameters.ParameterSet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ParameterSet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">hyperparameters.repr_helpers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.Bounds.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bounds</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.Parameter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parameter</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false">
+ <span class="menu-text">Neural Networks</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nn</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.linear_regressor.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nn.linear_regressor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.linear_regressor.LinearRegressor.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">LinearRegressor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.mlp.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nn.mlp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.mlp.MLP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MLP</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false">
+ <span class="menu-text">Plotting &amp; Visualization</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot.contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.contourf_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">contourf_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.mo_generate_plot_grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_generate_plot_grid</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.plotModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plotModel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.simple_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simple_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.mo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot.mo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.mo.plot_mo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot.visualization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_important_hyperparameter_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_important_hyperparameter_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_progress.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_progress</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_surrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_surrogate</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false">
+ <span class="menu-text">Utilities</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.boundaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.boundaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.boundaries.get_boundaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_boundaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.boundaries.map_to_original_scale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">map_to_original_scale</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.eval.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.eval</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.eval.mo_cv_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_cv_models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.eval.mo_eval_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_eval_models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.file.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.file</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.file.get_experiment_filename.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_experiment_filename</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.mapping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.mapping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.mapping.map_lr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">map_lr</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.pca</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.get_loading_scores.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_loading_scores</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.get_pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_pca</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.get_pca_topk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_pca_topk</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_loading_scores.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_loading_scores</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_pca1vs2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_pca1vs2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_pca_scree.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_pca_scree</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.scaler.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.scaler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.scaler.TorchStandardScaler.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TorchStandardScaler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.stats</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.calculate_outliers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_outliers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.compute_coefficients_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">compute_coefficients_table</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.compute_standardized_betas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">compute_standardized_betas</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.condition_index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">condition_index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.cov_to_cor.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cov_to_cor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.fit_all_lm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fit_all_lm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_all_vars_from_formula.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_all_vars_from_formula</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_combinations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_combinations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_sample_size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_sample_size</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.normalize_X.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">normalize_X</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.pairwise_semi_partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pairwise_semi_partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.partial_correlation_test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlation_test</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_coeff_vs_pvals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals_by_included.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_coeff_vs_pvals_by_included</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.preprocess_df_for_ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">preprocess_df_for_ols</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.semi_partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">semi_partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.vif.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">vif</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-10" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.base.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">data.base</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.base.Config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.base.FileConfig.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FileConfig</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">data.diabetes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.DiabetesDataset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DiabetesDataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.get_diabetes_dataloaders.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_diabetes_dataloaders</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false">
+ <span class="menu-text">Exploratory Data Analysis</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-11" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">eda</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">eda.plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.plots.plot_ip_boxplots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_ip_boxplots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.plots.plot_ip_histograms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_ip_histograms</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false">
+ <span class="menu-text">Multi-Objective</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-12" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo.mo_mm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_function.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_mm_desirability_function</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_optimizer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_mm_desirability_optimizer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.mo_xy_desirability_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_desirability_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo.pareto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.is_pareto_efficient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">is_pareto_efficient</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_pareto_optx_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_pareto_optx_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_xy_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_xy_surface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_surface</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
+ <span class="menu-text">Inspection</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">inspection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">inspection.importance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.generate_imp.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_imp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.generate_mdi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_mdi</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_feature_importances.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_feature_importances</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_feature_scatter_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_feature_scatter_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_importances.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_importances</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.predictions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">inspection.predictions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.predictions.plot_actual_vs_predicted.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_actual_vs_predicted</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false">
+ <span class="menu-text">Factor Analyzer</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-14" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">factor_analyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">factor_analyzer.confirmatory_factor_analyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ConfirmatoryFactorAnalyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ModelSpecification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ModelSpecificationParser</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">factor_analyzer.factor_analyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.FactorAnalyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FactorAnalyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_bartlett_sphericity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_kmo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_kmo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">factor_analyzer.factor_analyzer_rotator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.Rotator.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rotator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">factor_analyzer.factor_analyzer_utils</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.apply_impute_nan.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">apply_impute_nan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.commutation_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">commutation_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.corr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">corr</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.cov.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cov</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.covariance_to_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">covariance_to_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">duplication_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">duplication_matrix_pre_post</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.fill_lower_diag.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fill_lower_diag</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_first_idxs_from_values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_free_parameter_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_symmetric_lower_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_symmetric_upper_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.impute_values.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">impute_values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.inv_chol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">inv_chol</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.merge_variance_covariance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge_variance_covariance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.partial_correlations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.smc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">smc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.unique_elements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">unique_elements</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false">
+ <span class="menu-text">Functions</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-15" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">function</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">function.forr08a</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.aerofoilcd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">aerofoilcd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.branin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">branin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.onevar.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">onevar</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">function.mo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.activity_pred.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">activity_pred</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.conversion_pred.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">conversion_pred</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.dtlz1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dtlz1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.dtlz2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dtlz2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.fonseca_fleming.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fonseca_fleming</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.fun_myer16a.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fun_myer16a</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.kursawe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">kursawe</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.mo_conv2_max.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_conv2_max</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.mo_conv2_min.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_conv2_min</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.schaffer_n1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">schaffer_n1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt3</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt4.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt4</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt6.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt6</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.remote.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">function.remote</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.remote.objective_remote.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">objective_remote</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">function.so</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.ackley.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ackley</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.lennard_jones.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lennard_jones</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.michalewicz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">michalewicz</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.robot_arm_hard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">robot_arm_hard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.robot_arm_obstacle.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">robot_arm_obstacle</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.rosenbrock.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rosenbrock</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.wingwt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wingwt</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.torch_objective.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">function.torch_objective</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.torch_objective.TorchObjective.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TorchObjective</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false">
+ <span class="menu-text">Tricands</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-16" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-16" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands.tricands</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands_fringe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands_fringe</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands_interior.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands_interior</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
+  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/SpotOptim.SpotOptim.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.html">Core</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptim.html">SpotOptim</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">SpotOptim.SpotOptim</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>SpotOptim.SpotOptim(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    fun,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    surrogate<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    acquisition<span class="op">=</span><span class="st">'y'</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    var_type<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    var_name<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    var_trans<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    tolerance_x<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    max_time<span class="op">=</span>np.inf,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    repeats_initial<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    repeats_surrogate<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    ocba_delta<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    tensorboard_log<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    tensorboard_path<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    tensorboard_clean<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    fun_mo2so<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    warnings_filter<span class="op">=</span><span class="st">'ignore'</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    n_infill_points<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    max_surrogate_points<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    selection_method<span class="op">=</span><span class="st">'distant'</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    acquisition_failure_strategy<span class="op">=</span><span class="st">'random'</span>,</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    penalty<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    penalty_val<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    acquisition_fun_return_size<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    acquisition_optimizer<span class="op">=</span><span class="st">'differential_evolution'</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    restart_after_n<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    restart_inject_best<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    x0<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    de_x0_prob<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    tricands_fringe<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    prob_de_tricands<span class="op">=</span><span class="fl">0.8</span>,</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    window_size<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    min_tol_metric<span class="op">=</span><span class="st">'chebyshev'</span>,</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    prob_surrogate<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    n_jobs<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    acquisition_optimizer_kwargs<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    args<span class="op">=</span>(),</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>    kwargs<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>SPOT optimizer compatible with scipy.optimize interface.</p>
+<section id="parameters" class="level2 doc-section doc-section-parameters">
+<h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>fun</td>
+<td><a href="https://docs.python.org/3/library/functions.html#callable">callable</a></td>
+<td>Objective function to minimize. Should accept array of shape (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>bounds</td>
+<td>list of tuple</td>
+<td>Bounds for each dimension as [(low, high), …].</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>max_iter</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Maximum number of total function evaluations (including initial design). For example, max_iter=30 with n_initial=10 will perform 10 initial evaluations plus 20 sequential optimization iterations. Defaults to 20.</td>
+<td><code>20</code></td>
+</tr>
+<tr class="even">
+<td>n_initial</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of initial design points. Defaults to 10.</td>
+<td><code>10</code></td>
+</tr>
+<tr class="odd">
+<td>surrogate</td>
+<td><a href="https://docs.python.org/3/library/functions.html#object">object</a></td>
+<td>Surrogate model with scikit-learn interface (fit/predict methods). If None, uses a Gaussian Process Regressor with Matern kernel. Default configuration:: from sklearn.gaussian_process import GaussianProcessRegressor from sklearn.gaussian_process.kernels import Matern, ConstantKernel kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5) surrogate = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=100) surrogate = GaussianProcessRegressor( kernel=kernel, n_restarts_optimizer=10, normalize_y=True, random_state=self.seed, ) Alternative surrogates can be provided, including SpotOptim’s Kriging model, Random Forests, or any scikit-learn compatible regressor. See Examples section. Defaults to None (uses default Gaussian Process configuration).</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>acquisition</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Acquisition function (‘ei’, ‘y’, ‘pi’). Defaults to ‘y’.</td>
+<td><code>'y'</code></td>
+</tr>
+<tr class="odd">
+<td>var_type</td>
+<td>list of str</td>
+<td>Variable types for each dimension. Supported types: - ‘float’: Python floats, continuous optimization (no rounding) - ‘int’: Python int, float values will be rounded to integers - ‘factor’: Unordered categorical data, internally mapped to int values (e.g., “red”-&gt;0, “green”-&gt;1, etc.) Defaults to None (which sets all dimensions to ‘float’).</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>var_name</td>
+<td>list of str</td>
+<td>Variable names for each dimension. If None, uses default names [‘x0’, ‘x1’, ‘x2’, …]. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>tolerance_x</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Minimum distance between points. Defaults to np.sqrt(np.spacing(1))</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>var_trans</td>
+<td>list of str</td>
+<td>Variable transformations for each dimension. Supported: - ‘log’: Logarithmic transformation, e.g.&nbsp;“log10” for base-10 log - ‘sqrt’: Square root transformation, “sqrt” for square root - None or ‘id’ or ‘None’: No transformation Defaults to None (no transformations).</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>max_time</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Maximum runtime in minutes. If np.inf (default), no time limit. The optimization terminates when either max_iter evaluations are reached OR max_time minutes have elapsed, whichever comes first. Defaults to np.inf.</td>
+<td><code>np.inf</code></td>
+</tr>
+<tr class="even">
+<td>repeats_initial</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of times to evaluate each initial design point. Useful for noisy objective functions. If &gt; 1, noise handling is activated and statistics (mean, variance) are tracked. Defaults to 1.</td>
+<td><code>1</code></td>
+</tr>
+<tr class="odd">
+<td>repeats_surrogate</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of times to evaluate each surrogate-suggested point. Useful for noisy objective functions. If &gt; 1, noise handling is activated and statistics (mean, variance) are tracked. Defaults to 1.</td>
+<td><code>1</code></td>
+</tr>
+<tr class="even">
+<td>ocba_delta</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of additional evaluations to allocate using Optimal Computing Budget Allocation (OCBA) when noise handling is active. OCBA determines which existing design points should be re-evaluated to best distinguish between alternatives. Only used when noise=True (repeats &gt; 1) and ocba_delta &gt; 0. Requires at least 3 design points with variance information. Defaults to 0 (no OCBA).</td>
+<td><code>0</code></td>
+</tr>
+<tr class="odd">
+<td>tensorboard_log</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Enable TensorBoard logging. If True, optimization metrics and hyperparameters are logged to TensorBoard. View logs by running: <code>tensorboard --logdir=&lt;tensorboard_path&gt;</code> in a separate terminal. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td>tensorboard_path</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Path for TensorBoard log files. If None and tensorboard_log is True, creates a default path: runs/spotoptim_YYYYMMDD_HHMMSS. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>tensorboard_clean</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>If True, removes all old TensorBoard log directories from the ‘runs’ folder before starting optimization. Use with caution as this permanently deletes all subdirectories in ‘runs’. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td>fun_mo2so</td>
+<td><a href="https://docs.python.org/3/library/functions.html#callable">callable</a></td>
+<td>Function to convert multi-objective values to single-objective. Takes an array of shape (n_samples, n_objectives) and returns array of shape (n_samples,). If None and objective function returns multi-objective values, uses first objective. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>seed</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Random seed for reproducibility. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>verbose</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Print progress information. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td>warnings_filter</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Filter for warnings. One of “error”, “ignore”, “always”, “all”, “default”, “module”, or “once”. Defaults to “ignore”.</td>
+<td><code>'ignore'</code></td>
+</tr>
+<tr class="even">
+<td>n_infill_points</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of infill points to suggest at each iteration. Defaults to 1. If &gt; 1, multiple distinct points are proposed using the optimizer and fallback strategies.</td>
+<td><code>1</code></td>
+</tr>
+<tr class="odd">
+<td>max_surrogate_points</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Maximum number of points to use for surrogate model fitting. If None, all points are used. If the number of evaluated points exceeds this limit, a subset is selected using the selection method. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>selection_method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Method for selecting points when max_surrogate_points is exceeded. Options: ‘distant’ (Select points that are distant from each other via K-means clustering) or ‘best’ (Select all points from the cluster with the best mean objective value). Defaults to ‘distant’.</td>
+<td><code>'distant'</code></td>
+</tr>
+<tr class="odd">
+<td>acquisition_failure_strategy</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Strategy for handling acquisition function failures. Options: ‘random’ (space-filling design via Latin Hypercube Sampling) Defaults to ‘random’.</td>
+<td><code>'random'</code></td>
+</tr>
+<tr class="even">
+<td>penalty</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use penalty for handling NaN/inf values in objective function evaluations. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td>penalty_val</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Penalty value to replace NaN/inf values in objective function evaluations. When the objective function returns NaN or inf, these values are replaced with penalty plus a small random noise (sampled from N(0, 0.1)) to avoid identical penalty values. This allows optimization to continue despite occasional function evaluation failures. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>acquisition_fun_return_size</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of top candidates to return from acquisition function optimization. Defaults to 3.</td>
+<td><code>3</code></td>
+</tr>
+<tr class="odd">
+<td>acquisition_optimizer</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a> or <a href="https://docs.python.org/3/library/functions.html#callable">callable</a></td>
+<td>Optimizer to use for maximizing acquisition function. Can be “differential_evolution” (default) or any method name supported by scipy.optimize.minimize (e.g., “Nelder-Mead”, “L-BFGS-B”). Can also be a callable with signature compatible with scipy.optimize.minimize (fun, x0, bounds, …). A specific version is “de_tricands”, which combines DE with Tricands. It can be parameterized with “prob_de_tricands” (probability of using DE). Defaults to “differential_evolution”.</td>
+<td><code>'differential_evolution'</code></td>
+</tr>
+<tr class="even">
+<td>acquisition_optimizer_kwargs</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>Kwargs passed to the acquisition function optimizer and GPR surrogate optimizer. Defaults to {‘maxiter’: 10000, ‘gtol’: 1e-9}.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>restart_after_n</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of consecutive iterations with zero success rate before triggering a restart. Defaults to 100.</td>
+<td><code>100</code></td>
+</tr>
+<tr class="even">
+<td>restart_inject_best</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to inject the best solution found so far as a starting point for the next restart. Defaults to True.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td>x0</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Starting point for optimization, shape (n_features,). If provided, this point will be evaluated first and included in the initial design. The point should be within the bounds and will be validated before use. Defaults to None (no starting point, uses only LHS design).</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>de_x0_prob</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Probability of using the best point as starting point for differential evolution. Defaults to 0.1.</td>
+<td><code>0.1</code></td>
+</tr>
+<tr class="odd">
+<td>tricands_fringe</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use the fringe of the design space for the initial design. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td>prob_de_tricands</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Probability of using differential evolution as an optimizer on the surrogate model. 1 - prob_de_tricands is the probability of using tricands. Defaults to 0.8.</td>
+<td><code>0.8</code></td>
+</tr>
+<tr class="odd">
+<td>window_size</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Window size for success rate calculation.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>min_tol_metric</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Distance metric used when checking <code>tolerance_x</code> for duplicate detection. Default is “chebyshev”. Supports all metrics from scipy.spatial.distance.cdist, including: - “chebyshev”: L-infinity distance (hypercube). Default. Matches previous behavior. - “euclidean”: L2 distance (hypersphere). - “minkowski”: Lp distance (default p=2). - “cityblock”: Manhattan/L1 distance. - “cosine”: Cosine distance. - “correlation”: Correlation distance. - “canberra”, “braycurtis”, “sqeuclidean”, etc.</td>
+<td><code>'chebyshev'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes" class="level2 doc-section doc-section-attributes">
+<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X_</td>
+<td><code>ndarray</code></td>
+<td>All evaluated points, shape (n_samples, n_features).</td>
+</tr>
+<tr class="even">
+<td>y_</td>
+<td><code>ndarray</code></td>
+<td>Function values at X_, shape (n_samples,). For multi-objective problems, these are the converted single-objective values.</td>
+</tr>
+<tr class="odd">
+<td>y_mo</td>
+<td><code>ndarray</code> or None</td>
+<td>Multi-objective function values, shape (n_samples, n_objectives). None for single-objective problems.</td>
+</tr>
+<tr class="even">
+<td>best_x_</td>
+<td><code>ndarray</code></td>
+<td>Best point found, shape (n_features,).</td>
+</tr>
+<tr class="odd">
+<td>best_y_</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Best function value found.</td>
+</tr>
+<tr class="even">
+<td>n_iter_</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of iterations performed. This is not the same as counter. Provided for compatibility with scipy.optimize routines.</td>
+</tr>
+<tr class="odd">
+<td>counter</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Total number of function evaluations.</td>
+</tr>
+<tr class="even">
+<td>success_rate</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Rolling success rate over the last window_size evaluations. A success is counted when a new evaluation improves upon the best value found so far.</td>
+</tr>
+<tr class="odd">
+<td>warnings_filter</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Filter for warnings during optimization.</td>
+</tr>
+<tr class="even">
+<td>max_surrogate_points</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a> or None</td>
+<td>Maximum number of points for surrogate fitting.</td>
+</tr>
+<tr class="odd">
+<td>selection_method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Point selection method.</td>
+</tr>
+<tr class="even">
+<td>acquisition_failure_strategy</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Strategy for handling acquisition failures (‘random’).</td>
+</tr>
+<tr class="odd">
+<td>noise</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>True if noise handling is active (repeats &gt; 1).</td>
+</tr>
+<tr class="even">
+<td>mean_X</td>
+<td><code>ndarray</code> or None</td>
+<td>Aggregated unique design points (if noise=True).</td>
+</tr>
+<tr class="odd">
+<td>mean_y</td>
+<td><code>ndarray</code> or None</td>
+<td>Mean y values per design point (if noise=True).</td>
+</tr>
+<tr class="even">
+<td>var_y</td>
+<td><code>ndarray</code> or None</td>
+<td>Variance of y values per design point (if noise=True).</td>
+</tr>
+<tr class="odd">
+<td>min_mean_X</td>
+<td><code>ndarray</code> or None</td>
+<td>X value of best mean y (if noise=True).</td>
+</tr>
+<tr class="even">
+<td>min_mean_y</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a> or None</td>
+<td>Best mean y value (if noise=True).</td>
+</tr>
+<tr class="odd">
+<td>min_var_y</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a> or None</td>
+<td>Variance of best mean y (if noise=True).</td>
+</tr>
+<tr class="even">
+<td>de_x0_prob</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Probability of using the best point as starting point for differential evolution.</td>
+</tr>
+<tr class="odd">
+<td>tricands_fringe</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use the fringe of the design space for the initial design.</td>
+</tr>
+<tr class="even">
+<td>prob_de_tricands</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Probability of using differential evolution as an optimizer on the surrogate model.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level2 doc-section doc-section-examples">
+<h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
+<div id="5f044ec9" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 1: Basic usage (deterministic function)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>bounds <span class="op">=</span> [(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> SpotOptim(fun<span class="op">=</span>objective, bounds<span class="op">=</span>bounds, max_iter<span class="op">=</span><span class="dv">10</span>, n_initial<span class="op">=</span><span class="dv">5</span>, verbose<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer.optimize()</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best x:"</span>, result.x)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best f(x):"</span>, result.fun)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>TensorBoard logging disabled
+Initial best: f(x) = 7.425110
+Iter 1 | Best: 6.363428 | Rate: 1.00 | Evals: 60.0%
+Iter 2 | Best: 5.750210 | Rate: 1.00 | Evals: 70.0%
+Iter 3 | Best: 1.952177 | Rate: 1.00 | Evals: 80.0%
+Iter 4 | Best: 1.062273 | Rate: 1.00 | Evals: 90.0%
+Iter 5 | Best: 0.396686 | Rate: 1.00 | Evals: 100.0%
+Best x: [ 0.627831   -0.05014133]
+Best f(x): 0.3966859137208389</code></pre>
+</div>
+</div>
+<div id="880ca27a" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 2: With custom variable names</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> SpotOptim(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>objective,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    var_name<span class="op">=</span>[<span class="st">"param1"</span>, <span class="st">"param2"</span>],</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">5</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer.optimize()</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure we can use custom names in plots</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>optimizer.plot_surrogate(show<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="SpotOptim.SpotOptim_files/figure-html/cell-3-output-1.png" width="1125" height="950" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="3298af00" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 3: Noisy function with repeated evaluations</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> noisy_objective(X):</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    noise <span class="op">=</span> np.random.normal(<span class="dv">0</span>, <span class="fl">0.1</span>, size<span class="op">=</span>base.shape)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> base <span class="op">+</span> noise</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> SpotOptim(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>noisy_objective,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    repeats_initial<span class="op">=</span><span class="dv">3</span>,      <span class="co"># Evaluate each initial point 3 times</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    repeats_surrogate<span class="op">=</span><span class="dv">2</span>,    <span class="co"># Evaluate each new point 2 times</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span>,                <span class="co"># For reproducibility</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer.optimize()</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Access noise statistics</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Unique design points:"</span>, optimizer.mean_X.shape[<span class="dv">0</span>])</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best mean value:"</span>, optimizer.min_mean_y)</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Variance at best point:"</span>, optimizer.min_var_y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>TensorBoard logging disabled
+Initial best: f(x) = 2.305707, mean best: f(x) = 2.367991
+Unique design points: 10
+Best mean value: 2.3679913784564808
+Variance at best point: 0.0026553713273186792</code></pre>
+</div>
+</div>
+<div id="c0e68777" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> noisy_objective(X):</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    noise <span class="op">=</span> np.random.normal(<span class="dv">0</span>, <span class="fl">0.1</span>, size<span class="op">=</span>base.shape)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> base <span class="op">+</span> noise</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 4: Noisy function with OCBA (Optimal Computing Budget Allocation)</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>optimizer_ocba <span class="op">=</span> SpotOptim(</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>noisy_objective,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    repeats_initial<span class="op">=</span><span class="dv">2</span>,      <span class="co"># Initial repeats</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    repeats_surrogate<span class="op">=</span><span class="dv">1</span>,    <span class="co"># Surrogate repeats</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    ocba_delta<span class="op">=</span><span class="dv">3</span>,           <span class="co"># Allocate 3 additional evaluations per iteration</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer_ocba.optimize()</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co"># OCBA intelligently re-evaluates promising points to reduce uncertainty</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Total evaluations:"</span>, result.nfev)</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Unique design points:"</span>, optimizer_ocba.mean_X.shape[<span class="dv">0</span>])</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best mean value:"</span>, optimizer_ocba.min_mean_y)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Variance at best point:"</span>, optimizer_ocba.min_var_y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>TensorBoard logging disabled
+Initial best: f(x) = 2.319523, mean best: f(x) = 2.385877
+
+In _get_ocba():
+means: [25.8857338  11.32118531 10.14985518  2.38587731 20.7190555  21.36600973
+ 16.36904227 14.1099758  18.36970272 20.14080533]
+vars: [6.73858271e-13 1.33640624e-08 1.00799409e-03 4.40284305e-03
+ 2.56053422e-03 6.35744853e-04 1.16126758e-02 3.37927306e-03
+ 1.64745915e-03 1.91555606e-03]
+delta: 3
+n_designs: 10
+Ratios: [7.29707371e-11 1.00099067e-05 1.00000000e+00 3.61962598e+00
+ 4.55581054e-01 1.05534624e-01 3.55166445e+00 1.47019506e+00
+ 3.85623766e-01 3.63385525e-01]
+Best: 3, Second best: 2
+  OCBA: Adding 3 re-evaluation(s)
+Iter 1 | Best: 2.240418 | Rate: 0.25 | Evals: 48.0% | Mean Best: 2.240418
+Iter 2 | Best: 1.594455 | Rate: 0.40 | Evals: 50.0% | Mean Best: 1.594455
+Iter 3 | Best: 0.500204 | Rate: 0.50 | Evals: 52.0% | Mean Best: 0.500204
+Iter 4 | Best: -0.050742 | Rate: 0.57 | Evals: 54.0% | Mean Best: -0.050742
+Iter 11 | Best: -0.104359 | Rate: 0.36 | Evals: 68.0% | Mean Best: -0.104359
+Iter 22 | Best: -0.146086 | Rate: 0.24 | Evals: 90.0% | Mean Best: -0.146086
+Iter 27 | Best: -0.175205 | Rate: 0.23 | Evals: 100.0% | Mean Best: -0.175205
+Total evaluations: 50
+Unique design points: 37
+Best mean value: -0.1752048981960286
+Variance at best point: 0.0</code></pre>
+</div>
+</div>
+<div id="f121f6ec" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> shutil</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 5: With TensorBoard logging</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>tb_dir <span class="op">=</span> <span class="st">"runs/my_optimization"</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>optimizer_tb <span class="op">=</span> SpotOptim(</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>objective,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    tensorboard_log<span class="op">=</span><span class="va">True</span>,   <span class="co"># Enable TensorBoard</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    tensorboard_path<span class="op">=</span>tb_dir,  <span class="co"># Optional custom path</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer_tb.optimize()</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co"># View logs in browser: tensorboard --logdir=runs/my_optimization</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Logs saved to:"</span>, optimizer_tb.tensorboard_path)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Cleanup log dir</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> os.path.exists(tb_dir):</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    shutil.rmtree(tb_dir)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>TensorBoard logging enabled: runs/my_optimization
+Initial best: f(x) = 0.148963
+Iter 2 | Best: 0.148535 | Rate: 0.50 | Evals: 46.7%
+Iter 4 | Best: 0.023416 | Rate: 0.50 | Evals: 60.0%
+Iter 5 | Best: 0.000896 | Rate: 0.60 | Evals: 66.7%
+Iter 6 | Best: 0.000365 | Rate: 0.67 | Evals: 73.3%
+Iter 7 | Best: 0.000000 | Rate: 0.71 | Evals: 80.0%
+Iter 8 | Best: 0.000000 | Rate: 0.75 | Evals: 86.7%
+Iter 9 | Best: 0.000000 | Rate: 0.78 | Evals: 93.3%
+TensorBoard writer closed. View logs with: tensorboard --logdir=runs/my_optimization
+Logs saved to: runs/my_optimization</code></pre>
+</div>
+</div>
+<div id="9c0b9ecb" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.surrogate <span class="im">import</span> Kriging</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 6: Using SpotOptim's Kriging surrogate</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>kriging_model <span class="op">=</span> Kriging(</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    noise<span class="op">=</span><span class="fl">1e-10</span>,           <span class="co"># Regularization parameter</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    kernel<span class="op">=</span><span class="st">'gauss'</span>,         <span class="co"># Gaussian/RBF kernel</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    min_theta<span class="op">=-</span><span class="fl">3.0</span>,         <span class="co"># Min log10(theta) bound</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    max_theta<span class="op">=</span><span class="fl">2.0</span>,          <span class="co"># Max log10(theta) bound</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>optimizer_kriging <span class="op">=</span> SpotOptim(</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>objective,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    surrogate<span class="op">=</span>kriging_model,</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">True</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer_kriging.optimize()</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best solution found:"</span>, result.x)</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best value:"</span>, result.fun)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>TensorBoard logging disabled
+Initial best: f(x) = 2.510989
+Iter 2 | Best: 0.757941 | Rate: 0.50 | Evals: 46.7%
+Iter 3 | Best: 0.462652 | Rate: 0.67 | Evals: 53.3%
+Iter 4 | Best: 0.048538 | Rate: 0.75 | Evals: 60.0%
+Iter 5 | Best: 0.000429 | Rate: 0.80 | Evals: 66.7%
+Iter 7 | Best: 0.000322 | Rate: 0.71 | Evals: 80.0%
+Iter 8 | Best: 0.000118 | Rate: 0.75 | Evals: 86.7%
+Iter 9 | Best: 0.000032 | Rate: 0.78 | Evals: 93.3%
+Iter 10 | Best: 0.000009 | Rate: 0.80 | Evals: 100.0%
+Best solution found: [-0.00214389 -0.00207764]
+Best value: 8.912866053316175e-06</code></pre>
+</div>
+</div>
+<div id="8e3ee1ff" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process.kernels <span class="im">import</span> RBF, ConstantKernel, WhiteKernel</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 7: Using sklearn Gaussian Process with custom kernel</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Custom kernel: constant * RBF + white noise</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>custom_kernel <span class="op">=</span> ConstantKernel(<span class="fl">1.0</span>, (<span class="fl">1e-2</span>, <span class="fl">1e2</span>)) <span class="op">*</span> RBF(</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    length_scale<span class="op">=</span><span class="fl">1.0</span>, length_scale_bounds<span class="op">=</span>(<span class="fl">1e-1</span>, <span class="fl">10.0</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>) <span class="op">+</span> WhiteKernel(noise_level<span class="op">=</span><span class="fl">1e-5</span>, noise_level_bounds<span class="op">=</span>(<span class="fl">1e-10</span>, <span class="fl">1e-1</span>))</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>gp_custom <span class="op">=</span> GaussianProcessRegressor(</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    kernel<span class="op">=</span>custom_kernel,</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    n_restarts_optimizer<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    normalize_y<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>optimizer_custom_gp <span class="op">=</span> SpotOptim(</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>objective,</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    surrogate<span class="op">=</span>gp_custom,</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer_custom_gp.optimize()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="a2eb4fba" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestRegressor</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 8: Using Random Forest as surrogate</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>rf_model <span class="op">=</span> RandomForestRegressor(</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    n_estimators<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    max_depth<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>optimizer_rf <span class="op">=</span> SpotOptim(</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>objective,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    surrogate<span class="op">=</span>rf_model,</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    n_initial<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer_rf.optimize()</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: Random Forests don't provide uncertainty estimates,</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a><span class="co"># so Expected Improvement (EI) may be less effective.</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Consider using acquisition='y' for pure exploitation.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="2c276b6f" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process.kernels <span class="im">import</span> Matern, RationalQuadratic, ConstantKernel, RBF</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 9: Comparing different kernels for Gaussian Process</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Matern kernel with nu=1.5 (once differentiable)</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>kernel_matern15 <span class="op">=</span> ConstantKernel(<span class="fl">1.0</span>) <span class="op">*</span> Matern(length_scale<span class="op">=</span><span class="fl">1.0</span>, nu<span class="op">=</span><span class="fl">1.5</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>gp_matern15 <span class="op">=</span> GaussianProcessRegressor(kernel<span class="op">=</span>kernel_matern15, normalize_y<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Matern kernel with nu=2.5 (twice differentiable, DEFAULT)</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>kernel_matern25 <span class="op">=</span> ConstantKernel(<span class="fl">1.0</span>) <span class="op">*</span> Matern(length_scale<span class="op">=</span><span class="fl">1.0</span>, nu<span class="op">=</span><span class="fl">2.5</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>gp_matern25 <span class="op">=</span> GaussianProcessRegressor(kernel<span class="op">=</span>kernel_matern25, normalize_y<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># RBF kernel (infinitely differentiable, smooth)</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>kernel_rbf <span class="op">=</span> ConstantKernel(<span class="fl">1.0</span>) <span class="op">*</span> RBF(length_scale<span class="op">=</span><span class="fl">1.0</span>)</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>gp_rbf <span class="op">=</span> GaussianProcessRegressor(kernel<span class="op">=</span>kernel_rbf, normalize_y<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Rational Quadratic kernel (mixture of RBF kernels)</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>kernel_rq <span class="op">=</span> ConstantKernel(<span class="fl">1.0</span>) <span class="op">*</span> RationalQuadratic(length_scale<span class="op">=</span><span class="fl">1.0</span>, alpha<span class="op">=</span><span class="fl">1.0</span>)</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>gp_rq <span class="op">=</span> GaussianProcessRegressor(kernel<span class="op">=</span>kernel_rq, normalize_y<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Use any of these as surrogate</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>optimizer_rbf <span class="op">=</span> SpotOptim(fun<span class="op">=</span>objective, bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>                          surrogate<span class="op">=</span>gp_rbf, max_iter<span class="op">=</span><span class="dv">15</span>, n_initial<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer_rbf.optimize()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="methods" class="level2">
+<h2 class="anchored" data-anchor-id="methods">Methods</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>detect_var_type</code></td>
+<td>Auto-detect variable types based on factor mappings.</td>
+</tr>
+<tr class="even">
+<td><code>gen_design_table</code></td>
+<td>Generate a table of the design or results.</td>
+</tr>
+<tr class="odd">
+<td><code>get_best_hyperparameters</code></td>
+<td>Get the best hyperparameter configuration found during optimization.</td>
+</tr>
+<tr class="even">
+<td><code>get_design_table</code></td>
+<td>Get a table string showing the search space design before optimization.</td>
+</tr>
+<tr class="odd">
+<td><code>get_importance</code></td>
+<td>Calculate variable importance scores.</td>
+</tr>
+<tr class="even">
+<td><code>get_initial_design</code></td>
+<td>Generate or process initial design points.</td>
+</tr>
+<tr class="odd">
+<td><code>get_results_table</code></td>
+<td>Get a comprehensive table string of optimization results.</td>
+</tr>
+<tr class="even">
+<td><code>get_stars</code></td>
+<td>Converts a list of values to a list of stars.</td>
+</tr>
+<tr class="odd">
+<td><code>handle_default_var_trans</code></td>
+<td>Handle default variable transformations.</td>
+</tr>
+<tr class="even">
+<td><code>inverse_transform_value</code></td>
+<td>Apply inverse transformation to a single float value.</td>
+</tr>
+<tr class="odd">
+<td><code>load_experiment</code></td>
+<td>Load an experiment configuration from a pickle file.</td>
+</tr>
+<tr class="even">
+<td><code>load_result</code></td>
+<td>Load complete optimization results from a pickle file.</td>
+</tr>
+<tr class="odd">
+<td><code>modify_bounds_based_on_var_type</code></td>
+<td>Modify bounds based on variable types.</td>
+</tr>
+<tr class="even">
+<td><code>optimize</code></td>
+<td>Run the optimization process.</td>
+</tr>
+<tr class="odd">
+<td><code>optimize_acquisition_func</code></td>
+<td>Optimize the acquisition function to find the next point to evaluate.</td>
+</tr>
+<tr class="even">
+<td><code>plot_importance</code></td>
+<td>Plot variable importance.</td>
+</tr>
+<tr class="odd">
+<td><code>plot_important_hyperparameter_contour</code></td>
+<td>Plot surrogate contours using spotoptim.plot.visualization.plot_important_hyperparameter_contour.</td>
+</tr>
+<tr class="even">
+<td><code>plot_parameter_scatter</code></td>
+<td>Plot parameter distributions showing relationship between each parameter and objective.</td>
+</tr>
+<tr class="odd">
+<td><code>plot_progress</code></td>
+<td>Plot optimization progress using spotoptim.plot.visualization.plot_progress.</td>
+</tr>
+<tr class="even">
+<td><code>plot_surrogate</code></td>
+<td>Plot the surrogate model for two dimensions.</td>
+</tr>
+<tr class="odd">
+<td><code>print_best</code></td>
+<td>Print the best solution found during optimization.</td>
+</tr>
+<tr class="even">
+<td><code>print_design_table</code></td>
+<td>Print (and return) a table showing the search space design before optimization.</td>
+</tr>
+<tr class="odd">
+<td><code>print_results</code></td>
+<td>Alias for print_results_table for compatibility.</td>
+</tr>
+<tr class="even">
+<td><code>print_results_table</code></td>
+<td>Print (and return) a comprehensive table of optimization results.</td>
+</tr>
+<tr class="odd">
+<td><code>process_factor_bounds</code></td>
+<td>Process bounds to handle factor variables.</td>
+</tr>
+<tr class="even">
+<td><code>save_experiment</code></td>
+<td>Save the experiment configuration to a pickle file.</td>
+</tr>
+<tr class="odd">
+<td><code>save_result</code></td>
+<td>Save the complete optimization results to a pickle file.</td>
+</tr>
+<tr class="even">
+<td><code>select_new</code></td>
+<td>Select rows from A that are not in X.</td>
+</tr>
+<tr class="odd">
+<td><code>sensitivity_spearman</code></td>
+<td>Compute and print Spearman correlation between parameters and objective values.</td>
+</tr>
+<tr class="even">
+<td><code>suggest_next_infill_point</code></td>
+<td>Suggest next point to evaluate (dispatcher).</td>
+</tr>
+<tr class="odd">
+<td><code>to_all_dim</code></td>
+<td>Expand reduced-dimensional points to full-dimensional representation.</td>
+</tr>
+<tr class="even">
+<td><code>to_red_dim</code></td>
+<td>Reduce full-dimensional points to optimization space.</td>
+</tr>
+<tr class="odd">
+<td><code>transform_bounds</code></td>
+<td>Transform bounds from original to internal scale.</td>
+</tr>
+<tr class="even">
+<td><code>transform_value</code></td>
+<td>Apply transformation to a single float value.</td>
+</tr>
+<tr class="odd">
+<td><code>update_stats</code></td>
+<td>Update optimization statistics.</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/sequential-parameter-optimization\.github\.io\/spotoptim\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Copyright © 2004-2026 Thomas Bartz-Beielstein | <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPL-3.0-or-later</a></p>
+<div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/SpotOptim.SpotOptim.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

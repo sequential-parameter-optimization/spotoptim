@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.29">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -33,18 +33,19 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../docs/images/favicon.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4e7a6ecc11b04d2331dcee725084a9de.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f1aadacce99040138bbb613f9330654f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-84acb973695ec2d34aa8fbb1426e6acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-9869d8b7442de1229a34c2db70b9e7b6.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-84acb973695ec2d34aa8fbb1426e6acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-5e96725ad03142391c5bee3219fd5ffe.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -230,6 +231,7 @@ ul.task-list li input[type="checkbox"] {
       toggleColorMode(toAlternate);
       setStyleSentinel(toAlternate);
       toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
     };
     // Switch to dark mode if need be
     if (hasAlternateSentinel()) {
@@ -245,7 +247,8 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo">
+    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo light-content">
+    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">spotoptim</span>
@@ -274,7 +277,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/inspection.html">Inspection</a></li><li class="breadcrumb-item"><a href="../../docs/reference/inspection.predictions.html">inspection.predictions</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -312,13 +315,13 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
  <span class="menu-text">API Reference</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">  
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/index.html" class="sidebar-item-text sidebar-link">
@@ -336,26 +339,68 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.SpotOptim.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/SpotOptim.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SpotOptim</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.core.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/SpotOptim.SpotOptim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptim</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.SpotOptimConfig.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimConfig</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.SpotOptimState.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimState</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.core.data.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/core.data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core.data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.core.experiment.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/core.data.SpotDataFromArray.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataFromArray</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.SpotDataFromTorchDataset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataFromTorchDataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.SpotDataSet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataSet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.experiment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core.experiment</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.experiment.ExperimentControl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ExperimentControl</span></a>
   </div>
 </li>
       </ul>
@@ -371,44 +416,116 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.kriging.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.kriging.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.kriging</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.simple_kriging.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.kriging.Kriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.simple_kriging.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.simple_kriging</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.mlp_surrogate.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.simple_kriging.SimpleKriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SimpleKriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.mlp_surrogate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.mlp_surrogate</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.nystroem.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.mlp_surrogate.MLPSurrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MLPSurrogate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.nystroem.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.nystroem</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.kernels.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.nystroem.Nystroem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nystroem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.kernels</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.pipeline.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.kernels.ConstantKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ConstantKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Kernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Product.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Product</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.RBF.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RBF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.SpotOptimKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Sum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sum</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.WhiteKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">WhiteKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.pipeline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.pipeline.Pipeline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pipeline</span></a>
   </div>
 </li>
       </ul>
@@ -424,32 +541,206 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.design.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.design.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.design</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.effects.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.design.fullfactorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fullfactorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_clustered_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_clustered_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_collinear_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_collinear_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_grid_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_grid_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_qmc_lhs_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_qmc_lhs_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_sobol_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_sobol_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_uniform_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_uniform_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.effects</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.lhs.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.effects.plot_all_partial_dependence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_all_partial_dependence</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.randorient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">randorient</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screening_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screening_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screening_print.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screening_print</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screeningplan.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screeningplan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.lhs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.lhs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.mm.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.lhs.rlh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rlh</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.mm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.bestlh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">bestlh</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.jd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">jd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_improvement.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_improvement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_improvement_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_improvement_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmlhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmlhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_intensive.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_intensive</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_intensive_update.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_intensive_update</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmsort.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmsort</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.perturb.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">perturb</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.phisort.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">phisort</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_vs_n_lhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_points.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_vs_points</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">propose_mmphi_intensive_minimizing_point</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.subset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">subset</span></a>
   </div>
 </li>
       </ul>
@@ -465,14 +756,20 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.optimizer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/optimizer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">optimizer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.optimizer.schedule_free.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/optimizer.schedule_free.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">optimizer.schedule_free</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/optimizer.schedule_free.AdamWScheduleFree.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">AdamWScheduleFree</span></a>
   </div>
 </li>
       </ul>
@@ -488,20 +785,38 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.hyperparameters.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/hyperparameters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">hyperparameters</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.hyperparameters.parameters.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/hyperparameters.parameters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">hyperparameters.parameters</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.hyperparameters.repr_helpers.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/hyperparameters.parameters.ParameterSet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ParameterSet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">hyperparameters.repr_helpers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.Bounds.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bounds</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.Parameter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parameter</span></a>
   </div>
 </li>
       </ul>
@@ -517,20 +832,32 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.nn.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/nn.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">nn</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.nn.linear_regressor.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/nn.linear_regressor.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">nn.linear_regressor</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.nn.mlp.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/nn.linear_regressor.LinearRegressor.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">LinearRegressor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.mlp.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">nn.mlp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.mlp.MLP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MLP</span></a>
   </div>
 </li>
       </ul>
@@ -546,26 +873,74 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.contour.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.contour.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot.contour</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.mo.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.contour.contourf_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">contourf_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.mo_generate_plot_grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_generate_plot_grid</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.plotModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plotModel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.simple_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simple_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.mo.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot.mo</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.visualization.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.mo.plot_mo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot.visualization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_important_hyperparameter_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_important_hyperparameter_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_progress.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_progress</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_surrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_surrogate</span></a>
   </div>
 </li>
       </ul>
@@ -581,50 +956,236 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.boundaries.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.boundaries.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.boundaries</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.eval.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.boundaries.get_boundaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_boundaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.boundaries.map_to_original_scale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">map_to_original_scale</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.eval.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.eval</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.file.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.eval.mo_cv_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_cv_models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.eval.mo_eval_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_eval_models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.file.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.file</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.mapping.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.file.get_experiment_filename.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_experiment_filename</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.mapping.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.mapping</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.pca.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.mapping.map_lr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">map_lr</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.pca</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.scaler.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.pca.get_loading_scores.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_loading_scores</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.get_pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_pca</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.get_pca_topk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_pca_topk</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_loading_scores.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_loading_scores</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_pca1vs2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_pca1vs2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_pca_scree.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_pca_scree</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.scaler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.scaler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.stats.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.scaler.TorchStandardScaler.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TorchStandardScaler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.stats</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.calculate_outliers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_outliers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.compute_coefficients_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">compute_coefficients_table</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.compute_standardized_betas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">compute_standardized_betas</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.condition_index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">condition_index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.cov_to_cor.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cov_to_cor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.fit_all_lm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fit_all_lm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_all_vars_from_formula.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_all_vars_from_formula</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_combinations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_combinations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_sample_size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_sample_size</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.normalize_X.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">normalize_X</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.pairwise_semi_partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pairwise_semi_partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.partial_correlation_test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlation_test</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_coeff_vs_pvals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals_by_included.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_coeff_vs_pvals_by_included</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.preprocess_df_for_ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">preprocess_df_for_ols</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.semi_partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">semi_partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.vif.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">vif</span></a>
   </div>
 </li>
       </ul>
@@ -640,20 +1201,44 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.data.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.data.base.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/data.base.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data.base</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.data.diabetes.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/data.base.Config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.base.FileConfig.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FileConfig</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data.diabetes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.DiabetesDataset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DiabetesDataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.get_diabetes_dataloaders.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_diabetes_dataloaders</span></a>
   </div>
 </li>
       </ul>
@@ -669,14 +1254,26 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.eda.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/eda.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">eda</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.eda.plots.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/eda.plots.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">eda.plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.plots.plot_ip_boxplots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_ip_boxplots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.plots.plot_ip_histograms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_ip_histograms</span></a>
   </div>
 </li>
       </ul>
@@ -692,49 +1289,127 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.mo.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/mo.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mo</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.mo.mo_mm.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/mo.mo_mm.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mo.mo_mm</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.mo.pareto.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_function.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_mm_desirability_function</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_optimizer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_mm_desirability_optimizer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.mo_xy_desirability_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_desirability_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mo.pareto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.is_pareto_efficient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">is_pareto_efficient</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_pareto_optx_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_pareto_optx_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_xy_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_xy_surface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_surface</span></a>
   </div>
 </li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="true">
  <span class="menu-text">Inspection</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="false" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-13" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth2 ">  
+      <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.inspection.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/inspection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">inspection</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.inspection.importance.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/inspection.importance.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">inspection.importance</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.inspection.predictions.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/inspection.importance.generate_imp.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_imp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.generate_mdi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_mdi</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_feature_importances.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_feature_importances</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_feature_scatter_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_feature_scatter_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_importances.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_importances</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.predictions.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">inspection.predictions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.predictions.plot_actual_vs_predicted.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_actual_vs_predicted</span></a>
   </div>
 </li>
       </ul>
@@ -750,32 +1425,182 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.confirmatory_factor_analyzer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.confirmatory_factor_analyzer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.factor_analyzer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ConfirmatoryFactorAnalyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ModelSpecification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ModelSpecificationParser</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.factor_analyzer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.factor_analyzer_rotator.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.FactorAnalyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FactorAnalyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_bartlett_sphericity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_kmo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_kmo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.factor_analyzer_rotator</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.factor_analyzer_utils.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.Rotator.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rotator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.factor_analyzer_utils</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.apply_impute_nan.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">apply_impute_nan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.commutation_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">commutation_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.corr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">corr</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.cov.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cov</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.covariance_to_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">covariance_to_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">duplication_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">duplication_matrix_pre_post</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.fill_lower_diag.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fill_lower_diag</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_first_idxs_from_values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_free_parameter_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_symmetric_lower_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_symmetric_upper_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.impute_values.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">impute_values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.inv_chol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">inv_chol</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.merge_variance_covariance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge_variance_covariance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.partial_correlations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.smc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">smc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.unique_elements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">unique_elements</span></a>
   </div>
 </li>
       </ul>
@@ -791,38 +1616,200 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.forr08a.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.forr08a.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.forr08a</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.mo.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.forr08a.aerofoilcd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">aerofoilcd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.branin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">branin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.onevar.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">onevar</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.mo</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.remote.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.mo.activity_pred.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">activity_pred</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.conversion_pred.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">conversion_pred</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.dtlz1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dtlz1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.dtlz2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dtlz2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.fonseca_fleming.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fonseca_fleming</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.fun_myer16a.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fun_myer16a</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.kursawe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">kursawe</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.mo_conv2_max.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_conv2_max</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.mo_conv2_min.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_conv2_min</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.schaffer_n1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">schaffer_n1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt3</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt4.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt4</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt6.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt6</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.remote.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.remote</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.so.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.remote.objective_remote.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">objective_remote</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.so</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.torch_objective.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.so.ackley.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ackley</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.lennard_jones.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lennard_jones</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.michalewicz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">michalewicz</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.robot_arm_hard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">robot_arm_hard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.robot_arm_obstacle.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">robot_arm_obstacle</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.rosenbrock.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rosenbrock</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.wingwt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wingwt</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.torch_objective.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.torch_objective</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.torch_objective.TorchObjective.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TorchObjective</span></a>
   </div>
 </li>
       </ul>
@@ -838,14 +1825,32 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-16" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.tricands.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/tricands.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">tricands</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.tricands.tricands.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/tricands.tricands.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">tricands.tricands</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands_fringe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands_fringe</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands_interior.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands_interior</span></a>
   </div>
 </li>
       </ul>
@@ -870,7 +1875,7 @@ ul.task-list li input[type="checkbox"] {
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/inspection.predictions.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/inspection.html">Inspection</a></li><li class="breadcrumb-item"><a href="../../docs/reference/inspection.predictions.html">inspection.predictions</a></li></ol></nav></header>
 
 
 
@@ -890,7 +1895,7 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="`~spotoptim.inspection.predictions.plot_actual_vs_predicted`"></a></td>
+<td><a href="../../docs/reference/inspection.predictions.plot_actual_vs_predicted.html#spotoptim.inspection.predictions.plot_actual_vs_predicted"><code>plot_actual_vs_predicted</code></a></td>
 <td>Plot actual vs.&nbsp;predicted values.</td>
 </tr>
 </tbody>
@@ -965,13 +1970,14 @@ ul.task-list li input[type="checkbox"] {
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

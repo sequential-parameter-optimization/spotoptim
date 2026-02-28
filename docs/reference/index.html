@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.29">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -33,18 +33,19 @@ ul.task-list li input[type="checkbox"] {
 <link href="../../docs/images/favicon.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4e7a6ecc11b04d2331dcee725084a9de.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f1aadacce99040138bbb613f9330654f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-84acb973695ec2d34aa8fbb1426e6acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-9869d8b7442de1229a34c2db70b9e7b6.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-84acb973695ec2d34aa8fbb1426e6acd.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-5e96725ad03142391c5bee3219fd5ffe.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -230,6 +231,7 @@ ul.task-list li input[type="checkbox"] {
       toggleColorMode(toAlternate);
       setStyleSentinel(toAlternate);
       toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
     };
     // Switch to dark mode if need be
     if (hasAlternateSentinel()) {
@@ -245,7 +247,8 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo">
+    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo light-content">
+    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">spotoptim</span>
@@ -336,26 +339,68 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.SpotOptim.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/SpotOptim.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SpotOptim</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.core.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/SpotOptim.SpotOptim.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptim</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.SpotOptimConfig.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimConfig</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/SpotOptim.SpotOptimState.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimState</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.core.data.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/core.data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core.data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.core.experiment.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/core.data.SpotDataFromArray.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataFromArray</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.SpotDataFromTorchDataset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataFromTorchDataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.data.SpotDataSet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotDataSet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.experiment.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">core.experiment</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/core.experiment.ExperimentControl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ExperimentControl</span></a>
   </div>
 </li>
       </ul>
@@ -371,44 +416,116 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.kriging.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.kriging.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.kriging</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.simple_kriging.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.kriging.Kriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.simple_kriging.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.simple_kriging</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.mlp_surrogate.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.simple_kriging.SimpleKriging.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SimpleKriging</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.mlp_surrogate.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.mlp_surrogate</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.nystroem.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.mlp_surrogate.MLPSurrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MLPSurrogate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.nystroem.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.nystroem</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.kernels.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.nystroem.Nystroem.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Nystroem</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.kernels</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.surrogate.pipeline.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/surrogate.kernels.ConstantKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ConstantKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Kernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Kernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Product.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Product</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.RBF.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">RBF</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.SpotOptimKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SpotOptimKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.Sum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sum</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.kernels.WhiteKernel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">WhiteKernel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.pipeline.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">surrogate.pipeline</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/surrogate.pipeline.Pipeline.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Pipeline</span></a>
   </div>
 </li>
       </ul>
@@ -424,32 +541,206 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.design.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.design.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.design</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.effects.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.design.fullfactorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fullfactorial</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_clustered_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_clustered_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_collinear_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_collinear_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_grid_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_grid_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_qmc_lhs_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_qmc_lhs_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_sobol_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_sobol_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.design.generate_uniform_design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_uniform_design</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.effects</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.lhs.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.effects.plot_all_partial_dependence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_all_partial_dependence</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.randorient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">randorient</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screening_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screening_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screening_print.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screening_print</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.effects.screeningplan.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">screeningplan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.lhs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.lhs</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.sampling.mm.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/sampling.lhs.rlh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rlh</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">sampling.mm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.bestlh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">bestlh</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.jd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">jd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_improvement.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_improvement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_improvement_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_improvement_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmlhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmlhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_intensive.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_intensive</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_intensive_update.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_intensive_update</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmsort.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmsort</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.perturb.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">perturb</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.phisort.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">phisort</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_vs_n_lhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_points.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_vs_points</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">propose_mmphi_intensive_minimizing_point</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.subset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">subset</span></a>
   </div>
 </li>
       </ul>
@@ -465,14 +756,20 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.optimizer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/optimizer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">optimizer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.optimizer.schedule_free.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/optimizer.schedule_free.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">optimizer.schedule_free</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/optimizer.schedule_free.AdamWScheduleFree.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">AdamWScheduleFree</span></a>
   </div>
 </li>
       </ul>
@@ -488,20 +785,38 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.hyperparameters.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/hyperparameters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">hyperparameters</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.hyperparameters.parameters.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/hyperparameters.parameters.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">hyperparameters.parameters</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.hyperparameters.repr_helpers.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/hyperparameters.parameters.ParameterSet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ParameterSet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">hyperparameters.repr_helpers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.Bounds.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bounds</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/hyperparameters.repr_helpers.Parameter.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parameter</span></a>
   </div>
 </li>
       </ul>
@@ -517,20 +832,32 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.nn.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/nn.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">nn</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.nn.linear_regressor.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/nn.linear_regressor.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">nn.linear_regressor</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.nn.mlp.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/nn.linear_regressor.LinearRegressor.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">LinearRegressor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.mlp.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">nn.mlp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.mlp.MLP.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MLP</span></a>
   </div>
 </li>
       </ul>
@@ -546,26 +873,74 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.contour.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.contour.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot.contour</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.mo.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.contour.contourf_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">contourf_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.mo_generate_plot_grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_generate_plot_grid</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.plotModel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plotModel</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.contour.simple_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">simple_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.mo.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot.mo</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.plot.visualization.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/plot.mo.plot_mo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot.visualization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_important_hyperparameter_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_important_hyperparameter_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_progress.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_progress</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_surrogate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_surrogate</span></a>
   </div>
 </li>
       </ul>
@@ -581,50 +956,236 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.boundaries.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.boundaries.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.boundaries</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.eval.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.boundaries.get_boundaries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_boundaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.boundaries.map_to_original_scale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">map_to_original_scale</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.eval.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.eval</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.file.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.eval.mo_cv_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_cv_models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.eval.mo_eval_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_eval_models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.file.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.file</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.mapping.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.file.get_experiment_filename.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_experiment_filename</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.mapping.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.mapping</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.pca.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.mapping.map_lr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">map_lr</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.pca</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.scaler.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.pca.get_loading_scores.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_loading_scores</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.get_pca.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_pca</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.get_pca_topk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_pca_topk</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_loading_scores.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_loading_scores</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_pca1vs2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_pca1vs2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.pca.plot_pca_scree.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_pca_scree</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.scaler.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.scaler</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.utils.stats.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/utils.scaler.TorchStandardScaler.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TorchStandardScaler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.stats</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.calculate_outliers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_outliers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.compute_coefficients_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">compute_coefficients_table</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.compute_standardized_betas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">compute_standardized_betas</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.condition_index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">condition_index</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.cov_to_cor.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cov_to_cor</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.fit_all_lm.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fit_all_lm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_all_vars_from_formula.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_all_vars_from_formula</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_combinations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_combinations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.get_sample_size.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_sample_size</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.normalize_X.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">normalize_X</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.pairwise_semi_partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">pairwise_semi_partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.partial_correlation_test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlation_test</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_coeff_vs_pvals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals_by_included.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_coeff_vs_pvals_by_included</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.preprocess_df_for_ols.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">preprocess_df_for_ols</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.semi_partial_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">semi_partial_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.stats.vif.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">vif</span></a>
   </div>
 </li>
       </ul>
@@ -640,20 +1201,44 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-10" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.data.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.data.base.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/data.base.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data.base</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.data.diabetes.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/data.base.Config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.base.FileConfig.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FileConfig</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">data.diabetes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.DiabetesDataset.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DiabetesDataset</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.diabetes.get_diabetes_dataloaders.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_diabetes_dataloaders</span></a>
   </div>
 </li>
       </ul>
@@ -669,14 +1254,26 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-11" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.eda.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/eda.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">eda</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.eda.plots.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/eda.plots.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">eda.plots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.plots.plot_ip_boxplots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_ip_boxplots</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/eda.plots.plot_ip_histograms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_ip_histograms</span></a>
   </div>
 </li>
       </ul>
@@ -692,20 +1289,62 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-12" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.mo.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/mo.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mo</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.mo.mo_mm.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/mo.mo_mm.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mo.mo_mm</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.mo.pareto.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_function.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_mm_desirability_function</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_optimizer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_mm_desirability_optimizer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.mo_mm.mo_xy_desirability_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_desirability_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mo.pareto</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.is_pareto_efficient.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">is_pareto_efficient</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_pareto_optx_plot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_pareto_optx_plot</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_xy_contour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_contour</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/mo.pareto.mo_xy_surface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_xy_surface</span></a>
   </div>
 </li>
       </ul>
@@ -721,20 +1360,56 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-13" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.inspection.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/inspection.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">inspection</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.inspection.importance.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/inspection.importance.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">inspection.importance</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.inspection.predictions.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/inspection.importance.generate_imp.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_imp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.generate_mdi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">generate_mdi</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_feature_importances.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_feature_importances</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_feature_scatter_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_feature_scatter_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.importance.plot_importances.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_importances</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.predictions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">inspection.predictions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/inspection.predictions.plot_actual_vs_predicted.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_actual_vs_predicted</span></a>
   </div>
 </li>
       </ul>
@@ -750,32 +1425,182 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-14" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.confirmatory_factor_analyzer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.confirmatory_factor_analyzer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.factor_analyzer.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ConfirmatoryFactorAnalyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ModelSpecification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ModelSpecificationParser</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.factor_analyzer</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.factor_analyzer_rotator.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.FactorAnalyzer.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FactorAnalyzer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_bartlett_sphericity</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_kmo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">calculate_kmo</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.factor_analyzer_rotator</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.factor_analyzer.factor_analyzer_utils.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.Rotator.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Rotator</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">factor_analyzer.factor_analyzer_utils</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.apply_impute_nan.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">apply_impute_nan</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.commutation_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">commutation_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.corr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">corr</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.cov.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">cov</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.covariance_to_correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">covariance_to_correlation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">duplication_matrix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">duplication_matrix_pre_post</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.fill_lower_diag.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fill_lower_diag</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_first_idxs_from_values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_free_parameter_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_symmetric_lower_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">get_symmetric_upper_idxs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.impute_values.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">impute_values</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.inv_chol.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">inv_chol</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.merge_variance_covariance.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">merge_variance_covariance</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.partial_correlations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">partial_correlations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.smc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">smc</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.unique_elements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">unique_elements</span></a>
   </div>
 </li>
       </ul>
@@ -791,38 +1616,200 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-15" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.forr08a.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.forr08a.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.forr08a</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.mo.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.forr08a.aerofoilcd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">aerofoilcd</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.branin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">branin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.forr08a.onevar.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">onevar</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.mo</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.remote.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.mo.activity_pred.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">activity_pred</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.conversion_pred.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">conversion_pred</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.dtlz1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dtlz1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.dtlz2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dtlz2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.fonseca_fleming.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fonseca_fleming</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.fun_myer16a.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">fun_myer16a</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.kursawe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">kursawe</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.mo_conv2_max.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_conv2_max</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.mo_conv2_min.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mo_conv2_min</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.schaffer_n1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">schaffer_n1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt2</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt3</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt4.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt4</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.mo.zdt6.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">zdt6</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.remote.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.remote</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.so.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.remote.objective_remote.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">objective_remote</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.so</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.function.torch_objective.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/function.so.ackley.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ackley</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.lennard_jones.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">lennard_jones</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.michalewicz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">michalewicz</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.robot_arm_hard.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">robot_arm_hard</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.robot_arm_obstacle.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">robot_arm_obstacle</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.rosenbrock.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">rosenbrock</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.wingwt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">wingwt</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.torch_objective.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">function.torch_objective</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.torch_objective.TorchObjective.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TorchObjective</span></a>
   </div>
 </li>
       </ul>
@@ -838,14 +1825,32 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-16" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.tricands.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/tricands.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">tricands</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/spotoptim.tricands.tricands.qmd" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/tricands.tricands.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">tricands.tricands</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands_fringe.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands_fringe</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/tricands.tricands.tricands_interior.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tricands_interior</span></a>
   </div>
 </li>
       </ul>
@@ -901,16 +1906,44 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="even">
+<td><a href="../../docs/reference/SpotOptim.SpotOptim.html#spotoptim.SpotOptim.SpotOptim">SpotOptim.SpotOptim</a></td>
+<td>SPOT optimizer compatible with scipy.optimize interface.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/SpotOptim.SpotOptimConfig.html#spotoptim.SpotOptim.SpotOptimConfig">SpotOptim.SpotOptimConfig</a></td>
+<td>Configuration parameters for SpotOptim.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/SpotOptim.SpotOptimState.html#spotoptim.SpotOptim.SpotOptimState">SpotOptim.SpotOptimState</a></td>
+<td>Mutable state of the optimization process.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/core.html#spotoptim.core">core</a></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../../docs/reference/core.data.html#spotoptim.core.data">core.data</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/core.data.SpotDataFromArray.html#spotoptim.core.data.SpotDataFromArray">core.data.SpotDataFromArray</a></td>
+<td>Data handler for numpy arrays or torch tensors.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/core.data.SpotDataFromTorchDataset.html#spotoptim.core.data.SpotDataFromTorchDataset">core.data.SpotDataFromTorchDataset</a></td>
+<td>Data handler for PyTorch Datasets.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/core.data.SpotDataSet.html#spotoptim.core.data.SpotDataSet">core.data.SpotDataSet</a></td>
+<td>Abstract base class for data handling in SpotOptim.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/core.experiment.html#spotoptim.core.experiment">core.experiment</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/core.experiment.ExperimentControl.html#spotoptim.core.experiment.ExperimentControl">core.experiment.ExperimentControl</a></td>
+<td>Controls the experiment configuration, replacing the legacy fun_control dictionary.</td>
 </tr>
 </tbody>
 </table>
@@ -928,24 +1961,72 @@ ul.task-list li input[type="checkbox"] {
 <td>Kriging (Gaussian Process) surrogate model for SpotOptim.</td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/surrogate.kriging.Kriging.html#spotoptim.surrogate.kriging.Kriging">surrogate.kriging.Kriging</a></td>
+<td>A scikit-learn compatible Kriging model class for regression tasks.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/surrogate.simple_kriging.html#spotoptim.surrogate.simple_kriging">surrogate.simple_kriging</a></td>
 <td>Simplified SimpleKriging surrogate model for SpotOptim.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/surrogate.simple_kriging.SimpleKriging.html#spotoptim.surrogate.simple_kriging.SimpleKriging">surrogate.simple_kriging.SimpleKriging</a></td>
+<td>A simplified Kriging (Gaussian Process) surrogate model for SpotOptim.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/surrogate.mlp_surrogate.html#spotoptim.surrogate.mlp_surrogate">surrogate.mlp_surrogate</a></td>
 <td>MLP Surrogate model for SpotOptim.</td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/surrogate.mlp_surrogate.MLPSurrogate.html#spotoptim.surrogate.mlp_surrogate.MLPSurrogate">surrogate.mlp_surrogate.MLPSurrogate</a></td>
+<td>A scikit-learn compatible MLP surrogate model with uncertainty estimation.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/surrogate.nystroem.html#spotoptim.surrogate.nystroem">surrogate.nystroem</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/surrogate.nystroem.Nystroem.html#spotoptim.surrogate.nystroem.Nystroem">surrogate.nystroem.Nystroem</a></td>
+<td>Approximate a feature map of a kernel using a subset of data.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/surrogate.kernels.html#spotoptim.surrogate.kernels">surrogate.kernels</a></td>
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/surrogate.kernels.ConstantKernel.html#spotoptim.surrogate.kernels.ConstantKernel">surrogate.kernels.ConstantKernel</a></td>
+<td>Constant kernel.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/surrogate.kernels.Kernel.html#spotoptim.surrogate.kernels.Kernel">surrogate.kernels.Kernel</a></td>
+<td>Base class for Kernels.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/surrogate.kernels.Product.html#spotoptim.surrogate.kernels.Product">surrogate.kernels.Product</a></td>
+<td>The Product kernel k1 * k2.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/surrogate.kernels.RBF.html#spotoptim.surrogate.kernels.RBF">surrogate.kernels.RBF</a></td>
+<td>Radial Basis Function (RBF) kernel.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/surrogate.kernels.SpotOptimKernel.html#spotoptim.surrogate.kernels.SpotOptimKernel">surrogate.kernels.SpotOptimKernel</a></td>
+<td>Kernel designed for SpotOptim’s Kriging with mixed variable support.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/surrogate.kernels.Sum.html#spotoptim.surrogate.kernels.Sum">surrogate.kernels.Sum</a></td>
+<td>The Sum kernel k1 + k2.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/surrogate.kernels.WhiteKernel.html#spotoptim.surrogate.kernels.WhiteKernel">surrogate.kernels.WhiteKernel</a></td>
+<td>White kernel.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/surrogate.pipeline.html#spotoptim.surrogate.pipeline">surrogate.pipeline</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/surrogate.pipeline.Pipeline.html#spotoptim.surrogate.pipeline.Pipeline">surrogate.pipeline.Pipeline</a></td>
+<td>Pipeline of transforms with a final estimator.</td>
 </tr>
 </tbody>
 </table>
@@ -963,7 +2044,55 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/sampling.design.fullfactorial.html#spotoptim.sampling.design.fullfactorial">sampling.design.fullfactorial</a></td>
+<td>Generates a full factorial sampling plan in the unit cube.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.design.generate_clustered_design.html#spotoptim.sampling.design.generate_clustered_design">sampling.design.generate_clustered_design</a></td>
+<td>Generates a clustered design.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.design.generate_collinear_design.html#spotoptim.sampling.design.generate_collinear_design">sampling.design.generate_collinear_design</a></td>
+<td>Generates a collinear design (poorly projected).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.design.generate_grid_design.html#spotoptim.sampling.design.generate_grid_design">sampling.design.generate_grid_design</a></td>
+<td>Generates a regular grid design.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.design.generate_qmc_lhs_design.html#spotoptim.sampling.design.generate_qmc_lhs_design">sampling.design.generate_qmc_lhs_design</a></td>
+<td>Generates a Latin Hypercube Sampling design using QMC.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.design.generate_sobol_design.html#spotoptim.sampling.design.generate_sobol_design">sampling.design.generate_sobol_design</a></td>
+<td>Generates a Sobol sequence design.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.design.generate_uniform_design.html#spotoptim.sampling.design.generate_uniform_design">sampling.design.generate_uniform_design</a></td>
+<td>Generate a uniform random experimental design.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/sampling.effects.html#spotoptim.sampling.effects">sampling.effects</a></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.effects.plot_all_partial_dependence.html#spotoptim.sampling.effects.plot_all_partial_dependence">sampling.effects.plot_all_partial_dependence</a></td>
+<td>Generates Partial Dependence Plots (PDPs) for every feature in a DataFrame against a target variable,</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.effects.randorient.html#spotoptim.sampling.effects.randorient">sampling.effects.randorient</a></td>
+<td>Generates a random orientation of a sampling matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.effects.screening_plot.html#spotoptim.sampling.effects.screening_plot">sampling.effects.screening_plot</a></td>
+<td>Generates a plot with elementary effect screening metrics.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.effects.screening_print.html#spotoptim.sampling.effects.screening_print">sampling.effects.screening_print</a></td>
+<td>Generates a DataFrame with elementary effect screening metrics.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.effects.screeningplan.html#spotoptim.sampling.effects.screeningplan">sampling.effects.screeningplan</a></td>
 <td></td>
 </tr>
 <tr class="even">
@@ -971,8 +2100,76 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/sampling.lhs.rlh.html#spotoptim.sampling.lhs.rlh">sampling.lhs.rlh</a></td>
+<td>Generates a random Latin hypercube within the [0,1]^k hypercube.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/sampling.mm.html#spotoptim.sampling.mm">sampling.mm</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.bestlh.html#spotoptim.sampling.mm.bestlh">sampling.mm.bestlh</a></td>
+<td>Generates an optimized Latin hypercube by evolving the Morris-Mitchell</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.jd.html#spotoptim.sampling.mm.jd">sampling.mm.jd</a></td>
+<td>Computes and counts the distinct p-norm distances between all pairs of points in X.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.mm.html#spotoptim.sampling.mm.mm">sampling.mm.mm</a></td>
+<td>Determines which of two sampling plans has better space-filling properties</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.mm_improvement.html#spotoptim.sampling.mm.mm_improvement">sampling.mm.mm_improvement</a></td>
+<td>Calculates the Morris-Mitchell improvement for a candidate point x.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.mm_improvement_contour.html#spotoptim.sampling.mm.mm_improvement_contour">sampling.mm.mm_improvement_contour</a></td>
+<td>Generates a contour plot of the Morris-Mitchell improvement over a grid defined by x1 and x2.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.mmlhs.html#spotoptim.sampling.mm.mmlhs">sampling.mm.mmlhs</a></td>
+<td>Performs an evolutionary search (using perturbations) to find a Morris-Mitchell</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.mmphi.html#spotoptim.sampling.mm.mmphi">sampling.mm.mmphi</a></td>
+<td>Calculates the Morris-Mitchell sampling plan quality criterion.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.mmphi_intensive.html#spotoptim.sampling.mm.mmphi_intensive">sampling.mm.mmphi_intensive</a></td>
+<td>Calculates a size-invariant Morris-Mitchell criterion.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.mmphi_intensive_update.html#spotoptim.sampling.mm.mmphi_intensive_update">sampling.mm.mmphi_intensive_update</a></td>
+<td>Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.mmsort.html#spotoptim.sampling.mm.mmsort">sampling.mm.mmsort</a></td>
+<td>Ranks multiple sampling plans stored in a 3D array according to the</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.perturb.html#spotoptim.sampling.mm.perturb">sampling.mm.perturb</a></td>
+<td>Performs a specified number of random element swaps on a sampling plan.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.phisort.html#spotoptim.sampling.mm.phisort">sampling.mm.phisort</a></td>
+<td>Ranks multiple sampling plans stored in a 3D array by the Morris-Mitchell</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.html#spotoptim.sampling.mm.plot_mmphi_vs_n_lhs">sampling.mm.plot_mmphi_vs_n_lhs</a></td>
+<td>Generates LHS designs for varying n, calculates mmphi and mmphi_intensive,</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.plot_mmphi_vs_points.html#spotoptim.sampling.mm.plot_mmphi_vs_points">sampling.mm.plot_mmphi_vs_points</a></td>
+<td>Plot the Morris-Mitchell criterion versus the number of added points.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html#spotoptim.sampling.mm.propose_mmphi_intensive_minimizing_point">sampling.mm.propose_mmphi_intensive_minimizing_point</a></td>
+<td>Propose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/sampling.mm.subset.html#spotoptim.sampling.mm.subset">sampling.mm.subset</a></td>
+<td>Returns a space-filling subset of a given size from a sampling plan, along with</td>
 </tr>
 </tbody>
 </table>
@@ -988,6 +2185,10 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td><a href="../../docs/reference/optimizer.schedule_free.html#spotoptim.optimizer.schedule_free">optimizer.schedule_free</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/optimizer.schedule_free.AdamWScheduleFree.html#spotoptim.optimizer.schedule_free.AdamWScheduleFree">optimizer.schedule_free.AdamWScheduleFree</a></td>
+<td>Schedule-Free AdamW in PyTorch.</td>
 </tr>
 </tbody>
 </table>
@@ -1005,7 +2206,19 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/hyperparameters.parameters.ParameterSet.html#spotoptim.hyperparameters.parameters.ParameterSet">hyperparameters.parameters.ParameterSet</a></td>
+<td>User-friendly interface for defining hyperparameters.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/hyperparameters.repr_helpers.html#spotoptim.hyperparameters.repr_helpers">hyperparameters.repr_helpers</a></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/hyperparameters.repr_helpers.Bounds.html#spotoptim.hyperparameters.repr_helpers.Bounds">hyperparameters.repr_helpers.Bounds</a></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/hyperparameters.repr_helpers.Parameter.html#spotoptim.hyperparameters.repr_helpers.Parameter">hyperparameters.repr_helpers.Parameter</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -1024,8 +2237,16 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/nn.linear_regressor.LinearRegressor.html#spotoptim.nn.linear_regressor.LinearRegressor">nn.linear_regressor.LinearRegressor</a></td>
+<td>PyTorch neural network for regression with configurable architecture.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/nn.mlp.html#spotoptim.nn.mlp">nn.mlp</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/nn.mlp.MLP.html#spotoptim.nn.mlp.MLP">nn.mlp.MLP</a></td>
+<td>This block implements the multi-layer perceptron (MLP) module.</td>
 </tr>
 </tbody>
 </table>
@@ -1043,12 +2264,44 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/plot.contour.contourf_plot.html#spotoptim.plot.contour.contourf_plot">plot.contour.contourf_plot</a></td>
+<td>Creates contour plots (single or faceted) using matplotlib.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/plot.contour.mo_generate_plot_grid.html#spotoptim.plot.contour.mo_generate_plot_grid">plot.contour.mo_generate_plot_grid</a></td>
+<td>Generate a grid of input variables and apply objective functions.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/plot.contour.plotModel.html#spotoptim.plot.contour.plotModel">plot.contour.plotModel</a></td>
+<td>Generate 2D contour and optionally 3D surface plots for a model’s predictions.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/plot.contour.simple_contour.html#spotoptim.plot.contour.simple_contour">plot.contour.simple_contour</a></td>
+<td>Simple contour plot</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/plot.mo.html#spotoptim.plot.mo">plot.mo</a></td>
 <td></td>
 </tr>
 <tr class="even">
+<td><a href="../../docs/reference/plot.mo.plot_mo.html#spotoptim.plot.mo.plot_mo">plot.mo.plot_mo</a></td>
+<td>Generates scatter plots for each combination of two targets from a multi-output prediction while highlighting Pareto optimal points.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/plot.visualization.html#spotoptim.plot.visualization">plot.visualization</a></td>
 <td></td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/plot.visualization.plot_important_hyperparameter_contour.html#spotoptim.plot.visualization.plot_important_hyperparameter_contour">plot.visualization.plot_important_hyperparameter_contour</a></td>
+<td>Plot surrogate contours for all combinations of the top max_imp important parameters.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/plot.visualization.plot_progress.html#spotoptim.plot.visualization.plot_progress">plot.visualization.plot_progress</a></td>
+<td>Plot optimization progress showing all evaluations and best-so-far curve.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/plot.visualization.plot_surrogate.html#spotoptim.plot.visualization.plot_surrogate">plot.visualization.plot_surrogate</a></td>
+<td>Plot the surrogate model for two dimensions.</td>
 </tr>
 </tbody>
 </table>
@@ -1066,28 +2319,152 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/utils.boundaries.get_boundaries.html#spotoptim.utils.boundaries.get_boundaries">utils.boundaries.get_boundaries</a></td>
+<td>Calculates the minimum and maximum values for each column in a NumPy array.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.boundaries.map_to_original_scale.html#spotoptim.utils.boundaries.map_to_original_scale">utils.boundaries.map_to_original_scale</a></td>
+<td>Maps the values in X_search from the range [0, 1] to the original scale defined by x_min and x_max.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/utils.eval.html#spotoptim.utils.eval">utils.eval</a></td>
 <td></td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.eval.mo_cv_models.html#spotoptim.utils.eval.mo_cv_models">utils.eval.mo_cv_models</a></td>
+<td>Performs cross-validation for separate models for each target in a multi-output problem.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.eval.mo_eval_models.html#spotoptim.utils.eval.mo_eval_models">utils.eval.mo_eval_models</a></td>
+<td>Trains and evaluates separate models for each target in a multi-output regression problem.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/utils.file.html#spotoptim.utils.file">utils.file</a></td>
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/utils.file.get_experiment_filename.html#spotoptim.utils.file.get_experiment_filename">utils.file.get_experiment_filename</a></td>
+<td>Generates a standardized filename for experiments.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/utils.mapping.html#spotoptim.utils.mapping">utils.mapping</a></td>
 <td>Learning rate mapping functions for unified optimizer interface.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.mapping.map_lr.html#spotoptim.utils.mapping.map_lr">utils.mapping.map_lr</a></td>
+<td>Map a unified learning rate to an optimizer-specific learning rate.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/utils.pca.html#spotoptim.utils.pca">utils.pca</a></td>
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/utils.pca.get_loading_scores.html#spotoptim.utils.pca.get_loading_scores">utils.pca.get_loading_scores</a></td>
+<td>Computes the loading scores matrix for Principal Component Analysis (PCA).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.pca.get_pca.html#spotoptim.utils.pca.get_pca">utils.pca.get_pca</a></td>
+<td>Scale the numeric data and perform PCA.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.pca.get_pca_topk.html#spotoptim.utils.pca.get_pca_topk">utils.pca.get_pca_topk</a></td>
+<td>Identify the top k features that have the strongest influence on PC1 and PC2.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.pca.plot_loading_scores.html#spotoptim.utils.pca.plot_loading_scores">utils.pca.plot_loading_scores</a></td>
+<td>Creates a heatmap visualization of PCA loading scores.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.pca.plot_pca1vs2.html#spotoptim.utils.pca.plot_pca1vs2">utils.pca.plot_pca1vs2</a></td>
+<td>Create a scatter plot of the first two principal components from PCA.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.pca.plot_pca_scree.html#spotoptim.utils.pca.plot_pca_scree">utils.pca.plot_pca_scree</a></td>
+<td>Plot the scree plot for Principal Component Analysis (PCA).</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/utils.scaler.html#spotoptim.utils.scaler">utils.scaler</a></td>
 <td></td>
 </tr>
 <tr class="even">
+<td><a href="../../docs/reference/utils.scaler.TorchStandardScaler.html#spotoptim.utils.scaler.TorchStandardScaler">utils.scaler.TorchStandardScaler</a></td>
+<td>A class for scaling data using standardization with torch tensors.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/utils.stats.html#spotoptim.utils.stats">utils.stats</a></td>
 <td></td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.calculate_outliers.html#spotoptim.utils.stats.calculate_outliers">utils.stats.calculate_outliers</a></td>
+<td>Calculate the number of outliers using the IQR method.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.compute_coefficients_table.html#spotoptim.utils.stats.compute_coefficients_table">utils.stats.compute_coefficients_table</a></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.compute_standardized_betas.html#spotoptim.utils.stats.compute_standardized_betas">utils.stats.compute_standardized_betas</a></td>
+<td>Computes standardized (beta) coefficients for a fitted statsmodels OLS model.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.condition_index.html#spotoptim.utils.stats.condition_index">utils.stats.condition_index</a></td>
+<td>Calculates the Condition Index for a DataFrame to assess multicollinearity.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.cov_to_cor.html#spotoptim.utils.stats.cov_to_cor">utils.stats.cov_to_cor</a></td>
+<td>Convert a covariance matrix to a correlation matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.fit_all_lm.html#spotoptim.utils.stats.fit_all_lm">utils.stats.fit_all_lm</a></td>
+<td>Fit a linear regression model for all possible combinations of independent variables.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.get_all_vars_from_formula.html#spotoptim.utils.stats.get_all_vars_from_formula">utils.stats.get_all_vars_from_formula</a></td>
+<td>Utility function to extract variables from a formula.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.get_combinations.html#spotoptim.utils.stats.get_combinations">utils.stats.get_combinations</a></td>
+<td>Generates all possible combinations of two values from a list of values. Order is not important.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.get_sample_size.html#spotoptim.utils.stats.get_sample_size">utils.stats.get_sample_size</a></td>
+<td>Calculate sample size n for comparing two means.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.normalize_X.html#spotoptim.utils.stats.normalize_X">utils.stats.normalize_X</a></td>
+<td>Normalize array X to [0, 1] in each dimension.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.pairwise_semi_partial_correlation.html#spotoptim.utils.stats.pairwise_semi_partial_correlation">utils.stats.pairwise_semi_partial_correlation</a></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.partial_correlation.html#spotoptim.utils.stats.partial_correlation">utils.stats.partial_correlation</a></td>
+<td>Calculate the partial correlation matrix for a given data set.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.partial_correlation_test.html#spotoptim.utils.stats.partial_correlation_test">utils.stats.partial_correlation_test</a></td>
+<td>The partial correlation coefficient between x and y given z.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals.html#spotoptim.utils.stats.plot_coeff_vs_pvals">utils.stats.plot_coeff_vs_pvals</a></td>
+<td>Plot the coefficient estimates from fit_all_lm against the corresponding p-values.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals_by_included.html#spotoptim.utils.stats.plot_coeff_vs_pvals_by_included">utils.stats.plot_coeff_vs_pvals_by_included</a></td>
+<td>Generates a panel of scatter plots with effect estimates of all possible models against p-values.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.preprocess_df_for_ols.html#spotoptim.utils.stats.preprocess_df_for_ols">utils.stats.preprocess_df_for_ols</a></td>
+<td>Preprocesses a df for fiitting an OLS regression model using the specified target column and predictors.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.stats.semi_partial_correlation.html#spotoptim.utils.stats.semi_partial_correlation">utils.stats.semi_partial_correlation</a></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/utils.stats.vif.html#spotoptim.utils.stats.vif">utils.stats.vif</a></td>
+<td>Calculates the Variance Inflation Factor (VIF) for each feature in a DataFrame.</td>
 </tr>
 </tbody>
 </table>
@@ -1105,8 +2482,24 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/data.base.Config.html#spotoptim.data.base.Config">data.base.Config</a></td>
+<td>Base class for all configurations.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/data.base.FileConfig.html#spotoptim.data.base.FileConfig">data.base.FileConfig</a></td>
+<td>Base class for configurations that are stored in a local file.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/data.diabetes.html#spotoptim.data.diabetes">data.diabetes</a></td>
 <td></td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/data.diabetes.DiabetesDataset.html#spotoptim.data.diabetes.DiabetesDataset">data.diabetes.DiabetesDataset</a></td>
+<td>Diabetes dataset wrapping sklearn’s diabetes dataset or custom data.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/data.diabetes.get_diabetes_dataloaders.html#spotoptim.data.diabetes.get_diabetes_dataloaders">data.diabetes.get_diabetes_dataloaders</a></td>
+<td>Returns train and test dataloaders for the Diabetes dataset.</td>
 </tr>
 </tbody>
 </table>
@@ -1122,6 +2515,14 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td><a href="../../docs/reference/eda.plots.html#spotoptim.eda.plots">eda.plots</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/eda.plots.plot_ip_boxplots.html#spotoptim.eda.plots.plot_ip_boxplots">eda.plots.plot_ip_boxplots</a></td>
+<td>Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/eda.plots.plot_ip_histograms.html#spotoptim.eda.plots.plot_ip_histograms">eda.plots.plot_ip_histograms</a></td>
+<td>Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure.</td>
 </tr>
 </tbody>
 </table>
@@ -1139,8 +2540,36 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_function.html#spotoptim.mo.mo_mm.mo_mm_desirability_function">mo.mo_mm.mo_mm_desirability_function</a></td>
+<td>Calculates the negative combined desirability for a candidate point x. Can be used by the mo_mm_desirability_optimizer.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/mo.mo_mm.mo_mm_desirability_optimizer.html#spotoptim.mo.mo_mm.mo_mm_desirability_optimizer">mo.mo_mm.mo_mm_desirability_optimizer</a></td>
+<td>Optimizes the multi-objective function to find the next best point.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/mo.mo_mm.mo_xy_desirability_plot.html#spotoptim.mo.mo_mm.mo_xy_desirability_plot">mo.mo_mm.mo_xy_desirability_plot</a></td>
+<td>Generates a plot of the desirability landscape.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/mo.pareto.html#spotoptim.mo.pareto">mo.pareto</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/mo.pareto.is_pareto_efficient.html#spotoptim.mo.pareto.is_pareto_efficient">mo.pareto.is_pareto_efficient</a></td>
+<td>Find the Pareto-efficient points from a set of points.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/mo.pareto.mo_pareto_optx_plot.html#spotoptim.mo.pareto.mo_pareto_optx_plot">mo.pareto.mo_pareto_optx_plot</a></td>
+<td>Visualizes the Pareto-optimal points in the input space for each pair of inputs</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/mo.pareto.mo_xy_contour.html#spotoptim.mo.pareto.mo_xy_contour">mo.pareto.mo_xy_contour</a></td>
+<td>Generates contour plots of every combination of two input variables x_i and x_j</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/mo.pareto.mo_xy_surface.html#spotoptim.mo.pareto.mo_xy_surface">mo.pareto.mo_xy_surface</a></td>
+<td>Generates surface plots of every combination of two input variables x_i and x_j</td>
 </tr>
 </tbody>
 </table>
@@ -1158,8 +2587,32 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/inspection.importance.generate_imp.html#spotoptim.inspection.importance.generate_imp">inspection.importance.generate_imp</a></td>
+<td>Generates permutation importances from a RandomForestRegressor.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/inspection.importance.generate_mdi.html#spotoptim.inspection.importance.generate_mdi">inspection.importance.generate_mdi</a></td>
+<td>Generates a DataFrame with Gini importances from a RandomForestRegressor.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/inspection.importance.plot_feature_importances.html#spotoptim.inspection.importance.plot_feature_importances">inspection.importance.plot_feature_importances</a></td>
+<td>Generate and plot feature importances using MDI and permutation importance.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/inspection.importance.plot_feature_scatter_matrix.html#spotoptim.inspection.importance.plot_feature_scatter_matrix">inspection.importance.plot_feature_scatter_matrix</a></td>
+<td>Generate scatter plot matrix for the most important features.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/inspection.importance.plot_importances.html#spotoptim.inspection.importance.plot_importances">inspection.importance.plot_importances</a></td>
+<td>Plots the impurity-based and permutation-based feature importances for a given classifier.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/inspection.predictions.html#spotoptim.inspection.predictions">inspection.predictions</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/inspection.predictions.plot_actual_vs_predicted.html#spotoptim.inspection.predictions.plot_actual_vs_predicted">inspection.predictions.plot_actual_vs_predicted</a></td>
+<td>Plot actual vs.&nbsp;predicted values.</td>
 </tr>
 </tbody>
 </table>
@@ -1177,16 +2630,116 @@ ul.task-list li input[type="checkbox"] {
 <td>Confirmatory factor analysis using machine learning methods.</td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer.html#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer">factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer</a></td>
+<td>Fit a confirmatory factor analysis model using maximum likelihood.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.html#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification">factor_analyzer.confirmatory_factor_analyzer.ModelSpecification</a></td>
+<td>Encapsulate the model specification for CFA.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.html#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser">factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser</a></td>
+<td>Generate the model specification for CFA.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/factor_analyzer.factor_analyzer.html#spotoptim.factor_analyzer.factor_analyzer">factor_analyzer.factor_analyzer</a></td>
 <td>Factor analysis using MINRES or ML, with optional rotation using Varimax or Promax.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer.FactorAnalyzer.html#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer">factor_analyzer.factor_analyzer.FactorAnalyzer</a></td>
+<td>The main exploratory factor analysis class.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.html#spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity">factor_analyzer.factor_analyzer.calculate_bartlett_sphericity</a></td>
+<td>Compute the Bartlett sphericity test.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_kmo.html#spotoptim.factor_analyzer.factor_analyzer.calculate_kmo">factor_analyzer.factor_analyzer.calculate_kmo</a></td>
+<td>Calculate the Kaiser-Meyer-Olkin criterion for items and overall.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.html#spotoptim.factor_analyzer.factor_analyzer_rotator">factor_analyzer.factor_analyzer_rotator</a></td>
 <td>Class to perform various rotations of factor loading matrices.</td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.Rotator.html#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator">factor_analyzer.factor_analyzer_rotator.Rotator</a></td>
+<td>Perform rotations on an unrotated factor loading matrix.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.html#spotoptim.factor_analyzer.factor_analyzer_utils">factor_analyzer.factor_analyzer_utils</a></td>
 <td>Utility functions, used primarily by the confirmatory factor analysis module.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.apply_impute_nan.html#spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan">factor_analyzer.factor_analyzer_utils.apply_impute_nan</a></td>
+<td>Apply a function to impute np.nan values with the mean or the median.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.commutation_matrix.html#spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix">factor_analyzer.factor_analyzer_utils.commutation_matrix</a></td>
+<td>Calculate the commutation matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.corr.html#spotoptim.factor_analyzer.factor_analyzer_utils.corr">factor_analyzer.factor_analyzer_utils.corr</a></td>
+<td>Calculate the correlation matrix.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.cov.html#spotoptim.factor_analyzer.factor_analyzer_utils.cov">factor_analyzer.factor_analyzer_utils.cov</a></td>
+<td>Calculate the covariance matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.covariance_to_correlation.html#spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation">factor_analyzer.factor_analyzer_utils.covariance_to_correlation</a></td>
+<td>Compute cross-correlations from the given covariance matrix.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix.html#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix">factor_analyzer.factor_analyzer_utils.duplication_matrix</a></td>
+<td>Calculate the duplication matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.html#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post">factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post</a></td>
+<td>Transform given input symmetric matrix using pre-post duplication.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.fill_lower_diag.html#spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag">factor_analyzer.factor_analyzer_utils.fill_lower_diag</a></td>
+<td>Fill the lower diagonal of a square matrix, given a 1-D input array.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values">factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values</a></td>
+<td>Get the indexes for a given value.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs">factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs</a></td>
+<td>Get the free parameter indices from the flattened matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs">factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs</a></td>
+<td>Get the indices for the lower triangle of a symmetric matrix.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs">factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs</a></td>
+<td>Get the indices for the upper triangle of a symmetric matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.impute_values.html#spotoptim.factor_analyzer.factor_analyzer_utils.impute_values">factor_analyzer.factor_analyzer_utils.impute_values</a></td>
+<td>Impute np.nan values with the mean or median, or drop the containing rows.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.inv_chol.html#spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol">factor_analyzer.factor_analyzer_utils.inv_chol</a></td>
+<td>Calculate matrix inverse using Cholesky decomposition.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.merge_variance_covariance.html#spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance">factor_analyzer.factor_analyzer_utils.merge_variance_covariance</a></td>
+<td>Merge variances and covariances into a single variance-covariance matrix.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.partial_correlations.html#spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations">factor_analyzer.factor_analyzer_utils.partial_correlations</a></td>
+<td>Compute partial correlations between variable pairs.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.smc.html#spotoptim.factor_analyzer.factor_analyzer_utils.smc">factor_analyzer.factor_analyzer_utils.smc</a></td>
+<td>Calculate the squared multiple correlations.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.unique_elements.html#spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements">factor_analyzer.factor_analyzer_utils.unique_elements</a></td>
+<td>Get first unique instance of every list element, while maintaining order.</td>
 </tr>
 </tbody>
 </table>
@@ -1204,20 +2757,128 @@ ul.task-list li input[type="checkbox"] {
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/function.forr08a.aerofoilcd.html#spotoptim.function.forr08a.aerofoilcd">function.forr08a.aerofoilcd</a></td>
+<td>Computes the drag coefficient (cd) of an aerofoil based on the shape parameter X.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.forr08a.branin.html#spotoptim.function.forr08a.branin">function.forr08a.branin</a></td>
+<td>Branin’s test function that takes a 2D input vector <code>x</code> in the range [0, 1] for each dimension</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.forr08a.onevar.html#spotoptim.function.forr08a.onevar">function.forr08a.onevar</a></td>
+<td>One-variable test function that takes a scalar or 1D array input <code>x</code> in the range [0, 1]</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/function.mo.html#spotoptim.function.mo">function.mo</a></td>
 <td>Analytical multi-objective test functions for optimization benchmarking.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.activity_pred.html#spotoptim.function.mo.activity_pred">function.mo.activity_pred</a></td>
+<td>Compute activity predictions for each row in the input array.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.mo.conversion_pred.html#spotoptim.function.mo.conversion_pred">function.mo.conversion_pred</a></td>
+<td>Compute conversion predictions for each row in the input array.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.dtlz1.html#spotoptim.function.mo.dtlz1">function.mo.dtlz1</a></td>
+<td>DTLZ1 multi-objective test function (scalable objectives).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.mo.dtlz2.html#spotoptim.function.mo.dtlz2">function.mo.dtlz2</a></td>
+<td>DTLZ2 multi-objective test function (scalable objectives).</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.fonseca_fleming.html#spotoptim.function.mo.fonseca_fleming">function.mo.fonseca_fleming</a></td>
+<td>Fonseca-Fleming multi-objective test function (2 objectives).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.mo.fun_myer16a.html#spotoptim.function.mo.fun_myer16a">function.mo.fun_myer16a</a></td>
+<td>Compute both conversion and activity predictions for each row in the input array.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.kursawe.html#spotoptim.function.mo.kursawe">function.mo.kursawe</a></td>
+<td>Kursawe multi-objective test function (2 objectives, minimization).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.mo.mo_conv2_max.html#spotoptim.function.mo.mo_conv2_max">function.mo.mo_conv2_max</a></td>
+<td>Convex bi-objective maximization test function (2 objectives).</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.mo_conv2_min.html#spotoptim.function.mo.mo_conv2_min">function.mo.mo_conv2_min</a></td>
+<td>Convex bi-objective minimization test function (2 objectives).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.mo.schaffer_n1.html#spotoptim.function.mo.schaffer_n1">function.mo.schaffer_n1</a></td>
+<td>Schaffer N1 multi-objective test function (2 objectives).</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.zdt1.html#spotoptim.function.mo.zdt1">function.mo.zdt1</a></td>
+<td>ZDT1 multi-objective test function (2 objectives).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.mo.zdt2.html#spotoptim.function.mo.zdt2">function.mo.zdt2</a></td>
+<td>ZDT2 multi-objective test function (2 objectives).</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.zdt3.html#spotoptim.function.mo.zdt3">function.mo.zdt3</a></td>
+<td>ZDT3 multi-objective test function (2 objectives).</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.mo.zdt4.html#spotoptim.function.mo.zdt4">function.mo.zdt4</a></td>
+<td>ZDT4 multi-objective test function (2 objectives).</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.mo.zdt6.html#spotoptim.function.mo.zdt6">function.mo.zdt6</a></td>
+<td>ZDT6 multi-objective test function (2 objectives).</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/function.remote.html#spotoptim.function.remote">function.remote</a></td>
 <td></td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/function.remote.objective_remote.html#spotoptim.function.remote.objective_remote">function.remote.objective_remote</a></td>
+<td>Evaluates an objective function remotely via an HTTP POST request.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/function.so.html#spotoptim.function.so">function.so</a></td>
 <td>Analytical single-objective test functions for optimization benchmarking.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.so.ackley.html#spotoptim.function.so.ackley">function.so.ackley</a></td>
+<td>N-dimensional Ackley function.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.so.lennard_jones.html#spotoptim.function.so.lennard_jones">function.so.lennard_jones</a></td>
+<td>Lennard-Jones Atomic Cluster Potential Energy.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.so.michalewicz.html#spotoptim.function.so.michalewicz">function.so.michalewicz</a></td>
+<td>N-dimensional Michalewicz function.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.so.robot_arm_hard.html#spotoptim.function.so.robot_arm_hard">function.so.robot_arm_hard</a></td>
+<td>10-Link Robot Arm with Maze-Like Hard Constraints.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.so.robot_arm_obstacle.html#spotoptim.function.so.robot_arm_obstacle">function.so.robot_arm_obstacle</a></td>
+<td>10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.so.rosenbrock.html#spotoptim.function.so.rosenbrock">function.so.rosenbrock</a></td>
+<td>N-dimensional Rosenbrock function.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.so.wingwt.html#spotoptim.function.so.wingwt">function.so.wingwt</a></td>
+<td>Aircraft Wing Weight function.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/function.torch_objective.html#spotoptim.function.torch_objective">function.torch_objective</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/function.torch_objective.TorchObjective.html#spotoptim.function.torch_objective.TorchObjective">function.torch_objective.TorchObjective</a></td>
+<td>A callable objective function for SpotOptim that trains and evaluates a PyTorch model.</td>
 </tr>
 </tbody>
 </table>
@@ -1233,6 +2894,18 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td><a href="../../docs/reference/tricands.tricands.html#spotoptim.tricands.tricands">tricands.tricands</a></td>
 <td></td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/tricands.tricands.tricands.html#spotoptim.tricands.tricands.tricands">tricands.tricands.tricands</a></td>
+<td>Generate Triangulation Candidates for Bayesian Optimization.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/tricands.tricands.tricands_fringe.html#spotoptim.tricands.tricands.tricands_fringe">tricands.tricands.tricands_fringe</a></td>
+<td>Generate fringe candidates outside the convex hull.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/tricands.tricands.tricands_interior.html#spotoptim.tricands.tricands.tricands_interior">tricands.tricands.tricands_interior</a></td>
+<td>Generate interior candidates using Delaunay triangulation.</td>
 </tr>
 </tbody>
 </table>
@@ -1306,13 +2979,14 @@ ul.task-list li input[type="checkbox"] {
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
