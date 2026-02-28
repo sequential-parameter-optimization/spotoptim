@@ -1,3 +1,11 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# =============================================================================
+# .github/workflows/release.yml  — Automatic Semantic Releases
+# =============================================================================
+
 name: Release
 
 on:
@@ -19,29 +27,30 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
         with:
           fetch-depth: 0
           persist-credentials: false
       
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.3.0
         with:
-          python-version: "3.14-dev"
-          cache: 'pip'
+          python-version: "3.13"
+          
+      - name: Set up uv
+        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5.2.2
       
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install build
-          pip install -e ".[dev]"
+          uv pip install --system build
+          uv pip install --system -e ".[dev]"
       
       - name: Run tests
         run: |
-          pytest tests/ -v
+          uv run pytest tests/ -v
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: 20
       
@@ -55,7 +64,7 @@ jobs:
       
       - name: Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: npx semantic-release
 
       - name: Check if release generated dist/
@@ -69,7 +78,7 @@ jobs:
 
       - name: Publish to PyPI
         if: steps.check_dist.outputs.exists == 'true'
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # release/v1
         with:
           packages-dir: dist/
           skip-existing: true
