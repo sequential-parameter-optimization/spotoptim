@@ -1,13 +1,20 @@
-# API Reference {.doc .doc-index}
+# Function reference {.doc .doc-index}
 
 ## Core
 
 | | |
 | --- | --- |
 | [SpotOptim](SpotOptim.qmd#spotoptim.SpotOptim) |  |
+| [SpotOptim.SpotOptim](SpotOptim.SpotOptim.qmd#spotoptim.SpotOptim.SpotOptim) | SPOT optimizer compatible with scipy.optimize interface. |
+| [SpotOptim.SpotOptimConfig](SpotOptim.SpotOptimConfig.qmd#spotoptim.SpotOptim.SpotOptimConfig) | Configuration parameters for SpotOptim. |
+| [SpotOptim.SpotOptimState](SpotOptim.SpotOptimState.qmd#spotoptim.SpotOptim.SpotOptimState) | Mutable state of the optimization process. |
 | [core](core.qmd#spotoptim.core) |  |
 | [core.data](core.data.qmd#spotoptim.core.data) |  |
+| [core.data.SpotDataFromArray](core.data.SpotDataFromArray.qmd#spotoptim.core.data.SpotDataFromArray) | Data handler for numpy arrays or torch tensors. |
+| [core.data.SpotDataFromTorchDataset](core.data.SpotDataFromTorchDataset.qmd#spotoptim.core.data.SpotDataFromTorchDataset) | Data handler for PyTorch Datasets. |
+| [core.data.SpotDataSet](core.data.SpotDataSet.qmd#spotoptim.core.data.SpotDataSet) | Abstract base class for data handling in SpotOptim. |
 | [core.experiment](core.experiment.qmd#spotoptim.core.experiment) |  |
+| [core.experiment.ExperimentControl](core.experiment.ExperimentControl.qmd#spotoptim.core.experiment.ExperimentControl) | Controls the experiment configuration, replacing the legacy fun_control dictionary. |
 
 ## Surrogate Models
 
@@ -15,11 +22,23 @@
 | --- | --- |
 | [surrogate](surrogate.qmd#spotoptim.surrogate) | Surrogate models for SpotOptim. |
 | [surrogate.kriging](surrogate.kriging.qmd#spotoptim.surrogate.kriging) | Kriging (Gaussian Process) surrogate model for SpotOptim. |
+| [surrogate.kriging.Kriging](surrogate.kriging.Kriging.qmd#spotoptim.surrogate.kriging.Kriging) | A scikit-learn compatible Kriging model class for regression tasks. |
 | [surrogate.simple_kriging](surrogate.simple_kriging.qmd#spotoptim.surrogate.simple_kriging) | Simplified SimpleKriging surrogate model for SpotOptim. |
+| [surrogate.simple_kriging.SimpleKriging](surrogate.simple_kriging.SimpleKriging.qmd#spotoptim.surrogate.simple_kriging.SimpleKriging) | A simplified Kriging (Gaussian Process) surrogate model for SpotOptim. |
 | [surrogate.mlp_surrogate](surrogate.mlp_surrogate.qmd#spotoptim.surrogate.mlp_surrogate) | MLP Surrogate model for SpotOptim. |
+| [surrogate.mlp_surrogate.MLPSurrogate](surrogate.mlp_surrogate.MLPSurrogate.qmd#spotoptim.surrogate.mlp_surrogate.MLPSurrogate) | A scikit-learn compatible MLP surrogate model with uncertainty estimation. |
 | [surrogate.nystroem](surrogate.nystroem.qmd#spotoptim.surrogate.nystroem) |  |
+| [surrogate.nystroem.Nystroem](surrogate.nystroem.Nystroem.qmd#spotoptim.surrogate.nystroem.Nystroem) | Approximate a feature map of a kernel using a subset of data. |
 | [surrogate.kernels](surrogate.kernels.qmd#spotoptim.surrogate.kernels) |  |
+| [surrogate.kernels.ConstantKernel](surrogate.kernels.ConstantKernel.qmd#spotoptim.surrogate.kernels.ConstantKernel) | Constant kernel. |
+| [surrogate.kernels.Kernel](surrogate.kernels.Kernel.qmd#spotoptim.surrogate.kernels.Kernel) | Base class for Kernels. |
+| [surrogate.kernels.Product](surrogate.kernels.Product.qmd#spotoptim.surrogate.kernels.Product) | The Product kernel k1 * k2. |
+| [surrogate.kernels.RBF](surrogate.kernels.RBF.qmd#spotoptim.surrogate.kernels.RBF) | Radial Basis Function (RBF) kernel. |
+| [surrogate.kernels.SpotOptimKernel](surrogate.kernels.SpotOptimKernel.qmd#spotoptim.surrogate.kernels.SpotOptimKernel) | Kernel designed for SpotOptim's Kriging with mixed variable support. |
+| [surrogate.kernels.Sum](surrogate.kernels.Sum.qmd#spotoptim.surrogate.kernels.Sum) | The Sum kernel k1 + k2. |
+| [surrogate.kernels.WhiteKernel](surrogate.kernels.WhiteKernel.qmd#spotoptim.surrogate.kernels.WhiteKernel) | White kernel. |
 | [surrogate.pipeline](surrogate.pipeline.qmd#spotoptim.surrogate.pipeline) |  |
+| [surrogate.pipeline.Pipeline](surrogate.pipeline.Pipeline.qmd#spotoptim.surrogate.pipeline.Pipeline) | Pipeline of transforms with a final estimator. |
 
 ## Sampling
 
@@ -27,9 +46,38 @@
 | --- | --- |
 | [sampling](sampling.qmd#spotoptim.sampling) | Sampling methods for design of experiments. |
 | [sampling.design](sampling.design.qmd#spotoptim.sampling.design) |  |
+| [sampling.design.fullfactorial](sampling.design.fullfactorial.qmd#spotoptim.sampling.design.fullfactorial) | Generates a full factorial sampling plan in the unit cube. |
+| [sampling.design.generate_clustered_design](sampling.design.generate_clustered_design.qmd#spotoptim.sampling.design.generate_clustered_design) | Generates a clustered design. |
+| [sampling.design.generate_collinear_design](sampling.design.generate_collinear_design.qmd#spotoptim.sampling.design.generate_collinear_design) | Generates a collinear design (poorly projected). |
+| [sampling.design.generate_grid_design](sampling.design.generate_grid_design.qmd#spotoptim.sampling.design.generate_grid_design) | Generates a regular grid design. |
+| [sampling.design.generate_qmc_lhs_design](sampling.design.generate_qmc_lhs_design.qmd#spotoptim.sampling.design.generate_qmc_lhs_design) | Generates a Latin Hypercube Sampling design using QMC. |
+| [sampling.design.generate_sobol_design](sampling.design.generate_sobol_design.qmd#spotoptim.sampling.design.generate_sobol_design) | Generates a Sobol sequence design. |
+| [sampling.design.generate_uniform_design](sampling.design.generate_uniform_design.qmd#spotoptim.sampling.design.generate_uniform_design) | Generate a uniform random experimental design. |
 | [sampling.effects](sampling.effects.qmd#spotoptim.sampling.effects) |  |
+| [sampling.effects.plot_all_partial_dependence](sampling.effects.plot_all_partial_dependence.qmd#spotoptim.sampling.effects.plot_all_partial_dependence) | Generates Partial Dependence Plots (PDPs) for every feature in a DataFrame against a target variable, |
+| [sampling.effects.randorient](sampling.effects.randorient.qmd#spotoptim.sampling.effects.randorient) | Generates a random orientation of a sampling matrix. |
+| [sampling.effects.screening_plot](sampling.effects.screening_plot.qmd#spotoptim.sampling.effects.screening_plot) | Generates a plot with elementary effect screening metrics. |
+| [sampling.effects.screening_print](sampling.effects.screening_print.qmd#spotoptim.sampling.effects.screening_print) | Generates a DataFrame with elementary effect screening metrics. |
+| [sampling.effects.screeningplan](sampling.effects.screeningplan.qmd#spotoptim.sampling.effects.screeningplan) |  |
 | [sampling.lhs](sampling.lhs.qmd#spotoptim.sampling.lhs) |  |
+| [sampling.lhs.rlh](sampling.lhs.rlh.qmd#spotoptim.sampling.lhs.rlh) | Generates a random Latin hypercube within the [0,1]^k hypercube. |
 | [sampling.mm](sampling.mm.qmd#spotoptim.sampling.mm) |  |
+| [sampling.mm.bestlh](sampling.mm.bestlh.qmd#spotoptim.sampling.mm.bestlh) | Generates an optimized Latin hypercube by evolving the Morris-Mitchell |
+| [sampling.mm.jd](sampling.mm.jd.qmd#spotoptim.sampling.mm.jd) | Computes and counts the distinct p-norm distances between all pairs of points in X. |
+| [sampling.mm.mm](sampling.mm.mm.qmd#spotoptim.sampling.mm.mm) | Determines which of two sampling plans has better space-filling properties |
+| [sampling.mm.mm_improvement](sampling.mm.mm_improvement.qmd#spotoptim.sampling.mm.mm_improvement) | Calculates the Morris-Mitchell improvement for a candidate point x. |
+| [sampling.mm.mm_improvement_contour](sampling.mm.mm_improvement_contour.qmd#spotoptim.sampling.mm.mm_improvement_contour) | Generates a contour plot of the Morris-Mitchell improvement over a grid defined by x1 and x2. |
+| [sampling.mm.mmlhs](sampling.mm.mmlhs.qmd#spotoptim.sampling.mm.mmlhs) | Performs an evolutionary search (using perturbations) to find a Morris-Mitchell |
+| [sampling.mm.mmphi](sampling.mm.mmphi.qmd#spotoptim.sampling.mm.mmphi) | Calculates the Morris-Mitchell sampling plan quality criterion. |
+| [sampling.mm.mmphi_intensive](sampling.mm.mmphi_intensive.qmd#spotoptim.sampling.mm.mmphi_intensive) | Calculates a size-invariant Morris-Mitchell criterion. |
+| [sampling.mm.mmphi_intensive_update](sampling.mm.mmphi_intensive_update.qmd#spotoptim.sampling.mm.mmphi_intensive_update) | Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design. |
+| [sampling.mm.mmsort](sampling.mm.mmsort.qmd#spotoptim.sampling.mm.mmsort) | Ranks multiple sampling plans stored in a 3D array according to the |
+| [sampling.mm.perturb](sampling.mm.perturb.qmd#spotoptim.sampling.mm.perturb) | Performs a specified number of random element swaps on a sampling plan. |
+| [sampling.mm.phisort](sampling.mm.phisort.qmd#spotoptim.sampling.mm.phisort) | Ranks multiple sampling plans stored in a 3D array by the Morris-Mitchell |
+| [sampling.mm.plot_mmphi_vs_n_lhs](sampling.mm.plot_mmphi_vs_n_lhs.qmd#spotoptim.sampling.mm.plot_mmphi_vs_n_lhs) | Generates LHS designs for varying n, calculates mmphi and mmphi_intensive, |
+| [sampling.mm.plot_mmphi_vs_points](sampling.mm.plot_mmphi_vs_points.qmd#spotoptim.sampling.mm.plot_mmphi_vs_points) | Plot the Morris-Mitchell criterion versus the number of added points. |
+| [sampling.mm.propose_mmphi_intensive_minimizing_point](sampling.mm.propose_mmphi_intensive_minimizing_point.qmd#spotoptim.sampling.mm.propose_mmphi_intensive_minimizing_point) | Propose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion. |
+| [sampling.mm.subset](sampling.mm.subset.qmd#spotoptim.sampling.mm.subset) | Returns a space-filling subset of a given size from a sampling plan, along with |
 
 ## Optimization
 
@@ -37,6 +85,7 @@
 | --- | --- |
 | [optimizer](optimizer.qmd#spotoptim.optimizer) |  |
 | [optimizer.schedule_free](optimizer.schedule_free.qmd#spotoptim.optimizer.schedule_free) |  |
+| [optimizer.schedule_free.AdamWScheduleFree](optimizer.schedule_free.AdamWScheduleFree.qmd#spotoptim.optimizer.schedule_free.AdamWScheduleFree) | Schedule-Free AdamW in PyTorch. |
 
 ## Hyperparameters
 
@@ -44,7 +93,10 @@
 | --- | --- |
 | [hyperparameters](hyperparameters.qmd#spotoptim.hyperparameters) |  |
 | [hyperparameters.parameters](hyperparameters.parameters.qmd#spotoptim.hyperparameters.parameters) |  |
+| [hyperparameters.parameters.ParameterSet](hyperparameters.parameters.ParameterSet.qmd#spotoptim.hyperparameters.parameters.ParameterSet) | User-friendly interface for defining hyperparameters. |
 | [hyperparameters.repr_helpers](hyperparameters.repr_helpers.qmd#spotoptim.hyperparameters.repr_helpers) |  |
+| [hyperparameters.repr_helpers.Bounds](hyperparameters.repr_helpers.Bounds.qmd#spotoptim.hyperparameters.repr_helpers.Bounds) |  |
+| [hyperparameters.repr_helpers.Parameter](hyperparameters.repr_helpers.Parameter.qmd#spotoptim.hyperparameters.repr_helpers.Parameter) |  |
 
 ## Neural Networks
 
@@ -52,7 +104,9 @@
 | --- | --- |
 | [nn](nn.qmd#spotoptim.nn) | Neural network models for spotoptim. |
 | [nn.linear_regressor](nn.linear_regressor.qmd#spotoptim.nn.linear_regressor) |  |
+| [nn.linear_regressor.LinearRegressor](nn.linear_regressor.LinearRegressor.qmd#spotoptim.nn.linear_regressor.LinearRegressor) | PyTorch neural network for regression with configurable architecture. |
 | [nn.mlp](nn.mlp.qmd#spotoptim.nn.mlp) |  |
+| [nn.mlp.MLP](nn.mlp.MLP.qmd#spotoptim.nn.mlp.MLP) | This block implements the multi-layer perceptron (MLP) module. |
 
 ## Plotting & Visualization
 
@@ -60,8 +114,16 @@
 | --- | --- |
 | [plot](plot.qmd#spotoptim.plot) |  |
 | [plot.contour](plot.contour.qmd#spotoptim.plot.contour) |  |
+| [plot.contour.contourf_plot](plot.contour.contourf_plot.qmd#spotoptim.plot.contour.contourf_plot) | Creates contour plots (single or faceted) using matplotlib. |
+| [plot.contour.mo_generate_plot_grid](plot.contour.mo_generate_plot_grid.qmd#spotoptim.plot.contour.mo_generate_plot_grid) | Generate a grid of input variables and apply objective functions. |
+| [plot.contour.plotModel](plot.contour.plotModel.qmd#spotoptim.plot.contour.plotModel) | Generate 2D contour and optionally 3D surface plots for a model's predictions. |
+| [plot.contour.simple_contour](plot.contour.simple_contour.qmd#spotoptim.plot.contour.simple_contour) | Simple contour plot |
 | [plot.mo](plot.mo.qmd#spotoptim.plot.mo) |  |
+| [plot.mo.plot_mo](plot.mo.plot_mo.qmd#spotoptim.plot.mo.plot_mo) | Generates scatter plots for each combination of two targets from a multi-output prediction while highlighting Pareto optimal points. |
 | [plot.visualization](plot.visualization.qmd#spotoptim.plot.visualization) |  |
+| [plot.visualization.plot_important_hyperparameter_contour](plot.visualization.plot_important_hyperparameter_contour.qmd#spotoptim.plot.visualization.plot_important_hyperparameter_contour) | Plot surrogate contours for all combinations of the top max_imp important parameters. |
+| [plot.visualization.plot_progress](plot.visualization.plot_progress.qmd#spotoptim.plot.visualization.plot_progress) | Plot optimization progress showing all evaluations and best-so-far curve. |
+| [plot.visualization.plot_surrogate](plot.visualization.plot_surrogate.qmd#spotoptim.plot.visualization.plot_surrogate) | Plot the surrogate model for two dimensions. |
 
 ## Utilities
 
@@ -69,12 +131,43 @@
 | --- | --- |
 | [utils](utils.qmd#spotoptim.utils) | Utility functions for spotoptim. |
 | [utils.boundaries](utils.boundaries.qmd#spotoptim.utils.boundaries) |  |
+| [utils.boundaries.get_boundaries](utils.boundaries.get_boundaries.qmd#spotoptim.utils.boundaries.get_boundaries) | Calculates the minimum and maximum values for each column in a NumPy array. |
+| [utils.boundaries.map_to_original_scale](utils.boundaries.map_to_original_scale.qmd#spotoptim.utils.boundaries.map_to_original_scale) | Maps the values in X_search from the range [0, 1] to the original scale defined by x_min and x_max. |
 | [utils.eval](utils.eval.qmd#spotoptim.utils.eval) |  |
+| [utils.eval.mo_cv_models](utils.eval.mo_cv_models.qmd#spotoptim.utils.eval.mo_cv_models) | Performs cross-validation for separate models for each target in a multi-output problem. |
+| [utils.eval.mo_eval_models](utils.eval.mo_eval_models.qmd#spotoptim.utils.eval.mo_eval_models) | Trains and evaluates separate models for each target in a multi-output regression problem. |
 | [utils.file](utils.file.qmd#spotoptim.utils.file) |  |
+| [utils.file.get_experiment_filename](utils.file.get_experiment_filename.qmd#spotoptim.utils.file.get_experiment_filename) | Generates a standardized filename for experiments. |
 | [utils.mapping](utils.mapping.qmd#spotoptim.utils.mapping) | Learning rate mapping functions for unified optimizer interface. |
+| [utils.mapping.map_lr](utils.mapping.map_lr.qmd#spotoptim.utils.mapping.map_lr) | Map a unified learning rate to an optimizer-specific learning rate. |
 | [utils.pca](utils.pca.qmd#spotoptim.utils.pca) |  |
+| [utils.pca.get_loading_scores](utils.pca.get_loading_scores.qmd#spotoptim.utils.pca.get_loading_scores) | Computes the loading scores matrix for Principal Component Analysis (PCA). |
+| [utils.pca.get_pca](utils.pca.get_pca.qmd#spotoptim.utils.pca.get_pca) | Scale the numeric data and perform PCA. |
+| [utils.pca.get_pca_topk](utils.pca.get_pca_topk.qmd#spotoptim.utils.pca.get_pca_topk) | Identify the top k features that have the strongest influence on PC1 and PC2. |
+| [utils.pca.plot_loading_scores](utils.pca.plot_loading_scores.qmd#spotoptim.utils.pca.plot_loading_scores) | Creates a heatmap visualization of PCA loading scores. |
+| [utils.pca.plot_pca1vs2](utils.pca.plot_pca1vs2.qmd#spotoptim.utils.pca.plot_pca1vs2) | Create a scatter plot of the first two principal components from PCA. |
+| [utils.pca.plot_pca_scree](utils.pca.plot_pca_scree.qmd#spotoptim.utils.pca.plot_pca_scree) | Plot the scree plot for Principal Component Analysis (PCA). |
 | [utils.scaler](utils.scaler.qmd#spotoptim.utils.scaler) |  |
+| [utils.scaler.TorchStandardScaler](utils.scaler.TorchStandardScaler.qmd#spotoptim.utils.scaler.TorchStandardScaler) | A class for scaling data using standardization with torch tensors. |
 | [utils.stats](utils.stats.qmd#spotoptim.utils.stats) |  |
+| [utils.stats.calculate_outliers](utils.stats.calculate_outliers.qmd#spotoptim.utils.stats.calculate_outliers) | Calculate the number of outliers using the IQR method. |
+| [utils.stats.compute_coefficients_table](utils.stats.compute_coefficients_table.qmd#spotoptim.utils.stats.compute_coefficients_table) |  |
+| [utils.stats.compute_standardized_betas](utils.stats.compute_standardized_betas.qmd#spotoptim.utils.stats.compute_standardized_betas) | Computes standardized (beta) coefficients for a fitted statsmodels OLS model. |
+| [utils.stats.condition_index](utils.stats.condition_index.qmd#spotoptim.utils.stats.condition_index) | Calculates the Condition Index for a DataFrame to assess multicollinearity. |
+| [utils.stats.cov_to_cor](utils.stats.cov_to_cor.qmd#spotoptim.utils.stats.cov_to_cor) | Convert a covariance matrix to a correlation matrix. |
+| [utils.stats.fit_all_lm](utils.stats.fit_all_lm.qmd#spotoptim.utils.stats.fit_all_lm) | Fit a linear regression model for all possible combinations of independent variables. |
+| [utils.stats.get_all_vars_from_formula](utils.stats.get_all_vars_from_formula.qmd#spotoptim.utils.stats.get_all_vars_from_formula) | Utility function to extract variables from a formula. |
+| [utils.stats.get_combinations](utils.stats.get_combinations.qmd#spotoptim.utils.stats.get_combinations) | Generates all possible combinations of two values from a list of values. Order is not important. |
+| [utils.stats.get_sample_size](utils.stats.get_sample_size.qmd#spotoptim.utils.stats.get_sample_size) | Calculate sample size n for comparing two means. |
+| [utils.stats.normalize_X](utils.stats.normalize_X.qmd#spotoptim.utils.stats.normalize_X) | Normalize array X to [0, 1] in each dimension. |
+| [utils.stats.pairwise_semi_partial_correlation](utils.stats.pairwise_semi_partial_correlation.qmd#spotoptim.utils.stats.pairwise_semi_partial_correlation) |  |
+| [utils.stats.partial_correlation](utils.stats.partial_correlation.qmd#spotoptim.utils.stats.partial_correlation) | Calculate the partial correlation matrix for a given data set. |
+| [utils.stats.partial_correlation_test](utils.stats.partial_correlation_test.qmd#spotoptim.utils.stats.partial_correlation_test) | The partial correlation coefficient between x and y given z. |
+| [utils.stats.plot_coeff_vs_pvals](utils.stats.plot_coeff_vs_pvals.qmd#spotoptim.utils.stats.plot_coeff_vs_pvals) | Plot the coefficient estimates from fit_all_lm against the corresponding p-values. |
+| [utils.stats.plot_coeff_vs_pvals_by_included](utils.stats.plot_coeff_vs_pvals_by_included.qmd#spotoptim.utils.stats.plot_coeff_vs_pvals_by_included) | Generates a panel of scatter plots with effect estimates of all possible models against p-values. |
+| [utils.stats.preprocess_df_for_ols](utils.stats.preprocess_df_for_ols.qmd#spotoptim.utils.stats.preprocess_df_for_ols) | Preprocesses a df for fiitting an OLS regression model using the specified target column and predictors. |
+| [utils.stats.semi_partial_correlation](utils.stats.semi_partial_correlation.qmd#spotoptim.utils.stats.semi_partial_correlation) |  |
+| [utils.stats.vif](utils.stats.vif.qmd#spotoptim.utils.stats.vif) | Calculates the Variance Inflation Factor (VIF) for each feature in a DataFrame. |
 
 ## Data
 
@@ -82,7 +175,11 @@
 | --- | --- |
 | [data](data.qmd#spotoptim.data) | Data utilities for spotoptim package. |
 | [data.base](data.base.qmd#spotoptim.data.base) |  |
+| [data.base.Config](data.base.Config.qmd#spotoptim.data.base.Config) | Base class for all configurations. |
+| [data.base.FileConfig](data.base.FileConfig.qmd#spotoptim.data.base.FileConfig) | Base class for configurations that are stored in a local file. |
 | [data.diabetes](data.diabetes.qmd#spotoptim.data.diabetes) |  |
+| [data.diabetes.DiabetesDataset](data.diabetes.DiabetesDataset.qmd#spotoptim.data.diabetes.DiabetesDataset) | Diabetes dataset wrapping sklearn's diabetes dataset or custom data. |
+| [data.diabetes.get_diabetes_dataloaders](data.diabetes.get_diabetes_dataloaders.qmd#spotoptim.data.diabetes.get_diabetes_dataloaders) | Returns train and test dataloaders for the Diabetes dataset. |
 
 ## Exploratory Data Analysis
 
@@ -90,6 +187,8 @@
 | --- | --- |
 | [eda](eda.qmd#spotoptim.eda) | Exploratory Data Analysis (EDA) module for spotoptim. |
 | [eda.plots](eda.plots.qmd#spotoptim.eda.plots) |  |
+| [eda.plots.plot_ip_boxplots](eda.plots.plot_ip_boxplots.qmd#spotoptim.eda.plots.plot_ip_boxplots) | Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid. |
+| [eda.plots.plot_ip_histograms](eda.plots.plot_ip_histograms.qmd#spotoptim.eda.plots.plot_ip_histograms) | Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure. |
 
 ## Multi-Objective
 
@@ -97,7 +196,14 @@
 | --- | --- |
 | [mo](mo.qmd#spotoptim.mo) |  |
 | [mo.mo_mm](mo.mo_mm.qmd#spotoptim.mo.mo_mm) |  |
+| [mo.mo_mm.mo_mm_desirability_function](mo.mo_mm.mo_mm_desirability_function.qmd#spotoptim.mo.mo_mm.mo_mm_desirability_function) | Calculates the negative combined desirability for a candidate point x. Can be used by the mo_mm_desirability_optimizer. |
+| [mo.mo_mm.mo_mm_desirability_optimizer](mo.mo_mm.mo_mm_desirability_optimizer.qmd#spotoptim.mo.mo_mm.mo_mm_desirability_optimizer) | Optimizes the multi-objective function to find the next best point. |
+| [mo.mo_mm.mo_xy_desirability_plot](mo.mo_mm.mo_xy_desirability_plot.qmd#spotoptim.mo.mo_mm.mo_xy_desirability_plot) | Generates a plot of the desirability landscape. |
 | [mo.pareto](mo.pareto.qmd#spotoptim.mo.pareto) |  |
+| [mo.pareto.is_pareto_efficient](mo.pareto.is_pareto_efficient.qmd#spotoptim.mo.pareto.is_pareto_efficient) | Find the Pareto-efficient points from a set of points. |
+| [mo.pareto.mo_pareto_optx_plot](mo.pareto.mo_pareto_optx_plot.qmd#spotoptim.mo.pareto.mo_pareto_optx_plot) | Visualizes the Pareto-optimal points in the input space for each pair of inputs |
+| [mo.pareto.mo_xy_contour](mo.pareto.mo_xy_contour.qmd#spotoptim.mo.pareto.mo_xy_contour) | Generates contour plots of every combination of two input variables x_i and x_j |
+| [mo.pareto.mo_xy_surface](mo.pareto.mo_xy_surface.qmd#spotoptim.mo.pareto.mo_xy_surface) | Generates surface plots of every combination of two input variables x_i and x_j |
 
 ## Inspection
 
@@ -105,7 +211,13 @@
 | --- | --- |
 | [inspection](inspection.qmd#spotoptim.inspection) | Inspection (sensitivity analysis) module for spotoptim. |
 | [inspection.importance](inspection.importance.qmd#spotoptim.inspection.importance) |  |
+| [inspection.importance.generate_imp](inspection.importance.generate_imp.qmd#spotoptim.inspection.importance.generate_imp) | Generates permutation importances from a RandomForestRegressor. |
+| [inspection.importance.generate_mdi](inspection.importance.generate_mdi.qmd#spotoptim.inspection.importance.generate_mdi) | Generates a DataFrame with Gini importances from a RandomForestRegressor. |
+| [inspection.importance.plot_feature_importances](inspection.importance.plot_feature_importances.qmd#spotoptim.inspection.importance.plot_feature_importances) | Generate and plot feature importances using MDI and permutation importance. |
+| [inspection.importance.plot_feature_scatter_matrix](inspection.importance.plot_feature_scatter_matrix.qmd#spotoptim.inspection.importance.plot_feature_scatter_matrix) | Generate scatter plot matrix for the most important features. |
+| [inspection.importance.plot_importances](inspection.importance.plot_importances.qmd#spotoptim.inspection.importance.plot_importances) | Plots the impurity-based and permutation-based feature importances for a given classifier. |
 | [inspection.predictions](inspection.predictions.qmd#spotoptim.inspection.predictions) |  |
+| [inspection.predictions.plot_actual_vs_predicted](inspection.predictions.plot_actual_vs_predicted.qmd#spotoptim.inspection.predictions.plot_actual_vs_predicted) | Plot actual vs. predicted values. |
 
 ## Factor Analyzer
 
@@ -113,9 +225,34 @@
 | --- | --- |
 | [factor_analyzer](factor_analyzer.qmd#spotoptim.factor_analyzer) | This module performs exploratory and confirmatory factor analyses. |
 | [factor_analyzer.confirmatory_factor_analyzer](factor_analyzer.confirmatory_factor_analyzer.qmd#spotoptim.factor_analyzer.confirmatory_factor_analyzer) | Confirmatory factor analysis using machine learning methods. |
+| [factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer](factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer.qmd#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer) | Fit a confirmatory factor analysis model using maximum likelihood. |
+| [factor_analyzer.confirmatory_factor_analyzer.ModelSpecification](factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.qmd#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification) | Encapsulate the model specification for CFA. |
+| [factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser](factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.qmd#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser) | Generate the model specification for CFA. |
 | [factor_analyzer.factor_analyzer](factor_analyzer.factor_analyzer.qmd#spotoptim.factor_analyzer.factor_analyzer) | Factor analysis using MINRES or ML, with optional rotation using Varimax or Promax. |
+| [factor_analyzer.factor_analyzer.FactorAnalyzer](factor_analyzer.factor_analyzer.FactorAnalyzer.qmd#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer) | The main exploratory factor analysis class. |
+| [factor_analyzer.factor_analyzer.calculate_bartlett_sphericity](factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.qmd#spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity) | Compute the Bartlett sphericity test. |
+| [factor_analyzer.factor_analyzer.calculate_kmo](factor_analyzer.factor_analyzer.calculate_kmo.qmd#spotoptim.factor_analyzer.factor_analyzer.calculate_kmo) | Calculate the Kaiser-Meyer-Olkin criterion for items and overall. |
 | [factor_analyzer.factor_analyzer_rotator](factor_analyzer.factor_analyzer_rotator.qmd#spotoptim.factor_analyzer.factor_analyzer_rotator) | Class to perform various rotations of factor loading matrices. |
+| [factor_analyzer.factor_analyzer_rotator.Rotator](factor_analyzer.factor_analyzer_rotator.Rotator.qmd#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator) | Perform rotations on an unrotated factor loading matrix. |
 | [factor_analyzer.factor_analyzer_utils](factor_analyzer.factor_analyzer_utils.qmd#spotoptim.factor_analyzer.factor_analyzer_utils) | Utility functions, used primarily by the confirmatory factor analysis module. |
+| [factor_analyzer.factor_analyzer_utils.apply_impute_nan](factor_analyzer.factor_analyzer_utils.apply_impute_nan.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan) | Apply a function to impute np.nan values with the mean or the median. |
+| [factor_analyzer.factor_analyzer_utils.commutation_matrix](factor_analyzer.factor_analyzer_utils.commutation_matrix.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix) | Calculate the commutation matrix. |
+| [factor_analyzer.factor_analyzer_utils.corr](factor_analyzer.factor_analyzer_utils.corr.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.corr) | Calculate the correlation matrix. |
+| [factor_analyzer.factor_analyzer_utils.cov](factor_analyzer.factor_analyzer_utils.cov.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.cov) | Calculate the covariance matrix. |
+| [factor_analyzer.factor_analyzer_utils.covariance_to_correlation](factor_analyzer.factor_analyzer_utils.covariance_to_correlation.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation) | Compute cross-correlations from the given covariance matrix. |
+| [factor_analyzer.factor_analyzer_utils.duplication_matrix](factor_analyzer.factor_analyzer_utils.duplication_matrix.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix) | Calculate the duplication matrix. |
+| [factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post](factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post) | Transform given input symmetric matrix using pre-post duplication. |
+| [factor_analyzer.factor_analyzer_utils.fill_lower_diag](factor_analyzer.factor_analyzer_utils.fill_lower_diag.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag) | Fill the lower diagonal of a square matrix, given a 1-D input array. |
+| [factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values](factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values) | Get the indexes  for a given value. |
+| [factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs](factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs) | Get the free parameter indices from the flattened matrix. |
+| [factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs](factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs) | Get the indices for the lower triangle of a symmetric matrix. |
+| [factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs](factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs) | Get the indices for the upper triangle of a symmetric matrix. |
+| [factor_analyzer.factor_analyzer_utils.impute_values](factor_analyzer.factor_analyzer_utils.impute_values.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.impute_values) | Impute np.nan values with the mean or median, or drop the containing rows. |
+| [factor_analyzer.factor_analyzer_utils.inv_chol](factor_analyzer.factor_analyzer_utils.inv_chol.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol) | Calculate matrix inverse using Cholesky decomposition. |
+| [factor_analyzer.factor_analyzer_utils.merge_variance_covariance](factor_analyzer.factor_analyzer_utils.merge_variance_covariance.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance) | Merge variances and covariances into a single variance-covariance matrix. |
+| [factor_analyzer.factor_analyzer_utils.partial_correlations](factor_analyzer.factor_analyzer_utils.partial_correlations.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations) | Compute partial correlations between variable pairs. |
+| [factor_analyzer.factor_analyzer_utils.smc](factor_analyzer.factor_analyzer_utils.smc.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.smc) | Calculate the squared multiple correlations. |
+| [factor_analyzer.factor_analyzer_utils.unique_elements](factor_analyzer.factor_analyzer_utils.unique_elements.qmd#spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements) | Get first unique instance of every list element, while maintaining order. |
 
 ## Functions
 
@@ -123,10 +260,37 @@
 | --- | --- |
 | [function](function.qmd#spotoptim.function) | Analytical test functions for optimization. |
 | [function.forr08a](function.forr08a.qmd#spotoptim.function.forr08a) |  |
+| [function.forr08a.aerofoilcd](function.forr08a.aerofoilcd.qmd#spotoptim.function.forr08a.aerofoilcd) | Computes the drag coefficient (cd) of an aerofoil based on the shape parameter X. |
+| [function.forr08a.branin](function.forr08a.branin.qmd#spotoptim.function.forr08a.branin) | Branin's test function that takes a 2D input vector `x` in the range [0, 1] for each dimension |
+| [function.forr08a.onevar](function.forr08a.onevar.qmd#spotoptim.function.forr08a.onevar) | One-variable test function that takes a scalar or 1D array input `x` in the range [0, 1] |
 | [function.mo](function.mo.qmd#spotoptim.function.mo) | Analytical multi-objective test functions for optimization benchmarking. |
+| [function.mo.activity_pred](function.mo.activity_pred.qmd#spotoptim.function.mo.activity_pred) | Compute activity predictions for each row in the input array. |
+| [function.mo.conversion_pred](function.mo.conversion_pred.qmd#spotoptim.function.mo.conversion_pred) | Compute conversion predictions for each row in the input array. |
+| [function.mo.dtlz1](function.mo.dtlz1.qmd#spotoptim.function.mo.dtlz1) | DTLZ1 multi-objective test function (scalable objectives). |
+| [function.mo.dtlz2](function.mo.dtlz2.qmd#spotoptim.function.mo.dtlz2) | DTLZ2 multi-objective test function (scalable objectives). |
+| [function.mo.fonseca_fleming](function.mo.fonseca_fleming.qmd#spotoptim.function.mo.fonseca_fleming) | Fonseca-Fleming multi-objective test function (2 objectives). |
+| [function.mo.fun_myer16a](function.mo.fun_myer16a.qmd#spotoptim.function.mo.fun_myer16a) | Compute both conversion and activity predictions for each row in the input array. |
+| [function.mo.kursawe](function.mo.kursawe.qmd#spotoptim.function.mo.kursawe) | Kursawe multi-objective test function (2 objectives, minimization). |
+| [function.mo.mo_conv2_max](function.mo.mo_conv2_max.qmd#spotoptim.function.mo.mo_conv2_max) | Convex bi-objective maximization test function (2 objectives). |
+| [function.mo.mo_conv2_min](function.mo.mo_conv2_min.qmd#spotoptim.function.mo.mo_conv2_min) | Convex bi-objective minimization test function (2 objectives). |
+| [function.mo.schaffer_n1](function.mo.schaffer_n1.qmd#spotoptim.function.mo.schaffer_n1) | Schaffer N1 multi-objective test function (2 objectives). |
+| [function.mo.zdt1](function.mo.zdt1.qmd#spotoptim.function.mo.zdt1) | ZDT1 multi-objective test function (2 objectives). |
+| [function.mo.zdt2](function.mo.zdt2.qmd#spotoptim.function.mo.zdt2) | ZDT2 multi-objective test function (2 objectives). |
+| [function.mo.zdt3](function.mo.zdt3.qmd#spotoptim.function.mo.zdt3) | ZDT3 multi-objective test function (2 objectives). |
+| [function.mo.zdt4](function.mo.zdt4.qmd#spotoptim.function.mo.zdt4) | ZDT4 multi-objective test function (2 objectives). |
+| [function.mo.zdt6](function.mo.zdt6.qmd#spotoptim.function.mo.zdt6) | ZDT6 multi-objective test function (2 objectives). |
 | [function.remote](function.remote.qmd#spotoptim.function.remote) |  |
+| [function.remote.objective_remote](function.remote.objective_remote.qmd#spotoptim.function.remote.objective_remote) | Evaluates an objective function remotely via an HTTP POST request. |
 | [function.so](function.so.qmd#spotoptim.function.so) | Analytical single-objective test functions for optimization benchmarking. |
+| [function.so.ackley](function.so.ackley.qmd#spotoptim.function.so.ackley) | N-dimensional Ackley function. |
+| [function.so.lennard_jones](function.so.lennard_jones.qmd#spotoptim.function.so.lennard_jones) | Lennard-Jones Atomic Cluster Potential Energy. |
+| [function.so.michalewicz](function.so.michalewicz.qmd#spotoptim.function.so.michalewicz) | N-dimensional Michalewicz function. |
+| [function.so.robot_arm_hard](function.so.robot_arm_hard.qmd#spotoptim.function.so.robot_arm_hard) | 10-Link Robot Arm with Maze-Like Hard Constraints. |
+| [function.so.robot_arm_obstacle](function.so.robot_arm_obstacle.qmd#spotoptim.function.so.robot_arm_obstacle) | 10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance. |
+| [function.so.rosenbrock](function.so.rosenbrock.qmd#spotoptim.function.so.rosenbrock) | N-dimensional Rosenbrock function. |
+| [function.so.wingwt](function.so.wingwt.qmd#spotoptim.function.so.wingwt) | Aircraft Wing Weight function. |
 | [function.torch_objective](function.torch_objective.qmd#spotoptim.function.torch_objective) |  |
+| [function.torch_objective.TorchObjective](function.torch_objective.TorchObjective.qmd#spotoptim.function.torch_objective.TorchObjective) | A callable objective function for SpotOptim that trains and evaluates a PyTorch model. |
 
 ## Tricands
 
@@ -134,3 +298,6 @@
 | --- | --- |
 | [tricands](tricands.qmd#spotoptim.tricands) |  |
 | [tricands.tricands](tricands.tricands.qmd#spotoptim.tricands.tricands) |  |
+| [tricands.tricands.tricands](tricands.tricands.tricands.qmd#spotoptim.tricands.tricands.tricands) | Generate Triangulation Candidates for Bayesian Optimization. |
+| [tricands.tricands.tricands_fringe](tricands.tricands.tricands_fringe.qmd#spotoptim.tricands.tricands.tricands_fringe) | Generate fringe candidates outside the convex hull. |
+| [tricands.tricands.tricands_interior](tricands.tricands.tricands_interior.qmd#spotoptim.tricands.tricands.tricands_interior) | Generate interior candidates using Delaunay triangulation. |
