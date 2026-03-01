@@ -222,13 +222,17 @@ class ModelSpecificationParser:
             ValueError: If ``specification`` is not in the expected format.
 
         Examples:
-            >>> import pandas as pd
-            >>> from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
-            ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('src/spotoptim/datasets/test11.csv')
-            >>> model_dict = {"F1": ["V1", "V2", "V3", "V4"],
-            ...               "F2": ["V5", "V6", "V7", "V8"]}
-            >>> model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
+            ```{python}
+            import pandas as pd
+            import os
+            from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
+                                                  ModelSpecificationParser)
+            from spotoptim.utils import get_internal_datasets_folder
+            X = pd.read_csv(os.path.join(get_internal_datasets_folder(), 'test11.csv'))
+            model_dict = {"F1": ["V1", "V2", "V3", "V4"],
+                          "F2": ["V5", "V6", "V7", "V8"]}
+            model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
+            ```
         """
         if specification is None:
             factor_names, variable_names = None, None
@@ -290,14 +294,18 @@ class ModelSpecificationParser:
             ValueError: If ``specification`` is not in the expected format.
 
         Examples:
-            >>> import pandas as pd
-            >>> import numpy as np
-            >>> from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
-            ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('src/spotoptim/datasets/test11.csv')
-            >>> model_array = np.array([[1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 1]])
-            >>> model_spec = ModelSpecificationParser.parse_model_specification_from_array(X,
-            ...                                                                            model_array)
+            ```{python}
+            import pandas as pd
+            import numpy as np
+            import os
+            from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
+                                                  ModelSpecificationParser)
+            from spotoptim.utils import get_internal_datasets_folder
+            X = pd.read_csv(os.path.join(get_internal_datasets_folder(), 'test11.csv'))
+            model_array = np.array([[1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 1]])
+            model_spec = ModelSpecificationParser.parse_model_specification_from_array(X,
+                                                                                         model_array)
+            ```
         """
         if specification is None:
             n_variables, n_factors = X.shape[1], X.shape[1]
@@ -363,9 +371,11 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
         ```{python}
         import numpy as np
         import pandas as pd
+        import os
         from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
                                               ModelSpecificationParser)
-        X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+        from spotoptim.utils import get_internal_datasets_folder
+        X = pd.read_csv(os.path.join(get_internal_datasets_folder(), 'test11.csv'))
         model_dict = {"F1": ["V1", "V2", "V3", "V4"],
                       "F2": ["V5", "V6", "V7", "V8"]}
         model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
@@ -608,9 +618,11 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             ```{python}
             import numpy as np
             import pandas as pd
+            import os
             from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
                                                   ModelSpecificationParser)
-            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            from spotoptim.utils import get_internal_datasets_folder
+            X = pd.read_csv(os.path.join(get_internal_datasets_folder(), 'test11.csv'))
             model_dict = {"F1": ["V1", "V2", "V3", "V4"],
                           "F2": ["V5", "V6", "V7", "V8"]}
             model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
@@ -756,9 +768,11 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             ```{python}
             import numpy as np
             import pandas as pd
+            import os
             from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
                                                   ModelSpecificationParser)
-            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            from spotoptim.utils import get_internal_datasets_folder
+            X = pd.read_csv(os.path.join(get_internal_datasets_folder(), 'test11.csv'))
             model_dict = {"F1": ["V1", "V2", "V3", "V4"],
                           "F2": ["V5", "V6", "V7", "V8"]}
             model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
@@ -834,9 +848,11 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             ```{python}
             import numpy as np
             import pandas as pd
+            import os
             from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
                                                   ModelSpecificationParser)
-            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            from spotoptim.utils import get_internal_datasets_folder
+            X = pd.read_csv(os.path.join(get_internal_datasets_folder(), 'test11.csv'))
             model_dict = {"F1": ["V1", "V2", "V3", "V4"],
                           "F2": ["V5", "V6", "V7", "V8"]}
             model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
@@ -987,9 +1003,11 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             ```{python}
             import numpy as np
             import pandas as pd
+            import os
             from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
                                                   ModelSpecificationParser)
-            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            from spotoptim.utils import get_internal_datasets_folder
+            X = pd.read_csv(os.path.join(get_internal_datasets_folder(), 'test11.csv'))
             model_dict = {"F1": ["V1", "V2", "V3", "V4"],
                           "F2": ["V5", "V6", "V7", "V8"]}
             model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)

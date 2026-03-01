@@ -8,11 +8,13 @@ from spotoptim.factor_analyzer import (
     ConfirmatoryFactorAnalyzer,
     ModelSpecificationParser,
 )
+from spotoptim.utils import get_internal_datasets_folder
+import os
 
 
 def test_cfa_main_example():
     """Test the main example in ConfirmatoryFactorAnalyzer docstring."""
-    X = pd.read_csv("src/spotoptim/datasets/test11.csv")
+    X = pd.read_csv(os.path.join(get_internal_datasets_folder(), "test11.csv"))
     model_dict = {"F1": ["V1", "V2", "V3", "V4"], "F2": ["V5", "V6", "V7", "V8"]}
     model_spec = ModelSpecificationParser.parse_model_specification_from_dict(
         X, model_dict
@@ -72,7 +74,7 @@ def test_cfa_main_example():
 
 def test_cfa_get_model_implied_cov():
     """Test the get_model_implied_cov example."""
-    X = pd.read_csv("src/spotoptim/datasets/test11.csv")
+    X = pd.read_csv(os.path.join(get_internal_datasets_folder(), "test11.csv"))
     model_dict = {"F1": ["V1", "V2", "V3", "V4"], "F2": ["V5", "V6", "V7", "V8"]}
     model_spec = ModelSpecificationParser.parse_model_specification_from_dict(
         X, model_dict
