@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.1...v0.2.2) (2026-03-01)
+
+
+### Bug Fixes
+
+* doc tested ([c919dcc](https://github.com/sequential-parameter-optimization/spotoptim/commit/c919dccf6fbe1a60e0f3a577de07666203ac11ca))
+
 ## [0.2.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.0...v0.2.1) (2026-03-01)
 
 
