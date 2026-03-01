@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.0...v0.2.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* uv.lock ([048b911](https://github.com/sequential-parameter-optimization/spotoptim/commit/048b911739b58250e8b26aa2798853ae8c3dbbb7))
+
 ## [0.2.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.1.1...v0.2.0) (2026-03-01)
 
 
