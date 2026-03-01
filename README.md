@@ -248,6 +248,52 @@ uv run pytest tests/
 uv build
 ```
 
+## Release Troubleshooting
+
+If a release fails (for example with `semantic-release` push/tag permission errors), use this checklist.
+
+### 1) Push workflow updates
+
+```bash
+git add .github/workflows/release.yml .github/workflows/release-preflight.yml README.md
+git commit -m "docs(ci): add release troubleshooting and preflight instructions"
+git push origin main
+```
+
+### 2) Run and inspect workflows
+
+```bash
+# List workflows
+gh workflow list
+
+# Check latest runs
+gh run list --workflow "Release Preflight" --limit 5
+gh run list --workflow "Release" --limit 5
+
+# Show detailed logs
+gh run view --workflow "Release Preflight" --log
+gh run view --workflow "Release" --log
+```
+
+### 3) Compare release-related settings between repositories
+
+```bash
+for r in spotoptim spotforecast2_safe; do
+    echo "== $r =="
+    gh api repos/sequential-parameter-optimization/$r/actions/permissions/workflow \
+        --jq '{default_workflow_permissions,can_approve_pull_request_reviews}'
+    gh secret list -R sequential-parameter-optimization/$r
+    gh api repos/sequential-parameter-optimization/$r/rulesets \
+        --jq '.[]|{name,target,enforcement,bypass_actors}'
+done
+```
+
+### 4) Required GitHub settings
+
+- **Actions workflow permissions**: `Read and write`
+- **Token secret**: `SEMANTIC_RELEASE_TOKEN` should exist (or rely on `github.token`)
+- **Branch/ruleset policy**: must allow push/tag creation by GitHub Actions (or PAT owner)
+
 ## License
 
 See LICENSE file.
