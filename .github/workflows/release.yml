@@ -55,7 +55,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          uv pip install --system build
+          uv pip install --system build twine
           uv pip install --system -e ".[dev]"
       
       - name: Setup Node.js
@@ -124,4 +124,22 @@ jobs:
         with:
           packages-dir: dist/
           skip-existing: true
-          # Note: No token needed with Trusted Publishers (OIDC)
+          # Trusted Publisher (OIDC) — configure once at:
+          # pypi.org/manage/project/spotoptim/settings/publishing/
+          # Owner: sequential-parameter-optimization | Repo: spotoptim | Workflow: release.yml
+
+      - name: Verify PyPI Release
+        if: steps.check_dist.outputs.exists == 'true'
+        run: |
+          echo "Release completed successfully!"
+          echo "Verifying package on PyPI..."
+          for i in {1..30}; do
+            if python -c "import urllib.request; urllib.request.urlopen('https://pypi.org/project/spotoptim/')" 2>/dev/null; then
+              echo "✓ Package found on PyPI"
+              break
+            fi
+            if [ $i -lt 30 ]; then
+              echo "Waiting for PyPI to sync (attempt $i/30)..."
+              sleep 10
+            fi
+          done

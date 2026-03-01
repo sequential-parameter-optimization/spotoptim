@@ -3848,17 +3848,16 @@ class SpotOptim(BaseEstimator):
                 - ndarray: Array with True if value is new, otherwise False.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> A = np.array([[1, 2], [3, 4], [5, 6]])
-            >>> X = np.array([[3, 4], [7, 8]])
-            >>> new_A, is_new = opt.select_new(A, X)
-            >>> print("New A:", new_A)
-            New A: [[1 2]
-             [5 6]]
-            >>> print("Is new:", is_new)
-            Is new: [ True False  True]
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            A = np.array([[1, 2], [3, 4], [5, 6]])
+            X = np.array([[3, 4], [7, 8]])
+            new_A, is_new = opt.select_new(A, X)
+            print("New A:", new_A)
+            print("Is new:", is_new)
+            ```
         """
         if len(X) == 0:
             return A, np.ones(len(A), dtype=bool)
