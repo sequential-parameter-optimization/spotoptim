@@ -5185,7 +5185,7 @@ class SpotOptim(BaseEstimator):
             if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
                 mean_y_new = np.mean(y_next)
                 msg += f" | Mean Curr: {mean_y_new:.6f}"
-            pass
+            print(msg)
 
     def _determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.
