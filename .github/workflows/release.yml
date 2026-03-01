@@ -14,16 +14,18 @@ on:
       - main
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-  id-token: write
+  contents: read
 
 jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'chore(release)')"
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
     
     steps:
       - name: Checkout code
