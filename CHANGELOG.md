@@ -1,3 +1,12 @@
+## [0.2.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.2...v0.2.3) (2026-03-01)
+
+
+### Bug Fixes
+
+* **ci:** merge security fix for untrusted-checkout/critical to main ([a27ad10](https://github.com/sequential-parameter-optimization/spotoptim/commit/a27ad10f72772ffa05f7ca5f4f19665bd24e8d33))
+* **ci:** resolve CodeQL untrusted-checkout/critical in workflow_run release job ([1dd089e](https://github.com/sequential-parameter-optimization/spotoptim/commit/1dd089e0bf5f578547b3411589d46b6a77c4db9b))
+* create living examples ([32c55a5](https://github.com/sequential-parameter-optimization/spotoptim/commit/32c55a582b7bd8ed0d951d928a7a6a0eb451df3b))
+
 ## [0.2.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.1...v0.2.2) (2026-03-01)
 
 
