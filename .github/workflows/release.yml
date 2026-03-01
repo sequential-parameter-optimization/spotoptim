@@ -124,4 +124,8 @@ jobs:
         with:
           packages-dir: dist/
           skip-existing: true
-          # Note: No token needed with Trusted Publishers (OIDC)
+          # Trusted Publisher (OIDC) is preferred — configure at:
+          # pypi.org/manage/project/spotoptim/settings/publishing/
+          # Owner: sequential-parameter-optimization | Repo: spotoptim | Workflow: release.yml
+          # If OIDC is not yet configured, fall back to API token:
+          password: ${{ secrets.PYPI_API_TOKEN }}
