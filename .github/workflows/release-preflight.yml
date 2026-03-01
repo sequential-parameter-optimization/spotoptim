@@ -1,0 +1,64 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# =============================================================================
+# .github/workflows/release-preflight.yml  — Release Permission Preflight
+# =============================================================================
+
+name: Release Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Validate release permissions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Configure authenticated Git remote
+        env:
+          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
+        run: |
+          git remote set-url origin https://x-access-token:${RELEASE_TOKEN}@github.com/${{ github.repository }}.git
+
+      - name: Preflight token and push checks
+        env:
+          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RELEASE_TOKEN:-}" ]; then
+            echo "::error::No release token available (SEMANTIC_RELEASE_TOKEN or github.token)."
+            exit 1
+          fi
+
+          echo "Checking authenticated read access to ${GITHUB_REPOSITORY}..."
+          git ls-remote --exit-code origin HEAD >/dev/null
+
+          echo "Checking dry-run push permission to main branch..."
+          git push --dry-run origin HEAD:refs/heads/main >/dev/null
+
+          temp_tag="preflight-sr-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git tag "${temp_tag}" HEAD
+          trap 'git tag -d "${temp_tag}" >/dev/null 2>&1 || true' EXIT
+
+          echo "Checking dry-run push permission for tags..."
+          git push --dry-run origin "refs/tags/${temp_tag}" >/dev/null
+
+          echo "✅ Preflight passed: token and push permissions are sufficient for semantic-release."
