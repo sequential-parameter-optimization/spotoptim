@@ -33,6 +33,7 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
 path = [
+    "**/.DS_Store",
     "**/*.md",
     "**/*.html",
     "**/*.css",
@@ -55,3 +56,9 @@ path = [
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 bartzbeielstein"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["src/spotoptim/datasets/test01.csv", "src/spotoptim/datasets/test02.csv", "src/spotoptim/datasets/test11.csv"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 Jeremy Biggs <jeremy.m.biggs@gmail.com>, 2022 Nitin Madnani <nmadnani@ets.org>, 2022 Educational Testing Service"
+SPDX-License-Identifier = "GPL-2.0-or-later"

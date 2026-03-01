@@ -1,35 +1,38 @@
 # SPDX-FileCopyrightText: 2026 bartzbeielstein
+# SPDX-FileCopyrightText: 2022 Jeremy Biggs <jeremy.m.biggs@gmail.com>
+# SPDX-FileCopyrightText: 2022 Nitin Madnani <nmadnani@ets.org>
+# SPDX-FileCopyrightText: 2022 Educational Testing Service
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: AGPL-3.0-or-later AND GPL-2.0-or-later
+#
+# Confirmatory factor analysis using machine learning methods.
+# Re-implementation of the factor-analyzer package.
+#
+# See https://factor-analyzer.readthedocs.io/en/latest/introduction.html for
+# more details.
+#
+# Authors of the original implementation:
+# * Jeremy Biggs (jeremy.m.biggs@gmail.com)
+# * Nitin Madnani (nmadnani@ets.org)
+# Organization: Educational Testing Service
+# Date: 2022-09-05
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 """
 Class to perform various rotations of factor loading matrices.
-
-Confirmatory factor analysis using machine learning methods.
-Re-implementation of the factor-analyzer package.
-
-See https://factor-analyzer.readthedocs.io/en/latest/introduction.html for
-more details.
-
-Authors of the original implementation:
-* Jeremy Biggs (jeremy.m.biggs@gmail.com)
-* Nitin Madnani (nmadnani@ets.org)
-Organization: Educational Testing Service
-Date: 2022-09-05
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
 
 import numpy as np
@@ -98,7 +101,7 @@ class Rotator(BaseEstimator):
 
     Examples:
         >>> import pandas as pd
-        >>> from factor_analyzer import FactorAnalyzer, Rotator
+        >>> from spotoptim.factor_analyzer import FactorAnalyzer, Rotator
         >>> df_features = pd.read_csv('test02.csv')
         >>> fa = FactorAnalyzer(rotation=None)
         >>> fa.fit(df_features)
@@ -568,7 +571,7 @@ class Rotator(BaseEstimator):
 
         Examples:
             >>> import pandas as pd
-            >>> from factor_analyzer import FactorAnalyzer, Rotator
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer, Rotator
             >>> df_features = pd.read_csv('test02.csv')
             >>> fa = FactorAnalyzer(rotation=None)
             >>> fa.fit(df_features)
@@ -594,7 +597,7 @@ class Rotator(BaseEstimator):
 
         Examples:
             >>> import pandas as pd
-            >>> from factor_analyzer import FactorAnalyzer, Rotator
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer, Rotator
             >>> df_features = pd.read_csv('test02.csv')
             >>> fa = FactorAnalyzer(rotation=None)
             >>> fa.fit(df_features)

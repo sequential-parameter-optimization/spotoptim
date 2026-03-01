@@ -36,14 +36,21 @@ def plot_ip_histograms(
         None
 
     Examples:
-        >>> import pandas as pd
-        >>> from spotoptim.eda.plots import plot_ip_histograms
-        >>> data = {'A': [1, 2, 2, 3, 4, 5, 100], 'B': [10, 10, 10, 10, 10, 10, 10]}
-        >>> df = pd.DataFrame(data)
-        >>> plot_ip_histograms(df, bins=5, num_cols=1, thrs_unique=3)
-        >>> # Example with multiple added points and colors
-        >>> add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
-        >>> plot_ip_histograms(df, add_points=add_points, add_points_col=["red", "blue"])
+        ```{python}
+        import pandas as pd
+        from spotoptim.eda.plots import plot_ip_histograms
+        data = {'A': [1, 2, 2, 3, 4, 5, 100], 'B': [10, 10, 10, 10, 10, 10, 10]}
+        df = pd.DataFrame(data)
+        plot_ip_histograms(df, bins=5, num_cols=1, thrs_unique=3)
+        # Example with multiple added points and colors
+        add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
+        plot_ip_histograms(df, add_points=add_points, add_points_col=["red", "blue"])
+        ```
+
+    References:
+        Bartz-Beielstein, T. (2025). Multi-Objective Optimization and Hyperparameter
+        Tuning With Desirability Functions. arXiv preprint arXiv:2503.23595.
+        https://arxiv.org/abs/2503.23595
     """
     numerical_columns = df.select_dtypes(include="number").columns.tolist()
     num_plots = len(numerical_columns)
@@ -139,14 +146,21 @@ def plot_ip_boxplots(
         None
 
     Examples:
-        >>> import pandas as pd
-        >>> from spotoptim.eda.plots import plot_ip_boxplots
-        >>> data = {'A': [1, 2, 2, 3, 4, 5, 100], 'B': [10, 10, 10, 10, 10, 10, 10]}
-        >>> df = pd.DataFrame(data)
-        >>> plot_ip_boxplots(df, num_cols=1)
-        >>> # Example with multiple added points and colors
-        >>> add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
-        >>> plot_ip_boxplots(df, add_points=add_points, add_points_col=["red", "blue"])
+        ```{python}
+        import pandas as pd
+        from spotoptim.eda.plots import plot_ip_boxplots
+        data = {'A': [1, 2, 2, 3, 4, 5, 100], 'B': [10, 10, 10, 10, 10, 10, 10]}
+        df = pd.DataFrame(data)
+        plot_ip_boxplots(df, num_cols=1)
+        # Example with multiple added points and colors
+        add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
+        plot_ip_boxplots(df, add_points=add_points, add_points_col=["red", "blue"])
+        ```
+
+    References:
+        Bartz-Beielstein, T. (2025). Multi-Objective Optimization and Hyperparameter
+        Tuning With Desirability Functions. arXiv preprint arXiv:2503.23595.
+        https://arxiv.org/abs/2503.23595
     """
     if df.ndim == 1:
         df = df.to_frame()

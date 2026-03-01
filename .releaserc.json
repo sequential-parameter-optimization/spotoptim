@@ -147,7 +147,8 @@
                     {
                         "path": "dist/*.tar.gz"
                     }
-                ]
+                ],
+                "labels": false
             }
         ],
         [

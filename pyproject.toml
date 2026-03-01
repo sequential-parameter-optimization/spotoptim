@@ -79,3 +79,11 @@ filterwarnings = [
 requires = ["uv_build>=0.9.18,<0.10.0"]
 build-backend = "uv_build"
 
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spotoptim"]
+
+[tool.hatch.build]
+include = ["src/spotoptim/datasets/*.csv"]

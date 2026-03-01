@@ -62,9 +62,15 @@ jobs:
             @semantic-release/exec@6 \
             conventional-changelog-conventionalcommits@7
       
+      - name: Setup Git Credentials for Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+
       - name: Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
       - name: Check if release generated dist/

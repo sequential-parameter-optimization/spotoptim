@@ -47,3 +47,15 @@ def get_experiment_filename(
 
     filename = "_".join(parts) + f".{extension}"
     return os.path.join(path, filename)
+
+
+def get_internal_datasets_folder() -> str:
+    """
+    Returns the absolute path to the internal datasets folder.
+
+    Returns:
+        str: Absolute path to the datasets folder.
+    """
+    import spotoptim.datasets as datasets
+
+    return os.path.dirname(datasets.__file__)
