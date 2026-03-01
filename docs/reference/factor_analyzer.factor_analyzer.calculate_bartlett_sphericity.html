@@ -1927,11 +1927,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Where R det(R) is the determinant of the correlation matrix, and p is the number of variables.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
-<p>x : array-like The array for which to calculate sphericity.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The array for which to calculate sphericity.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="returns" class="level2 doc-section doc-section-returns">
 <h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
-<p>statistic : float The chi-square value. p_value : float The associated p-value for the test.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>statistic</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The chi-square value.</td>
+</tr>
+<tr class="even">
+<td>p_value</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The associated p-value for the test.</td>
+</tr>
+</tbody>
+</table>
 
 
 </section>

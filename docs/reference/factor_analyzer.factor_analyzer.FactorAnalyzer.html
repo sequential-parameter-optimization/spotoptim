@@ -2070,13 +2070,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<blockquote class="blockquote">
-<blockquote class="blockquote">
-<blockquote class="blockquote">
-<p>import pandas as pd from factor_analyzer import FactorAnalyzer df_features = pd.read_csv(‘tests/data/test02.csv’) fa = FactorAnalyzer(rotation=None) fa.fit(df_features) FactorAnalyzer(bounds=(0.005, 1), impute=‘median’, is_corr_matrix=False, method=‘minres’, n_factors=3, rotation=None, rotation_kwargs={}, use_smc=True) fa.loadings_ array([[-0.12991218, 0.16398154, 0.73823498], [ 0.03899558, 0.04658425, 0.01150343], [ 0.34874135, 0.61452341, -0.07255667], [ 0.45318006, 0.71926681, -0.07546472], [ 0.36688794, 0.44377343, -0.01737067], [ 0.74141382, -0.15008235, 0.29977512], [ 0.741675 , -0.16123009, -0.20744495], [ 0.82910167, -0.20519428, 0.04930817], [ 0.76041819, -0.23768727, -0.1206858 ], [ 0.81533404, -0.12494695, 0.17639683]]) fa.get_communalities() array([0.588758 , 0.00382308, 0.50452402, 0.72841183, 0.33184336, 0.66208428, 0.61911036, 0.73194557, 0.64929612, 0.71149718])</p>
-</blockquote>
-</blockquote>
-</blockquote>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.loadings_, <span class="dv">2</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>array([[<span class="op">-</span><span class="fl">0.13</span>,  <span class="fl">0.16</span>,  <span class="fl">0.74</span>],</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.04</span>,  <span class="fl">0.05</span>,  <span class="fl">0.01</span>],</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.35</span>,  <span class="fl">0.61</span>, <span class="op">-</span><span class="fl">0.07</span>],</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.45</span>,  <span class="fl">0.72</span>, <span class="op">-</span><span class="fl">0.08</span>],</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.37</span>,  <span class="fl">0.44</span>, <span class="op">-</span><span class="fl">0.02</span>],</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.74</span>, <span class="op">-</span><span class="fl">0.15</span>,  <span class="fl">0.3</span> ],</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.74</span>, <span class="op">-</span><span class="fl">0.16</span>, <span class="op">-</span><span class="fl">0.21</span>],</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.83</span>, <span class="op">-</span><span class="fl">0.21</span>,  <span class="fl">0.05</span>],</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.76</span>, <span class="op">-</span><span class="fl">0.24</span>, <span class="op">-</span><span class="fl">0.12</span>],</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.82</span>, <span class="op">-</span><span class="fl">0.12</span>,  <span class="fl">0.18</span>]])</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.get_communalities(), <span class="dv">2</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.59</span>, <span class="fl">0.</span>  , <span class="fl">0.5</span> , <span class="fl">0.73</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">0.62</span>, <span class="fl">0.73</span>, <span class="fl">0.65</span>, <span class="fl">0.71</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>

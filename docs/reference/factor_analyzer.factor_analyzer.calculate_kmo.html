@@ -1924,11 +1924,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This statistic represents the degree to which each observed variable is predicted, without error, by the other variables in the dataset. In general, a KMO &lt; 0.6 is considered inadequate.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
-<p>x : array-like The array from which to calculate KMOs.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The array from which to calculate KMOs.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="returns" class="level2 doc-section doc-section-returns">
 <h2 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h2>
-<p>kmo_per_variable : :obj:<code>numpy.ndarray</code> The KMO score per item. kmo_total : float The overall KMO score.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>kmo_per_variable</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The KMO score per item.</td>
+</tr>
+<tr class="even">
+<td>kmo_total</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The overall KMO score.</td>
+</tr>
+</tbody>
+</table>
 
 
 </section>

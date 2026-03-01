@@ -1902,24 +1902,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#spotoptim.eda.plots.plot_ip_histograms" id="toc-spotoptim.eda.plots.plot_ip_histograms" class="nav-link active" data-scroll-target="#spotoptim.eda.plots.plot_ip_histograms">eda.plots.plot_ip_histograms</a>
-  <ul class="collapse">
-  <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
+  <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
   <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
-  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/eda.plots.plot_ip_histograms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.html">Exploratory Data Analysis</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.plots.plot_ip_histograms.html">plot_ip_histograms</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.html">Exploratory Data Analysis</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.plots.plot_ip_histograms.html">plot_ip_histograms</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">eda.plots.plot_ip_histograms</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
-<section id="spotoptim.eda.plots.plot_ip_histograms" class="level1">
-<h1>eda.plots.plot_ip_histograms</h1>
+</header>
+
+
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eda.plots.plot_ip_histograms(</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    df,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    bins<span class="op">=</span><span class="dv">10</span>,</span>
@@ -2008,17 +2020,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.eda.plots <span class="im">import</span> plot_ip_histograms</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> {<span class="st">'A'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">100</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>]}</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df <span class="op">=</span> pd.DataFrame(data)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_ip_histograms(df, bins<span class="op">=</span><span class="dv">5</span>, num_cols<span class="op">=</span><span class="dv">1</span>, thrs_unique<span class="op">=</span><span class="dv">3</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example with multiple added points and colors</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> add_points <span class="op">=</span> pd.DataFrame({<span class="st">'A'</span>: [<span class="fl">1.5</span>, <span class="fl">3.5</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>]})</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_ip_histograms(df, add_points<span class="op">=</span>add_points, add_points_col<span class="op">=</span>[<span class="st">"red"</span>, <span class="st">"blue"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-
-
+<div id="c5fd9dac" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.eda.plots <span class="im">import</span> plot_ip_histograms</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> {<span class="st">'A'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">100</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>]}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame(data)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, bins<span class="op">=</span><span class="dv">5</span>, num_cols<span class="op">=</span><span class="dv">1</span>, thrs_unique<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Example with multiple added points and colors</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>add_points <span class="op">=</span> pd.DataFrame({<span class="st">'A'</span>: [<span class="fl">1.5</span>, <span class="fl">3.5</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>]})</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, add_points<span class="op">=</span>add_points, add_points_col<span class="op">=</span>[<span class="st">"red"</span>, <span class="st">"blue"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="eda.plots.plot_ip_histograms_files/figure-html/cell-2-output-1.png" width="950" height="950" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="eda.plots.plot_ip_histograms_files/figure-html/cell-2-output-2.png" width="950" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
+<section id="references" class="level2 doc-section doc-section-references">
+<h2 class="doc-section doc-section-references anchored" data-anchor-id="references">References</h2>
+<p>Bartz-Beielstein, T. (2025). Multi-Objective Optimization and Hyperparameter Tuning With Desirability Functions. arXiv preprint arXiv:2503.23595. https://arxiv.org/abs/2503.23595</p>
+
+
 </section>
 
 </main> <!-- /main -->
