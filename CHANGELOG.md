@@ -1,3 +1,15 @@
+## [0.2.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.1.1...v0.2.0) (2026-03-01)
+
+
+### Features
+
+* **ci:** add PyPI verification step to release workflow ([6ee1548](https://github.com/sequential-parameter-optimization/spotoptim/commit/6ee1548d415fc73818286355e55aa3654d5bd563))
+
+
+### Bug Fixes
+
+* **ci:** add twine to CI install, use pure OIDC for PyPI publish ([d0d6d25](https://github.com/sequential-parameter-optimization/spotoptim/commit/d0d6d25a769c2aca99bc32eb032f009196537977))
+
 ## [0.1.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.1.0...v0.1.1) (2026-03-01)
 
 
