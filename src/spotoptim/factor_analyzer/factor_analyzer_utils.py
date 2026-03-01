@@ -353,6 +353,7 @@ def get_free_parameter_idxs(x, eq=1):
     Returns:
         idx (:obj:`numpy.ndarray`): The free parameter indexes.
     """
+    x = np.array(x, copy=True)
     x[np.isnan(x)] = eq
     x = x.flatten(order="F")
     return np.where(x == eq)[0]

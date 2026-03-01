@@ -66,17 +66,12 @@ def calculate_kmo(x):
     predicted, without error, by the other variables in the dataset.
     In general, a KMO < 0.6 is considered inadequate.
 
-    Parameters
-    ----------
-    x : array-like
-        The array from which to calculate KMOs.
+    Args:
+        x (array-like): The array from which to calculate KMOs.
 
-    Returns
-    -------
-    kmo_per_variable : :obj:`numpy.ndarray`
-        The KMO score per item.
-    kmo_total : float
-        The overall KMO score.
+    Returns:
+        kmo_per_variable (numpy.ndarray): The KMO score per item.
+        kmo_total (float): The overall KMO score.
     """
     # calculate the partial correlations
     partial_corr = partial_correlations(x)
@@ -118,17 +113,12 @@ def calculate_bartlett_sphericity(x):
     Where R det(R) is the determinant of the correlation matrix,
     and p is the number of variables.
 
-    Parameters
-    ----------
-    x : array-like
-        The array for which to calculate sphericity.
+    Args:
+        x (array-like): The array for which to calculate sphericity.
 
-    Returns
-    -------
-    statistic : float
-        The chi-square value.
-    p_value : float
-        The associated p-value for the test.
+    Returns:
+        statistic (float): The chi-square value.
+        p_value (float): The associated p-value for the test.
     """
     n, p = x.shape
     x_corr = corr(x)
@@ -157,7 +147,7 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
             (f) quartimax (orthogonal rotation)
             (g) equamax (orthogonal rotation)
 
-    Parameters:
+    Args:
         n_factors (int): The number of factors to select. Defaults to 3.
         rotation (str, optional): The type of rotation to perform after fitting the factor analysis model.
             If set to None, no rotation will be performed, nor will any associated Kaiser normalization.
@@ -195,38 +185,32 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         structure_ (numpy.ndarray or None): The structure loading matrix. This only exists if rotation is 'promax'.
         phi_ (numpy.ndarray or None): The factor correlations matrix. This only exists if rotation is 'oblique'.
 
-    Notes
-    -----
-    This code was partly derived from the excellent R package `psych`.
+    Notes:
+        This code was partly derived from the excellent R package `psych`.
 
-    References
-    ----------
-    [1] https://github.com/cran/psych/blob/master/R/fa.R
+    References:
+        [1] https://github.com/cran/psych/blob/master/R/fa.R
 
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> from factor_analyzer import FactorAnalyzer
-    >>> df_features = pd.read_csv('tests/data/test02.csv')
-    >>> fa = FactorAnalyzer(rotation=None)
-    >>> fa.fit(df_features)
-    FactorAnalyzer(bounds=(0.005, 1), impute='median', is_corr_matrix=False,
-            method='minres', n_factors=3, rotation=None, rotation_kwargs={},
-            use_smc=True)
-    >>> fa.loadings_
-    array([[-0.12991218,  0.16398154,  0.73823498],
-           [ 0.03899558,  0.04658425,  0.01150343],
-           [ 0.34874135,  0.61452341, -0.07255667],
-           [ 0.45318006,  0.71926681, -0.07546472],
-           [ 0.36688794,  0.44377343, -0.01737067],
-           [ 0.74141382, -0.15008235,  0.29977512],
-           [ 0.741675  , -0.16123009, -0.20744495],
-           [ 0.82910167, -0.20519428,  0.04930817],
-           [ 0.76041819, -0.23768727, -0.1206858 ],
-           [ 0.81533404, -0.12494695,  0.17639683]])
-    >>> fa.get_communalities()
-    array([0.588758  , 0.00382308, 0.50452402, 0.72841183, 0.33184336,
-           0.66208428, 0.61911036, 0.73194557, 0.64929612, 0.71149718])
+    Examples:
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> from spotoptim.factor_analyzer import FactorAnalyzer
+        >>> df_features = pd.read_csv('src/spotoptim/datasets/test02.csv')
+        >>> fa = FactorAnalyzer(rotation=None)
+        >>> fa = fa.fit(df_features)
+        >>> np.round(fa.loadings_, 2)
+        array([[-0.13,  0.16,  0.74],
+               [ 0.04,  0.05,  0.01],
+               [ 0.35,  0.61, -0.07],
+               [ 0.45,  0.72, -0.08],
+               [ 0.37,  0.44, -0.02],
+               [ 0.74, -0.15,  0.3 ],
+               [ 0.74, -0.16, -0.21],
+               [ 0.83, -0.21,  0.05],
+               [ 0.76, -0.24, -0.12],
+               [ 0.82, -0.12,  0.18]])
+        >>> np.round(fa.get_communalities(), 2)
+        array([0.59, 0.  , 0.5 , 0.73, 0.33, 0.66, 0.62, 0.73, 0.65, 0.71])
     """
 
     def __init__(
@@ -320,20 +304,13 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         The objective function passed for unweighted least-squares (ULS).
 
-        Parameters
-        ----------
-        psi : array-like
-            Value passed to minimize the objective function.
-        corr_mtx : array-like
-            The correlation matrix.
-        n_factors : int
-            The number of factors to select.
+        Args:
+            psi (array-like): Value passed to minimize the objective function.
+            corr_mtx (array-like): The correlation matrix.
+            n_factors (int): The number of factors to select.
 
-        Returns
-        -------
-        error : float
-            The scalar error calculated from the residuals of the loading
-            matrix.
+        Returns:
+            error (float): The scalar error calculated from the residuals of the loading matrix.
         """
         np.fill_diagonal(corr_mtx, 1 - psi)
 
@@ -373,19 +350,13 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Weighted least squares normalization for loadings using MINRES.
 
-        Parameters
-        ----------
-        solution : array-like
-            The solution from the L-BFGS-B optimization.
-        corr_mtx : array-like
-            The correlation matrix.
-        n_factors : int
-            The number of factors to select.
+        Args:
+            solution (array-like): The solution from the L-BFGS-B optimization.
+            corr_mtx (array-like): The correlation matrix.
+            n_factors (int): The number of factors to select.
 
-        Returns
-        -------
-        loadings : :obj:`numpy.ndarray`
-            The factor loading matrix
+        Returns:
+            loadings (numpy.ndarray): The factor loading matrix.
         """
         np.fill_diagonal(corr_mtx, 1 - solution)
 
@@ -406,30 +377,21 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         The objective function for maximum likelihood.
 
-        Parameters
-        ----------
-        psi : array-like
-            Value passed to minimize the objective function.
-        corr_mtx : array-like
-            The correlation matrix.
-        n_factors : int
-            The number of factors to select.
+        Args:
+            psi (array-like): Value passed to minimize the objective function.
+            corr_mtx (array-like): The correlation matrix.
+            n_factors (int): The number of factors to select.
 
-        Returns
-        -------
-        error : float
-            The scalar error calculated from the residuals
-            of the loading matrix.
+        Returns:
+            error (float): The scalar error calculated from the residuals of the loading matrix.
 
-        Note
-        ----
-        The ML objective is based on the `factanal()` function from ``stats``
-        package in R. It may generate different results from the ``fa()``
-        function in ``psych``.
+        Note:
+            The ML objective is based on the `factanal()` function from ``stats``
+            package in R. It may generate different results from the ``fa()``
+            function in ``psych``.
 
-        References
-        ----------
-        [1] https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/factanal.R
+        References:
+            [1] https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/factanal.R
         """
         sc = np.diag(1 / np.sqrt(psi))
         sstar = np.dot(np.dot(sc, corr_mtx), sc)
@@ -447,19 +409,13 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Normalize loadings estimated using maximum likelihood.
 
-        Parameters
-        ----------
-        solution : array-like
-            The solution from the L-BFGS-B optimization.
-        corr_mtx : array-like
-            The correlation matrix.
-        n_factors : int
-            The number of factors to select.
+        Args:
+            solution (array-like): The solution from the L-BFGS-B optimization.
+            corr_mtx (array-like): The correlation matrix.
+            n_factors (int): The number of factors to select.
 
-        Returns
-        -------
-        loadings : :obj:`numpy.ndarray`
-            The factor loading matrix
+        Returns:
+            loadings (numpy.ndarray): The factor loading matrix.
         """
         sc = np.diag(1 / np.sqrt(solution))
         sstar = np.dot(np.dot(sc, corr_mtx), sc)
@@ -482,15 +438,11 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Fit factor analysis model using principal factor analysis.
 
-        Parameters
-        ----------
-        X : array-like
-            The full data set.
+        Args:
+            X (array-like): The full data set.
 
-        Returns
-        -------
-        loadings : :obj:`numpy.ndarray`
-            The factor loadings matrix.
+        Returns:
+            loadings (numpy.ndarray): The factor loadings matrix.
         """
         # standardize the data
         X = X.copy()
@@ -521,20 +473,15 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Fit factor analysis model using either MINRES or maximum likelihood.
 
-        Parameters
-        ----------
-        corr_mtx : array-like
-            The correlation matrix.
+        Args:
+            corr_mtx (array-like): The correlation matrix.
 
-        Returns
-        -------
-        loadings : :obj:`numpy.ndarray`
+        Returns:
+            loadings (numpy.ndarray): The factor loading matrix.
 
-        Raises
-        ------
-        ValueError
-            If any of the correlations are null, most likely due to having
-            zero standard deviation.
+        Raises:
+            ValueError: If any of the correlations are null, most likely due to having
+                zero standard deviation.
         """
         # if `use_smc` is True, get get squared multiple correlations
         # and use these as initial guesses for optimizer
@@ -586,7 +533,7 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
 
         By default, use SMC as starting guesses.
 
-        Parameters:
+        Args:
             X (array-like): The data to analyze.
             y (ignored): Ignored.
 
@@ -594,25 +541,23 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
             self: The fitted factor analyzer object.
 
         Examples:
+            >>> import numpy as np
             >>> import pandas as pd
-            >>> from factor_analyzer import FactorAnalyzer
-            >>> df_features = pd.read_csv('tests/data/test02.csv')
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer
+            >>> df_features = pd.read_csv('src/spotoptim/datasets/test02.csv')
             >>> fa = FactorAnalyzer(rotation=None)
-            >>> fa.fit(df_features)
-            FactorAnalyzer(bounds=(0.005, 1), impute='median', is_corr_matrix=False,
-                    method='minres', n_factors=3, rotation=None, rotation_kwargs={},
-                    use_smc=True)
-            >>> fa.loadings_
-            array([[-0.12991218,  0.16398154,  0.73823498],
-                   [ 0.03899558,  0.04658425,  0.01150343],
-                   [ 0.34874135,  0.61452341, -0.07255667],
-                   [ 0.45318006,  0.71926681, -0.07546472],
-                   [ 0.36688794,  0.44377343, -0.01737067],
-                   [ 0.74141382, -0.15008235,  0.29977512],
-                   [ 0.741675  , -0.16123009, -0.20744495],
-                   [ 0.82910167, -0.20519428,  0.04930817],
-                   [ 0.76041819, -0.23768727, -0.1206858 ],
-                   [ 0.81533404, -0.12494695,  0.17639683]])
+            >>> _ = fa.fit(df_features)
+            >>> np.round(fa.loadings_, 2)
+            array([[-0.13,  0.16,  0.74],
+                   [ 0.04,  0.05,  0.01],
+                   [ 0.35,  0.61, -0.07],
+                   [ 0.45,  0.72, -0.08],
+                   [ 0.37,  0.44, -0.02],
+                   [ 0.74, -0.15,  0.3 ],
+                   [ 0.74, -0.16, -0.21],
+                   [ 0.83, -0.21,  0.05],
+                   [ 0.76, -0.24, -0.12],
+                   [ 0.82, -0.12,  0.18]])
         """
         # check the input arguments
         self._arg_checker()
@@ -717,31 +662,29 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Get factor scores for a new data set.
 
-        Parameters:
+        Args:
             X (array-like): The data to score using the fitted factor model.
                             Shape should be (n_samples, n_features).
 
         Returns:
-            X_new (numpy.ndarray): The latent variables of X.
+            scores (numpy.ndarray): The latent variables of X.
                                    Shape is (n_samples, n_components).
 
         Examples:
+            >>> import numpy as np
             >>> import pandas as pd
-            >>> from factor_analyzer import FactorAnalyzer
-            >>> df_features = pd.read_csv('tests/data/test02.csv')
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer
+            >>> df_features = pd.read_csv('src/spotoptim/datasets/test02.csv')
             >>> fa = FactorAnalyzer(rotation=None)
-            >>> fa.fit(df_features)
-            FactorAnalyzer(bounds=(0.005, 1), impute='median', is_corr_matrix=False,
-                    method='minres', n_factors=3, rotation=None, rotation_kwargs={},
-                    use_smc=True)
-            >>> fa.transform(df_features)
-            array([[-1.05141425,  0.57687826,  0.1658788 ],
-                   [-1.59940101,  0.89632125,  0.03824552],
-                   [-1.21768164, -1.16319406,  0.57135189],
+            >>> _ = fa.fit(df_features)
+            >>> np.round(fa.transform(df_features), 2)
+            array([[-1.05,  0.58,  0.17],
+                   [-1.6 ,  0.9 ,  0.04],
+                   [-1.22, -1.16,  0.57],
                    ...,
-                   [ 0.13601554,  0.03601086,  0.28813877],
-                   [ 1.86904519, -0.3532394 , -0.68170573],
-                   [ 0.86133386,  0.18280695, -0.79170903]])
+                   [ 0.14,  0.04,  0.29],
+                   [ 1.87, -0.35, -0.68],
+                   [ 0.86,  0.18, -0.79]], shape=(1678, 3))
         """
         # check if the data is a data frame,
         # so we can convert it to an array
@@ -795,28 +738,22 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Calculate the eigenvalues, given the factor correlation matrix.
 
-        Returns
-        -------
-        original_eigen_values : :obj:`numpy.ndarray`
-            The original eigenvalues
-        common_factor_eigen_values : :obj:`numpy.ndarray`
-            The common factor eigenvalues
+        Returns:
+            original_eigen_values (numpy.ndarray): The original eigenvalues.
+            common_factor_eigen_values (numpy.ndarray): The common factor eigenvalues.
 
-        Examples
-        --------
-        >>> import pandas as pd
-        >>> from factor_analyzer import FactorAnalyzer
-        >>> df_features = pd.read_csv('tests/data/test02.csv')
-        >>> fa = FactorAnalyzer(rotation=None)
-        >>> fa.fit(df_features)
-        FactorAnalyzer(bounds=(0.005, 1), impute='median', is_corr_matrix=False,
-                method='minres', n_factors=3, rotation=None, rotation_kwargs={},
-                use_smc=True)
-        >>> fa.get_eigenvalues()
-        (array([ 3.51018854,  1.28371018,  0.73739507,  0.1334704 ,  0.03445558,
-                0.0102918 , -0.00740013, -0.03694786, -0.05959139, -0.07428112]),
-         array([ 3.51018905,  1.2837105 ,  0.73739508,  0.13347082,  0.03445601,
-                0.01029184, -0.0074    , -0.03694834, -0.05959057, -0.07428059]))
+        Examples:
+            >>> import numpy as np
+            >>> import pandas as pd
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer
+            >>> df_features = pd.read_csv('src/spotoptim/datasets/test02.csv')
+            >>> fa = FactorAnalyzer(rotation=None)
+            >>> _ = fa.fit(df_features)
+            >>> ev, v = fa.get_eigenvalues()
+            >>> np.round(ev, 1)
+            array([...])
+            >>> np.round(v, 1)
+            array([...])
         """
         # meets all of our expected criteria
         check_is_fitted(self, ["loadings_", "corr_"])
@@ -837,24 +774,18 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Calculate the communalities, given the factor loading matrix.
 
-        Returns
-        -------
-        communalities : :obj:`numpy.ndarray`
-            The communalities from the factor loading matrix.
+        Returns:
+            communalities (numpy.ndarray): The communalities from the factor loading matrix.
 
-        Examples
-        --------
-        >>> import pandas as pd
-        >>> from factor_analyzer import FactorAnalyzer
-        >>> df_features = pd.read_csv('tests/data/test02.csv')
-        >>> fa = FactorAnalyzer(rotation=None)
-        >>> fa.fit(df_features)
-        FactorAnalyzer(bounds=(0.005, 1), impute='median', is_corr_matrix=False,
-                method='minres', n_factors=3, rotation=None, rotation_kwargs={},
-                use_smc=True)
-        >>> fa.get_communalities()
-        array([0.588758  , 0.00382308, 0.50452402, 0.72841183, 0.33184336,
-               0.66208428, 0.61911036, 0.73194557, 0.64929612, 0.71149718])
+        Examples:
+            >>> import numpy as np
+            >>> import pandas as pd
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer
+            >>> df_features = pd.read_csv('src/spotoptim/datasets/test02.csv')
+            >>> fa = FactorAnalyzer(rotation=None)
+            >>> _ = fa.fit(df_features)
+            >>> np.round(fa.get_communalities(), 2)
+            array([0.59, 0.  , 0.5 , 0.73, 0.33, 0.66, 0.62, 0.73, 0.65, 0.71])
         """
         # meets all of our expected criteria
         check_is_fitted(self, "loadings_")
@@ -866,24 +797,18 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         """
         Calculate the uniquenesses, given the factor loading matrix.
 
-        Returns
-        -------
-        uniquenesses : :obj:`numpy.ndarray`
-            The uniquenesses from the factor loading matrix.
+        Returns:
+            uniquenesses (numpy.ndarray): The uniquenesses from the factor loading matrix.
 
-        Examples
-        --------
-        >>> import pandas as pd
-        >>> from factor_analyzer import FactorAnalyzer
-        >>> df_features = pd.read_csv('tests/data/test02.csv')
-        >>> fa = FactorAnalyzer(rotation=None)
-        >>> fa.fit(df_features)
-        FactorAnalyzer(bounds=(0.005, 1), impute='median', is_corr_matrix=False,
-                method='minres', n_factors=3, rotation=None, rotation_kwargs={},
-                use_smc=True)
-        >>> fa.get_uniquenesses()
-        array([0.411242  , 0.99617692, 0.49547598, 0.27158817, 0.66815664,
-               0.33791572, 0.38088964, 0.26805443, 0.35070388, 0.28850282])
+        Examples:
+            >>> import numpy as np
+            >>> import pandas as pd
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer
+            >>> df_features = pd.read_csv('src/spotoptim/datasets/test02.csv')
+            >>> fa = FactorAnalyzer(rotation=None)
+            >>> _ = fa.fit(df_features)
+            >>> np.round(fa.get_uniquenesses(), 2)
+            array([0.41, 1.  , 0.5 , 0.27, 0.67, 0.34, 0.38, 0.27, 0.35, 0.29])
         """
         # meets all of our expected criteria
         check_is_fitted(self, "loadings_")
@@ -900,19 +825,13 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         This is a private helper method to get the factor variances,
         because sometimes we need them even before the model is fitted.
 
-        Parameters
-        ----------
-        loadings : array-like
-            The factor loading matrix, in whatever state.
+        Args:
+            loadings (array-like): The factor loading matrix, in whatever state.
 
-        Returns
-        -------
-        variance : :obj:`numpy.ndarray`
-            The factor variances.
-        proportional_variance : :obj:`numpy.ndarray`
-            The proportional factor variances.
-        cumulative_variances : :obj:`numpy.ndarray`
-            The cumulative factor variances.
+        Returns:
+            variance (numpy.ndarray): The factor variances.
+            proportional_variance (numpy.ndarray): The proportional factor variances.
+            cumulative_variances (numpy.ndarray): The cumulative factor variances.
         """
         n_rows = loadings.shape[0]
 
@@ -935,32 +854,25 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         The factor variance information including the variance,
         proportional variance, and cumulative variance for each factor.
 
-        Returns
-        -------
-        variance : :obj:`numpy.ndarray`
-            The factor variances.
-        proportional_variance : :obj:`numpy.ndarray`
-            The proportional factor variances.
-        cumulative_variances : :obj:`numpy.ndarray`
-            The cumulative factor variances.
+        Returns:
+            variance (numpy.ndarray): The factor variances.
+            proportional_variance (numpy.ndarray): The proportional factor variances.
+            cumulative_variances (numpy.ndarray): The cumulative factor variances.
 
-        Examples
-        --------
-        >>> import pandas as pd
-        >>> from factor_analyzer import FactorAnalyzer
-        >>> df_features = pd.read_csv('tests/data/test02.csv')
-        >>> fa = FactorAnalyzer(rotation=None)
-        >>> fa.fit(df_features)
-        FactorAnalyzer(bounds=(0.005, 1), impute='median', is_corr_matrix=False,
-                method='minres', n_factors=3, rotation=None, rotation_kwargs={},
-                use_smc=True)
-        >>> # 1. Sum of squared loadings (variance)
-        ... # 2. Proportional variance
-        ... # 3. Cumulative variance
-        >>> fa.get_factor_variance()
-        (array([3.51018854, 1.28371018, 0.73739507]),
-         array([0.35101885, 0.12837102, 0.07373951]),
-         array([0.35101885, 0.47938987, 0.55312938]))
+        Examples:
+            >>> import numpy as np
+            >>> import pandas as pd
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer
+            >>> df_features = pd.read_csv('src/spotoptim/datasets/test02.csv')
+            >>> fa = FactorAnalyzer(rotation=None)
+            >>> _ = fa.fit(df_features)
+            >>> var, prop_var, cum_var = fa.get_factor_variance()
+            >>> np.round(var, 2)
+            array([3.51, 1.28, 0.74])
+            >>> np.round(prop_var, 2)
+            array([0.35, 0.13, 0.07])
+            >>> np.round(cum_var, 2)
+            array([0.35, 0.48, 0.55])
         """
         # meets all of our expected criteria
         check_is_fitted(self, "loadings_")
@@ -974,35 +886,33 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         The test calculates statistics under the null hypothesis that
         the selected number of factors is sufficient.
 
-        Parameters
-        ----------
-        num_observations: int
-            The number of observations in the input data that this factor
-            analyzer was fit using.
+        Args:
+            num_observations (int): The number of observations in the input data that this factor
+                analyzer was fit using.
 
-        Returns
-        -------
-        statistic: float
-            The test statistic
-        degrees: int
-            The degrees of freedom
-        pvalue: float
-            The p-value of the test
+        Returns:
+            statistic (float): The test statistic.
+            degrees (int): The degrees of freedom.
+            pvalue (float): The p-value of the test.
 
-        References
-        ----------
-        [1] Lawley, D. N. and Maxwell, A. E. (1971). Factor Analysis as a
-             Statistical Method. Second edition. Butterworths. P. 36.
+        References:
+            [1] Lawley, D. N. and Maxwell, A. E. (1971). Factor Analysis as a
+                 Statistical Method. Second edition. Butterworths. P. 36.
 
-        Examples
-        --------
-        >>> import pandas as pd
-        >>> from factor_analyzer import FactorAnalyzer
-        >>> df_features = pd.read_csv('tests/data/test01.csv')
-        >>> fa = FactorAnalyzer(n_factors=3, rotation=None, method="ml")
-        >>> fa.fit(df_features)
-        >>> fa.sufficiency(df_features.shape[0])
-        (1475.8755629859675, 663, 8.804286459822274e-64)
+        Examples:
+            >>> import numpy as np
+            >>> import pandas as pd
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer
+            >>> df_features = pd.read_csv('src/spotoptim/datasets/test01.csv')
+            >>> fa = FactorAnalyzer(n_factors=3, rotation=None, method="ml")
+            >>> _ = fa.fit(df_features)
+            >>> stat, df, p = fa.sufficiency(df_features.shape[0])
+            >>> float(np.round(stat, 2))
+            1475.88
+            >>> df
+            663
+            >>> bool(p < 0.05)
+            True
         """
         nvar = self.corr_.shape[0]
         degrees = ((nvar - self.n_factors) ** 2 - nvar - self.n_factors) // 2

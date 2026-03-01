@@ -101,7 +101,7 @@ class Rotator(BaseEstimator):
 
     Examples:
         >>> import pandas as pd
-        >>> from factor_analyzer import FactorAnalyzer, Rotator
+        >>> from spotoptim.factor_analyzer import FactorAnalyzer, Rotator
         >>> df_features = pd.read_csv('test02.csv')
         >>> fa = FactorAnalyzer(rotation=None)
         >>> fa.fit(df_features)
@@ -571,7 +571,7 @@ class Rotator(BaseEstimator):
 
         Examples:
             >>> import pandas as pd
-            >>> from factor_analyzer import FactorAnalyzer, Rotator
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer, Rotator
             >>> df_features = pd.read_csv('test02.csv')
             >>> fa = FactorAnalyzer(rotation=None)
             >>> fa.fit(df_features)
@@ -597,7 +597,7 @@ class Rotator(BaseEstimator):
 
         Examples:
             >>> import pandas as pd
-            >>> from factor_analyzer import FactorAnalyzer, Rotator
+            >>> from spotoptim.factor_analyzer import FactorAnalyzer, Rotator
             >>> df_features = pd.read_csv('test02.csv')
             >>> fa = FactorAnalyzer(rotation=None)
             >>> fa.fit(df_features)

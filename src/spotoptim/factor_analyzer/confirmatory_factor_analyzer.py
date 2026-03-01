@@ -223,9 +223,9 @@ class ModelSpecificationParser:
 
         Examples:
             >>> import pandas as pd
-            >>> from factor_analyzer import (ConfirmatoryFactorAnalyzer,
+            >>> from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
             ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('tests/data/test11.csv')
+            >>> X = pd.read_csv('src/spotoptim/datasets/test11.csv')
             >>> model_dict = {"F1": ["V1", "V2", "V3", "V4"],
             ...               "F2": ["V5", "V6", "V7", "V8"]}
             >>> model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
@@ -292,9 +292,9 @@ class ModelSpecificationParser:
         Examples:
             >>> import pandas as pd
             >>> import numpy as np
-            >>> from factor_analyzer import (ConfirmatoryFactorAnalyzer,
+            >>> from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
             ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('tests/data/test11.csv')
+            >>> X = pd.read_csv('src/spotoptim/datasets/test11.csv')
             >>> model_array = np.array([[1, 1, 1, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 1, 1, 1]])
             >>> model_spec = ModelSpecificationParser.parse_model_specification_from_array(X,
             ...                                                                            model_array)
@@ -323,111 +323,91 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
     """
     Fit a confirmatory factor analysis model using maximum likelihood.
 
-    Parameters
-    ----------
-    specification : :class:`ModelSpecification` or None, optional
-        A model specification. This must be a :class:`ModelSpecification` object
-        or ``None``. If ``None``, a :class:`ModelSpecification` object will be
-        generated assuming that ``n_factors`` == ``n_variables``, and that
-        all variables load on all factors. Note that this could mean the
-        factor model is not identified, and the optimization could fail.
-        Defaults to `None`.
-    n_obs : int or None, optional
-        The number of observations in the original data set.
-        If this is not passed and ``is_cov_matrix`` is ``True``,
-        then an error will be raised.
-        Defaults to ``None``.
-    is_cov_matrix : bool, optional
-        Whether the input ``X`` is a covariance matrix. If ``False``,
-        assume it is the full data set.
-        Defaults to ``False``.
-    bounds : list of tuples or None, optional
-        A list of minimum and maximum boundaries for each element
-        of the input array. This must equal ``x0``, which is the
-        input array from your parsed and combined model specification.
+    Args:
+        specification (ModelSpecification, optional): A model specification. This must be a
+            :class:`ModelSpecification` object or ``None``. If ``None``, a
+            :class:`ModelSpecification` object will be generated assuming that
+            ``n_factors`` == ``n_variables``, and that all variables load on all factors.
+            Note that this could mean the factor model is not identified, and the
+            optimization could fail. Defaults to ``None``.
+        n_obs (int, optional): The number of observations in the original data set.
+            If this is not passed and ``is_cov_matrix`` is ``True``, then an error
+            will be raised. Defaults to ``None``.
+        is_cov_matrix (bool, optional): Whether the input ``X`` is a covariance matrix.
+            If ``False``, assume it is the full data set. Defaults to ``False``.
+        bounds (list of tuples, optional): A list of minimum and maximum boundaries for
+            each element of the input array. This must equal ``x0``, which is the
+            input array from your parsed and combined model specification.
+            The length is: ((n_factors * n_variables) + n_variables + n_factors +
+            (((n_factors * n_factors) - n_factors) // 2). If ``None``, nothing will
+            be bounded. Defaults to ``None``.
+        max_iter (int, optional): The maximum number of iterations for the optimization routine.
+            Defaults to 200.
+        tol (float, optional): The tolerance for convergence. Defaults to ``None``.
+        disp (bool, optional): Whether to print the scipy optimization ``fmin`` message to
+            standard output. Defaults to ``True``.
 
-        The length is:
-        ((n_factors * n_variables) + n_variables + n_factors +
-        (((n_factors * n_factors) - n_factors) // 2)
+    Raises:
+        ValueError: If ``is_cov_matrix`` is ``True``, and ``n_obs`` is not provided.
 
-        If `None`, nothing will be bounded.
-        Defaults to ``None``.
-    max_iter : int, optional
-        The maximum number of iterations for the optimization routine.
-        Defaults to 200.
-    tol : float or None, optional
-        The tolerance for convergence.
-        Defaults to ``None``.
-    disp : bool, optional
-        Whether to print the scipy optimization ``fmin`` message to
-        standard output.
-        Defaults to ``True``.
+    Attributes:
+        model (ModelSpecification): The model specification object.
+        loadings_ (numpy.ndarray): The factor loadings matrix. ``None``, if ``fit()`` has not been called.
+        error_vars_ (numpy.ndarray): The error variance matrix.
+        factor_varcovs_ (numpy.ndarray): The factor covariance matrix.
+        log_likelihood_ (float): The log likelihood from the optimization routine.
+        aic_ (float): The Akaike information criterion.
+        bic_ (float): The Bayesian information criterion.
 
-    Raises
-    ------
-    ValueError
-        If `is_cov_matrix` is `True`, and `n_obs` is not provided.
+    Examples:
+        ```{python}
+        import numpy as np
+        import pandas as pd
+        from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
+                                              ModelSpecificationParser)
+        X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+        model_dict = {"F1": ["V1", "V2", "V3", "V4"],
+                      "F2": ["V5", "V6", "V7", "V8"]}
+        model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
+        cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
+        cfa = cfa.fit(X.values)
+        print(np.round(cfa.loadings_, 2))
+        # array([[0.99, 0.  ],
+        #        [0.46, 0.  ],
+        #        [0.35, 0.  ],
+        #        [0.58, 0.  ],
+        #        [0.  , 0.99],
+        #        [0.  , 0.73],
+        #        [0.  , 0.38],
+        #        [0.  , 0.5 ]])
 
-    Attributes
-    ----------
-    model : ModelSpecification
-        The model specification object.
-    loadings_ : :obj:`numpy.ndarray`
-        The factor loadings matrix.
-        ``None``, if ``fit()``` has not been called.
-    error_vars_ : :obj:`numpy.ndarray`
-        The error variance matrix
-    factor_varcovs_ : :obj:`numpy.ndarray`
-        The factor covariance matrix.
-    log_likelihood_ : float
-        The log likelihood from the optimization routine.
-    aic_ : float
-        The Akaike information criterion.
-    bic_ : float
-        The Bayesian information criterion.
+        print(np.round(cfa.factor_varcovs_, 2))
+        # array([[1.  , 0.17],
+        #        [0.17, 1.  ]])
 
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> from factor_analyzer import (ConfirmatoryFactorAnalyzer,
-    ...                              ModelSpecificationParser)
-    >>> X = pd.read_csv('tests/data/test11.csv')
-    >>> model_dict = {"F1": ["V1", "V2", "V3", "V4"],
-    ...               "F2": ["V5", "V6", "V7", "V8"]}
-    >>> model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
-    >>> cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
-    >>> cfa.fit(X.values)
-    >>> cfa.loadings_
-    array([[0.99131285, 0.        ],
-           [0.46074919, 0.        ],
-           [0.3502267 , 0.        ],
-           [0.58331488, 0.        ],
-           [0.        , 0.98621042],
-           [0.        , 0.73389239],
-           [0.        , 0.37602988],
-           [0.        , 0.50049507]])
-    >>> cfa.factor_varcovs_
-    array([[1.        , 0.17385704],
-           [0.17385704, 1.        ]])
-    >>> cfa.get_standard_errors()
-    (array([[0.06779949, 0.        ],
-           [0.04369956, 0.        ],
-           [0.04153113, 0.        ],
-           [0.04766645, 0.        ],
-           [0.        , 0.06025341],
-           [0.        , 0.04913149],
-           [0.        , 0.0406604 ],
-           [0.        , 0.04351208]]),
-     array([0.11929873, 0.05043616, 0.04645803, 0.05803088,
-            0.10176889, 0.06607524, 0.04742321, 0.05373646]))
-    >>> cfa.transform(X.values)
-    array([[-0.46852166, -1.08708035],
-           [ 2.59025301,  1.20227783],
-           [-0.47215977,  2.65697245],
-           ...,
-           [-1.5930886 , -0.91804114],
-           [ 0.19430887,  0.88174818],
-           [-0.27863554, -0.7695101 ]])
+        loadings_se, variances_se = cfa.get_standard_errors()
+        print(np.round(loadings_se, 2))
+        # array([[0.07, 0.  ],
+        #        [0.04, 0.  ],
+        #        [0.04, 0.  ],
+        #        [0.05, 0.  ],
+        #        [0.  , 0.06],
+        #        [0.  , 0.05],
+        #        [0.  , 0.04],
+        #        [0.  , 0.04]])
+
+        print(np.round(variances_se, 2))
+        # array([0.12, 0.05, 0.05, 0.06, 0.1 , 0.07, 0.05, 0.05])
+
+        print(np.round(cfa.transform(X.values), 2))
+        # array([[-0.47, -1.09],
+        #        [ 2.59,  1.2 ],
+        #        [-0.47,  2.66],
+        #        ...,
+        #        [-1.59, -0.92],
+        #        [ 0.19,  0.88],
+        #        [-0.28, -0.77]])
+        ```
     """
 
     def __init__(
@@ -625,24 +605,27 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             AssertionError: If ``len(bounds)`` != ``len(x0)``
 
         Examples:
-            >>> import pandas as pd
-            >>> from factor_analyzer import (ConfirmatoryFactorAnalyzer,
-            ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('tests/data/test11.csv')
-            >>> model_dict = {"F1": ["V1", "V2", "V3", "V4"],
-            ...               "F2": ["V5", "V6", "V7", "V8"]}
-            >>> model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
-            >>> cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
-            >>> cfa.fit(X.values)
-            >>> cfa.loadings_
-            array([[0.99131285, 0.        ],
-                   [0.46074919, 0.        ],
-                   [0.3502267 , 0.        ],
-                   [0.58331488, 0.        ],
-                   [0.        , 0.98621042],
-                   [0.        , 0.73389239],
-                   [0.        , 0.37602988],
-                   [0.        , 0.50049507]])
+            ```{python}
+            import numpy as np
+            import pandas as pd
+            from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
+                                                  ModelSpecificationParser)
+            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            model_dict = {"F1": ["V1", "V2", "V3", "V4"],
+                          "F2": ["V5", "V6", "V7", "V8"]}
+            model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
+            cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
+            cfa = cfa.fit(X.values)
+            print(np.round(cfa.loadings_, 2))
+            # array([[0.99, 0.  ],
+            #        [0.46, 0.  ],
+            #        [0.35, 0.  ],
+            #        [0.58, 0.  ],
+            #        [0.  , 0.99],
+            #        [0.  , 0.73],
+            #        [0.  , 0.38],
+            #        [0.  , 0.5 ]])
+            ```
         """
         if self.specification is None:
             self.model = ModelSpecificationParser.parse_model_specification_from_array(
@@ -770,23 +753,26 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             scores (numpy.ndarray): The latent variables of X, shape (``n_samples``, ``n_components``).
 
         Examples:
-            >>> import pandas as pd
-            >>> from factor_analyzer import (ConfirmatoryFactorAnalyzer,
-            ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('tests/data/test11.csv')
-            >>> model_dict = {"F1": ["V1", "V2", "V3", "V4"],
-            ...               "F2": ["V5", "V6", "V7", "V8"]}
-            >>> model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
-            >>> cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
-            >>> cfa.fit(X.values)
-            >>> cfa.transform(X.values)
-            array([[-0.46852166, -1.08708035],
-                   [ 2.59025301,  1.20227783],
-                   [-0.47215977,  2.65697245],
-                   ...,
-                   [-1.5930886 , -0.91804114],
-                   [ 0.19430887,  0.88174818],
-               [-0.27863554, -0.7695101 ]])
+            ```{python}
+            import numpy as np
+            import pandas as pd
+            from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
+                                                  ModelSpecificationParser)
+            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            model_dict = {"F1": ["V1", "V2", "V3", "V4"],
+                          "F2": ["V5", "V6", "V7", "V8"]}
+            model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
+            cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
+            cfa = cfa.fit(X.values)
+            print(np.round(cfa.transform(X.values), 2))
+            # array([[-0.47, -1.09],
+            #        [ 2.59,  1.2 ],
+            #        [-0.47,  2.66],
+            #        ...,
+            #        [-1.59, -0.92],
+            #        [ 0.19,  0.88],
+            #        [-0.28, -0.77]])
+            ```
 
         References:
             https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6157408/
@@ -845,32 +831,27 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
             model_implied_cov (numpy.ndarray): The model-implied covariance matrix.
 
         Examples:
-            >>> import pandas as pd
-            >>> from factor_analyzer import (ConfirmatoryFactorAnalyzer,
-            ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('tests/data/test11.csv')
-            >>> model_dict = {"F1": ["V1", "V2", "V3", "V4"],
-            ...               "F2": ["V5", "V6", "V7", "V8"]}
-            >>> model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
-            >>> cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
-            >>> cfa.fit(X.values)
-            >>> cfa.get_model_implied_cov()
-            array([[2.07938612, 0.45674659, 0.34718423, 0.57824753, 0.16997013,
-                    0.12648394, 0.06480751, 0.08625868],
-                   [0.45674659, 1.16703337, 0.16136667, 0.26876186, 0.07899988,
-                    0.05878807, 0.03012168, 0.0400919 ],
-                   [0.34718423, 0.16136667, 1.07364855, 0.20429245, 0.06004974,
-                    0.04468625, 0.02289622, 0.03047483],
-                   [0.57824753, 0.26876186, 0.20429245, 1.28809317, 0.10001495,
-                    0.07442652, 0.03813447, 0.05075691],
-                   [0.16997013, 0.07899988, 0.06004974, 0.10001495, 2.0364391 ,
-                    0.72377232, 0.37084458, 0.49359346],
-                   [0.12648394, 0.05878807, 0.04468625, 0.07442652, 0.72377232,
-                    1.48080077, 0.27596546, 0.36730952],
-                   [0.06480751, 0.03012168, 0.02289622, 0.03813447, 0.37084458,
-                    0.27596546, 1.11761918, 0.1882011 ],
-                   [0.08625868, 0.0400919 , 0.03047483, 0.05075691, 0.49359346,
-                    0.36730952, 0.1882011 , 1.28888233]])
+            ```{python}
+            import numpy as np
+            import pandas as pd
+            from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
+                                                  ModelSpecificationParser)
+            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            model_dict = {"F1": ["V1", "V2", "V3", "V4"],
+                          "F2": ["V5", "V6", "V7", "V8"]}
+            model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
+            cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
+            cfa = cfa.fit(X.values)
+            print(np.round(cfa.get_model_implied_cov(), 2))
+            # array([[2.08, 0.46, 0.35, 0.58, 0.17, 0.13, 0.06, 0.09],
+            #        [0.46, 1.17, 0.16, 0.27, 0.08, 0.06, 0.03, 0.04],
+            #        [0.35, 0.16, 1.07, 0.2 , 0.06, 0.04, 0.02, 0.03],
+            #        [0.58, 0.27, 0.2 , 1.29, 0.1 , 0.07, 0.04, 0.05],
+            #        [0.17, 0.08, 0.06, 0.1 , 2.04, 0.72, 0.37, 0.49],
+            #        [0.13, 0.06, 0.04, 0.07, 0.72, 1.48, 0.28, 0.37],
+            #        [0.06, 0.03, 0.02, 0.04, 0.37, 0.28, 1.12, 0.19],
+            #        [0.09, 0.04, 0.03, 0.05, 0.49, 0.37, 0.19, 1.29]])
+            ```
         """
         # meets all of our expected criteria
         check_is_fitted(self, ["loadings_", "factor_varcovs_"])
@@ -1003,26 +984,31 @@ class ConfirmatoryFactorAnalyzer(BaseEstimator, TransformerMixin):
                 - error_vars_se (numpy.ndarray): The standard errors for the error variances.
 
         Examples:
-            >>> import pandas as pd
-            >>> from factor_analyzer import (ConfirmatoryFactorAnalyzer,
-            ...                              ModelSpecificationParser)
-            >>> X = pd.read_csv('tests/data/test11.csv')
-            >>> model_dict = {"F1": ["V1", "V2", "V3", "V4"],
-            ...               "F2": ["V5", "V6", "V7", "V8"]}
-            >>> model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
-            >>> cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
-            >>> cfa.fit(X.values)
-            >>> cfa.get_standard_errors()
-            (array([[0.06779949, 0.        ],
-                   [0.04369956, 0.        ],
-                   [0.04153113, 0.        ],
-                   [0.04766645, 0.        ],
-                   [0.        , 0.06025341],
-                   [0.        , 0.04913149],
-                   [0.        , 0.0406604 ],
-                   [0.        , 0.04351208]]),
-             array([0.11929873, 0.05043616, 0.04645803, 0.05803088,
-                    0.10176889, 0.06607524, 0.04742321, 0.05373646]))
+            ```{python}
+            import numpy as np
+            import pandas as pd
+            from spotoptim.factor_analyzer import (ConfirmatoryFactorAnalyzer,
+                                                  ModelSpecificationParser)
+            X = pd.read_csv('src/spotoptim/datasets/test11.csv')
+            model_dict = {"F1": ["V1", "V2", "V3", "V4"],
+                          "F2": ["V5", "V6", "V7", "V8"]}
+            model_spec = ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)
+            cfa = ConfirmatoryFactorAnalyzer(model_spec, disp=False)
+            cfa = cfa.fit(X.values)
+            loadings_se, variances_se = cfa.get_standard_errors()
+            print(np.round(loadings_se, 2))
+            # array([[0.07, 0.  ],
+            #        [0.04, 0.  ],
+            #        [0.04, 0.  ],
+            #        [0.05, 0.  ],
+            #        [0.  , 0.06],
+            #        [0.  , 0.05],
+            #        [0.  , 0.04],
+            #        [0.  , 0.04]])
+
+            print(np.round(variances_se, 2))
+            # array([0.12, 0.05, 0.05, 0.06, 0.1 , 0.07, 0.05, 0.05])
+            ```
         """
         # meets all of our expected criteria
         check_is_fitted(self, ["loadings_", "n_obs"])
