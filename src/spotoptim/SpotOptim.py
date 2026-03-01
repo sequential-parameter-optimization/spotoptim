@@ -1157,13 +1157,17 @@ class SpotOptim(BaseEstimator):
             ValueError: If an unsupported var_type is encountered.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0.5, 10.5)], var_type=['int'])
-            >>> spot.bounds
-            [(1, 10)]
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10)], var_type=['float'])
-            >>> spot.bounds
-            [(0.0, 10.0)]
+            ```{python}
+            from spotoptim import SpotOptim
+            spot = SpotOptim(fun=lambda x: x, bounds=[(0.5, 10.5)], var_type=['int'])
+            spot.bounds
+            ```
+
+            ```{python}
+            from spotoptim import SpotOptim
+            spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10)], var_type=['float'])
+            spot.bounds
+            ```
         """
         for i, vtype in enumerate(self.var_type):
             if vtype == "int":
