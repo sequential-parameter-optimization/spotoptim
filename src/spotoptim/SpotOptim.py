@@ -1209,17 +1209,19 @@ class SpotOptim(BaseEstimator):
             ValueError: If var_trans length doesn't match n_dim.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> # Default behavior - all None
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10), (0, 10)])
-            >>> spot.var_trans
-            [None, None]
-            >>>
-            >>> # Normalize transformation names
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (1, 100)],
-            ...                  var_trans=['log10', 'id', None, 'None'])
-            >>> spot.var_trans
-            ['log10', None, None, None]
+            ```{python}
+            from spotoptim import SpotOptim
+            # Default behavior - all None
+            spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10), (0, 10)])
+            spot.var_trans
+            ```
+            ```{python}
+            from spotoptim import SpotOptim
+            # Normalize transformation names
+            spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (1, 100)],
+                             var_trans=['log10', 'id', None, 'None'])
+            spot.var_trans
+            ```
         """
         # Default variable transformations (None means no transformation)
         if self.var_trans is None:
