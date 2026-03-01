@@ -55,7 +55,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          uv pip install --system build
+          uv pip install --system build twine
           uv pip install --system -e ".[dev]"
       
       - name: Setup Node.js
@@ -124,8 +124,6 @@ jobs:
         with:
           packages-dir: dist/
           skip-existing: true
-          # Trusted Publisher (OIDC) is preferred — configure at:
+          # Trusted Publisher (OIDC) — configure once at:
           # pypi.org/manage/project/spotoptim/settings/publishing/
           # Owner: sequential-parameter-optimization | Repo: spotoptim | Workflow: release.yml
-          # If OIDC is not yet configured, fall back to API token:
-          password: ${{ secrets.PYPI_API_TOKEN }}
