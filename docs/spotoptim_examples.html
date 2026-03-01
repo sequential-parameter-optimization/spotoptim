@@ -1981,7 +1981,7 @@ window.Quarto = {
 <section id="quick-start-sphere-function" class="level2">
 <h2 class="anchored" data-anchor-id="quick-start-sphere-function">Quick Start: Sphere Function</h2>
 <p>The sphere function <span class="math inline">\(f(x) = \sum_{i=1}^{n} x_i^2\)</span> has its global minimum at <span class="math inline">\(x^* = 0\)</span> with <span class="math inline">\(f(x^*) = 0\)</span>.</p>
-<div id="6b87536f" class="cell" data-execution_count="1">
+<div id="3a6438b2" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2008,7 +2008,7 @@ Evaluations: 20</code></pre>
 </div>
 </div>
 <p>Corresponding test (<code>test_sphere_2d_converges_near_origin</code>):</p>
-<div id="ff0942e7" class="cell" data-execution_count="2">
+<div id="7687655a" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> result.fun <span class="op">&lt;</span> <span class="fl">0.5</span>, <span class="ss">f"Expected convergence near 0, got f=</span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">}</span><span class="ss">"</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Convergence check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -2020,7 +2020,7 @@ Evaluations: 20</code></pre>
 <section id="result-contract" class="level2">
 <h2 class="anchored" data-anchor-id="result-contract">Result Contract</h2>
 <p>Every call to <code>optimize()</code> returns a <code>scipy.optimize.OptimizeResult</code> satisfying these invariants:</p>
-<div id="d97abfe8" class="cell" data-execution_count="3">
+<div id="4f24e140" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> OptimizeResult</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(result, OptimizeResult)</span>
@@ -2071,7 +2071,7 @@ Evaluations: 20</code></pre>
 </tr>
 </tbody>
 </table>
-<div id="6ea48d92" class="cell" data-execution_count="4">
+<div id="02e89ca7" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> {}</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> acq <span class="kw">in</span> [<span class="st">"y"</span>, <span class="st">"ei"</span>, <span class="st">"pi"</span>]:</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> SpotOptim(</span>
@@ -2090,7 +2090,7 @@ Evaluations: 20</code></pre>
   acq='pi'  f(x*)=0.0155  nfev=12</code></pre>
 </div>
 </div>
-<div id="f64c1f47" class="cell" data-execution_count="5">
+<div id="9a96b165" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> acq, r <span class="kw">in</span> results.items():</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">isinstance</span>(r, OptimizeResult), <span class="ss">f"</span><span class="sc">{</span>acq<span class="sc">}</span><span class="ss"> did not return OptimizeResult"</span></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> r.success <span class="kw">is</span> <span class="va">True</span></span>
@@ -2105,7 +2105,7 @@ Evaluations: 20</code></pre>
 <section id="seed-reproducibility" class="level2">
 <h2 class="anchored" data-anchor-id="seed-reproducibility">Seed Reproducibility</h2>
 <p>The same seed produces byte-identical results across independent runs:</p>
-<div id="e51249f3" class="cell" data-execution_count="6">
+<div id="57a195bd" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>common_kwargs <span class="op">=</span> <span class="bu">dict</span>(</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>sphere,</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
@@ -2130,7 +2130,7 @@ Evaluations: 20</code></pre>
 <h2 class="anchored" data-anchor-id="integer-variables">Integer Variables</h2>
 <p>Use <code>var_type=["int", ...]</code> to restrict variables to integer domains.</p>
 <p>The optimum of <span class="math inline">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> over <span class="math inline">\(\mathbb{Z}^2\)</span> is at <span class="math inline">\(x^* = (0, 0)\)</span>.</p>
-<div id="0c601bd2" class="cell" data-execution_count="7">
+<div id="4ddf4c46" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>opt_int <span class="op">=</span> SpotOptim(</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>sphere,</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
@@ -2159,7 +2159,7 @@ Integer domain check passed.</code></pre>
 <section id="log-scaled-variables-var_trans" class="level2">
 <h2 class="anchored" data-anchor-id="log-scaled-variables-var_trans">Log-Scaled Variables (var_trans)</h2>
 <p>For variables spanning multiple orders of magnitude, use <code>var_trans</code>:</p>
-<div id="b527b821" class="cell" data-execution_count="8">
+<div id="af389851" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> log_objective(X):</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Minimum at x = 10 (log10 scale: minimum at log10(x) = 1)."""</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.atleast_2d(X)</span>
@@ -2192,7 +2192,7 @@ Log-transform checks passed.</code></pre>
 <section id="factor-categorical-variables" class="level2">
 <h2 class="anchored" data-anchor-id="factor-categorical-variables">Factor (Categorical) Variables</h2>
 <p>Tuple bounds define categorical levels that are mapped to integers internally:</p>
-<div id="602b73b0" class="cell" data-execution_count="9">
+<div id="595ace31" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>call_log <span class="op">=</span> []</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cat_sphere(X):</span>
@@ -2226,7 +2226,7 @@ Factor variable checks passed.</code></pre>
 <section id="custom-kriging-surrogate" class="level2">
 <h2 class="anchored" data-anchor-id="custom-kriging-surrogate">Custom Kriging Surrogate</h2>
 <p>Replace the default GP surrogate with <code>Kriging</code>:</p>
-<div id="64fa7df4" class="cell" data-execution_count="10">
+<div id="6786ccea" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> Kriging</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>kriging <span class="op">=</span> Kriging(noise<span class="op">=</span><span class="fl">1e-6</span>, min_theta<span class="op">=-</span><span class="fl">3.0</span>, max_theta<span class="op">=</span><span class="fl">2.0</span>, seed<span class="op">=</span><span class="dv">42</span>)</span>
@@ -2256,7 +2256,7 @@ Kriging surrogate checks passed.</code></pre>
 <section id="get_best_hyperparameters" class="level2">
 <h2 class="anchored" data-anchor-id="get_best_hyperparameters">get_best_hyperparameters</h2>
 <p>After optimization, retrieve the best point as a labelled dict:</p>
-<div id="375cad57" class="cell" data-execution_count="11">
+<div id="514ad395" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>opt_named <span class="op">=</span> SpotOptim(</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span>sphere,</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
@@ -2286,7 +2286,7 @@ get_best_hyperparameters check passed.</code></pre>
 <section id="transform_value-roundtrip" class="level2">
 <h2 class="anchored" data-anchor-id="transform_value-roundtrip">transform_value Roundtrip</h2>
 <p>All supported variable transformations satisfy the roundtrip identity <span class="math inline">\(\text{inverse}(\text{transform}(x)) = x\)</span>:</p>
-<div id="d3ac7396" class="cell" data-execution_count="12">
+<div id="80547b12" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>opt_t <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere, bounds<span class="op">=</span>[(<span class="fl">1e-6</span>, <span class="dv">100</span>)])</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>transforms <span class="op">=</span> [<span class="st">"log10"</span>, <span class="st">"log"</span>, <span class="st">"ln"</span>, <span class="st">"sqrt"</span>, <span class="st">"exp"</span>, <span class="st">"square"</span>, <span class="st">"cube"</span>, <span class="st">"inv"</span>, <span class="va">None</span>]</span>
@@ -2319,7 +2319,7 @@ All transform roundtrip checks passed.</code></pre>
 <section id="convergence-on-rosenbrock" class="level2">
 <h2 class="anchored" data-anchor-id="convergence-on-rosenbrock">Convergence on Rosenbrock</h2>
 <p>The Rosenbrock function <span class="math inline">\(f(x,y) = (1-x)^2 + 100(y-x^2)^2\)</span> has its minimum at <span class="math inline">\((1, 1)\)</span> with <span class="math inline">\(f(1,1) = 0\)</span>.</p>
-<div id="aac5573e" class="cell" data-execution_count="13">
+<div id="01838855" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rosenbrock(X):</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    X <span class="op">=</span> np.atleast_2d(X)</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    x, y <span class="op">=</span> X[:, <span class="dv">0</span>], X[:, <span class="dv">1</span>]</span>
