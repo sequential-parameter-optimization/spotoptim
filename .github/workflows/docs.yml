@@ -27,7 +27,8 @@ on:
       - 'pyproject.toml'
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
 
 env:
   # ⚠️ Pinned to match production safety standards.
