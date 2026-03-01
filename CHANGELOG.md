@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.1.0...v0.1.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* **ci:** add PYPI_API_TOKEN fallback for PyPI publish step ([ceffe7d](https://github.com/sequential-parameter-optimization/spotoptim/commit/ceffe7d6575567d1fc0e6e54ff0c2cfbb6459a19))
+
 ## [0.1.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.0.190...v0.1.0) (2026-03-01)
 
 
