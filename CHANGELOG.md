@@ -1,3 +1,10 @@
+## [0.2.4](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.3...v0.2.4) (2026-03-02)
+
+
+### Bug Fixes
+
+* var_trans ([fddbefc](https://github.com/sequential-parameter-optimization/spotoptim/commit/fddbefc0b504fc17032bae634e89beeca20a2a4c))
+
 ## [0.2.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.2...v0.2.3) (2026-03-01)
 
 
