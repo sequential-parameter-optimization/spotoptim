@@ -138,6 +138,7 @@ celerybeat.pid
 .env
 .envrc
 .venv
+.venv-docs          # Python 3.13 venv for docs tooling (quartodoc, griffe)
 env/
 venv/
 ENV/
@@ -216,32 +217,30 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-.DS_Store
-/examples/awwe_files
-MULTIOBJECTIVE.html
-/MULTIOBJECTIVE_files
-/notebooks/runs
-scripts/init_pypi.sh
-/docs/pinns/runs
-/local
-/docs/qmd/spot_step_by_step_files
-docs/qmd/spot_step_by_step.html
-/docs/tutorials/multi_objective_optimization_files
-docs/tutorials/multi_objective_optimization.html
-/notebooks/spotoptim_tests_files
-notebooks/spotoptim_tests.html
-CONVEXITY_FIX_SUMMARY.md
-/docs/tutorials/kriging_forrester_files
-/docs/qmd/spot_hyper_files
-/docs/qmd/hyper_files
-docs/qmd/hyper.html
-docs/qmd/spot_hyper.html
-/docs/qmd/spot_hyper3_files
-/docs/qmd/spot_hyper4_files
-reproduce_issue.py
-local:Challenge.d/007-14.qmd
-/runs
-009_robot_arm_res.pkl
 
+# macOS
+.DS_Store
+
+# ── Project-specific: generated build artefacts ───────────────────────────────
+# Quarto notebook execution artefacts
 /.quarto/
 **/*.quarto_ipynb
+
+# Quarto-generated _files/ directories (figures, supporting files)
+# Pattern: any *_files/ dir adjacent to a rendered .html
+**/*_files/
+
+# Ad-hoc rendered HTML notebooks (not part of the official docs build)
+# Official docs HTML is published via GH Pages from _site/ (see .github/workflows/)
+docs/**/*.html
+docs/*.html
+
+# Local experiment and scratch files
+/runs/
+/local/
+reproduce_issue.py
+
+# One-off artefacts (safe to delete, not part of source)
+CONVEXITY_FIX_SUMMARY.md
+009_robot_arm_res.pkl
+scripts/init_pypi.sh
