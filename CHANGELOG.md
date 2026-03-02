@@ -1,3 +1,16 @@
+## [0.2.6](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.5...v0.2.6) (2026-03-02)
+
+
+### Bug Fixes
+
+* core and SpotOptim splitted in doc ([bfe6123](https://github.com/sequential-parameter-optimization/spotoptim/commit/bfe6123242c4a52a63e7e432dde75f971cff01b7))
+
+
+### Documentation
+
+* switch docs toolchain from pip to uv ([438ebb4](https://github.com/sequential-parameter-optimization/spotoptim/commit/438ebb49265e8f0de065163e3b69022f6b8ca7b5))
+* switch docs toolchain to uv, add _quarto.yml sync guide ([680a265](https://github.com/sequential-parameter-optimization/spotoptim/commit/680a265a58b6228cc23e86225c4116531a8de2ba))
+
 ## [0.2.5](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.4...v0.2.5) (2026-03-02)
 
 
