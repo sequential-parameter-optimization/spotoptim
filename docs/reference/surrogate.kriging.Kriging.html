@@ -1907,7 +1907,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
   <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.build_correlation_matrix" id="toc-spotoptim.surrogate.kriging.Kriging.build_correlation_matrix" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.build_correlation_matrix">build_correlation_matrix</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.build_psi_vector" id="toc-spotoptim.surrogate.kriging.Kriging.build_psi_vector" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.build_psi_vector">build_psi_vector</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.fit" id="toc-spotoptim.surrogate.kriging.Kriging.fit" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.fit">fit</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.get_params" id="toc-spotoptim.surrogate.kriging.Kriging.get_params" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.get_params">get_params</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.likelihood" id="toc-spotoptim.surrogate.kriging.Kriging.likelihood" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.likelihood">likelihood</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.objective" id="toc-spotoptim.surrogate.kriging.Kriging.objective" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.objective">objective</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.predict" id="toc-spotoptim.surrogate.kriging.Kriging.predict" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.predict">predict</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.predict_single" id="toc-spotoptim.surrogate.kriging.Kriging.predict_single" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.predict_single">predict_single</a></li>
+  <li><a href="#spotoptim.surrogate.kriging.Kriging.set_params" id="toc-spotoptim.surrogate.kriging.Kriging.set_params" class="nav-link" data-scroll-target="#spotoptim.surrogate.kriging.Kriging.set_params">set_params</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/surrogate.kriging.Kriging.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -2186,10 +2197,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -2198,45 +2205,512 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>build_correlation_matrix</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.build_correlation_matrix">build_correlation_matrix</a></td>
 <td>Build correlation matrix from training data.</td>
 </tr>
 <tr class="even">
-<td><code>build_psi_vector</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.build_psi_vector">build_psi_vector</a></td>
 <td>Build correlation vector between x and training points.</td>
 </tr>
 <tr class="odd">
-<td><code>fit</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.fit">fit</a></td>
 <td>Fit the Kriging model to training data.</td>
 </tr>
 <tr class="even">
-<td><code>get_params</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.get_params">get_params</a></td>
 <td>Get parameters for this estimator (scikit-learn compatibility).</td>
 </tr>
 <tr class="odd">
-<td><code>likelihood</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.likelihood">likelihood</a></td>
 <td>Compute negative concentrated log-likelihood.</td>
 </tr>
 <tr class="even">
-<td><code>objective</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.objective">objective</a></td>
 <td>Objective function for hyperparameter optimization.</td>
 </tr>
 <tr class="odd">
-<td><code>predict</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.predict">predict</a></td>
 <td>Predict at new points.</td>
 </tr>
 <tr class="even">
-<td><code>predict_single</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.predict_single">predict_single</a></td>
 <td>Predict at a single point.</td>
 </tr>
 <tr class="odd">
-<td><code>set_params</code></td>
+<td><a href="#spotoptim.surrogate.kriging.Kriging.set_params">set_params</a></td>
 <td>Set parameters (scikit-learn compatibility).</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.kriging.Kriging.build_correlation_matrix" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.build_correlation_matrix">build_correlation_matrix</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.build_correlation_matrix()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Build correlation matrix from training data.</p>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Upper triangle of correlation matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.surrogate <span class="im">import</span> Kriging</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.</span>], [<span class="fl">1.</span>]])</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> np.array([<span class="fl">0.</span>, <span class="fl">1.</span>])</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> k <span class="op">=</span> Kriging(seed<span class="op">=</span><span class="dv">42</span>).fit(X, y)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> Psi_upper <span class="op">=</span> k.build_correlation_matrix()</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(Psi_upper.shape)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>(<span class="dv">2</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.build_psi_vector" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.build_psi_vector">build_psi_vector</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.build_psi_vector(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Build correlation vector between x and training points.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Single test point, shape (n_features,).</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Correlation vector, shape (n_samples,).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reference" class="level4 doc-section doc-section-reference">
+<h4 class="doc-section doc-section-reference anchored" data-anchor-id="reference">Reference</h4>
+<p>Calculates the vector small psi from Eq 2.15 in Forrester (2008).</p>
+</section>
+<section id="examples-2" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.surrogate <span class="im">import</span> Kriging</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.</span>], [<span class="fl">1.</span>]])</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> np.array([<span class="fl">0.</span>, <span class="fl">1.</span>])</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> k <span class="op">=</span> Kriging(seed<span class="op">=</span><span class="dv">42</span>).fit(X, y)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> x_new <span class="op">=</span> np.array([<span class="fl">0.5</span>])</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> psi <span class="op">=</span> k.build_psi_vector(x_new)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(psi.shape)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>(<span class="dv">2</span>,)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.fit" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.fit">fit</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.fit(X, y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fit the Kriging model to training data.</p>
+<p>Optimizes hyperparameters (theta, Lambda) by maximizing the concentrated log-likelihood using differential evolution.</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training inputs, shape (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training targets, shape (n_samples,).</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Kriging</td>
+<td><a href="../../docs/reference/surrogate.kriging.html#spotoptim.surrogate.kriging.Kriging">Kriging</a></td>
+<td>Fitted model instance (self).</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.get_params" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.get_params">get_params</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.get_params(deep<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get parameters for this estimator (scikit-learn compatibility).</p>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>deep</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Ignored, for compatibility.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dict</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Dict">Dict</a></td>
+<td>Parameter names mapped to their values.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.likelihood" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.likelihood">likelihood</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.likelihood(params)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute negative concentrated log-likelihood.</p>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>params</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Hyperparameters [log10(theta), log10(Lambda)].</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-4" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>, <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]</td>
+<td>(negLnLike, Psi, U) where U is Cholesky factor.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reference-1" class="level4 doc-section doc-section-reference">
+<h4 class="doc-section doc-section-reference anchored" data-anchor-id="reference-1">Reference</h4>
+<p>Forrester et al.&nbsp;(2008), Section 2.4. Matches implementation in <code>likelihood.m</code> from the book’s code. Concentrated Log-Likelihood approx: ln(L) ~ -(n/2)ln(sigma^2) - (1/2)ln|R|</p>
+</section>
+<section id="examples-3" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.surrogate <span class="im">import</span> Kriging</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.</span>], [<span class="fl">1.</span>]])</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> np.array([<span class="fl">0.</span>, <span class="fl">1.</span>])</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> k <span class="op">=</span> Kriging(seed<span class="op">=</span><span class="dv">42</span>).fit(X, y)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> params <span class="op">=</span> np.concatenate([k.theta_, [k.Lambda_]])</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> nll, _, _ <span class="op">=</span> k.likelihood(params)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.objective" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.objective">objective</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.objective(params)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Objective function for hyperparameter optimization.</p>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>params</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Hyperparameters to evaluate.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-5" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>float</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Negative concentrated log-likelihood.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-4" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.surrogate <span class="im">import</span> Kriging</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.</span>], [<span class="fl">1.</span>]])</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> np.array([<span class="fl">0.</span>, <span class="fl">1.</span>])</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> k <span class="op">=</span> Kriging(seed<span class="op">=</span><span class="dv">42</span>).fit(X, y)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Evaluate objective at optimal parameters</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> val <span class="op">=</span> k.objective(np.concatenate([k.theta_, [k.Lambda_]]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.predict" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.predict">predict</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.predict(X, return_std<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Predict at new points.</p>
+<section id="parameters-6" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Test points, shape (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>return_std</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Return standard deviations. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-6" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Predictions, shape (n_samples,).</td>
+</tr>
+<tr class="even">
+<td>tuple</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>(predictions, std_devs) if return_std=True.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.predict_single" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.predict_single">predict_single</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.predict_single(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Predict at a single point.</p>
+<section id="parameters-7" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Test point, shape (n_features,).</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-7" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-7">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>, <a href="https://docs.python.org/3/library/functions.html#float">float</a>]</td>
+<td>(prediction, std_dev).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reference-2" class="level4 doc-section doc-section-reference">
+<h4 class="doc-section doc-section-reference anchored" data-anchor-id="reference-2">Reference</h4>
+<p>Forrester et al.&nbsp;(2008), Eq 2.15 (Predictor) and Eq 2.19 (Error). Matches implementation in <code>pred.m</code> from the book’s code.</p>
+</section>
+<section id="examples-5" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.surrogate <span class="im">import</span> Kriging</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.</span>], [<span class="fl">1.</span>]])</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> np.array([<span class="fl">0.</span>, <span class="fl">1.</span>])</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> k <span class="op">=</span> Kriging(seed<span class="op">=</span><span class="dv">42</span>).fit(X, y)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> x_new <span class="op">=</span> np.array([<span class="fl">0.5</span>])</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y_pred, y_std <span class="op">=</span> k.predict_single(x_new)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.surrogate.kriging.Kriging.set_params" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kriging.Kriging.set_params">set_params</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>surrogate.kriging.Kriging.set_params(<span class="op">**</span>params)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Set parameters (scikit-learn compatibility).</p>
+<section id="parameters-8" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>**params</td>
+<td><a href="https://docs.python.org/3/library/typing.html#module-typing">typing</a>.<a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></td>
+<td>Parameter names and values.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-8" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-8">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Kriging</td>
+<td><a href="../../docs/reference/surrogate.kriging.html#spotoptim.surrogate.kriging.Kriging">Kriging</a></td>
+<td>Self.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
 </section>
 </section>
 

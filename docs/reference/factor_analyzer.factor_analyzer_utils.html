@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,27 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils" class="nav-link active" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils">factor_analyzer.factor_analyzer_utils</a>
   <ul class="collapse">
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan">apply_impute_nan</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix">commutation_matrix</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.corr" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.corr" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.corr">corr</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.cov" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.cov" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.cov">cov</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation">covariance_to_correlation</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix">duplication_matrix</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post">duplication_matrix_pre_post</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag">fill_lower_diag</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values">get_first_idxs_from_values</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs">get_free_parameter_idxs</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs">get_symmetric_lower_idxs</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs">get_symmetric_upper_idxs</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.impute_values" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.impute_values" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.impute_values">impute_values</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol">inv_chol</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance">merge_variance_covariance</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations">partial_correlations</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.smc" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.smc" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.smc">smc</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements" id="toc-spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements">unique_elements</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/factor_analyzer.factor_analyzer_utils.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1896,81 +1951,1060 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.apply_impute_nan.html#spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan"><code>apply_impute_nan</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan">apply_impute_nan</a></td>
 <td>Apply a function to impute np.nan values with the mean or the median.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.commutation_matrix.html#spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix"><code>commutation_matrix</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix">commutation_matrix</a></td>
 <td>Calculate the commutation matrix.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.corr.html#spotoptim.factor_analyzer.factor_analyzer_utils.corr"><code>corr</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.corr">corr</a></td>
 <td>Calculate the correlation matrix.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.cov.html#spotoptim.factor_analyzer.factor_analyzer_utils.cov"><code>cov</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.cov">cov</a></td>
 <td>Calculate the covariance matrix.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.covariance_to_correlation.html#spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation"><code>covariance_to_correlation</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation">covariance_to_correlation</a></td>
 <td>Compute cross-correlations from the given covariance matrix.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix.html#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix"><code>duplication_matrix</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix">duplication_matrix</a></td>
 <td>Calculate the duplication matrix.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.html#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post"><code>duplication_matrix_pre_post</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post">duplication_matrix_pre_post</a></td>
 <td>Transform given input symmetric matrix using pre-post duplication.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.fill_lower_diag.html#spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag"><code>fill_lower_diag</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag">fill_lower_diag</a></td>
 <td>Fill the lower diagonal of a square matrix, given a 1-D input array.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values"><code>get_first_idxs_from_values</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values">get_first_idxs_from_values</a></td>
 <td>Get the indexes for a given value.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs"><code>get_free_parameter_idxs</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs">get_free_parameter_idxs</a></td>
 <td>Get the free parameter indices from the flattened matrix.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs"><code>get_symmetric_lower_idxs</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs">get_symmetric_lower_idxs</a></td>
 <td>Get the indices for the lower triangle of a symmetric matrix.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.html#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs"><code>get_symmetric_upper_idxs</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs">get_symmetric_upper_idxs</a></td>
 <td>Get the indices for the upper triangle of a symmetric matrix.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.impute_values.html#spotoptim.factor_analyzer.factor_analyzer_utils.impute_values"><code>impute_values</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.impute_values">impute_values</a></td>
 <td>Impute np.nan values with the mean or median, or drop the containing rows.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.inv_chol.html#spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol"><code>inv_chol</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol">inv_chol</a></td>
 <td>Calculate matrix inverse using Cholesky decomposition.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.merge_variance_covariance.html#spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance"><code>merge_variance_covariance</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance">merge_variance_covariance</a></td>
 <td>Merge variances and covariances into a single variance-covariance matrix.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.partial_correlations.html#spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations"><code>partial_correlations</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations">partial_correlations</a></td>
 <td>Compute partial correlations between variable pairs.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.smc.html#spotoptim.factor_analyzer.factor_analyzer_utils.smc"><code>smc</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.smc">smc</a></td>
 <td>Calculate the squared multiple correlations.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_utils.unique_elements.html#spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements"><code>unique_elements</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements">unique_elements</a></td>
 <td>Get first unique instance of every list element, while maintaining order.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.apply_impute_nan">apply_impute_nan</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.apply_impute_nan(x, how<span class="op">=</span><span class="st">'mean'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Apply a function to impute np.nan values with the mean or the median.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The 1-D array to impute.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>how</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Whether to impute the ‘mean’ or ‘median’. Defaults to ‘mean’.</td>
+<td><code>'mean'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The array, with the missing values imputed.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.commutation_matrix">commutation_matrix</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.commutation_matrix(p, q)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the commutation matrix.</p>
+<p>This matrix transforms the vectorized form of the matrix into the vectorized form of its transpose.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>p</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The number of rows.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>q</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The number of columns.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>commutation_matrix</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The commutation matrix</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="references" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references">References</h4>
+<p>https://en.wikipedia.org/wiki/Commutation_matrix</p>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.corr" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.corr">corr</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.corr(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the correlation matrix.</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>A 1-D or 2-D array containing multiple variables and observations. Each column of x represents a variable, and each row a single observation of all those variables.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>r</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The correlation matrix of the variables.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.cov" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.cov">cov</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.cov(x, ddof<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the covariance matrix.</p>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>A 1-D or 2-D array containing multiple variables and observations. Each column of x represents a variable, and each row a single observation of all those variables.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>ddof</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Means Delta Degrees of Freedom. The divisor used in calculations is N - ddof, where N represents the number of elements. Defaults to 0.</td>
+<td><code>0</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>r</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The covariance matrix of the variables.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.covariance_to_correlation">covariance_to_correlation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.covariance_to_correlation(m)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute cross-correlations from the given covariance matrix.</p>
+<p>This is a port of R cov2cor() function.</p>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>m</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The covariance matrix.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-4" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>retval</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The cross-correlation matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If the input matrix is not square.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix">duplication_matrix</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.duplication_matrix(n<span class="op">=</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the duplication matrix.</p>
+<p>A function to create the duplication matrix (Dn), which is the unique n2 × n(n+1)/2 matrix which, for any n × n symmetric matrix A, transforms vech(A) into vec(A), as in Dn vech(A) = vec(A).</p>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The dimension of the n x n symmetric matrix. Defaults to 1.</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-5" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>duplication_matrix</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The duplication matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-1" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If <code>n</code> is not a positive integer greater than 1.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="references-1" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-1">References</h4>
+<p>https://en.wikipedia.org/wiki/Duplication_and_elimination_matrices</p>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post">duplication_matrix_pre_post</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Transform given input symmetric matrix using pre-post duplication.</p>
+<section id="parameters-6" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The input matrix.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-6" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>out</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The transformed matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-2" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-2">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#AssertionError">AssertionError</a></td>
+<td>If <code>x</code> is not symmetric.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.fill_lower_diag">fill_lower_diag</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.fill_lower_diag(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fill the lower diagonal of a square matrix, given a 1-D input array.</p>
+<section id="parameters-7" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The flattened input matrix that will be used to fill the lower diagonal of the square matrix.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-7" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-7">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 23%">
+<col style="width: 68%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>out</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The output square matrix, with the lower diagonal filled by x.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="references-2" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-2">References</h4>
+<p>[1] https://stackoverflow.com/questions/51439271/ convert-1d-array-to-lower-triangular-matrix</p>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values">get_first_idxs_from_values</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    x,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    eq<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    use_columns<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get the indexes for a given value.</p>
+<section id="parameters-8" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The input matrix.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>eq</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a> or <a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The given value to find. Defaults to 1.</td>
+<td><code>1</code></td>
+</tr>
+<tr class="odd">
+<td>use_columns</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to get the first indexes using the columns. If <code>False</code>, then use the rows instead. Defaults to <code>True</code>.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-8" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-8">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>], <a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>]]</td>
+<td>- row_idx (list): A list of row indexes. - col_idx (list): A list of column indexes.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs">get_free_parameter_idxs</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs(x, eq<span class="op">=</span><span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get the free parameter indices from the flattened matrix.</p>
+<section id="parameters-9" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-9">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The input matrix.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>eq</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a> or <a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The value that free parameters should be equal to. <code>np.nan</code> fields will be populated with this value. Defaults to 1.</td>
+<td><code>1</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-9" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-9">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>idx</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The free parameter indexes.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs">get_symmetric_lower_idxs</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs(n<span class="op">=</span><span class="dv">1</span>, diag<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get the indices for the lower triangle of a symmetric matrix.</p>
+<section id="parameters-10" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-10">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The dimension of the n x n symmetric matrix. Defaults to 1.</td>
+<td><code>1</code></td>
+</tr>
+<tr class="even">
+<td>diag</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to include the diagonal.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-10" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-10">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>indices</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The indices for the lower triangle.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs">get_symmetric_upper_idxs</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs(n<span class="op">=</span><span class="dv">1</span>, diag<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get the indices for the upper triangle of a symmetric matrix.</p>
+<section id="parameters-11" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-11">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The dimension of the n x n symmetric matrix. Defaults to 1.</td>
+<td><code>1</code></td>
+</tr>
+<tr class="even">
+<td>diag</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to include the diagonal.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-11" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-11">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>indices</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The indices for the upper triangle.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.impute_values" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.impute_values">impute_values</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.impute_values(x, how<span class="op">=</span><span class="st">'mean'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Impute np.nan values with the mean or median, or drop the containing rows.</p>
+<section id="parameters-12" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-12">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>An array to impute.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>how</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Whether to impute the ‘mean’ or ‘median’. Defaults to ‘mean’.</td>
+<td><code>'mean'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-12" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-12">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The array, with the missing values imputed or with rows dropped.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.inv_chol">inv_chol</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.inv_chol(x, logdet<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate matrix inverse using Cholesky decomposition.</p>
+<p>Optionally, calculate the log determinant of the Cholesky.</p>
+<section id="parameters-13" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-13">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The matrix to invert.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>logdet</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to calculate the log determinant, instead of the inverse. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-13" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-13">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>]]</td>
+<td>- chol_inv (array-like): The inverted matrix. - chol_logdet (array-like or None): The log determinant, if logdet was True, otherwise None.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.merge_variance_covariance">merge_variance_covariance</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.merge_variance_covariance(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    variances,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    covariances<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Merge variances and covariances into a single variance-covariance matrix.</p>
+<section id="parameters-14" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-14">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>variances</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The variances that will be used to fill the diagonal of the square matrix.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>covariances</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code> or None</td>
+<td>The flattened input matrix that will be used to fill the lower and upper diagonal of the square matrix. If None, then only the variances will be used. Defaults to <code>None</code>.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-14" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-14">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 28%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>variance_covariance</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>The variance-covariance matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.partial_correlations">partial_correlations</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.partial_correlations(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute partial correlations between variable pairs.</p>
+<p>This is a python port of the <code>pcor()</code> function implemented in the <code>ppcor</code> R package, which computes partial correlations for each pair of variables in the given array, excluding all other variables.</p>
+<section id="parameters-15" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-15">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>An array containing the feature values.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-15" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-15">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 14%">
+<col style="width: 80%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pcor</td>
+<td>:obj:<code>numpy.ndarray</code></td>
+<td>An array containing the partial correlations of of each pair of variables in the given array, excluding all other variables.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.smc" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.smc">smc</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.smc(corr_mtx, sort<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the squared multiple correlations.</p>
+<p>This is equivalent to regressing each variable on all others and calculating the r-squared values.</p>
+<section id="parameters-16" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-16">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>corr_mtx</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The correlation matrix used to calculate SMC.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>sort</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to sort the values for SMC before returning. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-16" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-16">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>smc</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The squared multiple correlations matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_utils.unique_elements">unique_elements</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_utils.unique_elements(seq)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get first unique instance of every list element, while maintaining order.</p>
+<section id="parameters-17" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-17">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>seq</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a> - <code>like</code></td>
+<td>The list of elements.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-17" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-17">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>seq</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>The updated list of elements.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
 </section>
 </section>
 

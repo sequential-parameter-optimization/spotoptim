@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,10 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.optimizer.schedule_free" id="toc-spotoptim.optimizer.schedule_free" class="nav-link active" data-scroll-target="#spotoptim.optimizer.schedule_free">optimizer.schedule_free</a>
   <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a></li>
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree" id="toc-spotoptim.optimizer.schedule_free.AdamWScheduleFree" class="nav-link" data-scroll-target="#spotoptim.optimizer.schedule_free.AdamWScheduleFree">AdamWScheduleFree</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/optimizer.schedule_free.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1895,13 +1933,70 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/optimizer.schedule_free.AdamWScheduleFree.html#spotoptim.optimizer.schedule_free.AdamWScheduleFree"><code>AdamWScheduleFree</code></a></td>
+<td><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree">AdamWScheduleFree</a></td>
 <td>Schedule-Free AdamW in PyTorch.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.optimizer.schedule_free.AdamWScheduleFree" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.optimizer.schedule_free.AdamWScheduleFree">AdamWScheduleFree</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>optimizer.schedule_free.AdamWScheduleFree(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    params,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    lr<span class="op">=</span><span class="fl">0.0025</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    betas<span class="op">=</span>(<span class="fl">0.9</span>, <span class="fl">0.999</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    eps<span class="op">=</span><span class="fl">1e-08</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    weight_decay<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    warmup_steps<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    r<span class="op">=</span><span class="fl">0.0</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    weight_lr_power<span class="op">=</span><span class="fl">2.0</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Schedule-Free AdamW in PyTorch.</p>
+<p>As the name suggests, no scheduler is needed with this optimizer. To add warmup, rather than using a learning rate schedule you can just set the warmup_steps parameter.</p>
+<p>This optimizer requires that .train() and .eval() be called on the optimizer before the beginning of training and evaluation respectively.</p>
+<p>Reference: https://github.com/facebookresearch/schedule_free</p>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval">eval</a></td>
+<td>Switch model parameters to evaluation mode (using averaged parameters ‘x’).</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.step">step</a></td>
+<td>Performs a single optimization step.</td>
+</tr>
+<tr class="odd">
+<td><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.train">train</a></td>
+<td>Switch model parameters to training mode (using current iterate ‘y’).</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval">eval</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>optimizer.schedule_free.AdamWScheduleFree.<span class="bu">eval</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Switch model parameters to evaluation mode (using averaged parameters ‘x’).</p>
+</section>
+<section id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.step" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.step">step</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>optimizer.schedule_free.AdamWScheduleFree.step(closure<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Performs a single optimization step.</p>
+</section>
+<section id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.train" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.train">train</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>optimizer.schedule_free.AdamWScheduleFree.train()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Switch model parameters to training mode (using current iterate ‘y’).</p>
 
 
+</section>
+</section>
+</section>
 </section>
 </section>
 

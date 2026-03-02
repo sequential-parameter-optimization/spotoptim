@@ -1905,7 +1905,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate" id="toc-spotoptim.surrogate.mlp_surrogate.MLPSurrogate" class="nav-link active" data-scroll-target="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate">surrogate.mlp_surrogate.MLPSurrogate</a>
   <ul class="collapse">
   <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit" id="toc-spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit" class="nav-link" data-scroll-target="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit">fit</a></li>
+  <li><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict" id="toc-spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict" class="nav-link" data-scroll-target="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict">predict</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/surrogate.mlp_surrogate.MLPSurrogate.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -2048,10 +2052,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -2060,17 +2060,124 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>fit</code></td>
+<td><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit">fit</a></td>
 <td>Fit the MLP model to the training data.</td>
 </tr>
 <tr class="even">
-<td><code>predict</code></td>
+<td><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict">predict</a></td>
 <td>Predict targets for X.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit">fit</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>surrogate.mlp_surrogate.MLPSurrogate.fit(X, y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fit the MLP model to the training data.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training inputs, shape (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training targets, shape (n_samples,).</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MLPSurrogate</td>
+<td><a href="../../docs/reference/surrogate.mlp_surrogate.html#spotoptim.surrogate.mlp_surrogate.MLPSurrogate">MLPSurrogate</a></td>
+<td>The fitted model.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict">predict</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>surrogate.mlp_surrogate.MLPSurrogate.predict(X, return_std<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Predict targets for X.</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Input data, shape (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>return_std</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to return the standard deviation (uncertainty) along with the mean prediction. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]]</td>
+<td>np.ndarray: Predicted mean values, shape (n_samples,).</td>
+</tr>
+<tr class="even">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]]</td>
+<td>(mean, std) if return_std is True.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
 </section>
 </section>
 

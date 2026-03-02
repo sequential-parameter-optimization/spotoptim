@@ -1907,7 +1907,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#note" id="toc-note" class="nav-link" data-scroll-target="#note">Note</a></li>
   <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.nn.mlp.MLP.get_default_parameters" id="toc-spotoptim.nn.mlp.MLP.get_default_parameters" class="nav-link" data-scroll-target="#spotoptim.nn.mlp.MLP.get_default_parameters">get_default_parameters</a></li>
+  <li><a href="#spotoptim.nn.mlp.MLP.get_optimizer" id="toc-spotoptim.nn.mlp.MLP.get_optimizer" class="nav-link" data-scroll-target="#spotoptim.nn.mlp.MLP.get_optimizer">get_optimizer</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/nn.mlp.MLP.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -2084,10 +2088,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -2096,17 +2096,113 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>get_default_parameters</code></td>
+<td><a href="#spotoptim.nn.mlp.MLP.get_default_parameters">get_default_parameters</a></td>
 <td>Returns a ParameterSet populated with default hyperparameters for this model.</td>
 </tr>
 <tr class="even">
-<td><code>get_optimizer</code></td>
+<td><a href="#spotoptim.nn.mlp.MLP.get_optimizer">get_optimizer</a></td>
 <td>Get a PyTorch optimizer configured for this model.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.nn.mlp.MLP.get_default_parameters" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.nn.mlp.MLP.get_default_parameters">get_default_parameters</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>nn.mlp.MLP.get_default_parameters()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns a ParameterSet populated with default hyperparameters for this model.</p>
+<section id="note-1" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-1">Note</h4>
+<p>Since MLP structure is generic (list of hidden channels), the default parameters provided here are a starting point assuming a simple structure similar to LinearRegressor (l1 units per layer, num_hidden_layers). This might need adjustment for specific architectures.</p>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ParameterSet</td>
+<td><a href="../../docs/reference/hyperparameters.parameters.html#spotoptim.hyperparameters.parameters.ParameterSet">ParameterSet</a></td>
+<td>Default hyperparameters.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> params <span class="op">=</span> MLP.get_default_parameters()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(params.names())</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>[<span class="st">'l1'</span>, <span class="st">'num_hidden_layers'</span>, <span class="st">'activation'</span>, <span class="st">'lr'</span>, <span class="st">'optimizer'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.nn.mlp.MLP.get_optimizer" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.nn.mlp.MLP.get_optimizer">get_optimizer</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>nn.mlp.MLP.get_optimizer(optimizer_name<span class="op">=</span><span class="st">'Adam'</span>, lr<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get a PyTorch optimizer configured for this model.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>optimizer_name</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Name of the optimizer from torch.optim. Defaults to “Adam”.</td>
+<td><code>'Adam'</code></td>
+</tr>
+<tr class="even">
+<td>lr</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Unified learning rate multiplier. If None, uses self.lr. This value is automatically scaled to optimizer-specific learning rates. A value of 1.0 corresponds to the optimizer’s default learning rate. Defaults to None (uses self.lr).</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>**kwargs</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></td>
+<td>Additional optimizer-specific parameters.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 44%">
+<col style="width: 49%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><code>optim</code>.<code>Optimizer</code></td>
+<td>optim.Optimizer: Configured optimizer instance ready for training.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
 </section>
 </section>
 

@@ -1904,7 +1904,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree" id="toc-spotoptim.optimizer.schedule_free.AdamWScheduleFree" class="nav-link active" data-scroll-target="#spotoptim.optimizer.schedule_free.AdamWScheduleFree">optimizer.schedule_free.AdamWScheduleFree</a>
   <ul class="collapse">
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval" id="toc-spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval" class="nav-link" data-scroll-target="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval">eval</a></li>
+  <li><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.step" id="toc-spotoptim.optimizer.schedule_free.AdamWScheduleFree.step" class="nav-link" data-scroll-target="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.step">step</a></li>
+  <li><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.train" id="toc-spotoptim.optimizer.schedule_free.AdamWScheduleFree.train" class="nav-link" data-scroll-target="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.train">train</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/optimizer.schedule_free.AdamWScheduleFree.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1935,10 +1940,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -1947,21 +1948,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>eval</code></td>
+<td><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval">eval</a></td>
 <td>Switch model parameters to evaluation mode (using averaged parameters ‘x’).</td>
 </tr>
 <tr class="even">
-<td><code>step</code></td>
+<td><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.step">step</a></td>
 <td>Performs a single optimization step.</td>
 </tr>
 <tr class="odd">
-<td><code>train</code></td>
+<td><a href="#spotoptim.optimizer.schedule_free.AdamWScheduleFree.train">train</a></td>
 <td>Switch model parameters to training mode (using current iterate ‘y’).</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.eval">eval</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>optimizer.schedule_free.AdamWScheduleFree.<span class="bu">eval</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Switch model parameters to evaluation mode (using averaged parameters ‘x’).</p>
+</section>
+<section id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.step" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.step">step</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>optimizer.schedule_free.AdamWScheduleFree.step(closure<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Performs a single optimization step.</p>
+</section>
+<section id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.train" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.optimizer.schedule_free.AdamWScheduleFree.train">train</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>optimizer.schedule_free.AdamWScheduleFree.train()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Switch model parameters to training mode (using current iterate ‘y’).</p>
 
 
+</section>
 </section>
 </section>
 

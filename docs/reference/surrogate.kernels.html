@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,16 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.surrogate.kernels" id="toc-spotoptim.surrogate.kernels" class="nav-link active" data-scroll-target="#spotoptim.surrogate.kernels">surrogate.kernels</a>
   <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a></li>
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.surrogate.kernels.ConstantKernel" id="toc-spotoptim.surrogate.kernels.ConstantKernel" class="nav-link" data-scroll-target="#spotoptim.surrogate.kernels.ConstantKernel">ConstantKernel</a></li>
+  <li><a href="#spotoptim.surrogate.kernels.Kernel" id="toc-spotoptim.surrogate.kernels.Kernel" class="nav-link" data-scroll-target="#spotoptim.surrogate.kernels.Kernel">Kernel</a></li>
+  <li><a href="#spotoptim.surrogate.kernels.Product" id="toc-spotoptim.surrogate.kernels.Product" class="nav-link" data-scroll-target="#spotoptim.surrogate.kernels.Product">Product</a></li>
+  <li><a href="#spotoptim.surrogate.kernels.RBF" id="toc-spotoptim.surrogate.kernels.RBF" class="nav-link" data-scroll-target="#spotoptim.surrogate.kernels.RBF">RBF</a></li>
+  <li><a href="#spotoptim.surrogate.kernels.SpotOptimKernel" id="toc-spotoptim.surrogate.kernels.SpotOptimKernel" class="nav-link" data-scroll-target="#spotoptim.surrogate.kernels.SpotOptimKernel">SpotOptimKernel</a></li>
+  <li><a href="#spotoptim.surrogate.kernels.Sum" id="toc-spotoptim.surrogate.kernels.Sum" class="nav-link" data-scroll-target="#spotoptim.surrogate.kernels.Sum">Sum</a></li>
+  <li><a href="#spotoptim.surrogate.kernels.WhiteKernel" id="toc-spotoptim.surrogate.kernels.WhiteKernel" class="nav-link" data-scroll-target="#spotoptim.surrogate.kernels.WhiteKernel">WhiteKernel</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/surrogate.kernels.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1895,37 +1939,328 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/surrogate.kernels.ConstantKernel.html#spotoptim.surrogate.kernels.ConstantKernel"><code>ConstantKernel</code></a></td>
+<td><a href="#spotoptim.surrogate.kernels.ConstantKernel">ConstantKernel</a></td>
 <td>Constant kernel.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/surrogate.kernels.Kernel.html#spotoptim.surrogate.kernels.Kernel"><code>Kernel</code></a></td>
+<td><a href="#spotoptim.surrogate.kernels.Kernel">Kernel</a></td>
 <td>Base class for Kernels.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/surrogate.kernels.Product.html#spotoptim.surrogate.kernels.Product"><code>Product</code></a></td>
+<td><a href="#spotoptim.surrogate.kernels.Product">Product</a></td>
 <td>The Product kernel k1 * k2.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/surrogate.kernels.RBF.html#spotoptim.surrogate.kernels.RBF"><code>RBF</code></a></td>
+<td><a href="#spotoptim.surrogate.kernels.RBF">RBF</a></td>
 <td>Radial Basis Function (RBF) kernel.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/surrogate.kernels.SpotOptimKernel.html#spotoptim.surrogate.kernels.SpotOptimKernel"><code>SpotOptimKernel</code></a></td>
+<td><a href="#spotoptim.surrogate.kernels.SpotOptimKernel">SpotOptimKernel</a></td>
 <td>Kernel designed for SpotOptim’s Kriging with mixed variable support.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/surrogate.kernels.Sum.html#spotoptim.surrogate.kernels.Sum"><code>Sum</code></a></td>
+<td><a href="#spotoptim.surrogate.kernels.Sum">Sum</a></td>
 <td>The Sum kernel k1 + k2.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/surrogate.kernels.WhiteKernel.html#spotoptim.surrogate.kernels.WhiteKernel"><code>WhiteKernel</code></a></td>
+<td><a href="#spotoptim.surrogate.kernels.WhiteKernel">WhiteKernel</a></td>
 <td>White kernel.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.kernels.ConstantKernel" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.ConstantKernel">ConstantKernel</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.ConstantKernel(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    constant_value<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    constant_value_bounds<span class="op">=</span>(<span class="fl">1e-05</span>, <span class="fl">100000.0</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Constant kernel.</p>
+<p>Can be used as a scaling factor (e.g.&nbsp;2.0 * RBF()) or as part of a sum (e.g.&nbsp;RBF() + 1.0).</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>constant_value</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The constant value. Defaults to 1.0.</td>
+<td><code>1.0</code></td>
+</tr>
+<tr class="even">
+<td>constant_value_bounds</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>The lower and upper bound on constant_value. Defaults to (1e-5, 1e5).</td>
+<td><code>(1e-05, 100000.0)</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kernels.Kernel" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.Kernel">Kernel</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.Kernel()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Base class for Kernels.</p>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.surrogate.kernels.Kernel.diag">diag</a></td>
+<td>Returns the diagonal of the kernel k(X, X).</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.kernels.Kernel.diag" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.Kernel.diag">diag</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.Kernel.diag(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns the diagonal of the kernel k(X, X).</p>
+<p>The result of this method is equivalent to np.diag(self(X)); however, it can be evaluated more efficiently.</p>
+<section id="parameters-1" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Argument of the kernel evaluation.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Diagonal of the kernel matrix, shape (n_samples_X,).</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+</section>
+<section id="spotoptim.surrogate.kernels.Product" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.Product">Product</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.Product(k1, k2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Product kernel k1 * k2.</p>
+<p>The kernel value is k1(X, Y) * k2(X, Y).</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>k1</td>
+<td><a href="../../docs/reference/surrogate.kernels.html#spotoptim.surrogate.kernels.Kernel">Kernel</a></td>
+<td>First kernel.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>k2</td>
+<td><a href="../../docs/reference/surrogate.kernels.html#spotoptim.surrogate.kernels.Kernel">Kernel</a></td>
+<td>Second kernel.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kernels.RBF" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.RBF">RBF</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.RBF(length_scale<span class="op">=</span><span class="fl">1.0</span>, length_scale_bounds<span class="op">=</span>(<span class="fl">1e-05</span>, <span class="fl">100000.0</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Radial Basis Function (RBF) kernel.</p>
+<p>Also known as the “squared exponential” kernel. It is given by: k(x_i, x_j) = exp(-0.5 * d(x_i, x_j)^2 / length_scale^2)</p>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>length_scale</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The length scale of the kernel. If a float, using isotropic distances. If an array, using anisotropic distances. Defaults to 1.0.</td>
+<td><code>1.0</code></td>
+</tr>
+<tr class="even">
+<td>length_scale_bounds</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>The lower and upper bound on length_scale. Defaults to (1e-5, 1e5).</td>
+<td><code>(1e-05, 100000.0)</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kernels.SpotOptimKernel" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.SpotOptimKernel">SpotOptimKernel</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.SpotOptimKernel(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    theta,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    var_type,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    p_val<span class="op">=</span><span class="fl">2.0</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    metric_factorial<span class="op">=</span><span class="st">'canberra'</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Kernel designed for SpotOptim’s Kriging with mixed variable support.</p>
+<p>It handles continuous (‘float’), integer (‘int’), and categorical (‘factor’) variables similarly to the internal logic of the Kriging class.</p>
+<p>The correlation function is defined as: Psi = exp(- (D_ordered + D_factor))</p>
+<p>where: D_ordered = sum_j theta_j * |x_ij - y_lj|^p (for ordered variables) D_factor = sum_j theta_j * d(x_ij, y_lj) (for factor variables, d is metric like Canberra)</p>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>theta</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The correlation parameters (weights). Note: In standard Kriging usage, this corresponds to <code>10^theta_log</code>. This kernel expects the LINEAR scale theta values (weights), not log.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>var_type</td>
+<td>list of str</td>
+<td>List of variable types, e.g.&nbsp;[‘float’, ‘int’, ‘factor’].</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>p_val</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Power parameter for ordered distance. Defaults to 2.0.</td>
+<td><code>2.0</code></td>
+</tr>
+<tr class="even">
+<td>metric_factorial</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Metric for factor distance (passed to cdist/pdist). Defaults to ‘canberra’.</td>
+<td><code>'canberra'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kernels.Sum" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.Sum">Sum</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.Sum(k1, k2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Sum kernel k1 + k2.</p>
+<p>The kernel value is k1(X, Y) + k2(X, Y).</p>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>k1</td>
+<td><a href="../../docs/reference/surrogate.kernels.html#spotoptim.surrogate.kernels.Kernel">Kernel</a></td>
+<td>First kernel.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>k2</td>
+<td><a href="../../docs/reference/surrogate.kernels.html#spotoptim.surrogate.kernels.Kernel">Kernel</a></td>
+<td>Second kernel.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.kernels.WhiteKernel" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.WhiteKernel">WhiteKernel</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.WhiteKernel(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    noise_level<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    noise_level_bounds<span class="op">=</span>(<span class="fl">1e-05</span>, <span class="fl">100000.0</span>),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>White kernel.</p>
+<p>The main use case is capturing noise in the signal: k(x_i, x_j) = noise_level if x_i == x_j else 0</p>
+<section id="parameters-6" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>noise_level</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Parameter controlling the noise level (variance). Defaults to 1.0.</td>
+<td><code>1.0</code></td>
+</tr>
+<tr class="even">
+<td>noise_level_bounds</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>The lower and upper bound on noise_level. Defaults to (1e-5, 1e5).</td>
+<td><code>(1e-05, 100000.0)</code></td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
 </section>
 </section>
 

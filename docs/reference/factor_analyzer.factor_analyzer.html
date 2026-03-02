@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,8 +1904,15 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.factor_analyzer.factor_analyzer" id="toc-spotoptim.factor_analyzer.factor_analyzer" class="nav-link active" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer">factor_analyzer.factor_analyzer</a>
   <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a></li>
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer" id="toc-spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer">FactorAnalyzer</a></li>
+  </ul></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity" id="toc-spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity">calculate_bartlett_sphericity</a></li>
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer.calculate_kmo" id="toc-spotoptim.factor_analyzer.factor_analyzer.calculate_kmo" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer.calculate_kmo">calculate_kmo</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/factor_analyzer.factor_analyzer.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1897,11 +1939,595 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer.FactorAnalyzer.html#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer"><code>FactorAnalyzer</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer">FactorAnalyzer</a></td>
 <td>The main exploratory factor analysis class.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer">FactorAnalyzer</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    n_factors<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    rotation<span class="op">=</span><span class="st">'promax'</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    method<span class="op">=</span><span class="st">'minres'</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    use_smc<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    is_corr_matrix<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span>(<span class="fl">0.005</span>, <span class="dv">1</span>),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    impute<span class="op">=</span><span class="st">'median'</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    svd_method<span class="op">=</span><span class="st">'randomized'</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    rotation_kwargs<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The main exploratory factor analysis class.</p>
+<section id="this-class" class="level4 doc-section doc-section-this-class">
+<h4 class="doc-section doc-section-this-class anchored" data-anchor-id="this-class">This class</h4>
+<ol type="1">
+<li><p>Fits a factor analysis model using minres, maximum likelihood, or principal factor extraction and returns the loading matrix</p></li>
+<li><p>Optionally performs a rotation, with method including:</p>
+<ol type="a">
+<li>varimax (orthogonal rotation)</li>
+<li>promax (oblique rotation)</li>
+<li>oblimin (oblique rotation)</li>
+<li>oblimax (orthogonal rotation)</li>
+<li>quartimin (oblique rotation)</li>
+<li>quartimax (orthogonal rotation)</li>
+<li>equamax (orthogonal rotation)</li>
+</ol></li>
+</ol>
+</section>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n_factors</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The number of factors to select. Defaults to 3.</td>
+<td><code>3</code></td>
+</tr>
+<tr class="even">
+<td>rotation</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The type of rotation to perform after fitting the factor analysis model. If set to None, no rotation will be performed, nor will any associated Kaiser normalization. Possible values include: (a) varimax (orthogonal rotation) (b) promax (oblique rotation) (c) oblimin (oblique rotation) (d) oblimax (orthogonal rotation) (e) quartimin (oblique rotation) (f) quartimax (orthogonal rotation) (g) equamax (orthogonal rotation) Defaults to ‘promax’.</td>
+<td><code>'promax'</code></td>
+</tr>
+<tr class="odd">
+<td>method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The fitting method to use, either ‘minres’, ‘ml’, or ‘principal’. Defaults to ‘minres’.</td>
+<td><code>'minres'</code></td>
+</tr>
+<tr class="even">
+<td>use_smc</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use squared multiple correlation as starting guesses for factor analysis. Defaults to True.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td>bounds</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>The lower and upper bounds on the variables for “L-BFGS-B” optimization. Defaults to (0.005, 1).</td>
+<td><code>(0.005, 1)</code></td>
+</tr>
+<tr class="even">
+<td>impute</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>How to handle missing values, if any, in the data: (a) use list-wise deletion (‘drop’), or (b) impute the column median (‘median’), or impute the column mean (‘mean’). Defaults to ‘median’.</td>
+<td><code>'median'</code></td>
+</tr>
+<tr class="odd">
+<td>is_corr_matrix</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Set to True if the data is the correlation matrix. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td>svd_method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The SVD method to use when method is ‘principal’. If ‘lapack’, use standard SVD from scipy.linalg. If ‘randomized’, use faster randomized_svd function from scikit-learn. Defaults to ‘randomized’.</td>
+<td><code>'randomized'</code></td>
+</tr>
+<tr class="odd">
+<td>rotation_kwargs</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>Dictionary containing keyword arguments for the rotation method. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes" class="level4 doc-section doc-section-attributes">
+<h4 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>loadings_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The factor loadings matrix. None, if fit() has not been called.</td>
+</tr>
+<tr class="even">
+<td>corr_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The original correlation matrix. None, if fit() has not been called.</td>
+</tr>
+<tr class="odd">
+<td>rotation_matrix_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The rotation matrix, if a rotation has been performed. None otherwise.</td>
+</tr>
+<tr class="even">
+<td>structure_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a> or None</td>
+<td>The structure loading matrix. This only exists if rotation is ‘promax’.</td>
+</tr>
+<tr class="odd">
+<td>phi_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a> or None</td>
+<td>The factor correlations matrix. This only exists if rotation is ‘oblique’.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes" class="level4 doc-section doc-section-notes">
+<h4 class="doc-section doc-section-notes anchored" data-anchor-id="notes">Notes</h4>
+<p>This code was partly derived from the excellent R package <code>psych</code>.</p>
+</section>
+<section id="references" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references">References</h4>
+<p>[1] https://github.com/cran/psych/blob/master/R/fa.R</p>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.loadings_, <span class="dv">2</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>array([[<span class="op">-</span><span class="fl">0.13</span>,  <span class="fl">0.16</span>,  <span class="fl">0.74</span>],</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.04</span>,  <span class="fl">0.05</span>,  <span class="fl">0.01</span>],</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.35</span>,  <span class="fl">0.61</span>, <span class="op">-</span><span class="fl">0.07</span>],</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.45</span>,  <span class="fl">0.72</span>, <span class="op">-</span><span class="fl">0.08</span>],</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.37</span>,  <span class="fl">0.44</span>, <span class="op">-</span><span class="fl">0.02</span>],</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.74</span>, <span class="op">-</span><span class="fl">0.15</span>,  <span class="fl">0.3</span> ],</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.74</span>, <span class="op">-</span><span class="fl">0.16</span>, <span class="op">-</span><span class="fl">0.21</span>],</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.83</span>, <span class="op">-</span><span class="fl">0.21</span>,  <span class="fl">0.05</span>],</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.76</span>, <span class="op">-</span><span class="fl">0.24</span>, <span class="op">-</span><span class="fl">0.12</span>],</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.82</span>, <span class="op">-</span><span class="fl">0.12</span>,  <span class="fl">0.18</span>]])</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.get_communalities(), <span class="dv">2</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.59</span>, <span class="fl">0.</span>  , <span class="fl">0.5</span> , <span class="fl">0.73</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">0.62</span>, <span class="fl">0.73</span>, <span class="fl">0.65</span>, <span class="fl">0.71</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.fit">fit</a></td>
+<td>Fit factor analysis model using either MINRES, ML, or principal factor analysis.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities">get_communalities</a></td>
+<td>Calculate the communalities, given the factor loading matrix.</td>
+</tr>
+<tr class="odd">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues">get_eigenvalues</a></td>
+<td>Calculate the eigenvalues, given the factor correlation matrix.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance">get_factor_variance</a></td>
+<td>Calculate factor variance information.</td>
+</tr>
+<tr class="odd">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses">get_uniquenesses</a></td>
+<td>Calculate the uniquenesses, given the factor loading matrix.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency">sufficiency</a></td>
+<td>Perform the sufficiency test.</td>
+</tr>
+<tr class="odd">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.transform">transform</a></td>
+<td>Get factor scores for a new data set.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.fit" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.fit">fit</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.fit(X, y<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fit factor analysis model using either MINRES, ML, or principal factor analysis.</p>
+<p>By default, use SMC as starting guesses.</p>
+<section id="parameters-1" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The data to analyze.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><code>ignored</code></td>
+<td>Ignored.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>self</td>
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer.html#spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer">FactorAnalyzer</a></td>
+<td>The fitted factor analyzer object.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.loadings_, <span class="dv">2</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>array([[<span class="op">-</span><span class="fl">0.13</span>,  <span class="fl">0.16</span>,  <span class="fl">0.74</span>],</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.04</span>,  <span class="fl">0.05</span>,  <span class="fl">0.01</span>],</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.35</span>,  <span class="fl">0.61</span>, <span class="op">-</span><span class="fl">0.07</span>],</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.45</span>,  <span class="fl">0.72</span>, <span class="op">-</span><span class="fl">0.08</span>],</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.37</span>,  <span class="fl">0.44</span>, <span class="op">-</span><span class="fl">0.02</span>],</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.74</span>, <span class="op">-</span><span class="fl">0.15</span>,  <span class="fl">0.3</span> ],</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.74</span>, <span class="op">-</span><span class="fl">0.16</span>, <span class="op">-</span><span class="fl">0.21</span>],</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.83</span>, <span class="op">-</span><span class="fl">0.21</span>,  <span class="fl">0.05</span>],</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.76</span>, <span class="op">-</span><span class="fl">0.24</span>, <span class="op">-</span><span class="fl">0.12</span>],</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.82</span>, <span class="op">-</span><span class="fl">0.12</span>,  <span class="fl">0.18</span>]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities">get_communalities</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the communalities, given the factor loading matrix.</p>
+<section id="returns-1" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>communalities</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The communalities from the factor loading matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-2" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.get_communalities(), <span class="dv">2</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.59</span>, <span class="fl">0.</span>  , <span class="fl">0.5</span> , <span class="fl">0.73</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">0.62</span>, <span class="fl">0.73</span>, <span class="fl">0.65</span>, <span class="fl">0.71</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues">get_eigenvalues</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the eigenvalues, given the factor correlation matrix.</p>
+<section id="returns-2" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>original_eigen_values</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The original eigenvalues.</td>
+</tr>
+<tr class="even">
+<td>common_factor_eigen_values</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The common factor eigenvalues.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-3" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> ev, v <span class="op">=</span> fa.get_eigenvalues()</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(ev, <span class="dv">1</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>array([...])</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(v, <span class="dv">1</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>array([...])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance">get_factor_variance</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate factor variance information.</p>
+<p>The factor variance information including the variance, proportional variance, and cumulative variance for each factor.</p>
+<section id="returns-3" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>variance</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The factor variances.</td>
+</tr>
+<tr class="even">
+<td>proportional_variance</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The proportional factor variances.</td>
+</tr>
+<tr class="odd">
+<td>cumulative_variances</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The cumulative factor variances.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-4" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> var, prop_var, cum_var <span class="op">=</span> fa.get_factor_variance()</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(var, <span class="dv">2</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">3.51</span>, <span class="fl">1.28</span>, <span class="fl">0.74</span>])</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(prop_var, <span class="dv">2</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.35</span>, <span class="fl">0.13</span>, <span class="fl">0.07</span>])</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(cum_var, <span class="dv">2</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.35</span>, <span class="fl">0.48</span>, <span class="fl">0.55</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses">get_uniquenesses</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the uniquenesses, given the factor loading matrix.</p>
+<section id="returns-4" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>uniquenesses</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The uniquenesses from the factor loading matrix.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-5" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.get_uniquenesses(), <span class="dv">2</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.41</span>, <span class="fl">1.</span>  , <span class="fl">0.5</span> , <span class="fl">0.27</span>, <span class="fl">0.67</span>, <span class="fl">0.34</span>, <span class="fl">0.38</span>, <span class="fl">0.27</span>, <span class="fl">0.35</span>, <span class="fl">0.29</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency">sufficiency</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency(num_observations)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Perform the sufficiency test.</p>
+<p>The test calculates statistics under the null hypothesis that the selected number of factors is sufficient.</p>
+<section id="parameters-2" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>num_observations</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The number of observations in the input data that this factor analyzer was fit using.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-5" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>statistic</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The test statistic.</td>
+</tr>
+<tr class="even">
+<td>degrees</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The degrees of freedom.</td>
+</tr>
+<tr class="odd">
+<td>pvalue</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The p-value of the test.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="references-1" class="level6 doc-section doc-section-references">
+<h6 class="doc-section doc-section-references anchored" data-anchor-id="references-1">References</h6>
+<p>[1] Lawley, D. N. and Maxwell, A. E. (1971). Factor Analysis as a Statistical Method. Second edition. Butterworths. P. 36.</p>
+</section>
+<section id="examples-6" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-6">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test01.csv'</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(n_factors<span class="op">=</span><span class="dv">3</span>, rotation<span class="op">=</span><span class="va">None</span>, method<span class="op">=</span><span class="st">"ml"</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> stat, df, p <span class="op">=</span> fa.sufficiency(df_features.shape[<span class="dv">0</span>])</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">float</span>(np.<span class="bu">round</span>(stat, <span class="dv">2</span>))</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fl">1475.88</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="dv">663</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">bool</span>(p <span class="op">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.transform" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.transform">transform</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.transform(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get factor scores for a new data set.</p>
+<section id="parameters-3" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The data to score using the fitted factor model. Shape should be (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-6" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>scores</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The latent variables of X. Shape is (n_samples, n_components).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-7" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-7">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.transform(df_features), <span class="dv">2</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>array([[<span class="op">-</span><span class="fl">1.05</span>,  <span class="fl">0.58</span>,  <span class="fl">0.17</span>],</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>       [<span class="op">-</span><span class="fl">1.6</span> ,  <span class="fl">0.9</span> ,  <span class="fl">0.04</span>],</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>       [<span class="op">-</span><span class="fl">1.22</span>, <span class="op">-</span><span class="fl">1.16</span>,  <span class="fl">0.57</span>],</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>       ...,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.14</span>,  <span class="fl">0.04</span>,  <span class="fl">0.29</span>],</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">1.87</span>, <span class="op">-</span><span class="fl">0.35</span>, <span class="op">-</span><span class="fl">0.68</span>],</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.86</span>,  <span class="fl">0.18</span>, <span class="op">-</span><span class="fl">0.79</span>]], shape<span class="op">=</span>(<span class="dv">1678</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+</section>
+</section>
 </section>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
@@ -1914,17 +2540,122 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.html#spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity"><code>calculate_bartlett_sphericity</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity">calculate_bartlett_sphericity</a></td>
 <td>Compute the Bartlett sphericity test.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer.calculate_kmo.html#spotoptim.factor_analyzer.factor_analyzer.calculate_kmo"><code>calculate_kmo</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer.calculate_kmo">calculate_kmo</a></td>
 <td>Calculate the Kaiser-Meyer-Olkin criterion for items and overall.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity">calculate_bartlett_sphericity</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.calculate_bartlett_sphericity(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the Bartlett sphericity test.</p>
+<p>H0: The matrix of population correlations is equal to I. H1: The matrix of population correlations is not equal to I.</p>
+<p>The formula for Bartlett’s Sphericity test is:</p>
+<p>.. math:: -1 * (n - 1 - ((2p + 5) / 6)) * ln(det(R))</p>
+<p>Where R det(R) is the determinant of the correlation matrix, and p is the number of variables.</p>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The array for which to calculate sphericity.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-7" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-7">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>statistic</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The chi-square value.</td>
+</tr>
+<tr class="even">
+<td>p_value</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The associated p-value for the test.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer.calculate_kmo" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.calculate_kmo">calculate_kmo</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.calculate_kmo(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the Kaiser-Meyer-Olkin criterion for items and overall.</p>
+<p>This statistic represents the degree to which each observed variable is predicted, without error, by the other variables in the dataset. In general, a KMO &lt; 0.6 is considered inadequate.</p>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The array from which to calculate KMOs.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-8" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-8">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>kmo_per_variable</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The KMO score per item.</td>
+</tr>
+<tr class="even">
+<td>kmo_total</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The overall KMO score.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
 </section>
 </section>
 

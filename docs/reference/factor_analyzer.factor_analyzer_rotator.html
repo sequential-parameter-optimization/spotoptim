@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,10 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.factor_analyzer.factor_analyzer_rotator" id="toc-spotoptim.factor_analyzer.factor_analyzer_rotator" class="nav-link active" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_rotator">factor_analyzer.factor_analyzer_rotator</a>
   <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a></li>
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator" id="toc-spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator">Rotator</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/factor_analyzer.factor_analyzer_rotator.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1896,13 +1934,320 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.Rotator.html#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator"><code>Rotator</code></a></td>
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator">Rotator</a></td>
 <td>Perform rotations on an unrotated factor loading matrix.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator">Rotator</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_rotator.Rotator(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    method<span class="op">=</span><span class="st">'varimax'</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    normalize<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    power<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    kappa<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    gamma<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    delta<span class="op">=</span><span class="fl">0.01</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">500</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    tol<span class="op">=</span><span class="fl">1e-05</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Perform rotations on an unrotated factor loading matrix.</p>
+<p>The Rotator class takes an (unrotated) factor loading matrix and performs one of several rotations.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The factor rotation method. Options include: (a) varimax (orthogonal rotation) (b) promax (oblique rotation) (c) oblimin (oblique rotation) (d) oblimax (orthogonal rotation) (e) quartimin (oblique rotation) (f) quartimax (orthogonal rotation) (g) equamax (orthogonal rotation) (h) geomin_obl (oblique rotation) (i) geomin_ort (orthogonal rotation) Defaults to ‘varimax’.</td>
+<td><code>'varimax'</code></td>
+</tr>
+<tr class="even">
+<td>normalize</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to perform Kaiser normalization and de-normalization prior to and following rotation. Used for ‘varimax’ and ‘promax’ rotations. If None, default for ‘promax’ is False, and default for ‘varimax’ is True. Defaults to None.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td>power</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The exponent to which to raise the promax loadings (minus 1). Numbers should generally range from 2 to 4. Defaults to 4.</td>
+<td><code>4</code></td>
+</tr>
+<tr class="even">
+<td>kappa</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The kappa value for the ‘equamax’ objective. Ignored if the method is not ‘equamax’. Defaults to 0.</td>
+<td><code>0</code></td>
+</tr>
+<tr class="odd">
+<td>gamma</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The gamma level for the ‘oblimin’ objective. Ignored if the method is not ‘oblimin’. Defaults to 0.</td>
+<td><code>0</code></td>
+</tr>
+<tr class="even">
+<td>delta</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The delta level for ‘geomin’ objectives. Ignored if the method is not ’geomin_*’. Defaults to 0.01.</td>
+<td><code>0.01</code></td>
+</tr>
+<tr class="odd">
+<td>max_iter</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The maximum number of iterations. Used for ‘varimax’ and ‘oblique’ rotations. Defaults to 1000.</td>
+<td><code>500</code></td>
+</tr>
+<tr class="even">
+<td>tol</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The convergence threshold. Used for ‘varimax’ and ‘oblique’ rotations. Defaults to 1e-5.</td>
+<td><code>1e-05</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes" class="level4 doc-section doc-section-attributes">
+<h4 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>loadings_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The loadings matrix. Shape (n_features, n_factors).</td>
+</tr>
+<tr class="even">
+<td>rotation_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The rotation matrix. Shape (n_factors, n_factors).</td>
+</tr>
+<tr class="odd">
+<td>phi_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a> or None</td>
+<td>The factor correlations matrix. This only exists if method is ‘oblique’.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes" class="level4 doc-section doc-section-notes">
+<h4 class="doc-section doc-section-notes anchored" data-anchor-id="notes">Notes</h4>
+<p>Most of the rotations in this class are ported from R’s <code>GPARotation</code> package.</p>
+</section>
+<section id="references" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references">References</h4>
+<p>[1] https://cran.r-project.org/web/packages/GPArotation/index.html</p>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer, Rotator</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'test02.csv'</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa.fit(df_features)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rotator <span class="op">=</span> Rotator()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rotator.fit_transform(fa.loadings_)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>array([[<span class="op">-</span><span class="fl">0.07693215</span>,  <span class="fl">0.04499572</span>,  <span class="fl">0.76211208</span>],</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.01842035</span>,  <span class="fl">0.05757874</span>,  <span class="fl">0.01297908</span>],</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.06067925</span>,  <span class="fl">0.70692662</span>, <span class="op">-</span><span class="fl">0.03311798</span>],</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.11314343</span>,  <span class="fl">0.84525117</span>, <span class="op">-</span><span class="fl">0.03407129</span>],</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.15307233</span>,  <span class="fl">0.5553474</span> , <span class="op">-</span><span class="fl">0.00121802</span>],</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.77450832</span>,  <span class="fl">0.1474666</span> ,  <span class="fl">0.20118338</span>],</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.7063001</span> ,  <span class="fl">0.17229555</span>, <span class="op">-</span><span class="fl">0.30093981</span>],</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.83990851</span>,  <span class="fl">0.15058874</span>, <span class="op">-</span><span class="fl">0.06182469</span>],</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.76620579</span>,  <span class="fl">0.1045194</span> , <span class="op">-</span><span class="fl">0.22649615</span>],</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.81372945</span>,  <span class="fl">0.20915845</span>,  <span class="fl">0.07479506</span>]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator.fit">fit</a></td>
+<td>Compute the factor rotation.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator.fit_transform">fit_transform</a></td>
+<td>Compute the factor rotation, and return the new loading matrix.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator.fit" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator.fit">fit</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_rotator.Rotator.fit(X, y<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the factor rotation.</p>
+<section id="parameters-1" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The factor loading matrix. Shape (n_features, n_factors).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><code>ignored</code></td>
+<td>Ignored.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>self</td>
+<td><a href="../../docs/reference/factor_analyzer.factor_analyzer_rotator.html#spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator">Rotator</a></td>
+<td>The rotator object.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer, Rotator</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'test02.csv'</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa.fit(df_features)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rotator <span class="op">=</span> Rotator()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rotator.fit(fa.loadings_)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator.fit_transform" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer_rotator.Rotator.fit_transform">fit_transform</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer_rotator.Rotator.fit_transform(X, y<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute the factor rotation, and return the new loading matrix.</p>
+<section id="parameters-2" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The factor loading matrix. Shape (n_features, n_factors).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><code>ignored</code></td>
+<td>Ignored.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>loadings_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The loadings matrix. Shape (n_features, n_factors).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level6 doc-section doc-section-raises">
+<h6 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If <code>method</code> is not in the list of acceptable methods.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-2" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer, Rotator</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'test02.csv'</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa.fit(df_features)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rotator <span class="op">=</span> Rotator()</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> rotator.fit_transform(fa.loadings_)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>array([[<span class="op">-</span><span class="fl">0.07693215</span>,  <span class="fl">0.04499572</span>,  <span class="fl">0.76211208</span>],</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.01842035</span>,  <span class="fl">0.05757874</span>,  <span class="fl">0.01297908</span>],</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.06067925</span>,  <span class="fl">0.70692662</span>, <span class="op">-</span><span class="fl">0.03311798</span>],</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.11314343</span>,  <span class="fl">0.84525117</span>, <span class="op">-</span><span class="fl">0.03407129</span>],</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.15307233</span>,  <span class="fl">0.5553474</span> , <span class="op">-</span><span class="fl">0.00121802</span>],</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.77450832</span>,  <span class="fl">0.1474666</span> ,  <span class="fl">0.20118338</span>],</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.7063001</span> ,  <span class="fl">0.17229555</span>, <span class="op">-</span><span class="fl">0.30093981</span>],</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.83990851</span>,  <span class="fl">0.15058874</span>, <span class="op">-</span><span class="fl">0.06182469</span>],</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.76620579</span>,  <span class="fl">0.1045194</span> , <span class="op">-</span><span class="fl">0.22649615</span>],</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.81372945</span>,  <span class="fl">0.20915845</span>,  <span class="fl">0.07479506</span>]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
+</section>
+</section>
+</section>
 </section>
 </section>
 

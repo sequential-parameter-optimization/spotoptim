@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1867,22 +1902,37 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#spotoptim.eda.plots" id="toc-spotoptim.eda.plots" class="nav-link active" data-scroll-target="#spotoptim.eda.plots">eda.plots</a>
+  <li><a href="#functions" id="toc-functions" class="nav-link active" data-scroll-target="#functions">Functions</a>
   <ul class="collapse">
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#spotoptim.eda.plots.plot_ip_boxplots" id="toc-spotoptim.eda.plots.plot_ip_boxplots" class="nav-link" data-scroll-target="#spotoptim.eda.plots.plot_ip_boxplots">plot_ip_boxplots</a></li>
+  <li><a href="#spotoptim.eda.plots.plot_ip_histograms" id="toc-spotoptim.eda.plots.plot_ip_histograms" class="nav-link" data-scroll-target="#spotoptim.eda.plots.plot_ip_histograms">plot_ip_histograms</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/eda.plots.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.html">Exploratory Data Analysis</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.plots.html">eda.plots</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.html">Exploratory Data Analysis</a></li><li class="breadcrumb-item"><a href="../../docs/reference/eda.plots.html">eda.plots</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">eda.plots</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
-<section id="spotoptim.eda.plots" class="level1">
-<h1>eda.plots</h1>
+</header>
+
+
 <p><code>eda.plots</code></p>
 <section id="functions" class="level2">
 <h2 class="anchored" data-anchor-id="functions">Functions</h2>
@@ -1895,17 +1945,242 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/eda.plots.plot_ip_boxplots.html#spotoptim.eda.plots.plot_ip_boxplots"><code>plot_ip_boxplots</code></a></td>
+<td><a href="#spotoptim.eda.plots.plot_ip_boxplots">plot_ip_boxplots</a></td>
 <td>Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/eda.plots.plot_ip_histograms.html#spotoptim.eda.plots.plot_ip_histograms"><code>plot_ip_histograms</code></a></td>
+<td><a href="#spotoptim.eda.plots.plot_ip_histograms">plot_ip_histograms</a></td>
 <td>Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.eda.plots.plot_ip_boxplots" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.eda.plots.plot_ip_boxplots">plot_ip_boxplots</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eda.plots.plot_ip_boxplots(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    df,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    category_column_name<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    num_cols<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    figwidth<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    box_width<span class="op">=</span><span class="fl">0.2</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    both_names<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    height_per_subplot<span class="op">=</span><span class="fl">2.0</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    add_points<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    add_points_col<span class="op">=</span>[<span class="st">'red'</span>],</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid. Each subplot has its own scale, similar to how histograms are shown in plot_histograms(). Additional points can be added and highlighted in red.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>df</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>DataFrame containing the data to plot.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>category_column_name</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Column name for categorical grouping. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>num_cols</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of columns in the subplot grid. Defaults to 2.</td>
+<td><code>2</code></td>
+</tr>
+<tr class="even">
+<td>figwidth</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Width of the entire figure. Defaults to 10.</td>
+<td><code>10</code></td>
+</tr>
+<tr class="odd">
+<td>box_width</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Width of the boxplots. Defaults to 0.2.</td>
+<td><code>0.2</code></td>
+</tr>
+<tr class="even">
+<td>both_names</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to show both variable names and categories in titles. Defaults to True.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td>height_per_subplot</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Height per subplot row. Defaults to 2.0.</td>
+<td><code>2.0</code></td>
+</tr>
+<tr class="even">
+<td>add_points</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>DataFrame containing additional points to highlight. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>add_points_col</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>List of colors for the additional points. Defaults to [“red”].</td>
+<td><code>['red']</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div id="3db3cc3c" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.eda.plots <span class="im">import</span> plot_ip_boxplots</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> {<span class="st">'A'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">100</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>]}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame(data)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>plot_ip_boxplots(df, num_cols<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Example with multiple added points and colors</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>add_points <span class="op">=</span> pd.DataFrame({<span class="st">'A'</span>: [<span class="fl">1.5</span>, <span class="fl">3.5</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>]})</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>plot_ip_boxplots(df, add_points<span class="op">=</span>add_points, add_points_col<span class="op">=</span>[<span class="st">"red"</span>, <span class="st">"blue"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="references" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references">References</h4>
+<p>Bartz-Beielstein, T. (2025). Multi-Objective Optimization and Hyperparameter Tuning With Desirability Functions. arXiv preprint arXiv:2503.23595. https://arxiv.org/abs/2503.23595</p>
+</section>
+</section>
+<section id="spotoptim.eda.plots.plot_ip_histograms" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.eda.plots.plot_ip_histograms">plot_ip_histograms</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>eda.plots.plot_ip_histograms(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    df,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    bins<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    num_cols<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    figwidth<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    thrs_unique<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    add_points<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    add_points_col<span class="op">=</span>[<span class="st">'red'</span>],</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure. The title of each histogram shows the total, unique values count, outliers, and standard deviation. If there are fewer unique values than the threshold thrs_unique, the ip-histogram is colored differently. Additional points can be added and highlighted in red.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>df</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>DataFrame containing the data to plot.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>bins</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of bins for the histograms. Defaults to 10.</td>
+<td><code>10</code></td>
+</tr>
+<tr class="odd">
+<td>num_cols</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of columns in the subplot grid. Defaults to 2.</td>
+<td><code>2</code></td>
+</tr>
+<tr class="even">
+<td>figwidth</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Width of the entire figure. Defaults to 10.</td>
+<td><code>10</code></td>
+</tr>
+<tr class="odd">
+<td>thrs_unique</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Threshold for unique values to change histogram color. Defaults to 5.</td>
+<td><code>5</code></td>
+</tr>
+<tr class="even">
+<td>add_points</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>DataFrame containing additional points to highlight. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>add_points_col</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>List of colors for the additional points. Defaults to [“red”].</td>
+<td><code>['red']</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div id="cae933f5" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.eda.plots <span class="im">import</span> plot_ip_histograms</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> {<span class="st">'A'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">100</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>]}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame(data)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, bins<span class="op">=</span><span class="dv">5</span>, num_cols<span class="op">=</span><span class="dv">1</span>, thrs_unique<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Example with multiple added points and colors</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>add_points <span class="op">=</span> pd.DataFrame({<span class="st">'A'</span>: [<span class="fl">1.5</span>, <span class="fl">3.5</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>]})</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, add_points<span class="op">=</span>add_points, add_points_col<span class="op">=</span>[<span class="st">"red"</span>, <span class="st">"blue"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="references-1" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-1">References</h4>
+<p>Bartz-Beielstein, T. (2025). Multi-Objective Optimization and Hyperparameter Tuning With Desirability Functions. arXiv preprint arXiv:2503.23595. https://arxiv.org/abs/2503.23595</p>
 
 
+</section>
 </section>
 </section>
 

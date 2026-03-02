@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,10 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.surrogate.mlp_surrogate" id="toc-spotoptim.surrogate.mlp_surrogate" class="nav-link active" data-scroll-target="#spotoptim.surrogate.mlp_surrogate">surrogate.mlp_surrogate</a>
   <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a></li>
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate" id="toc-spotoptim.surrogate.mlp_surrogate.MLPSurrogate" class="nav-link" data-scroll-target="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate">MLPSurrogate</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/surrogate.mlp_surrogate.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1897,13 +1935,270 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/surrogate.mlp_surrogate.MLPSurrogate.html#spotoptim.surrogate.mlp_surrogate.MLPSurrogate"><code>MLPSurrogate</code></a></td>
+<td><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate">MLPSurrogate</a></td>
 <td>A scikit-learn compatible MLP surrogate model with uncertainty estimation.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate">MLPSurrogate</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>surrogate.mlp_surrogate.MLPSurrogate(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    in_channels<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    hidden_channels<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    l1<span class="op">=</span><span class="dv">128</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    num_hidden_layers<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    dropout<span class="op">=</span><span class="fl">0.0</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    activation<span class="op">=</span><span class="st">'relu'</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    lr<span class="op">=</span><span class="fl">0.001</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    epochs<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    batch_size<span class="op">=</span><span class="dv">32</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    optimizer_name<span class="op">=</span><span class="st">'AdamWScheduleFree'</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    mc_dropout_passes<span class="op">=</span><span class="dv">30</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    seed<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    var_type<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">'MLPSurrogate'</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A scikit-learn compatible MLP surrogate model with uncertainty estimation.</p>
+<p>This class wraps a PyTorch MLP (from spotoptim.nn.mlp) and provides the standard fit/predict interface required by SpotOptim. It uses Monte Carlo (MC) Dropout during prediction to estimate uncertainty (standard deviation) which is crucial for acquisition functions.</p>
+<p>Compatible with SpotOptim’s variable type conventions: - ‘float’: continuous numeric variables - ‘int’: integer variables - ‘factor’: categorical/unordered variables</p>
+<p>Note: All input variables are currently treated as numeric and standardized. For best performance with categorical variables, this simple treatment may be suboptimal compared to embedding processing, but ensures compatibility.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>in_channels</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Input dimension. If None, inferred during fit.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>hidden_channels</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>]</td>
+<td>Explicit list of hidden layer sizes.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>l1</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Neurons per hidden layer (used if hidden_channels is None). Defaults to 64.</td>
+<td><code>128</code></td>
+</tr>
+<tr class="even">
+<td>num_hidden_layers</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of hidden layers (used if hidden_channels is None). Defaults to 2.</td>
+<td><code>3</code></td>
+</tr>
+<tr class="odd">
+<td>dropout</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Dropout probability. Crucial for uncertainty estimation. Defaults to 0.1.</td>
+<td><code>0.0</code></td>
+</tr>
+<tr class="even">
+<td>lr</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Learning rate. Defaults to 1e-3.</td>
+<td><code>0.001</code></td>
+</tr>
+<tr class="odd">
+<td>activation</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Activation function. Defaults to “relu”.</td>
+<td><code>'relu'</code></td>
+</tr>
+<tr class="even">
+<td>epochs</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of training epochs. Defaults to 200.</td>
+<td><code>200</code></td>
+</tr>
+<tr class="odd">
+<td>batch_size</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Training batch size. Defaults to 32.</td>
+<td><code>32</code></td>
+</tr>
+<tr class="even">
+<td>optimizer_name</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Name of PyTorch optimizer (“Adam”, “SGD”, etc.) or “AdamWScheduleFree”. Defaults to “AdamWScheduleFree”.</td>
+<td><code>'AdamWScheduleFree'</code></td>
+</tr>
+<tr class="odd">
+<td>mc_dropout_passes</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of forward passes for MC Dropout uncertainty estimation. Defaults to 30.</td>
+<td><code>30</code></td>
+</tr>
+<tr class="even">
+<td>seed</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Random seed for reproducibility. Defaults to 42.</td>
+<td><code>42</code></td>
+</tr>
+<tr class="odd">
+<td>var_type</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</td>
+<td>Variable types for each dimension. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>name</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Name of the surrogate. Defaults to “MLPSurrogate”.</td>
+<td><code>'MLPSurrogate'</code></td>
+</tr>
+<tr class="odd">
+<td>verbose</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to print training progress. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit">fit</a></td>
+<td>Fit the MLP model to the training data.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict">predict</a></td>
+<td>Predict targets for X.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.fit">fit</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>surrogate.mlp_surrogate.MLPSurrogate.fit(X, y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fit the MLP model to the training data.</p>
+<section id="parameters-1" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training inputs, shape (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training targets, shape (n_samples,).</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MLPSurrogate</td>
+<td><a href="../../docs/reference/surrogate.mlp_surrogate.html#spotoptim.surrogate.mlp_surrogate.MLPSurrogate">MLPSurrogate</a></td>
+<td>The fitted model.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.surrogate.mlp_surrogate.MLPSurrogate.predict">predict</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>surrogate.mlp_surrogate.MLPSurrogate.predict(X, return_std<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Predict targets for X.</p>
+<section id="parameters-2" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Input data, shape (n_samples, n_features).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>return_std</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to return the standard deviation (uncertainty) along with the mean prediction. Defaults to False.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]]</td>
+<td>np.ndarray: Predicted mean values, shape (n_samples,).</td>
+</tr>
+<tr class="even">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>, <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]]</td>
+<td>(mean, std) if return_std is True.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
+</section>
+</section>
 </section>
 </section>
 

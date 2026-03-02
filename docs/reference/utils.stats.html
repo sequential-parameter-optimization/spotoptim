@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,25 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.utils.stats" id="toc-spotoptim.utils.stats" class="nav-link active" data-scroll-target="#spotoptim.utils.stats">utils.stats</a>
   <ul class="collapse">
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.utils.stats.calculate_outliers" id="toc-spotoptim.utils.stats.calculate_outliers" class="nav-link" data-scroll-target="#spotoptim.utils.stats.calculate_outliers">calculate_outliers</a></li>
+  <li><a href="#spotoptim.utils.stats.compute_coefficients_table" id="toc-spotoptim.utils.stats.compute_coefficients_table" class="nav-link" data-scroll-target="#spotoptim.utils.stats.compute_coefficients_table">compute_coefficients_table</a></li>
+  <li><a href="#spotoptim.utils.stats.compute_standardized_betas" id="toc-spotoptim.utils.stats.compute_standardized_betas" class="nav-link" data-scroll-target="#spotoptim.utils.stats.compute_standardized_betas">compute_standardized_betas</a></li>
+  <li><a href="#spotoptim.utils.stats.condition_index" id="toc-spotoptim.utils.stats.condition_index" class="nav-link" data-scroll-target="#spotoptim.utils.stats.condition_index">condition_index</a></li>
+  <li><a href="#spotoptim.utils.stats.cov_to_cor" id="toc-spotoptim.utils.stats.cov_to_cor" class="nav-link" data-scroll-target="#spotoptim.utils.stats.cov_to_cor">cov_to_cor</a></li>
+  <li><a href="#spotoptim.utils.stats.fit_all_lm" id="toc-spotoptim.utils.stats.fit_all_lm" class="nav-link" data-scroll-target="#spotoptim.utils.stats.fit_all_lm">fit_all_lm</a></li>
+  <li><a href="#spotoptim.utils.stats.get_all_vars_from_formula" id="toc-spotoptim.utils.stats.get_all_vars_from_formula" class="nav-link" data-scroll-target="#spotoptim.utils.stats.get_all_vars_from_formula">get_all_vars_from_formula</a></li>
+  <li><a href="#spotoptim.utils.stats.get_combinations" id="toc-spotoptim.utils.stats.get_combinations" class="nav-link" data-scroll-target="#spotoptim.utils.stats.get_combinations">get_combinations</a></li>
+  <li><a href="#spotoptim.utils.stats.get_sample_size" id="toc-spotoptim.utils.stats.get_sample_size" class="nav-link" data-scroll-target="#spotoptim.utils.stats.get_sample_size">get_sample_size</a></li>
+  <li><a href="#spotoptim.utils.stats.normalize_X" id="toc-spotoptim.utils.stats.normalize_X" class="nav-link" data-scroll-target="#spotoptim.utils.stats.normalize_X">normalize_X</a></li>
+  <li><a href="#spotoptim.utils.stats.partial_correlation" id="toc-spotoptim.utils.stats.partial_correlation" class="nav-link" data-scroll-target="#spotoptim.utils.stats.partial_correlation">partial_correlation</a></li>
+  <li><a href="#spotoptim.utils.stats.partial_correlation_test" id="toc-spotoptim.utils.stats.partial_correlation_test" class="nav-link" data-scroll-target="#spotoptim.utils.stats.partial_correlation_test">partial_correlation_test</a></li>
+  <li><a href="#spotoptim.utils.stats.plot_coeff_vs_pvals" id="toc-spotoptim.utils.stats.plot_coeff_vs_pvals" class="nav-link" data-scroll-target="#spotoptim.utils.stats.plot_coeff_vs_pvals">plot_coeff_vs_pvals</a></li>
+  <li><a href="#spotoptim.utils.stats.plot_coeff_vs_pvals_by_included" id="toc-spotoptim.utils.stats.plot_coeff_vs_pvals_by_included" class="nav-link" data-scroll-target="#spotoptim.utils.stats.plot_coeff_vs_pvals_by_included">plot_coeff_vs_pvals_by_included</a></li>
+  <li><a href="#spotoptim.utils.stats.preprocess_df_for_ols" id="toc-spotoptim.utils.stats.preprocess_df_for_ols" class="nav-link" data-scroll-target="#spotoptim.utils.stats.preprocess_df_for_ols">preprocess_df_for_ols</a></li>
+  <li><a href="#spotoptim.utils.stats.vif" id="toc-spotoptim.utils.stats.vif" class="nav-link" data-scroll-target="#spotoptim.utils.stats.vif">vif</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/utils.stats.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1895,73 +1948,1340 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.calculate_outliers.html#spotoptim.utils.stats.calculate_outliers"><code>calculate_outliers</code></a></td>
+<td><a href="#spotoptim.utils.stats.calculate_outliers">calculate_outliers</a></td>
 <td>Calculate the number of outliers using the IQR method.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.compute_coefficients_table.html#spotoptim.utils.stats.compute_coefficients_table"><code>compute_coefficients_table</code></a></td>
+<td><a href="#spotoptim.utils.stats.compute_coefficients_table">compute_coefficients_table</a></td>
 <td></td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.compute_standardized_betas.html#spotoptim.utils.stats.compute_standardized_betas"><code>compute_standardized_betas</code></a></td>
+<td><a href="#spotoptim.utils.stats.compute_standardized_betas">compute_standardized_betas</a></td>
 <td>Computes standardized (beta) coefficients for a fitted statsmodels OLS model.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.condition_index.html#spotoptim.utils.stats.condition_index"><code>condition_index</code></a></td>
+<td><a href="#spotoptim.utils.stats.condition_index">condition_index</a></td>
 <td>Calculates the Condition Index for a DataFrame to assess multicollinearity.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.cov_to_cor.html#spotoptim.utils.stats.cov_to_cor"><code>cov_to_cor</code></a></td>
+<td><a href="#spotoptim.utils.stats.cov_to_cor">cov_to_cor</a></td>
 <td>Convert a covariance matrix to a correlation matrix.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.fit_all_lm.html#spotoptim.utils.stats.fit_all_lm"><code>fit_all_lm</code></a></td>
+<td><a href="#spotoptim.utils.stats.fit_all_lm">fit_all_lm</a></td>
 <td>Fit a linear regression model for all possible combinations of independent variables.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.get_all_vars_from_formula.html#spotoptim.utils.stats.get_all_vars_from_formula"><code>get_all_vars_from_formula</code></a></td>
+<td><a href="#spotoptim.utils.stats.get_all_vars_from_formula">get_all_vars_from_formula</a></td>
 <td>Utility function to extract variables from a formula.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.get_combinations.html#spotoptim.utils.stats.get_combinations"><code>get_combinations</code></a></td>
+<td><a href="#spotoptim.utils.stats.get_combinations">get_combinations</a></td>
 <td>Generates all possible combinations of two values from a list of values. Order is not important.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.get_sample_size.html#spotoptim.utils.stats.get_sample_size"><code>get_sample_size</code></a></td>
+<td><a href="#spotoptim.utils.stats.get_sample_size">get_sample_size</a></td>
 <td>Calculate sample size n for comparing two means.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.normalize_X.html#spotoptim.utils.stats.normalize_X"><code>normalize_X</code></a></td>
+<td><a href="#spotoptim.utils.stats.normalize_X">normalize_X</a></td>
 <td>Normalize array X to [0, 1] in each dimension.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.partial_correlation.html#spotoptim.utils.stats.partial_correlation"><code>partial_correlation</code></a></td>
+<td><a href="#spotoptim.utils.stats.partial_correlation">partial_correlation</a></td>
 <td>Calculate the partial correlation matrix for a given data set.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.partial_correlation_test.html#spotoptim.utils.stats.partial_correlation_test"><code>partial_correlation_test</code></a></td>
+<td><a href="#spotoptim.utils.stats.partial_correlation_test">partial_correlation_test</a></td>
 <td>The partial correlation coefficient between x and y given z.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals.html#spotoptim.utils.stats.plot_coeff_vs_pvals"><code>plot_coeff_vs_pvals</code></a></td>
+<td><a href="#spotoptim.utils.stats.plot_coeff_vs_pvals">plot_coeff_vs_pvals</a></td>
 <td>Plot the coefficient estimates from fit_all_lm against the corresponding p-values.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.plot_coeff_vs_pvals_by_included.html#spotoptim.utils.stats.plot_coeff_vs_pvals_by_included"><code>plot_coeff_vs_pvals_by_included</code></a></td>
+<td><a href="#spotoptim.utils.stats.plot_coeff_vs_pvals_by_included">plot_coeff_vs_pvals_by_included</a></td>
 <td>Generates a panel of scatter plots with effect estimates of all possible models against p-values.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.stats.preprocess_df_for_ols.html#spotoptim.utils.stats.preprocess_df_for_ols"><code>preprocess_df_for_ols</code></a></td>
+<td><a href="#spotoptim.utils.stats.preprocess_df_for_ols">preprocess_df_for_ols</a></td>
 <td>Preprocesses a df for fiitting an OLS regression model using the specified target column and predictors.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.stats.vif.html#spotoptim.utils.stats.vif"><code>vif</code></a></td>
+<td><a href="#spotoptim.utils.stats.vif">vif</a></td>
 <td>Calculates the Variance Inflation Factor (VIF) for each feature in a DataFrame.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.utils.stats.calculate_outliers" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.calculate_outliers">calculate_outliers</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>utils.stats.calculate_outliers(series_or_df, irqmultiplier<span class="op">=</span><span class="fl">1.5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the number of outliers using the IQR method.</p>
+<p>Accepts either a pandas Series or a pandas DataFrame. For a DataFrame, counts outliers across all numeric columns and returns the total count.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>series_or_df</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series">Series</a>, <a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a>]</td>
+<td>pd.Series or pd.DataFrame containing numeric data.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>irqmultiplier</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Multiplier for IQR to define fences. Defaults to 1.5.</td>
+<td><code>1.5</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>int</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>The number of outliers.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.utils.stats <span class="im">import</span> calculate_outliers</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> s <span class="op">=</span> pd.Series([<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">100</span>])</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> calculate_outliers(s)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'a'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">100</span>],</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'b'</span>: [<span class="dv">10</span>, <span class="dv">12</span>, <span class="dv">11</span>, <span class="dv">10</span>]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>... })</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> calculate_outliers(df)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.compute_coefficients_table" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.compute_coefficients_table">compute_coefficients_table</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>utils.stats.compute_coefficients_table(model, X_encoded, y, vif_table<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="compute-a-coefficients-table-containing" class="level4 doc-section doc-section-compute-a-coefficients-table-containing">
+<h4 class="doc-section doc-section-compute-a-coefficients-table-containing anchored" data-anchor-id="compute-a-coefficients-table-containing">Compute a coefficients table containing</h4>
+<ol type="1">
+<li>Variable name</li>
+<li>Zero-order correlation</li>
+<li>Partial correlation</li>
+<li>Semipartial (part) correlation</li>
+<li>Tolerance (1 / VIF)</li>
+<li>VIF</li>
+</ol>
+</section>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>model</td>
+<td><code>statsmodels</code>.<code>regression</code>.<code>linear_model</code>.<code>RegressionResultsWrapper</code></td>
+<td>A fitted OLS model from statsmodels.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>X_encoded</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>The DataFrame used to fit the model, including ‘const’.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>y</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series">Series</a></td>
+<td>Dependent variable used in fitting the model.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>vif_table</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>A DataFrame with columns [“feature”, “VIF”] for each column in X_encoded (typ. from statsmodels.stats.outliers_influence.variance_inflation_factor). Default is None.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>pd.DataFrame with columns: - “Variable” - “Zero-Order r” - “Partial r” - “Semipartial r” - “Tolerance” - “VIF”</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> compute_coefficients_table</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x1'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x2'</span>: [<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">10</span>],</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x3'</span>: [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>... })</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> pd.Series([<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>])</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> sm.add_constant(data)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> model <span class="op">=</span> sm.OLS(y, X).fit()</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> vif_table <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'feature'</span>: [<span class="st">'x1'</span>, <span class="st">'x2'</span>, <span class="st">'x3'</span>],</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'VIF'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>... })</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> compute_coefficients_table(model, data, y, vif_table)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>   Variable  Zero<span class="op">-</span>Order r  Partial r  Semipartial r  Tolerance  VIF</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>       x1           <span class="fl">0.0</span>        <span class="fl">0.0</span>            <span class="fl">0.0</span>        <span class="fl">1.0</span>  <span class="fl">1.0</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>       x2           <span class="fl">0.0</span>        <span class="fl">0.0</span>            <span class="fl">0.0</span>        <span class="fl">0.5</span>  <span class="fl">2.0</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>       x3           <span class="fl">0.0</span>        <span class="fl">0.0</span>            <span class="fl">0.0</span>        <span class="fl">0.333333</span>  <span class="fl">3.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.compute_standardized_betas" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.compute_standardized_betas">compute_standardized_betas</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>utils.stats.compute_standardized_betas(model, X_encoded, y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Computes standardized (beta) coefficients for a fitted statsmodels OLS model.</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>model</td>
+<td><code>statsmodels</code>.<code>regression</code>.<code>linear_model</code>.<code>RegressionResultsWrapper</code></td>
+<td>The fitted OLS model.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>X_encoded</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pandas</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>The design matrix of independent variables.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>y</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pandas</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series">Series</a></td>
+<td>The dependent variable.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>pandas.DataFrame: A DataFrame containing the standardized beta coefficients.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-2" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> compute_standardized_betas</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x1'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>],</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x2'</span>: [<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">10</span>],</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x3'</span>: [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>... })</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> pd.Series([<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>])</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> sm.add_constant(data)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> model <span class="op">=</span> sm.OLS(y, X).fit()</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> compute_standardized_betas(model, data, y)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>   Variable  Standardized Beta</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>     const           <span class="fl">0.000000</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>       x1           <span class="fl">0.000000</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>       x2           <span class="fl">0.000000</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span>       x3           <span class="fl">0.000000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.condition_index" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.condition_index">condition_index</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>utils.stats.condition_index(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculates the Condition Index for a DataFrame to assess multicollinearity.</p>
+<p>The Condition Index is computed based on the eigenvalues of the covariance matrix of the standardized data. High condition indices suggest potential multicollinearity issues.</p>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>df</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pandas</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>A DataFrame containing the independent variables.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>pandas.DataFrame: A DataFrame with the following columns: - ‘Index’: The index of the eigenvalue. - ‘Eigenvalue’: The eigenvalue of the covariance matrix. - ‘Condition Index’: The Condition Index for the eigenvalue.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-3" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> condition_index</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x1'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>],</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x2'</span>: [<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">10</span>],</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x3'</span>: [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>]</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>... })</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> condition_index(data)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>   Index  Eigenvalue  Condition Index</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>      <span class="dv">0</span>    <span class="fl">1.140000</span>         <span class="fl">1.000000</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>      <span class="dv">1</span>    <span class="fl">0.000000</span>              inf</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>      <span class="dv">2</span>    <span class="fl">0.002857</span>        <span class="fl">20.000000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.cov_to_cor" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.cov_to_cor">cov_to_cor</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>utils.stats.cov_to_cor(covariance_matrix)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convert a covariance matrix to a correlation matrix.</p>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>covariance_matrix</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>A square matrix of covariance values.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-4" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>numpy.ndarray: A corresponding square matrix of correlation coefficients.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-4" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> cov_to_cor</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cov_matrix <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="fl">0.8</span>], [<span class="fl">0.8</span>, <span class="dv">1</span>]])</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cov_to_cor(cov_matrix)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>array([[<span class="fl">1.</span> , <span class="fl">0.8</span>],</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>       [<span class="fl">0.8</span>, <span class="fl">1.</span> ]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.fit_all_lm" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.fit_all_lm">fit_all_lm</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>utils.stats.fit_all_lm(basic, xlist, data, remove_na<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fit a linear regression model for all possible combinations of independent variables.</p>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>basic</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The basic model formula.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>xlist</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>A list of independent variables.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>data</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pandas</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>The data frame containing the variables.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>remove_na</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to remove missing values from the data frame.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-5" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dict</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>A dictionary containing the estimated coefficients, confidence intervals, p-values, AIC values, sample size, and the basic model formula.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-5" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> fit_all_lm</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'y'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'x1'</span>: [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>],</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'x2'</span>: [<span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>]</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> })</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fit_all_lm(<span class="st">"y ~ x1"</span>, [<span class="st">"x2"</span>], data)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>{<span class="st">'estimate'</span>:   variables  estimate  conf_low  conf_high    p         aic  n</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>    basic  <span class="fl">1.000000</span>  <span class="fl">1.000000</span>   <span class="fl">1.000000</span>  <span class="fl">0.0</span>  <span class="fl">0.000000</span>  <span class="dv">3</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>       x2  <span class="fl">1.000000</span>  <span class="fl">1.000000</span>   <span class="fl">1.000000</span>  <span class="fl">0.0</span>  <span class="fl">0.000000</span>  <span class="dv">3</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.get_all_vars_from_formula" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.get_all_vars_from_formula">get_all_vars_from_formula</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>utils.stats.get_all_vars_from_formula(formula)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Utility function to extract variables from a formula.</p>
+<section id="parameters-6" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>formula</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>A formula.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-6" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>list</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>A list of variables.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-6" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-6">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> get_all_vars_from_formula</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    get_all_vars_from_formula(<span class="st">"y ~ x1 + x2"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        [<span class="st">'y'</span>, <span class="st">'x1'</span>, <span class="st">'x2'</span>]</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    get_all_vars_from_formula(<span class="st">"y ~ "</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        [<span class="st">'y'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.get_combinations" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.get_combinations">get_combinations</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>utils.stats.get_combinations(ind_list, <span class="bu">type</span><span class="op">=</span><span class="st">'indices'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Generates all possible combinations of two values from a list of values. Order is not important.</p>
+<section id="parameters-7" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ind_list</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>A list of target indices.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>type</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The type of output, either ‘values’ or ‘indices’. Default is ‘indices’.</td>
+<td><code>'indices'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-7" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-7">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>list</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>A list of tuples, where each tuple contains a combination of two values. The order of the values within a tuple is not important, and each combination appears only once.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-7" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-7">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.utils <span class="im">import</span> get_combinations</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> ind_list <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>]</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> combinations <span class="op">=</span> get_combinations(ind_list)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> combinations <span class="op">=</span> get_combinations(ind_list, <span class="bu">type</span><span class="op">=</span><span class="st">'indices'</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    [(<span class="dv">0</span>, <span class="dv">1</span>), (<span class="dv">0</span>, <span class="dv">2</span>), (<span class="dv">0</span>, <span class="dv">3</span>), (<span class="dv">1</span>, <span class="dv">2</span>), (<span class="dv">1</span>, <span class="dv">3</span>), (<span class="dv">2</span>, <span class="dv">3</span>)]</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(combinations, <span class="bu">type</span><span class="op">=</span><span class="st">'values'</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    [(<span class="dv">0</span>, <span class="dv">10</span>), (<span class="dv">0</span>, <span class="dv">20</span>), (<span class="dv">0</span>, <span class="dv">30</span>), (<span class="dv">1</span>, <span class="dv">20</span>), (<span class="dv">1</span>, <span class="dv">30</span>), (<span class="dv">2</span>, <span class="dv">30</span>)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.get_sample_size" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.get_sample_size">get_sample_size</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>utils.stats.get_sample_size(alpha, beta, sigma, delta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate sample size n for comparing two means.</p>
+<p>Formula: n = 2 * sigma^2 * (z_{1-alpha/2} + z_{1-beta})^2 / delta^2 This corresponds to a two-sided test with equal variance.</p>
+<section id="parameters-8" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>alpha</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Significance level (Type I error probability).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>beta</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Type II error probability (1 - Power).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>sigma</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Standard deviation of the population (assumed equal for both groups).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>delta</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Minimum detectable difference (effect size to detect).</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-8" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-8">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>float</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The required sample size n per group.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-8" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-8">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.utils.stats <span class="im">import</span> get_sample_size</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> alpha <span class="op">=</span> <span class="fl">0.05</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> beta <span class="op">=</span> <span class="fl">0.2</span>  <span class="co"># Power = 80%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> sigma <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> delta <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> n <span class="op">=</span> get_sample_size(alpha, beta, sigma, delta)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>n<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="fl">15.6978</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.normalize_X" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.normalize_X">normalize_X</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>utils.stats.normalize_X(X, eps<span class="op">=</span><span class="fl">1e-12</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Normalize array X to [0, 1] in each dimension.</p>
+<p>For dimensions where all values are identical (X_max == X_min), the normalized value is set to 0.5 to avoid division by zero.</p>
+<section id="parameters-9" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-9">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Input array of shape (n, d) to normalize.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>eps</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Small value to avoid division by zero when range is very small. Defaults to 1e-12.</td>
+<td><code>1e-12</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-9" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-9">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Normalized array with values in [0, 1] for each dimension. For constant dimensions, values are set to 0.5.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-9" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-9">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.utils.stats <span class="im">import</span> normalize_X</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">2</span>], [<span class="dv">3</span>, <span class="dv">4</span>], [<span class="dv">5</span>, <span class="dv">6</span>]])</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> normalize_X(X)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>array([[<span class="fl">0.</span> , <span class="fl">0.</span> ],</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>       [<span class="fl">0.5</span>, <span class="fl">0.5</span>],</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>       [<span class="fl">1.</span> , <span class="fl">1.</span> ]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Constant dimension example</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X_const <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">5</span>], [<span class="dv">1</span>, <span class="dv">5</span>], [<span class="dv">1</span>, <span class="dv">5</span>]])</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> normalize_X(X_const)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>array([[<span class="fl">0.5</span>, <span class="fl">0.5</span>],</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>       [<span class="fl">0.5</span>, <span class="fl">0.5</span>],</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>       [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.partial_correlation" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.partial_correlation">partial_correlation</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>utils.stats.partial_correlation(x, method<span class="op">=</span><span class="st">'pearson'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculate the partial correlation matrix for a given data set.</p>
+<section id="parameters-10" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-10">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pandas</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">numpy</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>The data matrix with variables as columns.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Correlation method, one of ‘pearson’, ‘kendall’, or ‘spearman’.</td>
+<td><code>'pearson'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-10" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-10">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dict</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>A dictionary containing the partial correlation estimates, p-values, statistics, sample size (n), number of given parameters (gp), and method used.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If input is not a matrix-like structure or not numeric.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="references" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references">References</h4>
+<ol type="1">
+<li>Kim, S. ppcor: An R package for a fast calculation to semi-partial correlation coefficients. Commun Stat Appl Methods 22, 6 (Nov 2015), 665–674.</li>
+</ol>
+</section>
+<section id="examples-10" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-10">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> partial_correlation</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'A'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'B'</span>: [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>],</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'C'</span>: [<span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>]</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> })</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> partial_correlation(data, method<span class="op">=</span><span class="st">'pearson'</span>)</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>{<span class="st">'estimate'</span>: array([[ <span class="fl">1.</span> , <span class="op">-</span><span class="fl">1.</span> ,  <span class="fl">1.</span> ],</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>                    [<span class="op">-</span><span class="fl">1.</span> ,  <span class="fl">1.</span> , <span class="op">-</span><span class="fl">1.</span> ],</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>                    [ <span class="fl">1.</span> , <span class="op">-</span><span class="fl">1.</span> ,  <span class="fl">1.</span> ]]),</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="st">'p_value'</span>: array([[<span class="fl">0.</span> , <span class="fl">0.</span> , <span class="fl">0.</span> ],</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>                  [<span class="fl">0.</span> , <span class="fl">0.</span> , <span class="fl">0.</span> ],</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>                  [<span class="fl">0.</span> , <span class="fl">0.</span> , <span class="fl">0.</span> ]]), ...</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.partial_correlation_test" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.partial_correlation_test">partial_correlation_test</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>utils.stats.partial_correlation_test(x, y, z, method<span class="op">=</span><span class="st">'pearson'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The partial correlation coefficient between x and y given z. x and y should be arrays (vectors) of the same length, and z should be a data frame (matrix).</p>
+<section id="parameters-11" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-11">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>x</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The first variable as a 1-dimensional array or list.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The second variable as a 1-dimensional array or list.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>z</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pandas</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>A data frame containing other conditional variables.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Correlation method, one of ‘pearson’, ‘kendall’, or ‘spearman’.</td>
+<td><code>'pearson'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-11" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-11">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dict</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>A dictionary with the partial correlation estimate, p-value, statistic, sample size (n), number of given parameters (gp), and method used.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="references-1" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-1">References</h4>
+<ol type="1">
+<li>Kim, S. ppcor: An R package for a fast calculation to semi-partial correlation coefficients. Commun Stat Appl Methods 22, 6 (Nov 2015), 665–674.</li>
+</ol>
+</section>
+<section id="examples-11" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-11">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> pairwise_partial_correlation</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> x <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>]</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> z <span class="op">=</span> pd.DataFrame({<span class="st">'C'</span>: [<span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>]})</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pairwise_partial_correlation(x, y, z)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>{<span class="st">'estimate'</span>: <span class="op">-</span><span class="fl">1.0</span>, <span class="st">'p_value'</span>: <span class="fl">0.0</span>, <span class="st">'statistic'</span>: <span class="op">-</span>inf, <span class="st">'n'</span>: <span class="dv">3</span>, <span class="st">'gp'</span>: <span class="dv">1</span>, <span class="st">'method'</span>: <span class="st">'pearson'</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.plot_coeff_vs_pvals" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.plot_coeff_vs_pvals">plot_coeff_vs_pvals</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>utils.stats.plot_coeff_vs_pvals(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    data,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    xlabels<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    xlim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    xlab<span class="op">=</span><span class="st">'p-value'</span>,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    ylim<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    ylab<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    xscale_log<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    yscale_log<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    show<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    y_scaler<span class="op">=</span><span class="fl">1.1</span>,</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Plot the coefficient estimates from fit_all_lm against the corresponding p-values.</p>
+<section id="parameters-12" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-12">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>A dictionary containing the estimated coefficients, p-values, and other information. Generated by the fit_all_lm function.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>xlabels</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>A list of x-axis labels.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>xlim</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>A tuple of the x-axis limits.</td>
+<td><code>(0, 1)</code></td>
+</tr>
+<tr class="even">
+<td>xlab</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The x-axis label.</td>
+<td><code>'p-value'</code></td>
+</tr>
+<tr class="odd">
+<td>ylim</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>A tuple of the y-axis limits.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>ylab</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The y-axis label.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>xscale_log</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use a log scale on the x-axis.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="even">
+<td>yscale_log</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use a log scale on the y-axis.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="odd">
+<td>title</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The plot title.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>show</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to display the plot.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td>y_scaler</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>A scaling factor for the y-axis limits. Default is 1.1, i.e., 10% more than the maximum value.</td>
+<td><code>1.1</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-12" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-12">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes" class="level4 doc-section doc-section-notes">
+<h4 class="doc-section doc-section-notes anchored" data-anchor-id="notes">Notes</h4>
+<ul>
+<li>Based on the R package ‘allestimates’ by Zhiqiang Wang, see https://cran.r-project.org/package=allestimates</li>
+</ul>
+</section>
+<section id="references-2" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-2">References</h4>
+<p>Wang, Z. (2007). Two Postestimation Commands for Assessing Confounding Effects in Epidemiological Studies. The Stata Journal, 7(2), 183-196. https://doi.org/10.1177/1536867X0700700203</p>
+</section>
+<section id="examples-12" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-12">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> plot_coeff_vs_pvals, fit_all_lm</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'y'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'x1'</span>: [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>],</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span>     <span class="st">'x2'</span>: [<span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>]</span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> })</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> estimates <span class="op">=</span> fit_all_lm(<span class="st">"y ~ x1"</span>, [<span class="st">"x2"</span>], data)</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_coeff_vs_pvals(estimates)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.stats.plot_coeff_vs_pvals_by_included" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.plot_coeff_vs_pvals_by_included">plot_coeff_vs_pvals_by_included</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>utils.stats.plot_coeff_vs_pvals_by_included(</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    data,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>    xlabels<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    xlim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>    xlab<span class="op">=</span><span class="st">'P value'</span>,</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    ylim<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>    ylab<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>    yscale_log<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>    title<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>    grid<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    ncol<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>    show<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>    y_scaler<span class="op">=</span><span class="fl">1.1</span>,</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Generates a panel of scatter plots with effect estimates of all possible models against p-values. Uses a dictionry generated by the fit_all_lm function. Each plot includes effect estimates from all models including a specific variable.</p>
+<section id="parameters-13" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-13">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>A dictionary, generated by the fit_all_lm function, containing the following keys: - estimate (pd.DataFrame): A DataFrame containing the estimates. - xlist (list): A list of variables. - fun (str): The function name. - family (str): The family of the model.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>xlabels</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>A list of x-axis labels.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>xlim</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>The x-axis limits.</td>
+<td><code>(0, 1)</code></td>
+</tr>
+<tr class="even">
+<td>xlab</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The x-axis label.</td>
+<td><code>'P value'</code></td>
+</tr>
+<tr class="odd">
+<td>ylim</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>The y-axis limits.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>ylab</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The y-axis label.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>yscale_log</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to scale y-axis to log10. Default is False.</td>
+<td><code>False</code></td>
+</tr>
+<tr class="even">
+<td>title</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The title of the plot.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>grid</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to display gridlines. Default is True.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="even">
+<td>ncol</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of columns in the plot grid. Default is 2.</td>
+<td><code>2</code></td>
+</tr>
+<tr class="odd">
+<td>show</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to display the plot. Default is True.</td>
+<td><code>True</code></td>
+</tr>
+<tr class="even">
+<td>y_scaler</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>A scaling factor for the y-axis limits. Default is 1.1, i.e., 10% more than the maximum value.</td>
+<td><code>1.1</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-13" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-13">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes-1" class="level4 doc-section doc-section-notes">
+<h4 class="doc-section doc-section-notes anchored" data-anchor-id="notes-1">Notes</h4>
+<ul>
+<li>Based on the R package ‘allestimates’ by Zhiqiang Wang, see https://cran.r-project.org/package=allestimates</li>
+</ul>
+</section>
+<section id="references-3" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-3">References</h4>
+<p>Wang, Z. (2007). Two Postestimation Commands for Assessing Confounding Effects in Epidemiological Studies. The Stata Journal, 7(2), 183-196. https://doi.org/10.1177/1536867X0700700203</p>
+</section>
+<section id="examples-13" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-13">Examples</h4>
+<p>data = { “estimate”: pd.DataFrame({ “variables”: [“Crude”, “AL”, “AM”, “AN”, “AO”], “estimate”: [0.5, 0.6, 0.7, 0.8, 0.9], “conf_low”: [0.1, 0.2, 0.3, 0.4, 0.5], “conf_high”: [0.9, 1.0, 1.1, 1.2, 1.3], “p”: [0.01, 0.02, 0.03, 0.04, 0.05], “aic”: [100, 200, 300, 400, 500], “n”: [10, 20, 30, 40, 50] }), “xlist”: [“AL”, “AM”, “AN”, “AO”], “fun”: “all_lm” } plot_coeff_vs_pvals_by_included(data)</p>
+</section>
+</section>
+<section id="spotoptim.utils.stats.preprocess_df_for_ols" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.preprocess_df_for_ols">preprocess_df_for_ols</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>utils.stats.preprocess_df_for_ols(df, independent_var_columns, target_col)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Preprocesses a df for fiitting an OLS regression model using the specified target column and predictors.</p>
+<section id="parameters-14" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-14">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>df</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>Input DataFrame containing the data.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>independent_var_columns</td>
+<td>list of str</td>
+<td>List of names for predictor columns.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>target_col</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Name of the target/dependent variable column.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-14" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-14">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X_encoded</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>Encoded predictors with a constant term.</td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series">Series</a></td>
+<td>Target variable.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.utils.stats.vif" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.stats.vif">vif</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>utils.stats.vif(X, <span class="bu">sorted</span><span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Calculates the Variance Inflation Factor (VIF) for each feature in a DataFrame.</p>
+<p>VIF measures the multicollinearity among independent variables within a regression model. High VIF values indicate high multicollinearity, which can cause issues with model interpretation and stability.</p>
+<section id="parameters-15" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-15">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pandas</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>A DataFrame containing the independent variables.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>sorted</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to sort the output DataFrame by VIF values.</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-15" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-15">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>pandas.DataFrame: A DataFrame with two columns: - “feature”: The name of the feature. - “VIF”: The Variance Inflation Factor for the feature.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-14" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-14">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.stats <span class="im">import</span> vif</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> data <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x1'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>],</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x2'</span>: [<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">6</span>, <span class="dv">8</span>, <span class="dv">10</span>],</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>...     <span class="st">'x3'</span>: [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>]</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>... })</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> vif(data)</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>   feature          VIF</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>      x1  <span class="fl">1260.000000</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>      x2         <span class="fl">0.000000</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span>      x3   <span class="fl">630.000000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
+</section>
 </section>
 </section>
 

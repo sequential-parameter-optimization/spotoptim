@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,11 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.utils.eval" id="toc-spotoptim.utils.eval" class="nav-link active" data-scroll-target="#spotoptim.utils.eval">utils.eval</a>
   <ul class="collapse">
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.utils.eval.mo_cv_models" id="toc-spotoptim.utils.eval.mo_cv_models" class="nav-link" data-scroll-target="#spotoptim.utils.eval.mo_cv_models">mo_cv_models</a></li>
+  <li><a href="#spotoptim.utils.eval.mo_eval_models" id="toc-spotoptim.utils.eval.mo_eval_models" class="nav-link" data-scroll-target="#spotoptim.utils.eval.mo_eval_models">mo_eval_models</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/utils.eval.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1895,17 +1934,262 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.eval.mo_cv_models.html#spotoptim.utils.eval.mo_cv_models"><code>mo_cv_models</code></a></td>
+<td><a href="#spotoptim.utils.eval.mo_cv_models">mo_cv_models</a></td>
 <td>Performs cross-validation for separate models for each target in a multi-output problem.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.eval.mo_eval_models.html#spotoptim.utils.eval.mo_eval_models"><code>mo_eval_models</code></a></td>
+<td><a href="#spotoptim.utils.eval.mo_eval_models">mo_eval_models</a></td>
 <td>Trains and evaluates separate models for each target in a multi-output regression problem.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.utils.eval.mo_cv_models" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.eval.mo_cv_models">mo_cv_models</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>utils.<span class="bu">eval</span>.mo_cv_models(X, y, model_define_func, cv<span class="op">=</span><span class="dv">5</span>, scores<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Performs cross-validation for separate models for each target in a multi-output problem.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><code>pd</code>.<code>DataFrame</code> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Feature matrix.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><code>pd</code>.<code>DataFrame</code> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Target matrix with multiple columns.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>model_define_func</td>
+<td><code>Callable</code></td>
+<td>Function that returns a fresh model or pipeline instance.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>cv</td>
+<td>int or cross-validation generator, default=5</td>
+<td>Number of folds or CV object.</td>
+<td><code>5</code></td>
+</tr>
+<tr class="odd">
+<td>scores</td>
+<td><code>Union</code>[<code>Dict</code>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/stdtypes.html#str">str</a> / <code>Callable</code>], <a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <code>Callable</code>, None]</td>
+<td>Scoring metric(s). - If None (default): Uses default scorer of the estimator. Returns List[np.ndarray]. - If str/Callable: Single scorer. Returns List[np.ndarray]. - If Dict: Dictionary of {name: scorer}. Returns Dict[str, List[np.ndarray]]. Note: Unlike mo_eval_models which takes raw functions, cross_val_score expects strings (e.g.&nbsp;‘neg_mean_squared_error’) or make_scorer callables, or raw callables that fit the sklearn signature. To maintain similarity with mo_eval_models, we rely on cross_val_score’s flexibility.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>scores</td>
+<td><code>Union</code>[<code>List</code>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>], <code>Dict</code>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <code>List</code>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]]]</td>
+<td>- List of arrays (one array of CV scores per target) if <code>scores</code> is None or single. - Dictionary of {name: List[np.ndarray]} if <code>scores</code> is a dictionary.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.utils.<span class="bu">eval</span> <span class="im">import</span> mo_cv_models</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Generate dummy data</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.random.seed(<span class="dv">42</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> pd.DataFrame(np.random.rand(<span class="dv">100</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="ss">f'x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">'</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)])</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> pd.DataFrame(np.random.rand(<span class="dv">100</span>, <span class="dv">3</span>), columns<span class="op">=</span>[<span class="ss">f'y</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">'</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example 1: Default behavior (Default scorer, e.g. R2)</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="kw">def</span> make_model():</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>...     <span class="im">from</span> sklearn.linear_model <span class="im">import</span> Ridge</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>...     <span class="cf">return</span> Ridge()</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> cv_scores <span class="op">=</span> mo_cv_models(X, y, make_model, cv<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">1</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">2</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">3</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>CV Scores Mean: [<span class="st">'-0.14'</span>, <span class="st">'-0.07'</span>, <span class="st">'-0.20'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example 2: Custom single score (NMSE - Negative Mean Squared Error)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Note: sklearn scoring strings are preferred for cross_val_score</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> nmse_scores <span class="op">=</span> mo_cv_models(X, y, make_model, cv<span class="op">=</span><span class="dv">3</span>, scores<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">1</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">2</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">3</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>CV Scores Mean: [<span class="st">'-0.09'</span>, <span class="st">'-0.08'</span>, <span class="st">'-0.10'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example 3: Multiple custom scores</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> my_scores <span class="op">=</span> {<span class="st">'R2'</span>: <span class="st">'r2'</span>, <span class="st">'NMSE'</span>: <span class="st">'neg_mean_squared_error'</span>}</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> all_cv_scores <span class="op">=</span> mo_cv_models(X, y, make_model, cv<span class="op">=</span><span class="dv">3</span>, scores<span class="op">=</span>my_scores)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">1</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">2</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>Cross<span class="op">-</span>validating target <span class="dv">3</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>CV Scores Mean:</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  R2: [<span class="st">'-0.14'</span>, <span class="st">'-0.07'</span>, <span class="st">'-0.20'</span>]</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  NMSE: [<span class="st">'-0.09'</span>, <span class="st">'-0.08'</span>, <span class="st">'-0.10'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.eval.mo_eval_models" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.eval.mo_eval_models">mo_eval_models</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>utils.<span class="bu">eval</span>.mo_eval_models(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    X_train,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    y_train,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    X_test,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    y_test,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    model_define_func,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    scores<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Trains and evaluates separate models for each target in a multi-output regression problem.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X_train</td>
+<td><code>pd</code>.<code>DataFrame</code> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training feature matrix.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y_train</td>
+<td><code>pd</code>.<code>DataFrame</code> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Training target matrix with multiple columns (one per target).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>X_test</td>
+<td><code>pd</code>.<code>DataFrame</code> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Test feature matrix.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y_test</td>
+<td><code>pd</code>.<code>DataFrame</code> or <a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Test target matrix with multiple columns (one per target).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>model_define_func</td>
+<td><code>Callable</code></td>
+<td>Function that returns a fresh model or pipeline instance for training.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>scores</td>
+<td><code>Union</code>[<code>Dict</code>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <code>Callable</code>], <code>Callable</code>, None]</td>
+<td>Scoring metric(s) to evaluate. - If None (default): Uses R2 score. Returns List[float]. - If Callable: Single scoring function (e.g., mean_squared_error). Returns List[float]. - If Dict: Dictionary of {name: scoring_func}. Returns Dict[str, List[float]].</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>verbose</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to print verbose output.</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>scores</td>
+<td><code>Union</code>[<code>List</code>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>], <code>Dict</code>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <code>List</code>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>]]]</td>
+<td>- List of scores if <code>scores</code> is None or a single callable. - Dictionary of scores if <code>scores</code> is a dictionary.</td>
+</tr>
+<tr class="even">
+<td>models</td>
+<td><code>List</code></td>
+<td>List of trained model instances, one per target.</td>
+</tr>
+<tr class="odd">
+<td>preds_stacked</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Array of stacked predictions for all targets, shape (n_samples, n_targets).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.utils.<span class="bu">eval</span> <span class="im">import</span> mo_eval_models</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Generate dummy data</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.random.seed(<span class="dv">42</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X_train <span class="op">=</span> pd.DataFrame(np.random.rand(<span class="dv">100</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="ss">f'x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">'</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)])</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y_train <span class="op">=</span> pd.DataFrame(np.random.rand(<span class="dv">100</span>, <span class="dv">3</span>), columns<span class="op">=</span>[<span class="ss">f'y</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">'</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)])</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X_test <span class="op">=</span> pd.DataFrame(np.random.rand(<span class="dv">20</span>, <span class="dv">5</span>), columns<span class="op">=</span>[<span class="ss">f'x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">'</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">5</span>)])</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y_test <span class="op">=</span> pd.DataFrame(np.random.rand(<span class="dv">20</span>, <span class="dv">3</span>), columns<span class="op">=</span>[<span class="ss">f'y</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">'</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">3</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example 1: Default behavior (R2 score)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="kw">def</span> make_model():</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>...     <span class="im">from</span> sklearn.linear_model <span class="im">import</span> Ridge</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>...     <span class="cf">return</span> Ridge()</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> r2_scores, models, preds <span class="op">=</span> mo_eval_models(X_train, y_train, X_test, y_test, make_model)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">1</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">2</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">3</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>Model scores: [<span class="st">'-0.10'</span>, <span class="st">'-0.13'</span>, <span class="st">'-0.19'</span>]</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>Predictions shape: (<span class="dv">20</span>, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example 2: Custom single score (MSE)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> mse_scores, _, _ <span class="op">=</span> mo_eval_models(X_train, y_train, X_test, y_test, make_model, scores<span class="op">=</span>mean_squared_error)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">1</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">2</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">3</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>Model scores: [<span class="st">'0.07'</span>, <span class="st">'0.09'</span>, <span class="st">'0.10'</span>]</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>Predictions shape: (<span class="dv">20</span>, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example 3: Multiple custom scores</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_absolute_error, r2_score</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> my_scores <span class="op">=</span> {<span class="st">'R2'</span>: r2_score, <span class="st">'MSE'</span>: mean_squared_error, <span class="st">'MAE'</span>: mean_absolute_error}</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> all_scores, _, _ <span class="op">=</span> mo_eval_models(X_train, y_train, X_test, y_test, make_model, scores<span class="op">=</span>my_scores)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">1</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">2</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>Training model <span class="cf">for</span> target <span class="dv">3</span><span class="op">/</span><span class="fl">3.</span>..</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>Model scores:</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  R2: [<span class="st">'-0.10'</span>, <span class="st">'-0.13'</span>, <span class="st">'-0.19'</span>]</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  MSE: [<span class="st">'0.07'</span>, <span class="st">'0.09'</span>, <span class="st">'0.10'</span>]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  MAE: [<span class="st">'0.21'</span>, <span class="st">'0.27'</span>, <span class="st">'0.28'</span>]</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>Predictions shape: (<span class="dv">20</span>, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
+</section>
 </section>
 </section>
 

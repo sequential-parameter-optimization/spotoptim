@@ -1905,7 +1905,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#spotoptim.function.torch_objective.TorchObjective" id="toc-spotoptim.function.torch_objective.TorchObjective" class="nav-link active" data-scroll-target="#spotoptim.function.torch_objective.TorchObjective">function.torch_objective.TorchObjective</a>
   <ul class="collapse">
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.function.torch_objective.TorchObjective.train_model" id="toc-spotoptim.function.torch_objective.TorchObjective.train_model" class="nav-link" data-scroll-target="#spotoptim.function.torch_objective.TorchObjective.train_model">train_model</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/function.torch_objective.TorchObjective.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1924,10 +1927,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="attributes" class="level2">
 <h2 class="anchored" data-anchor-id="attributes">Attributes</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -1936,23 +1935,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>bounds</code></td>
+<td><a href="#spotoptim.function.torch_objective.TorchObjective.bounds">bounds</a></td>
 <td>Returns the bounds of the hyperparameters.</td>
 </tr>
 <tr class="even">
-<td><code>objective_names</code></td>
+<td><a href="#spotoptim.function.torch_objective.TorchObjective.objective_names">objective_names</a></td>
 <td>Returns the names of the objectives.</td>
 </tr>
 <tr class="odd">
-<td><code>var_name</code></td>
+<td><a href="#spotoptim.function.torch_objective.TorchObjective.var_name">var_name</a></td>
 <td>Returns the names of the hyperparameters.</td>
 </tr>
 <tr class="even">
-<td><code>var_trans</code></td>
+<td><a href="#spotoptim.function.torch_objective.TorchObjective.var_trans">var_trans</a></td>
 <td>Returns the transformations of the hyperparameters.</td>
 </tr>
 <tr class="odd">
-<td><code>var_type</code></td>
+<td><a href="#spotoptim.function.torch_objective.TorchObjective.var_type">var_type</a></td>
 <td>Returns the types of the hyperparameters.</td>
 </tr>
 </tbody>
@@ -1961,10 +1960,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -1973,13 +1968,111 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>train_model</code></td>
+<td><a href="#spotoptim.function.torch_objective.TorchObjective.train_model">train_model</a></td>
 <td>Trains the model and returns a dictionary of metrics.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.function.torch_objective.TorchObjective.train_model" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.torch_objective.TorchObjective.train_model">train_model</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>function.torch_objective.TorchObjective.train_model(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    model,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    train_loader,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    val_loader,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    params,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Trains the model and returns a dictionary of metrics.</p>
+<p>Executes the training loop for the specified number of epochs. Handles optimizer creation, loss calculation, backward pass, and validation evaluation.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>model</td>
+<td><code>nn</code>.<code>Module</code></td>
+<td>The PyTorch model to train.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>train_loader</td>
+<td><code>DataLoader</code></td>
+<td>DataLoader for training data.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>val_loader</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<code>DataLoader</code>]</td>
+<td>DataLoader for validation data (can be None).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>params</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Dict">Dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]</td>
+<td>Hyperparameters dictionary containing ‘epochs’, ‘lr’, ‘optimizer’ name, etc.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Dict">Dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/functions.html#float">float</a>]</td>
+<td>Dict[str, float]: Dictionary containing computed metrics, e.g., {‘val_loss’: …, ‘train_loss’: …, ‘mse’: …, ‘epochs’: …}.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> torch</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, TensorDataset</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.torch_objective <span class="im">import</span> TorchObjective</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> unittest.mock <span class="im">import</span> MagicMock</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># 1. Create dataset and loader</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> torch.randn(<span class="dv">10</span>, <span class="dv">2</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> y <span class="op">=</span> torch.randn(<span class="dv">10</span>, <span class="dv">1</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> loader <span class="op">=</span> DataLoader(TensorDataset(X, y), batch_size<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># 2. Create model</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> model <span class="op">=</span> nn.Linear(<span class="dv">2</span>, <span class="dv">1</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># 3. Mock Objective context</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> exp <span class="op">=</span> MagicMock()</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> exp.loss_function <span class="op">=</span> nn.MSELoss()</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> exp.epochs <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> exp.torch_device <span class="op">=</span> <span class="st">"cpu"</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> objective <span class="op">=</span> TorchObjective(exp)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># 4. Train</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> params <span class="op">=</span> {<span class="st">'lr'</span>: <span class="fl">1e-2</span>, <span class="st">'optimizer'</span>: <span class="st">'Adam'</span>}</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> metrics <span class="op">=</span> objective.train_model(model, loader, <span class="va">None</span>, params)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(<span class="ss">f"Train Loss: </span><span class="sc">{</span>metrics[<span class="st">'train_loss'</span>]<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(<span class="ss">f"Epochs: </span><span class="sc">{</span>metrics[<span class="st">'epochs'</span>]<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
+</section>
 </section>
 </section>
 

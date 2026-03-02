@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,24 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.function.mo" id="toc-spotoptim.function.mo" class="nav-link active" data-scroll-target="#spotoptim.function.mo">function.mo</a>
   <ul class="collapse">
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.function.mo.activity_pred" id="toc-spotoptim.function.mo.activity_pred" class="nav-link" data-scroll-target="#spotoptim.function.mo.activity_pred">activity_pred</a></li>
+  <li><a href="#spotoptim.function.mo.conversion_pred" id="toc-spotoptim.function.mo.conversion_pred" class="nav-link" data-scroll-target="#spotoptim.function.mo.conversion_pred">conversion_pred</a></li>
+  <li><a href="#spotoptim.function.mo.dtlz1" id="toc-spotoptim.function.mo.dtlz1" class="nav-link" data-scroll-target="#spotoptim.function.mo.dtlz1">dtlz1</a></li>
+  <li><a href="#spotoptim.function.mo.dtlz2" id="toc-spotoptim.function.mo.dtlz2" class="nav-link" data-scroll-target="#spotoptim.function.mo.dtlz2">dtlz2</a></li>
+  <li><a href="#spotoptim.function.mo.fonseca_fleming" id="toc-spotoptim.function.mo.fonseca_fleming" class="nav-link" data-scroll-target="#spotoptim.function.mo.fonseca_fleming">fonseca_fleming</a></li>
+  <li><a href="#spotoptim.function.mo.fun_myer16a" id="toc-spotoptim.function.mo.fun_myer16a" class="nav-link" data-scroll-target="#spotoptim.function.mo.fun_myer16a">fun_myer16a</a></li>
+  <li><a href="#spotoptim.function.mo.kursawe" id="toc-spotoptim.function.mo.kursawe" class="nav-link" data-scroll-target="#spotoptim.function.mo.kursawe">kursawe</a></li>
+  <li><a href="#spotoptim.function.mo.mo_conv2_max" id="toc-spotoptim.function.mo.mo_conv2_max" class="nav-link" data-scroll-target="#spotoptim.function.mo.mo_conv2_max">mo_conv2_max</a></li>
+  <li><a href="#spotoptim.function.mo.mo_conv2_min" id="toc-spotoptim.function.mo.mo_conv2_min" class="nav-link" data-scroll-target="#spotoptim.function.mo.mo_conv2_min">mo_conv2_min</a></li>
+  <li><a href="#spotoptim.function.mo.schaffer_n1" id="toc-spotoptim.function.mo.schaffer_n1" class="nav-link" data-scroll-target="#spotoptim.function.mo.schaffer_n1">schaffer_n1</a></li>
+  <li><a href="#spotoptim.function.mo.zdt1" id="toc-spotoptim.function.mo.zdt1" class="nav-link" data-scroll-target="#spotoptim.function.mo.zdt1">zdt1</a></li>
+  <li><a href="#spotoptim.function.mo.zdt2" id="toc-spotoptim.function.mo.zdt2" class="nav-link" data-scroll-target="#spotoptim.function.mo.zdt2">zdt2</a></li>
+  <li><a href="#spotoptim.function.mo.zdt3" id="toc-spotoptim.function.mo.zdt3" class="nav-link" data-scroll-target="#spotoptim.function.mo.zdt3">zdt3</a></li>
+  <li><a href="#spotoptim.function.mo.zdt4" id="toc-spotoptim.function.mo.zdt4" class="nav-link" data-scroll-target="#spotoptim.function.mo.zdt4">zdt4</a></li>
+  <li><a href="#spotoptim.function.mo.zdt6" id="toc-spotoptim.function.mo.zdt6" class="nav-link" data-scroll-target="#spotoptim.function.mo.zdt6">zdt6</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/function.mo.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1897,69 +1949,1387 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.activity_pred.html#spotoptim.function.mo.activity_pred"><code>activity_pred</code></a></td>
+<td><a href="#spotoptim.function.mo.activity_pred">activity_pred</a></td>
 <td>Compute activity predictions for each row in the input array.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/function.mo.conversion_pred.html#spotoptim.function.mo.conversion_pred"><code>conversion_pred</code></a></td>
+<td><a href="#spotoptim.function.mo.conversion_pred">conversion_pred</a></td>
 <td>Compute conversion predictions for each row in the input array.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.dtlz1.html#spotoptim.function.mo.dtlz1"><code>dtlz1</code></a></td>
+<td><a href="#spotoptim.function.mo.dtlz1">dtlz1</a></td>
 <td>DTLZ1 multi-objective test function (scalable objectives).</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/function.mo.dtlz2.html#spotoptim.function.mo.dtlz2"><code>dtlz2</code></a></td>
+<td><a href="#spotoptim.function.mo.dtlz2">dtlz2</a></td>
 <td>DTLZ2 multi-objective test function (scalable objectives).</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.fonseca_fleming.html#spotoptim.function.mo.fonseca_fleming"><code>fonseca_fleming</code></a></td>
+<td><a href="#spotoptim.function.mo.fonseca_fleming">fonseca_fleming</a></td>
 <td>Fonseca-Fleming multi-objective test function (2 objectives).</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/function.mo.fun_myer16a.html#spotoptim.function.mo.fun_myer16a"><code>fun_myer16a</code></a></td>
+<td><a href="#spotoptim.function.mo.fun_myer16a">fun_myer16a</a></td>
 <td>Compute both conversion and activity predictions for each row in the input array.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.kursawe.html#spotoptim.function.mo.kursawe"><code>kursawe</code></a></td>
+<td><a href="#spotoptim.function.mo.kursawe">kursawe</a></td>
 <td>Kursawe multi-objective test function (2 objectives, minimization).</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/function.mo.mo_conv2_max.html#spotoptim.function.mo.mo_conv2_max"><code>mo_conv2_max</code></a></td>
+<td><a href="#spotoptim.function.mo.mo_conv2_max">mo_conv2_max</a></td>
 <td>Convex bi-objective maximization test function (2 objectives).</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.mo_conv2_min.html#spotoptim.function.mo.mo_conv2_min"><code>mo_conv2_min</code></a></td>
+<td><a href="#spotoptim.function.mo.mo_conv2_min">mo_conv2_min</a></td>
 <td>Convex bi-objective minimization test function (2 objectives).</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/function.mo.schaffer_n1.html#spotoptim.function.mo.schaffer_n1"><code>schaffer_n1</code></a></td>
+<td><a href="#spotoptim.function.mo.schaffer_n1">schaffer_n1</a></td>
 <td>Schaffer N1 multi-objective test function (2 objectives).</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.zdt1.html#spotoptim.function.mo.zdt1"><code>zdt1</code></a></td>
+<td><a href="#spotoptim.function.mo.zdt1">zdt1</a></td>
 <td>ZDT1 multi-objective test function (2 objectives).</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/function.mo.zdt2.html#spotoptim.function.mo.zdt2"><code>zdt2</code></a></td>
+<td><a href="#spotoptim.function.mo.zdt2">zdt2</a></td>
 <td>ZDT2 multi-objective test function (2 objectives).</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.zdt3.html#spotoptim.function.mo.zdt3"><code>zdt3</code></a></td>
+<td><a href="#spotoptim.function.mo.zdt3">zdt3</a></td>
 <td>ZDT3 multi-objective test function (2 objectives).</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/function.mo.zdt4.html#spotoptim.function.mo.zdt4"><code>zdt4</code></a></td>
+<td><a href="#spotoptim.function.mo.zdt4">zdt4</a></td>
 <td>ZDT4 multi-objective test function (2 objectives).</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/function.mo.zdt6.html#spotoptim.function.mo.zdt6"><code>zdt6</code></a></td>
+<td><a href="#spotoptim.function.mo.zdt6">zdt6</a></td>
 <td>ZDT6 multi-objective test function (2 objectives).</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.function.mo.activity_pred" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.activity_pred">activity_pred</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>function.mo.activity_pred(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute activity predictions for each row in the input array.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>2D array where each row is a configuration.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: 1D array of activity predictions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> activity_pred</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example input data</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>], [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>]])</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> activity_pred(X)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>array([  <span class="fl">1.5</span>,  <span class="fl">10.5</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.function.mo.conversion_pred" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.conversion_pred">conversion_pred</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>function.mo.conversion_pred(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute conversion predictions for each row in the input array.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>2D array where each row is a configuration.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: 1D array of conversion predictions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> conversion_pred</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example input data</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>], [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>]])</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> conversion_pred(X)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>array([  <span class="fl">3.5</span>,  <span class="fl">19.5</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.function.mo.dtlz1" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.dtlz1">dtlz1</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>function.mo.dtlz1(X, n_obj<span class="op">=</span><span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>DTLZ1 multi-objective test function (scalable objectives).</p>
+<p>DTLZ1 is a scalable test problem with a linear Pareto front. It has (11^k - 1) local Pareto fronts where k = n - n_obj + 1.</p>
+<section id="mathematical-formulation" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation">Mathematical formulation</h4>
+<p>f_i(X) = 0.5 * x1 * … * x_{M-i} * [1 + g(X)] for i = 1, …, M-1 f_M(X) = 0.5 * [1 - x_{M-1}] * [1 + g(X)] g(X) = 100 * [k + sum((x_i - 0.5)^2 - cos(20π(x_i - 0.5)) for i in X_M)]</p>
+</section>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>n_obj</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of objectives. Defaults to 3. Must be at least 2 and at most n_features.</td>
+<td><code>3</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, n_obj).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If n_obj is invalid or X has insufficient dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note">Note</h4>
+<ul>
+<li>Number of objectives: Scalable (typically 3)</li>
+<li>Typical number of variables: n_obj + k - 1 (often k = 5, so n = 7 for 3 objectives)</li>
+<li>Search domain: [0, 1]^n</li>
+<li>Pareto front: Linear hyperplane</li>
+<li>Characteristics: Multimodal, many local fronts</li>
+</ul>
+</section>
+<section id="examples-2" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> dtlz1</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>])</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> dtlz1(X, n_obj<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references">References</h4>
+<p>Deb, K., Thiele, L., Laumanns, M., &amp; Zitzler, E. (2005). “Scalable test problems for evolutionary multiobjective optimization.” In Evolutionary multiobjective optimization (pp.&nbsp;105-145). Springer.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.dtlz2" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.dtlz2">dtlz2</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>function.mo.dtlz2(X, n_obj<span class="op">=</span><span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>DTLZ2 multi-objective test function (scalable objectives).</p>
+<p>DTLZ2 is a scalable test problem with a concave Pareto front (a unit sphere).</p>
+<section id="mathematical-formulation-1" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-1">Mathematical formulation</h4>
+<p>f_i(X) = [1 + g(X)] * cos(x1 * π/2) * … * cos(x_{M-i} * π/2) * sin(x_{M-i+1} * π/2) f_M(X) = [1 + g(X)] * sin(x1 * π/2) g(X) = sum((x_i - 0.5)^2 for i in X_M)</p>
+</section>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>n_obj</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of objectives. Defaults to 3. Must be at least 2 and at most n_features.</td>
+<td><code>3</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, n_obj).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-1" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If n_obj is invalid or X has insufficient dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-1" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-1">Note</h4>
+<ul>
+<li>Number of objectives: Scalable (typically 3)</li>
+<li>Typical number of variables: n_obj + k - 1 (often k = 10, so n = 12 for 3 objectives)</li>
+<li>Search domain: [0, 1]^n</li>
+<li>Pareto front: Concave (sphere: sum(f_i^2) = 1)</li>
+<li>Characteristics: Concave, unimodal</li>
+</ul>
+</section>
+<section id="examples-3" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> dtlz2</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>])</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> dtlz2(X, n_obj<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-1" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-1">References</h4>
+<p>Deb, K., Thiele, L., Laumanns, M., &amp; Zitzler, E. (2005). “Scalable test problems for evolutionary multiobjective optimization.” In Evolutionary multiobjective optimization (pp.&nbsp;105-145). Springer.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.fonseca_fleming" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.fonseca_fleming">fonseca_fleming</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>function.mo.fonseca_fleming(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fonseca-Fleming multi-objective test function (2 objectives).</p>
+<p>The Fonseca-Fleming function is a classical bi-objective problem with a concave Pareto front. The difficulty increases with the number of variables.</p>
+<section id="mathematical-formulation-2" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-2">Mathematical formulation</h4>
+<p>f1(X) = 1 - exp(-sum((x_i - 1/sqrt(n))^2 for i=1 to n)) f2(X) = 1 - exp(-sum((x_i + 1/sqrt(n))^2 for i=1 to n))</p>
+</section>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-4" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-2" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-2">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Typical number of variables: 2-10</li>
+<li>Search domain: [-4, 4]^n</li>
+<li>Pareto front: Concave</li>
+<li>Characteristics: Concave, symmetric</li>
+</ul>
+</section>
+<section id="examples-4" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> fonseca_fleming</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> fonseca_fleming(X)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> fonseca_fleming(X)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>(<span class="dv">2</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-2" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-2">References</h4>
+<p>Fonseca, C. M., &amp; Fleming, P. J. (1995). “An overview of evolutionary algorithms in multiobjective optimization.” Evolutionary computation, 3(1), 1-16.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.fun_myer16a" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.fun_myer16a">fun_myer16a</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>function.mo.fun_myer16a(X, fun_control<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Compute both conversion and activity predictions for each row in the input array.</p>
+<section id="notes" class="level4 doc-section doc-section-notes">
+<h4 class="doc-section doc-section-notes anchored" data-anchor-id="notes">Notes</h4>
+<p>Implements a response surface experiment described by Myers, Montgomery, and Anderson-Cook (2016). The function computes two objectives: conversion and activity.</p>
+</section>
+<section id="references-3" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-3">References</h4>
+<ul>
+<li>Myers, R. H., Montgomery, D. C., and Anderson-Cook, C. M. Response surface methodology: process and product optimization using designed experiments. John Wiley &amp; Sons, 2016.</li>
+<li>Kuhn, M. desirability: Function optimization and ranking via desirability functions. Tech. rep., 9 2016.</li>
+</ul>
+</section>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>2D array where each row is a configuration.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>fun_control</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>Additional control parameters (not used here).</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-5" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: 2D array where each row contains [conversion_pred, activity_pred].</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-5" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> fun_myer16a</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Example input data</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>], [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>]])</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fun_myer16a(X)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>array([[  <span class="fl">3.5</span>,   <span class="fl">1.5</span>],</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">19.5</span>,  <span class="fl">10.5</span>]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.function.mo.kursawe" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.kursawe">kursawe</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>function.mo.kursawe(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Kursawe multi-objective test function (2 objectives, minimization).</p>
+<p>The Kursawe function is a classic bi-objective minimization benchmark with a non-convex, disconnected Pareto front, often used to test an optimizer’s ability to maintain diversity and avoid getting trapped in local fronts.</p>
+<section id="mathematical-formulation-3" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-3">Mathematical formulation</h4>
+<p>f1(X) = sum(-10 * exp(-0.2 * sqrt(x_i^2 + x_{i+1}^2)) for i=1 to n-1) f2(X) = sum(|x_i|^0.8 + 5 * sin(x_i^3) for i=1 to n)</p>
+</section>
+<section id="parameters-6" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have at least 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-6" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-2" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-2">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X has fewer than 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-3" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-3">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Typical number of variables: 3</li>
+<li>Search domain: [-5, 5]^n</li>
+<li>Pareto front: Disconnected</li>
+<li>Characteristics: Non-convex, disconnected, multimodal</li>
+</ul>
+</section>
+<section id="examples-6" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-6">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> kursawe</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> kursawe(X)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> kursawe(X)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>(<span class="dv">2</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-4" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-4">References</h4>
+<p>Kursawe, F. (1991). “A variant of evolution strategies for vector optimization.” In International Conference on Parallel Problem Solving from Nature (pp.&nbsp;193-197). Springer.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.mo_conv2_max" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.mo_conv2_max">mo_conv2_max</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>function.mo.mo_conv2_max(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convex bi-objective maximization test function (2 objectives).</p>
+<p>A smooth, convex two-objective maximization problem on [0, 1]^2 using flipped versions of the minimization objectives: f1(x, y) = 2 - (x^2 + y^2) f2(x, y) = 2 - ((1 - x)^2 + (1 - y)^2)</p>
+<section id="properties" class="level4 doc-section doc-section-properties">
+<h4 class="doc-section doc-section-properties anchored" data-anchor-id="properties">Properties</h4>
+<ul>
+<li>Domain: [0, 1]^2</li>
+<li>Objectives: maximize both f1 and f2</li>
+<li>Ideal points: (0, 0) for f1 (gives f1=2); (1, 1) for f2 (gives f2=2)</li>
+<li>Pareto set: line x = y in [0, 1]</li>
+<li>Pareto front: convex quadratic trade-off f1 = 2 - 2t^2, f2 = 2 - 2(1 - t)^2, t ∈ [0, 1]</li>
+</ul>
+</section>
+<section id="parameters-7" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have exactly 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-7" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-7">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values (to be maximized) - Column 1: f2 values (to be maximized)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-3" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-3">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X does not have exactly 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-4" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-4">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Number of variables: 2</li>
+<li>Search domain: [0, 1]^2</li>
+<li>Ideal points: (1, 1) for f1, (0, 0) for f2</li>
+<li>Pareto front: Convex, quadratic</li>
+<li>Problem type: Maximization</li>
+<li>Characteristics: Convex, smooth, bounded</li>
+</ul>
+</section>
+<section id="examples-7" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-7">Examples</h4>
+<p>Single point evaluation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> mo_conv2_max</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> mo_conv2_max(X)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">0</span>]  <span class="co"># f1 maximum</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.</span>, <span class="fl">2.</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> mo_conv2_max(X)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">0</span>]  <span class="co"># f2 maximum</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">2.</span>, <span class="fl">0.</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Multiple points evaluation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> mo_conv2_min(X)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>(<span class="dv">3</span>, <span class="dv">2</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">1</span>]  <span class="co"># Pareto front</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.5</span>, <span class="fl">0.5</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.function.mo.mo_conv2_min" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.mo_conv2_min">mo_conv2_min</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>function.mo.mo_conv2_min(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Convex bi-objective minimization test function (2 objectives).</p>
+<p>A smooth, convex two-objective problem on [0, 1]^2: f1(x, y) = x^2 + y^2 f2(x, y) = (x - 1)^2 + (y - 1)^2</p>
+<section id="properties-1" class="level4 doc-section doc-section-properties">
+<h4 class="doc-section doc-section-properties anchored" data-anchor-id="properties-1">Properties</h4>
+<ul>
+<li>Domain: [0, 1]^2</li>
+<li>Objectives: minimize both f1 and f2</li>
+<li>Ideal points: (0, 0) for f1; (1, 1) for f2</li>
+<li>Pareto set: line x = y in [0, 1]</li>
+<li>Pareto front: convex quadratic trade-off f1 = 2t^2, f2 = 2(1 - t)^2, t ∈ [0, 1]</li>
+</ul>
+</section>
+<section id="parameters-8" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have exactly 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-8" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-8">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values (to be minimized) - Column 1: f2 values (to be minimized)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-4" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-4">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X does not have exactly 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-5" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-5">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Number of variables: 2</li>
+<li>Search domain: [0, 1]^2</li>
+<li>Ideal points: (0, 0) for f1, (1, 1) for f2</li>
+<li>Pareto front: Convex, quadratic</li>
+<li>Problem type: Minimization</li>
+<li>Characteristics: Convex, smooth, bounded</li>
+</ul>
+</section>
+<section id="examples-8" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-8">Examples</h4>
+<p>Single point evaluation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> mo_conv2_min</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> mo_conv2_min(X)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">0</span>]  <span class="co"># f1 minimum</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.</span>, <span class="fl">2.</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> mo_conv2_min(X)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">0</span>]  <span class="co"># f2 minimum</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">2.</span>, <span class="fl">0.</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Multiple points evaluation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> mo_conv2_min(X)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>(<span class="dv">3</span>, <span class="dv">2</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">1</span>]  <span class="co"># Pareto front</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.5</span>, <span class="fl">0.5</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.function.mo.schaffer_n1" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.schaffer_n1">schaffer_n1</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>function.mo.schaffer_n1(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Schaffer N1 multi-objective test function (2 objectives).</p>
+<p>Schaffer N1 is a simple bi-objective problem with a convex Pareto front. It is one of the earliest multi-objective test functions.</p>
+<section id="mathematical-formulation-4" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-4">Mathematical formulation</h4>
+<p>f1(X) = x^2 f2(X) = (x - 2)^2</p>
+</section>
+<section id="parameters-9" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-9">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. This function uses only the first variable.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-9" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-9">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-6" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-6">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Number of variables: 1 (only first variable is used)</li>
+<li>Search domain: [-10, 10] or [-A, A]</li>
+<li>Pareto front: x ∈ [0, 2]</li>
+<li>Characteristics: Convex, simple, unimodal</li>
+</ul>
+</section>
+<section id="examples-9" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-9">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> schaffer_n1</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>])</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> schaffer_n1(X)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">0</span>]</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.</span>, <span class="fl">4.</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.0</span>], [<span class="fl">1.0</span>], [<span class="fl">2.0</span>]])</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> schaffer_n1(X)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>(<span class="dv">3</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-5" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-5">References</h4>
+<p>Schaffer, J. D. (1985). “Multiple objective optimization with vector evaluated genetic algorithms.” In Proceedings of the 1st international Conference on Genetic Algorithms (pp.&nbsp;93-100).</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.zdt1" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.zdt1">zdt1</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>function.mo.zdt1(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>ZDT1 multi-objective test function (2 objectives).</p>
+<p>ZDT1 is a classical bi-objective test problem with a convex Pareto front. It is one of the most widely used benchmark functions for multi-objective optimization.</p>
+<section id="mathematical-formulation-5" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-5">Mathematical formulation</h4>
+<p>f1(X) = x1 f2(X) = g(X) * [1 - sqrt(x1 / g(X))] g(X) = 1 + 9 * sum(x_i for i=2 to n) / (n - 1)</p>
+</section>
+<section id="parameters-10" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-10">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have at least 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-10" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-10">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-5" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-5">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X has fewer than 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-7" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-7">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Typical number of variables: 30</li>
+<li>Search domain: [0, 1]^n</li>
+<li>Pareto front: Convex, f1 ∈ [0, 1], f2 = 1 - sqrt(f1)</li>
+<li>Characteristics: Convex, unimodal</li>
+</ul>
+</section>
+<section id="examples-10" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-10">Examples</h4>
+<p>Single point evaluation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> zdt1</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> zdt1(X)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">0</span>, <span class="dv">0</span>]  <span class="co"># f1</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="fl">0.0</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result[<span class="dv">0</span>, <span class="dv">1</span>]  <span class="co"># f2</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="fl">1.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Multiple points evaluation:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> zdt1(X)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>(<span class="dv">3</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-6" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-6">References</h4>
+<p>Zitzler, E., Deb, K., &amp; Thiele, L. (2000). “Comparison of multiobjective evolutionary algorithms: Empirical results.” Evolutionary computation, 8(2), 173-195.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.zdt2" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.zdt2">zdt2</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>function.mo.zdt2(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>ZDT2 multi-objective test function (2 objectives).</p>
+<p>ZDT2 is similar to ZDT1 but has a non-convex Pareto front.</p>
+<section id="mathematical-formulation-6" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-6">Mathematical formulation</h4>
+<p>f1(X) = x1 f2(X) = g(X) * [1 - (x1 / g(X))^2] g(X) = 1 + 9 * sum(x_i for i=2 to n) / (n - 1)</p>
+</section>
+<section id="parameters-11" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-11">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have at least 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-11" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-11">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-6" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-6">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X has fewer than 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-8" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-8">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Typical number of variables: 30</li>
+<li>Search domain: [0, 1]^n</li>
+<li>Pareto front: Non-convex, f1 ∈ [0, 1], f2 = 1 - f1^2</li>
+<li>Characteristics: Non-convex, unimodal</li>
+</ul>
+</section>
+<section id="examples-11" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-11">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> zdt2</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> zdt2(X)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-7" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-7">References</h4>
+<p>Zitzler, E., Deb, K., &amp; Thiele, L. (2000). “Comparison of multiobjective evolutionary algorithms: Empirical results.” Evolutionary computation, 8(2), 173-195.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.zdt3" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.zdt3">zdt3</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>function.mo.zdt3(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>ZDT3 multi-objective test function (2 objectives).</p>
+<p>ZDT3 has a disconnected (discontinuous) Pareto front, making it more challenging.</p>
+<section id="mathematical-formulation-7" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-7">Mathematical formulation</h4>
+<p>f1(X) = x1 f2(X) = g(X) * [1 - sqrt(x1 / g(X)) - (x1 / g(X)) * sin(10 * π * x1)] g(X) = 1 + 9 * sum(x_i for i=2 to n) / (n - 1)</p>
+</section>
+<section id="parameters-12" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-12">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have at least 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-12" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-12">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-7" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-7">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X has fewer than 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-9" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-9">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Typical number of variables: 30</li>
+<li>Search domain: [0, 1]^n</li>
+<li>Pareto front: Disconnected (5 separate regions)</li>
+<li>Characteristics: Discontinuous, multimodal</li>
+</ul>
+</section>
+<section id="examples-12" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-12">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> zdt3</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> zdt3(X)</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-8" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-8">References</h4>
+<p>Zitzler, E., Deb, K., &amp; Thiele, L. (2000). “Comparison of multiobjective evolutionary algorithms: Empirical results.” Evolutionary computation, 8(2), 173-195.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.zdt4" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.zdt4">zdt4</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>function.mo.zdt4(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>ZDT4 multi-objective test function (2 objectives).</p>
+<p>ZDT4 has 21^9 local Pareto fronts, testing the algorithm’s ability to deal with multimodality.</p>
+<section id="mathematical-formulation-8" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-8">Mathematical formulation</h4>
+<p>f1(X) = x1 f2(X) = g(X) * [1 - sqrt(x1 / g(X))] g(X) = 1 + 10 * (n - 1) + sum(x_i^2 - 10 * cos(4 * π * x_i) for i=2 to n)</p>
+</section>
+<section id="parameters-13" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-13">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have at least 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-13" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-13">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-8" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-8">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X has fewer than 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-10" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-10">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Typical number of variables: 10</li>
+<li>Search domain: x1 ∈ [0, 1], x_i ∈ [-5, 5] for i = 2, …, n</li>
+<li>Pareto front: Convex, same as ZDT1</li>
+<li>Characteristics: Multimodal (many local fronts)</li>
+</ul>
+</section>
+<section id="examples-13" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-13">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> zdt4</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.5</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> zdt4(X)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-9" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-9">References</h4>
+<p>Zitzler, E., Deb, K., &amp; Thiele, L. (2000). “Comparison of multiobjective evolutionary algorithms: Empirical results.” Evolutionary computation, 8(2), 173-195.</p>
+</section>
+</section>
+<section id="spotoptim.function.mo.zdt6" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.mo.zdt6">zdt6</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>function.mo.zdt6(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>ZDT6 multi-objective test function (2 objectives).</p>
+<p>ZDT6 has a non-uniform search space with a non-convex Pareto front and low density of solutions near the Pareto front.</p>
+<section id="mathematical-formulation-9" class="level4 doc-section doc-section-mathematical-formulation">
+<h4 class="doc-section doc-section-mathematical-formulation anchored" data-anchor-id="mathematical-formulation-9">Mathematical formulation</h4>
+<p>f1(X) = 1 - exp(-4 * x1) * sin^6(6 * π * x1) f2(X) = g(X) * [1 - (f1 / g(X))^2] g(X) = 1 + 9 * [sum(x_i for i=2 to n) / (n - 1)]^0.25</p>
+</section>
+<section id="parameters-14" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-14">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points. Must have at least 2 dimensions.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-14" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-14">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Objective values with shape (n_samples, 2) where: - Column 0: f1 values - Column 1: f2 values</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-9" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-9">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X has fewer than 2 dimensions.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-11" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-11">Note</h4>
+<ul>
+<li>Number of objectives: 2</li>
+<li>Typical number of variables: 10</li>
+<li>Search domain: [0, 1]^n</li>
+<li>Pareto front: Non-convex, non-uniform density</li>
+<li>Characteristics: Non-uniform, biased search space</li>
+</ul>
+</section>
+<section id="examples-14" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-14">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.function.mo <span class="im">import</span> zdt6</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> np.array([<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>])</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result <span class="op">=</span> zdt6(X)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> result.shape</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="references-10" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-10">References</h4>
+<p>Zitzler, E., Deb, K., &amp; Thiele, L. (2000). “Comparison of multiobjective evolutionary algorithms: Empirical results.” Evolutionary computation, 8(2), 173-195.</p>
 
 
+</section>
+</section>
 </section>
 </section>
 

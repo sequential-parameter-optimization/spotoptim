@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,10 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.surrogate.pipeline" id="toc-spotoptim.surrogate.pipeline" class="nav-link active" data-scroll-target="#spotoptim.surrogate.pipeline">surrogate.pipeline</a>
   <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a></li>
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.surrogate.pipeline.Pipeline" id="toc-spotoptim.surrogate.pipeline.Pipeline" class="nav-link" data-scroll-target="#spotoptim.surrogate.pipeline.Pipeline">Pipeline</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/surrogate.pipeline.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1895,13 +1933,170 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/surrogate.pipeline.Pipeline.html#spotoptim.surrogate.pipeline.Pipeline"><code>Pipeline</code></a></td>
+<td><a href="#spotoptim.surrogate.pipeline.Pipeline">Pipeline</a></td>
 <td>Pipeline of transforms with a final estimator.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.pipeline.Pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.surrogate.pipeline.Pipeline">Pipeline</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>surrogate.pipeline.Pipeline(steps)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Pipeline of transforms with a final estimator.</p>
+<p>Sequentially apply a list of transforms and a final estimator. This simple implementation assumes that all steps except the last one are transformers (have <code>fit_transform</code> or <code>fit</code>+<code>transform</code>), and the last step is an estimator (has <code>fit</code> and <code>predict</code>).</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>steps</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
+<td>List of (name, transform) tuples (implementing fit/transform) that are chained, in the order they are chained, with the last object an estimator.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.surrogate.pipeline.Pipeline.fit">fit</a></td>
+<td>Fit the model.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.surrogate.pipeline.Pipeline.predict">predict</a></td>
+<td>Transform the data, and apply <code>predict</code> with the final estimator.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.surrogate.pipeline.Pipeline.fit" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.surrogate.pipeline.Pipeline.fit">fit</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>surrogate.pipeline.Pipeline.fit(X, y<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>fit_params)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Fit the model.</p>
+<p>Fit all the transformers one after the other and transform the data. Finally, fit the transformed data using the final estimator.</p>
+<section id="parameters-1" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><code>iterable</code></td>
+<td>Training data. Must fulfill input requirements of first step of the pipeline.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>y</td>
+<td><code>iterable</code></td>
+<td>Training targets. Must fulfill label requirements for all steps of the pipeline.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>**fit_params</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></td>
+<td>Additional parameters passed to the <code>fit</code> method of the final estimator.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pipeline</td>
+<td><a href="../../docs/reference/surrogate.pipeline.html#spotoptim.surrogate.pipeline.Pipeline">Pipeline</a></td>
+<td>Pipeline with fitted steps.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="spotoptim.surrogate.pipeline.Pipeline.predict" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.surrogate.pipeline.Pipeline.predict">predict</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>surrogate.pipeline.Pipeline.predict(X, <span class="op">**</span>predict_params)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Transform the data, and apply <code>predict</code> with the final estimator.</p>
+<section id="parameters-2" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><code>iterable</code></td>
+<td>Data to predict on. Must fulfill input requirements of first step of the pipeline.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>**predict_params</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></td>
+<td>Additional parameters passed to the <code>predict</code> method of the final estimator.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Any</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></td>
+<td>Result of calling <code>predict</code> on the final estimator.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
+</section>
+</section>
 </section>
 </section>
 

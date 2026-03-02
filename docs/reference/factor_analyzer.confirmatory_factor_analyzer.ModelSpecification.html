@@ -1906,7 +1906,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#parameters" id="toc-parameters" class="nav-link" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.copy" id="toc-spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.copy" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.copy">copy</a></li>
+  <li><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.get_model_specification_as_dict" id="toc-spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.get_model_specification_as_dict" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.get_model_specification_as_dict">get_model_specification_as_dict</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1977,10 +1981,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="attributes" class="level2">
 <h2 class="anchored" data-anchor-id="attributes">Attributes</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -1989,47 +1989,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>error_vars</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.error_vars">error_vars</a></td>
 <td>Get the error variance specification.</td>
 </tr>
 <tr class="even">
-<td><code>error_vars_free</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.error_vars_free">error_vars_free</a></td>
 <td>Get the indices of “free” error variance parameters.</td>
 </tr>
 <tr class="odd">
-<td><code>factor_covs</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.factor_covs">factor_covs</a></td>
 <td>Get the factor covariance specification.</td>
 </tr>
 <tr class="even">
-<td><code>factor_covs_free</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.factor_covs_free">factor_covs_free</a></td>
 <td>Get the indices of “free” factor covariance parameters.</td>
 </tr>
 <tr class="odd">
-<td><code>factor_names</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.factor_names">factor_names</a></td>
 <td>Get list of factor names, if available.</td>
 </tr>
 <tr class="even">
-<td><code>loadings</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.loadings">loadings</a></td>
 <td>Get the factor loadings specification.</td>
 </tr>
 <tr class="odd">
-<td><code>loadings_free</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.loadings_free">loadings_free</a></td>
 <td>Get the indices of “free” factor loading parameters.</td>
 </tr>
 <tr class="even">
-<td><code>n_factors</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.n_factors">n_factors</a></td>
 <td>Get the number of factors.</td>
 </tr>
 <tr class="odd">
-<td><code>n_lower_diag</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.n_lower_diag">n_lower_diag</a></td>
 <td>Get the lower diagonal of the factor covariance matrix.</td>
 </tr>
 <tr class="even">
-<td><code>n_variables</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.n_variables">n_variables</a></td>
 <td>Get the number of variables.</td>
 </tr>
 <tr class="odd">
-<td><code>variable_names</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.variable_names">variable_names</a></td>
 <td>Get list of variable names, if available.</td>
 </tr>
 </tbody>
@@ -2038,10 +2038,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -2050,17 +2046,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>copy</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.copy">copy</a></td>
 <td>Return a copy of the model specification.</td>
 </tr>
 <tr class="even">
-<td><code>get_model_specification_as_dict</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.get_model_specification_as_dict">get_model_specification_as_dict</a></td>
 <td>Get the model specification as a dictionary.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.copy" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.copy">copy</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.copy()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Return a copy of the model specification.</p>
+</section>
+<section id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.get_model_specification_as_dict" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.get_model_specification_as_dict">get_model_specification_as_dict</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.get_model_specification_as_dict(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get the model specification as a dictionary.</p>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>model_specification</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>The model specification keys and values, as a dictionary.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
 </section>
 </section>
 

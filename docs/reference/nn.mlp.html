@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,10 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.nn.mlp" id="toc-spotoptim.nn.mlp" class="nav-link active" data-scroll-target="#spotoptim.nn.mlp">nn.mlp</a>
   <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a></li>
+  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.nn.mlp.MLP" id="toc-spotoptim.nn.mlp.MLP" class="nav-link" data-scroll-target="#spotoptim.nn.mlp.MLP">MLP</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/nn.mlp.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1895,13 +1933,293 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/nn.mlp.MLP.html#spotoptim.nn.mlp.MLP"><code>MLP</code></a></td>
+<td><a href="#spotoptim.nn.mlp.MLP">MLP</a></td>
 <td>This block implements the multi-layer perceptron (MLP) module.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.nn.mlp.MLP" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.nn.mlp.MLP">MLP</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>nn.mlp.MLP(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    in_channels,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    hidden_channels<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    norm_layer<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    activation_layer<span class="op">=</span>torch.nn.ReLU,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    inplace<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    bias<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    dropout<span class="op">=</span><span class="fl">0.0</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    lr<span class="op">=</span><span class="fl">1.0</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    l1<span class="op">=</span><span class="dv">64</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    num_hidden_layers<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    output_dim<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This block implements the multi-layer perceptron (MLP) module.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>in_channels</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of channels of the input</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>hidden_channels</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>]</td>
+<td>List of the hidden channel dimensions. Note that the last element of this list is the output dimension of the network.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>norm_layer</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a>[…, <code>torch</code>.<code>nn</code>.<code>Module</code>]</td>
+<td>Norm layer that will be stacked on top of the linear layer. If <code>None</code> this layer won’t be used. Default: <code>None</code></td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>activation_layer</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a>[…, <code>torch</code>.<code>nn</code>.<code>Module</code>]</td>
+<td>Activation function which will be stacked on top of the normalization layer (if not None), otherwise on top of the linear layer. If <code>None</code> this layer won’t be used. Default: <code>torch.nn.ReLU</code></td>
+<td><code>torch.nn.ReLU</code></td>
+</tr>
+<tr class="odd">
+<td>inplace</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Parameter for the activation layer, which can optionally do the operation in-place. Default is <code>None</code>, which uses the respective default values of the <code>activation_layer</code> and Dropout layer.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>bias</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use bias in the linear layer. Default <code>True</code></td>
+<td><code>True</code></td>
+</tr>
+<tr class="odd">
+<td>dropout</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>The probability for the dropout layer. Default: 0.0</td>
+<td><code>0.0</code></td>
+</tr>
+<tr class="even">
+<td>lr</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Unified learning rate multiplier. This value is automatically scaled to optimizer-specific learning rates using the map_lr() function. A value of 1.0 corresponds to the optimizer’s default learning rate. Default: 1.0.</td>
+<td><code>1.0</code></td>
+</tr>
+<tr class="odd">
+<td>l1</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of neurons in each hidden layer. Will only be used if hidden_channels is None. Default: 64</td>
+<td><code>64</code></td>
+</tr>
+<tr class="even">
+<td>num_hidden_layers</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of hidden layers. Will only be used if hidden_channels is None. Default: 2</td>
+<td><code>2</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note">Note</h4>
+<p><strong>Parameter Definitions:</strong></p>
+<ul>
+<li><p><strong>hidden_channels</strong>: This defines the explicit architecture of the MLP. It is a list where each element is the size of a layer. The last element is the output dimension. Example: <code>[32, 32, 1]</code> means two hidden layers of size 32 and an output layer of size 1.</p></li>
+<li><p><strong>l1</strong> and <strong>num_hidden_layers</strong>: These are helper parameters often used in hyperparameter optimization (see <code>get_default_parameters()</code>). They will only be used if hidden_channels is None.</p>
+<ul>
+<li><code>l1</code>: The number of neurons in each hidden layer.</li>
+<li><code>num_hidden_layers</code>: The number of hidden layers <em>before</em> the output layer.</li>
+</ul>
+<p>They describe the architecture in a more compact way but are less flexible than <code>hidden_channels</code>. Relationship: To convert <code>l1</code> and <code>num_hidden_layers</code> to <code>hidden_channels</code> for a given <code>output_dim</code>: <code>hidden_channels = [l1] * num_hidden_layers + [output_dim]</code></p></li>
+</ul>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<p>Basic usage:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> torch</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.nn.mlp <span class="im">import</span> MLP</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Input: 10 features. Output (is considered a hidden layer): 30 features. Hidden layer: 20 neurons.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> mlp <span class="op">=</span> MLP(in_channels<span class="op">=</span><span class="dv">10</span>, hidden_channels<span class="op">=</span>[<span class="dv">20</span>, <span class="dv">30</span>])</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> x <span class="op">=</span> torch.randn(<span class="dv">5</span>, <span class="dv">10</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> output <span class="op">=</span> mlp(x)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(output.shape)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>torch.Size([<span class="dv">5</span>, <span class="dv">30</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Using get_optimizer:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> model <span class="op">=</span> MLP(in_channels<span class="op">=</span><span class="dv">10</span>, hidden_channels<span class="op">=</span>[<span class="dv">32</span>, <span class="dv">1</span>], lr<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> optimizer <span class="op">=</span> model.get_optimizer(<span class="st">"Adam"</span>)  <span class="co"># Uses 0.5 * 0.001</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(optimizer)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>Adam (</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>Parameter Group <span class="dv">0</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    amsgrad: <span class="va">False</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    betas: (<span class="fl">0.9</span>, <span class="fl">0.999</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    capturable: <span class="va">False</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    differentiable: <span class="va">False</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    eps: <span class="fl">1e-08</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    foreach: <span class="va">None</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    fused: <span class="va">None</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    lr: <span class="fl">0.0005</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    maximize: <span class="va">False</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    weight_decay: <span class="dv">0</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Using l1 and num_hidden_layers parameters:</strong> This example shows how to use the hyperparameters suggested by <code>get_default_parameters()</code> to construct the <code>hidden_channels</code> list.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> input_dim <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> output_dim <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Hyperparameters (e.g., from spotoptim tuning)</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> l1 <span class="op">=</span> <span class="dv">64</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> num_hidden_layers <span class="op">=</span> <span class="dv">2</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Construct hidden_channels list</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># [64, 64, 1] -&gt; 2 hidden layers of 64, output layer of 1</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Relationship: To convert l1 and num_hidden_layers to hidden_channels for a given output_dim:</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># hidden_channels = [l1] * num_hidden_layers + [output_dim]</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># but we can pass l1 and num_hidden_layers directly to the constructor</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> model <span class="op">=</span> MLP(in_channels<span class="op">=</span>input_dim, l1<span class="op">=</span>l1, num_hidden_layers<span class="op">=</span>num_hidden_layers, output_dim<span class="op">=</span>output_dim)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(model)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>MLP(</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">0</span>): Linear(in_features<span class="op">=</span><span class="dv">10</span>, out_features<span class="op">=</span><span class="dv">64</span>, bias<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">1</span>): ReLU()</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">2</span>): Dropout(p<span class="op">=</span><span class="fl">0.0</span>, inplace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">3</span>): Linear(in_features<span class="op">=</span><span class="dv">64</span>, out_features<span class="op">=</span><span class="dv">64</span>, bias<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">4</span>): ReLU()</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">5</span>): Dropout(p<span class="op">=</span><span class="fl">0.0</span>, inplace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">6</span>): Linear(in_features<span class="op">=</span><span class="dv">64</span>, out_features<span class="op">=</span><span class="dv">1</span>, bias<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  (<span class="dv">7</span>): Dropout(p<span class="op">=</span><span class="fl">0.0</span>, inplace<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Getting default parameters for tuning:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> params <span class="op">=</span> MLP.get_default_parameters()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(params.names())</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>[<span class="st">'l1'</span>, <span class="st">'num_hidden_layers'</span>, <span class="st">'activation'</span>, <span class="st">'lr'</span>, <span class="st">'optimizer'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="methods" class="level4">
+<h4 class="anchored" data-anchor-id="methods">Methods</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.nn.mlp.MLP.get_default_parameters">get_default_parameters</a></td>
+<td>Returns a ParameterSet populated with default hyperparameters for this model.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.nn.mlp.MLP.get_optimizer">get_optimizer</a></td>
+<td>Get a PyTorch optimizer configured for this model.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.nn.mlp.MLP.get_default_parameters" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.nn.mlp.MLP.get_default_parameters">get_default_parameters</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>nn.mlp.MLP.get_default_parameters()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns a ParameterSet populated with default hyperparameters for this model.</p>
+<section id="note-1" class="level6 doc-section doc-section-note">
+<h6 class="doc-section doc-section-note anchored" data-anchor-id="note-1">Note</h6>
+<p>Since MLP structure is generic (list of hidden channels), the default parameters provided here are a starting point assuming a simple structure similar to LinearRegressor (l1 units per layer, num_hidden_layers). This might need adjustment for specific architectures.</p>
+</section>
+<section id="returns" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ParameterSet</td>
+<td><a href="../../docs/reference/hyperparameters.parameters.html#spotoptim.hyperparameters.parameters.ParameterSet">ParameterSet</a></td>
+<td>Default hyperparameters.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level6 doc-section doc-section-examples">
+<h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h6>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> params <span class="op">=</span> MLP.get_default_parameters()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(params.names())</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>[<span class="st">'l1'</span>, <span class="st">'num_hidden_layers'</span>, <span class="st">'activation'</span>, <span class="st">'lr'</span>, <span class="st">'optimizer'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.nn.mlp.MLP.get_optimizer" class="level5">
+<h5 class="anchored" data-anchor-id="spotoptim.nn.mlp.MLP.get_optimizer">get_optimizer</h5>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>nn.mlp.MLP.get_optimizer(optimizer_name<span class="op">=</span><span class="st">'Adam'</span>, lr<span class="op">=</span><span class="va">None</span>, <span class="op">**</span>kwargs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Get a PyTorch optimizer configured for this model.</p>
+<section id="parameters-1" class="level6 doc-section doc-section-parameters">
+<h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h6>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>optimizer_name</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Name of the optimizer from torch.optim. Defaults to “Adam”.</td>
+<td><code>'Adam'</code></td>
+</tr>
+<tr class="even">
+<td>lr</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Unified learning rate multiplier. If None, uses self.lr. This value is automatically scaled to optimizer-specific learning rates. A value of 1.0 corresponds to the optimizer’s default learning rate. Defaults to None (uses self.lr).</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>**kwargs</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></td>
+<td>Additional optimizer-specific parameters.</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level6 doc-section doc-section-returns">
+<h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h6>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 44%">
+<col style="width: 49%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><code>optim</code>.<code>Optimizer</code></td>
+<td>optim.Optimizer: Configured optimizer instance ready for training.</td>
 </tr>
 </tbody>
 </table>
 
 
+</section>
+</section>
+</section>
+</section>
 </section>
 </section>
 

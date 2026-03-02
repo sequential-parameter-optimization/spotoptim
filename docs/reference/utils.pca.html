@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -1869,7 +1904,15 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#spotoptim.utils.pca" id="toc-spotoptim.utils.pca" class="nav-link active" data-scroll-target="#spotoptim.utils.pca">utils.pca</a>
   <ul class="collapse">
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.utils.pca.get_loading_scores" id="toc-spotoptim.utils.pca.get_loading_scores" class="nav-link" data-scroll-target="#spotoptim.utils.pca.get_loading_scores">get_loading_scores</a></li>
+  <li><a href="#spotoptim.utils.pca.get_pca" id="toc-spotoptim.utils.pca.get_pca" class="nav-link" data-scroll-target="#spotoptim.utils.pca.get_pca">get_pca</a></li>
+  <li><a href="#spotoptim.utils.pca.get_pca_topk" id="toc-spotoptim.utils.pca.get_pca_topk" class="nav-link" data-scroll-target="#spotoptim.utils.pca.get_pca_topk">get_pca_topk</a></li>
+  <li><a href="#spotoptim.utils.pca.plot_loading_scores" id="toc-spotoptim.utils.pca.plot_loading_scores" class="nav-link" data-scroll-target="#spotoptim.utils.pca.plot_loading_scores">plot_loading_scores</a></li>
+  <li><a href="#spotoptim.utils.pca.plot_pca1vs2" id="toc-spotoptim.utils.pca.plot_pca1vs2" class="nav-link" data-scroll-target="#spotoptim.utils.pca.plot_pca1vs2">plot_pca1vs2</a></li>
+  <li><a href="#spotoptim.utils.pca.plot_pca_scree" id="toc-spotoptim.utils.pca.plot_pca_scree" class="nav-link" data-scroll-target="#spotoptim.utils.pca.plot_pca_scree">plot_pca_scree</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/utils.pca.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -1895,33 +1938,517 @@ ul.task-list li input[type="checkbox"] {
 </thead>
 <tbody>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.pca.get_loading_scores.html#spotoptim.utils.pca.get_loading_scores"><code>get_loading_scores</code></a></td>
+<td><a href="#spotoptim.utils.pca.get_loading_scores">get_loading_scores</a></td>
 <td>Computes the loading scores matrix for Principal Component Analysis (PCA).</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.pca.get_pca.html#spotoptim.utils.pca.get_pca"><code>get_pca</code></a></td>
+<td><a href="#spotoptim.utils.pca.get_pca">get_pca</a></td>
 <td>Scale the numeric data and perform PCA.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.pca.get_pca_topk.html#spotoptim.utils.pca.get_pca_topk"><code>get_pca_topk</code></a></td>
+<td><a href="#spotoptim.utils.pca.get_pca_topk">get_pca_topk</a></td>
 <td>Identify the top k features that have the strongest influence on PC1 and PC2.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.pca.plot_loading_scores.html#spotoptim.utils.pca.plot_loading_scores"><code>plot_loading_scores</code></a></td>
+<td><a href="#spotoptim.utils.pca.plot_loading_scores">plot_loading_scores</a></td>
 <td>Creates a heatmap visualization of PCA loading scores.</td>
 </tr>
 <tr class="odd">
-<td><a href="../../docs/reference/utils.pca.plot_pca1vs2.html#spotoptim.utils.pca.plot_pca1vs2"><code>plot_pca1vs2</code></a></td>
+<td><a href="#spotoptim.utils.pca.plot_pca1vs2">plot_pca1vs2</a></td>
 <td>Create a scatter plot of the first two principal components from PCA.</td>
 </tr>
 <tr class="even">
-<td><a href="../../docs/reference/utils.pca.plot_pca_scree.html#spotoptim.utils.pca.plot_pca_scree"><code>plot_pca_scree</code></a></td>
+<td><a href="#spotoptim.utils.pca.plot_pca_scree">plot_pca_scree</a></td>
 <td>Plot the scree plot for Principal Component Analysis (PCA).</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.utils.pca.get_loading_scores" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.pca.get_loading_scores">get_loading_scores</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>utils.pca.get_loading_scores(pca, feature_names)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Computes the loading scores matrix for Principal Component Analysis (PCA).</p>
+<p>Creates and returns a DataFrame showing how each original feature contributes to each principal component.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pca</td>
+<td><code>sklearn</code>.<code>decomposition</code>.<code>PCA</code></td>
+<td>Fitted PCA object containing the components_ attribute with the principal components.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>feature_names</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a> - <code>like</code></td>
+<td>Names of the original features, must match the order of features used in PCA fitting.</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>pd.DataFrame: DataFrame containing the loading scores matrix with features as rows and principal components as columns.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example" class="level4 doc-section doc-section-example">
+<h4 class="doc-section doc-section-example anchored" data-anchor-id="example">Example</h4>
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<p>from sklearn.decomposition import PCA from sklearn.datasets import load_iris from spotpython.utils.pca import print_loading_scores,</p>
+<h1 id="load-and-prepare-iris-dataset">Load and prepare iris dataset</h1>
+<p>iris = load_iris() X = iris.data feature_names = iris.feature_names</p>
+<h1 id="fit-pca">Fit PCA</h1>
+<p>pca = PCA() pca.fit(X)</p>
+<h1 id="print-loading-scores">Print loading scores</h1>
+<p>scores_df = print_loading_scores(pca, feature_names) print(scores_df)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</section>
+</section>
+<section id="spotoptim.utils.pca.get_pca" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.pca.get_pca">get_pca</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>utils.pca.get_pca(df, n_components<span class="op">=</span><span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Scale the numeric data and perform PCA.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>df</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>Input DataFrame.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>n_components</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of principal components to compute. Defaults to 3.</td>
+<td><code>3</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>- pca (PCA): Fitted PCA object. - scaled_data (np.ndarray): Scaled numeric data. - feature_names (pd.Index): Names of the numeric features. - sample_names (pd.Index): Index of the samples. - pca_data (np.ndarray): PCA-transformed data.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.pca <span class="im">import</span> get_pca</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>...     <span class="st">"A"</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>...     <span class="st">"B"</span>: [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>],</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>...     <span class="st">"C"</span>: [<span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>]  <span class="co"># Non-numeric column will be ignored</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>... })</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pca, scaled_data, feature_names, sample_names, pca_data <span class="op">=</span> get_pca(df)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(feature_names)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>Index([<span class="st">'A'</span>, <span class="st">'B'</span>], dtype<span class="op">=</span><span class="st">'object'</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(pca_data.shape)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>(<span class="dv">3</span>, <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="spotoptim.utils.pca.get_pca_topk" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.pca.get_pca_topk">get_pca_topk</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>utils.pca.get_pca_topk(pca, feature_names, k<span class="op">=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Identify the top k features that have the strongest influence on PC1 and PC2.</p>
+<p>This function analyzes the loading scores (coefficients) of the first two principal components to determine which original features contribute most strongly to these components. The absolute values of the loading scores are used to rank feature importance.</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pca</td>
+<td><code>sklearn</code>.<code>decomposition</code>.<code>PCA</code></td>
+<td>Fitted PCA object containing the components_ attribute with the principal components.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>feature_names</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a> - <code>like</code></td>
+<td>Names of the original features, must match the order of features used in PCA fitting.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>k</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of top features to select for each principal component. Defaults to 10.</td>
+<td><code>10</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>A tuple containing two lists: - list[str]: Names of the k features most influential on PC1 - list[str]: Names of the k features most influential on PC2</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.datasets <span class="im">import</span> load_iris</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.pca <span class="im">import</span> get_pca_topk</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Load and prepare the iris dataset</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> iris <span class="op">=</span> load_iris()</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> iris.data</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> feature_names <span class="op">=</span> iris.feature_names</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Fit PCA</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pca <span class="op">=</span> PCA()</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pca.fit(X)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Get top 2 most influential features for PC1 and PC2</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> top_pc1, top_pc2 <span class="op">=</span> get_pca_topk(pca,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>...                                 feature_names<span class="op">=</span>feature_names,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>...                                 k<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(<span class="st">"Top PC1 features:"</span>, top_pc1)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">print</span>(<span class="st">"Top PC2 features:"</span>, top_pc2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="note" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note">Note</h4>
+<ul>
+<li>The function assumes that PCA has been fitted on standardized data</li>
+<li>The length of feature_names must match the number of features in the PCA input</li>
+<li>k should not exceed the total number of features</li>
+</ul>
+</section>
+</section>
+<section id="spotoptim.utils.pca.plot_loading_scores" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.pca.plot_loading_scores">plot_loading_scores</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>utils.pca.plot_loading_scores(loading_scores, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">8</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Creates a heatmap visualization of PCA loading scores.</p>
+<p>Generates a heatmap showing the relationship between original features and principal components, with color intensity indicating the strength and direction of the relationship.</p>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>loading_scores</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>DataFrame containing the loading scores matrix with features as rows and principal components as columns.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>figsize</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>Size of the figure as (width, height). Defaults to (12, 8).</td>
+<td><code>(12, 8)</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td>None</td>
+<td>The function creates and displays a matplotlib plot.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example-1" class="level4 doc-section doc-section-example">
+<h4 class="doc-section doc-section-example anchored" data-anchor-id="example-1">Example</h4>
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<blockquote class="blockquote">
+<p>from sklearn.decomposition import PCA from sklearn.datasets import load_iris from spotpython.utils.pca import print_loading_scores, plot_loading_scores</p>
+<h1 id="load-and-prepare-iris-dataset-1">Load and prepare iris dataset</h1>
+<p>iris = load_iris() X = iris.data feature_names = iris.feature_names</p>
+<h1 id="fit-pca-and-get-loading-scores">Fit PCA and get loading scores</h1>
+<p>pca = PCA() pca.fit(X) scores_df = print_loading_scores(pca, feature_names)</p>
+<h1 id="create-heatmap">Create heatmap</h1>
+<p>plot_loading_scores(scores_df, figsize=(10, 6))</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</section>
+</section>
+<section id="spotoptim.utils.pca.plot_pca1vs2" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.pca.plot_pca1vs2">plot_pca1vs2</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>utils.pca.plot_pca1vs2(pca, pca_data, df_name<span class="op">=</span><span class="st">''</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Create a scatter plot of the first two principal components from PCA.</p>
+<p>This function visualizes the first two principal components (PC1 vs PC2) from a PCA analysis, creating a scatter plot where each point represents a sample in the transformed space. The percentage of variance explained by each component is shown on the axes.</p>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pca</td>
+<td><code>sklearn</code>.<code>decomposition</code>.<code>PCA</code></td>
+<td>Fitted PCA object containing the explained variance ratios and components.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>pca_data</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>PCA-transformed data, where each row represents a sample and each column represents a principal component.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>df_name</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Name of the dataset to be displayed in the plot title. Defaults to empty string.</td>
+<td><code>''</code></td>
+</tr>
+<tr class="even">
+<td>figsize</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>Size of the figure as (width, height). Defaults to (12, 6).</td>
+<td><code>(12, 6)</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-4" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td>None</td>
+<td>The function creates and displays a matplotlib plot.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-2" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.datasets <span class="im">import</span> load_iris</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.pca <span class="im">import</span> plot_pca1vs2</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Load and prepare the iris dataset</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> iris <span class="op">=</span> load_iris()</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> iris.data</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Fit PCA and transform the data</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pca <span class="op">=</span> PCA()</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pca_data <span class="op">=</span> pca.fit_transform(X)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Create PCA scatter plot</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_pca1vs2(pca,</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>...             pca_data,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>...             df_name<span class="op">=</span><span class="st">"Iris Dataset"</span>,</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>...             figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="note-1" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-1">Note</h4>
+<ul>
+<li>The function assumes that the input data has at least two principal components</li>
+<li>Sample names are taken from the index of the created DataFrame</li>
+<li>The percentage of variance explained is rounded to 1 decimal place</li>
+</ul>
+</section>
+</section>
+<section id="spotoptim.utils.pca.plot_pca_scree" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.utils.pca.plot_pca_scree">plot_pca_scree</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>utils.pca.plot_pca_scree(pca, df_name<span class="op">=</span><span class="st">''</span>, max_scree<span class="op">=</span><span class="va">None</span>, figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Plot the scree plot for Principal Component Analysis (PCA).</p>
+<p>A scree plot shows the percentage of variance explained by each principal component in descending order. It helps in determining the optimal number of components to retain.</p>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pca</td>
+<td><code>sklearn</code>.<code>decomposition</code>.<code>PCA</code></td>
+<td>Fitted PCA object containing the explained variance ratios.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>df_name</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Name of the dataset to be displayed in the plot title. Defaults to empty string.</td>
+<td><code>''</code></td>
+</tr>
+<tr class="odd">
+<td>max_scree</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Maximum number of principal components to plot. If None, all components are plotted. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>figsize</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>Size of the figure as (width, height). Defaults to (12, 6).</td>
+<td><code>(12, 6)</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-5" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>None</td>
+<td>None</td>
+<td>The function creates and displays a matplotlib plot.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-3" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.decomposition <span class="im">import</span> PCA</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> sklearn.datasets <span class="im">import</span> load_iris</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotpython.utils.pca <span class="im">import</span> plot_pca_scree</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Load iris dataset</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> iris <span class="op">=</span> load_iris()</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> X <span class="op">=</span> iris.data</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Fit PCA</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pca <span class="op">=</span> PCA()</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> pca.fit(X)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="co"># Create scree plot</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_pca_scree(pca,</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>...                df_name<span class="op">=</span><span class="st">"Iris Dataset"</span>,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>...                max_scree<span class="op">=</span><span class="dv">4</span>,</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>...                figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
+</section>
+</section>
 </section>
 </section>
 

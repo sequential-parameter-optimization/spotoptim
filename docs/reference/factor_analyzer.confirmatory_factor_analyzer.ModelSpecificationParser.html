@@ -1902,32 +1902,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser" id="toc-spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser" class="nav-link active" data-scroll-target="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser">factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser</a>
+  <li><a href="#methods" id="toc-methods" class="nav-link active" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
+  <li><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_array" id="toc-spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_array" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_array">parse_model_specification_from_array</a></li>
+  <li><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_dict" id="toc-spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_dict" class="nav-link" data-scroll-target="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_dict">parse_model_specification_from_dict</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/factor_analyzer.html">Factor Analyzer</a></li><li class="breadcrumb-item"><a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.html">ModelSpecificationParser</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/factor_analyzer.html">Factor Analyzer</a></li><li class="breadcrumb-item"><a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.html">ModelSpecificationParser</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
-<section id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser" class="level1">
-<h1>factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser</h1>
+</header>
+
+
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Generate the model specification for CFA.</p>
 <p>This class includes two static methods to generate a :class:<code>ModelSpecification</code> object from either a dictionary or a numpy array.</p>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
 <thead>
 <tr class="header">
 <th>Name</th>
@@ -1936,17 +1947,193 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>parse_model_specification_from_array</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_array">parse_model_specification_from_array</a></td>
 <td>Generate the model specification from a numpy array.</td>
 </tr>
 <tr class="even">
-<td><code>parse_model_specification_from_dict</code></td>
+<td><a href="#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_dict">parse_model_specification_from_dict</a></td>
 <td>Generate the model specification from a dictionary.</td>
 </tr>
 </tbody>
 </table>
+<section id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_array" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_array">parse_model_specification_from_array</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_array(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    X,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    specification<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Generate the model specification from a numpy array.</p>
+<p>The columns should correspond to the factors, and the rows should correspond to the variables. If this method is used to create the :class:<code>ModelSpecification</code> object, then <em>no</em> factor names and variable names will be added as properties to that object.</p>
+<section id="parameters" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The data set that will be used for CFA.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>specification</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>An array with the loading details. If <code>None</code>, the matrix will be created assuming all variables load on all factors. Defaults to <code>None</code>.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ModelSpecification</td>
+<td><a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.html#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification">ModelSpecification</a></td>
+<td>A model specification object.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If <code>specification</code> is not in the expected format.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div id="0647eab3" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> (ConfirmatoryFactorAnalyzer,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                                      ModelSpecificationParser)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.utils <span class="im">import</span> get_internal_datasets_folder</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> pd.read_csv(os.path.join(get_internal_datasets_folder(), <span class="st">'test11.csv'</span>))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>model_array <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>], [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>]])</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>model_spec <span class="op">=</span> ModelSpecificationParser.parse_model_specification_from_array(X,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                                                                             model_array)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+</section>
+<section id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_dict" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_dict">parse_model_specification_from_dict</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.parse_model_specification_from_dict(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    X,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    specification<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Generate the model specification from a dictionary.</p>
+<p>The keys in the dictionary should be the factor names, and the values should be the feature names. If this method is used to create the :class:<code>ModelSpecification</code> object, then factor names and variable names will be added as properties to that object.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>The data set that will be used for CFA.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>specification</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></td>
+<td>A dictionary with the loading details. If <code>None</code>, the matrix will be created assuming all variables load on all factors. Defaults to <code>None</code>.</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ModelSpecification</td>
+<td><a href="../../docs/reference/factor_analyzer.confirmatory_factor_analyzer.html#spotoptim.factor_analyzer.confirmatory_factor_analyzer.ModelSpecification">ModelSpecification</a></td>
+<td>A model specification object.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-1" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-1">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If <code>specification</code> is not in the expected format.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div id="6be1af54" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> (ConfirmatoryFactorAnalyzer,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                                      ModelSpecificationParser)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.utils <span class="im">import</span> get_internal_datasets_folder</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> pd.read_csv(os.path.join(get_internal_datasets_folder(), <span class="st">'test11.csv'</span>))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>model_dict <span class="op">=</span> {<span class="st">"F1"</span>: [<span class="st">"V1"</span>, <span class="st">"V2"</span>, <span class="st">"V3"</span>, <span class="st">"V4"</span>],</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>              <span class="st">"F2"</span>: [<span class="st">"V5"</span>, <span class="st">"V6"</span>, <span class="st">"V7"</span>, <span class="st">"V8"</span>]}</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>model_spec <span class="op">=</span> ModelSpecificationParser.parse_model_specification_from_dict(X, model_dict)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 
 
+</section>
 </section>
 </section>
 
