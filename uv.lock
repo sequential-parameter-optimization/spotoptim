@@ -2905,6 +2905,7 @@ dependencies = [
     { name = "black" },
     { name = "dill" },
     { name = "flake8" },
+    { name = "importlib-metadata" },
     { name = "jupyter" },
     { name = "matplotlib" },
     { name = "numpy" },
@@ -2934,6 +2935,7 @@ dev = [
 docs = [
     { name = "colorama" },
     { name = "griffe" },
+    { name = "importlib-metadata" },
     { name = "jupyter" },
     { name = "quartodoc" },
 ]
@@ -2958,6 +2960,8 @@ requires-dist = [
     { name = "dill", specifier = ">=0.4.1" },
     { name = "flake8", specifier = ">=7.3.0" },
     { name = "griffe", marker = "extra == 'docs'", specifier = ">=1.7.3" },
+    { name = "importlib-metadata", specifier = ">=8.7.1" },
+    { name = "importlib-metadata", marker = "extra == 'docs'" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.13.0" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "jupyter", marker = "extra == 'docs'", specifier = ">=1.1.1" },

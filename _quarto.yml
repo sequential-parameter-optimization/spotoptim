@@ -1,5 +1,6 @@
 project:
   type: website
+  pre-render: version_config.py
   output-dir: _site
   render:
     - docs/index.qmd
