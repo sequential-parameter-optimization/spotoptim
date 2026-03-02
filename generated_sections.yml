@@ -1,7 +1,13 @@
   sections:
-    - title: "Core"
+    - title: "SpotOptim"
       contents:
         - SpotOptim
+        - SpotOptim.SpotOptim
+        - SpotOptim.SpotOptimConfig
+        - SpotOptim.SpotOptimState
+
+    - title: "Core"
+      contents:
         - core
         - core.data
         - core.experiment

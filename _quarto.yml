@@ -52,7 +52,7 @@ website:
         contents:
           - text: Overview
             file: docs/reference/index.qmd
-          - section: Core
+          - section: SpotOptim
             contents:
               - text: SpotOptim
                 file: docs/reference/SpotOptim.qmd
@@ -62,6 +62,8 @@ website:
                 file: docs/reference/SpotOptim.SpotOptimConfig.qmd
               - text: SpotOptimState
                 file: docs/reference/SpotOptim.SpotOptimState.qmd
+          - section: Core
+            contents:
               - text: core
                 file: docs/reference/core.qmd
               - text: core.data
@@ -602,19 +604,21 @@ quartodoc:
   options:
     children: embedded
   sections:
-    - title: Core
+    - title: SpotOptim
       contents:
         - SpotOptim
         - SpotOptim.SpotOptim
         - SpotOptim.SpotOptimConfig
         - SpotOptim.SpotOptimState
+    - title: Core
+      contents:
         - core
         - core.data
         - core.data.SpotDataFromArray
         - core.data.SpotDataFromTorchDataset
         - core.data.SpotDataSet
         - core.experiment
-        - core.experiment.ExperimentControl
+        - core.experiment.ExperimentControl        
     - title: Surrogate Models
       contents:
         - surrogate
