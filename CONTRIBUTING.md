@@ -21,11 +21,10 @@ The API docs use [Quarto](https://quarto.org) + [quartodoc](https://machow.githu
 A **separate Python 3.13 venv** is required because `quartodoc 0.11.x` is incompatible with Python 3.14.
 
 ```sh
-# Create the docs venv (one-time setup)
-python3.13 -m venv .venv-docs
-source .venv-docs/bin/activate
-pip install -r requirements-docs.txt
-pip install -e .          # make spotoptim importable during doc builds
+# Create the docs venv (one-time setup — run once from the project root)
+uv venv --python 3.13 .venv-docs
+uv pip install --python .venv-docs/bin/python -r requirements-docs.txt
+uv pip install --python .venv-docs/bin/python -e .   # make spotoptim importable during doc builds
 ```
 
 ---
@@ -35,13 +34,10 @@ pip install -e .          # make spotoptim importable during doc builds
 After editing docstrings in `src/spotoptim/**`:
 
 ```sh
-# 1. Activate the docs venv
-source .venv-docs/bin/activate
+# 1. Regenerate API reference stubs from docstrings
+.venv-docs/bin/quartodoc build --config _quarto.yml
 
-# 2. Regenerate API reference stubs from docstrings
-python -m quartodoc build --config _quarto.yml
-
-# 3. (Optional) Preview rendered HTML locally
+# 2. (Optional) Preview rendered HTML locally
 quarto render docs/reference/
 # Output goes to _site/docs/reference/
 ```
@@ -60,13 +56,12 @@ cat > .git/hooks/pre-push << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 VENV=".venv-docs"
-if [[ ! -f "$VENV/bin/activate" ]]; then
+if [[ ! -f "$VENV/bin/quartodoc" ]]; then
   echo "⚠️  pre-push: $VENV not found, skipping doc check."
   exit 0
 fi
 echo "🔍 pre-push: checking quartodoc can parse all docstrings..."
-source "$VENV/bin/activate"
-if python -m quartodoc build --config _quarto.yml; then
+if "$VENV/bin/quartodoc" build --config _quarto.yml; then
   echo "✅ pre-push: quartodoc build OK"
 else
   echo "❌ pre-push: quartodoc build FAILED — fix docstring errors before pushing"

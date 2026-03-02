@@ -5,10 +5,10 @@
 # IMPORTANT: Use Python 3.13 to run these tools (NOT 3.14).
 # quartodoc 0.11.x uses pydantic v1 which is incompatible with Python 3.14+.
 #
-# Local usage:
-#   python3.13 -m venv .venv-docs
-#   source .venv-docs/bin/activate
-#   pip install -r requirements-docs.txt
+# Local usage (uv):
+#   uv venv --python 3.13 .venv-docs
+#   uv pip install --python .venv-docs/bin/python -r requirements-docs.txt
+#   uv pip install --python .venv-docs/bin/python -e .   # editable install
 #
 # PURPOSE: This file installs ONLY the tools needed to BUILD and RENDER docs.
 #          Runtime dependencies (numpy, torch, scipy, etc.) are declared in
@@ -16,9 +16,8 @@
 #          the GitHub Action does not execute code cells, so the full runtime
 #          stack is NOT required here.
 #
-# UPDATING: Run `pip install --upgrade <pkg>` locally, test the build, then
-#           update the pinned version here.  Use `pip-compile requirements-docs.in`
-#           with pip-tools for a fully-reproducible lock.
+# UPDATING: Run `uv pip install --upgrade <pkg> --python .venv-docs/bin/python`,
+#           test the build, then update the pinned version here.
 # =============================================================================
 
 # ── Quarto Python integration ─────────────────────────────────────────────────
