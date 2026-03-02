@@ -1,3 +1,16 @@
+## [0.2.5](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.4...v0.2.5) (2026-03-02)
+
+
+### Bug Fixes
+
+* var_trans ([21a7051](https://github.com/sequential-parameter-optimization/spotoptim/commit/21a70516eb1ec2ba897305d62a1d66d6f5f4c748))
+
+
+### Documentation
+
+* add CONTRIBUTING.md with dev setup, docs workflow, and pre-push hook ([ef51095](https://github.com/sequential-parameter-optimization/spotoptim/commit/ef510959aa6080c97ffaa96b85dfc3cb80268cb5))
+* embed class method docs inline via quartodoc ([481933b](https://github.com/sequential-parameter-optimization/spotoptim/commit/481933bcede84f7b1f3dfd5d8d499f6d4c2e0f7d))
+
 ## [0.2.4](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.3...v0.2.4) (2026-03-02)
 
 
