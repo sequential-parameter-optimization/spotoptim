@@ -12,11 +12,18 @@ path = [
     "mkdocs.yml",
     "pyproject.toml",
     "uv.lock",
-    "spotoptim.code-workspace"
+    "spotoptim.code-workspace",
+    "_environment"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 bartzbeielstein"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["version_config.py"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 RStudio, PBC"
+SPDX-License-Identifier = "MIT"
 
 [[annotations]]
 path = [".github/**"]
