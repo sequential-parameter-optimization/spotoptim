@@ -5,6 +5,8 @@ project:
     - docs/index.qmd
     - docs/**/*.qmd
     - docs/**/*.md
+execute:
+  enabled: false
 filters:
   - docs/interlinks.lua
 interlinks:
@@ -597,7 +599,7 @@ quartodoc:
   parser: google
   render_interlinks: true
   options:
-    children: linked
+    children: embedded
   sections:
     - title: Core
       contents:
