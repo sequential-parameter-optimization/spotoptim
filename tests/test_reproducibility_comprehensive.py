@@ -64,7 +64,7 @@ class TestSpotOptimReproducibility:
             # we rely on the optimizer's internal seeding if it creates noise?
             # NO, the user function generates noise. The seed must control numpy's random state
             # globally for this to be reproducible if the user function uses np.random.
-            # SpotOptim._set_seed() sets np.random.seed().
+            # SpotOptim.set_seed() sets np.random.seed().
             return np.sum(X**2, axis=1) + np.random.normal(0, 0.1, size=X.shape[0])
 
         bounds = [(-5, 5), (-5, 5)]
@@ -84,7 +84,7 @@ class TestSpotOptimReproducibility:
             repeats_surrogate=repeats_surrogate,
             seed=seed,
         )
-        # Note: optimize() calls _set_seed() internally upon init.
+        # Note: optimize() calls set_seed() internally upon init.
         # But if we run sequentially, we rely on SpotOptim resetting the seed or
         # maintaining deterministic state.
         # Wait, SpotOptim sets seed in __init__. So optimization starts with deterministic state.
@@ -216,7 +216,7 @@ class TestSpotOptimReproducibility:
         _ = opt2.optimize()
 
         # Assertions
-        # Since _apply_penalty_NA adds random noise, this MUST be reproducible with fixed seed
+        # Since apply_penalty_NA adds random noise, this MUST be reproducible with fixed seed
         np.testing.assert_array_equal(
             opt1.y_, opt2.y_, err_msg="Penalized y values should be identical"
         )

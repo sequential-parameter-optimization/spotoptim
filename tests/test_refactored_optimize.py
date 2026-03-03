@@ -128,7 +128,7 @@ class TestRefactoredOptimize:
 
     def test_initialize_run_calls(self, spot_optim):
         """Verify _initialize_run calls necessary setup methods."""
-        spot_optim._set_seed = MagicMock()
+        spot_optim.set_seed = MagicMock()
         spot_optim.get_initial_design = MagicMock(return_value=np.zeros((5, 2)))
         spot_optim._curate_initial_design = MagicMock(return_value=np.zeros((5, 2)))
         spot_optim._evaluate_function = MagicMock(return_value=np.zeros(5))
@@ -136,7 +136,7 @@ class TestRefactoredOptimize:
 
         X0, y0 = spot_optim._initialize_run(X0=None, y0_known=None)
 
-        spot_optim._set_seed.assert_called_once()
+        spot_optim.set_seed.assert_called_once()
         spot_optim.get_initial_design.assert_called_once()
         spot_optim._evaluate_function.assert_called_once()
         # _init_tensorboard should NOT be called here anymore
@@ -151,7 +151,7 @@ class TestRefactoredOptimize:
             return_value=(np.zeros((5, 2)), np.zeros(5), 5)
         )
         spot_optim._check_size_initial_design = MagicMock()
-        spot_optim._init_storage = MagicMock()
+        spot_optim.init_storage = MagicMock()
         spot_optim.update_stats = MagicMock()
         spot_optim._get_best_xy_initial_design = MagicMock()
         spot_optim._run_sequential_loop = MagicMock(

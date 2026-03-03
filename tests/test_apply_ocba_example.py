@@ -22,7 +22,7 @@ def test_apply_ocba_example():
     opt.mean_y = np.array([5.0, 0.1, 5.0])
     opt.var_y = np.array([0.1, 0.05, 0.15])
 
-    X_ocba = opt._apply_ocba()
+    X_ocba = opt.apply_ocba()
 
     assert X_ocba is not None
     assert X_ocba.shape[0] == 5
@@ -40,6 +40,6 @@ def test_apply_ocba_example():
     opt2.mean_y = np.array([5.0, 0.1])
     opt2.var_y = np.array([0.1, 0.05])
 
-    X_ocba = opt2._apply_ocba()
+    X_ocba = opt2.apply_ocba()
 
     assert X_ocba is None

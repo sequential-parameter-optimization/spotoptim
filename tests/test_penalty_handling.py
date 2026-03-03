@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """
-Tests for penalty handling functionality (_apply_penalty_NA method).
+Tests for penalty handling functionality (apply_penalty_NA method).
 
-This test suite validates the _apply_penalty_NA() method, ensuring:
+This test suite validates the apply_penalty_NA() method, ensuring:
 - Adaptive penalty calculation (max + 3*std) when penalty_value is None
 - Correct handling of NaN and inf values
 - Fallback behavior with insufficient finite values
@@ -18,7 +18,7 @@ from spotoptim.SpotOptim import SpotOptim
 
 
 class TestApplyPenaltyNABasic:
-    """Test suite for basic _apply_penalty_NA functionality."""
+    """Test suite for basic apply_penalty_NA functionality."""
 
     def test_no_nan_values_returns_unchanged_array(self):
         """Test that array without NaN/inf values is returned unchanged."""
@@ -35,7 +35,7 @@ class TestApplyPenaltyNABasic:
         )
 
         y = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         np.testing.assert_array_equal(y, y_result)
 
@@ -54,7 +54,7 @@ class TestApplyPenaltyNABasic:
         )
 
         y = np.array([-10.0, -5.0, 0.0, 5.0, 10.0])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         np.testing.assert_array_equal(y, y_result)
 
@@ -78,7 +78,7 @@ class TestApplyPenaltyNAAdaptive:
         )
 
         y = np.array([1.0, 2.0, 3.0, 4.0, np.nan])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         # Check all values are finite
         assert np.all(np.isfinite(y_result))
@@ -114,7 +114,7 @@ class TestApplyPenaltyNAAdaptive:
         )
 
         y = np.array([1.0, 2.0, np.nan, 4.0, np.nan, 6.0])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         # Check all values are finite
         assert np.all(np.isfinite(y_result))
@@ -149,7 +149,7 @@ class TestApplyPenaltyNAAdaptive:
         )
 
         y = np.array([1.0, 2.0, 3.0, np.inf, -np.inf])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         # Check all values are finite
         assert np.all(np.isfinite(y_result))
@@ -181,7 +181,7 @@ class TestApplyPenaltyNAAdaptive:
         )
 
         y = np.array([10.0, 20.0, 30.0, 40.0, np.nan])
-        y_result = optimizer._apply_penalty_NA(y, sd=0.0)  # No noise for exact test
+        y_result = optimizer.apply_penalty_NA(y, sd=0.0)  # No noise for exact test
 
         # Calculate expected penalty
         finite_values = y[:4]
@@ -214,7 +214,7 @@ class TestApplyPenaltyNAFallback:
         )
 
         y = np.array([np.nan, np.nan, np.nan])
-        y_result = optimizer._apply_penalty_NA(y, sd=0.0)
+        y_result = optimizer.apply_penalty_NA(y, sd=0.0)
 
         # All values should be replaced with self.penalty (no noise for test)
         np.testing.assert_allclose(y_result, [1000.0, 1000.0, 1000.0], atol=0.01)
@@ -237,7 +237,7 @@ class TestApplyPenaltyNAFallback:
         )
 
         y = np.array([5.0, np.nan, np.nan, np.nan])
-        y_result = optimizer._apply_penalty_NA(y, sd=0.0)
+        y_result = optimizer.apply_penalty_NA(y, sd=0.0)
 
         # First value unchanged
         assert y_result[0] == 5.0
@@ -263,7 +263,7 @@ class TestApplyPenaltyNAFallback:
         )
 
         y = np.array([np.nan, np.nan])
-        y_result = optimizer._apply_penalty_NA(y, sd=0.0)
+        y_result = optimizer.apply_penalty_NA(y, sd=0.0)
 
         # Should fallback to np.inf when no finite values available
         assert np.all(np.isinf(y_result))
@@ -289,7 +289,7 @@ class TestApplyPenaltyNACustomPenalty:
 
         y = np.array([1.0, 2.0, np.nan, 4.0])
         custom_penalty = 999.0
-        y_result = optimizer._apply_penalty_NA(y, penalty_value=custom_penalty, sd=0.0)
+        y_result = optimizer.apply_penalty_NA(y, penalty_value=custom_penalty, sd=0.0)
 
         # Check finite values unchanged
         assert y_result[0] == 1.0
@@ -316,7 +316,7 @@ class TestApplyPenaltyNACustomPenalty:
 
         y = np.array([10.0, 20.0, 30.0, np.nan])
         custom_penalty = 50.0  # Much smaller than adaptive would be
-        y_result = optimizer._apply_penalty_NA(y, penalty_value=custom_penalty, sd=0.0)
+        y_result = optimizer.apply_penalty_NA(y, penalty_value=custom_penalty, sd=0.0)
 
         # Should use custom penalty, not adaptive
         assert np.abs(y_result[3] - custom_penalty) < 0.01
@@ -350,7 +350,7 @@ class TestApplyPenaltyNARandomNoise:
 
         # Use at least 2 finite values for adaptive penalty
         y = np.array([1.0, 2.0, np.nan, np.nan, np.nan, np.nan])
-        y_result = optimizer._apply_penalty_NA(y, sd=0.1)  # Default noise
+        y_result = optimizer.apply_penalty_NA(y, sd=0.1)  # Default noise
 
         # All NaN values should be replaced
         assert np.all(np.isfinite(y_result))
@@ -379,7 +379,7 @@ class TestApplyPenaltyNARandomNoise:
         )
 
         y = np.array([1.0, np.nan, np.nan, np.nan])
-        y_result = optimizer._apply_penalty_NA(y, sd=0.0)  # No noise
+        y_result = optimizer.apply_penalty_NA(y, sd=0.0)  # No noise
 
         # All NaN values should have same penalty (no noise)
         penalty_values = y_result[1:]
@@ -405,13 +405,13 @@ class TestApplyPenaltyNARandomNoise:
         y = np.array([1.0, 2.0, 3.0, np.nan])
 
         # Test with larger noise
-        y_result_large = optimizer._apply_penalty_NA(y, sd=1.0)
+        y_result_large = optimizer.apply_penalty_NA(y, sd=1.0)
 
         # Reset random state
         np.random.seed(42)
 
         # Test with smaller noise
-        y_result_small = optimizer._apply_penalty_NA(y, sd=0.01)
+        y_result_small = optimizer.apply_penalty_NA(y, sd=0.01)
 
         # Both should have replaced the NaN
         assert np.isfinite(y_result_large[3])
@@ -440,7 +440,7 @@ class TestApplyPenaltyNAIntegration:
         )
 
         y = np.array([1.0, np.nan, 3.0, np.inf, 5.0, -np.inf])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         # All values should be finite
         assert np.all(np.isfinite(y_result))
@@ -472,7 +472,7 @@ class TestApplyPenaltyNAIntegration:
         )
 
         y = np.array([-10.0, -5.0, 0.0, 5.0, np.nan])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         # All values should be finite
         assert np.all(np.isfinite(y_result))
@@ -505,7 +505,7 @@ class TestApplyPenaltyNAIntegration:
         y_original = np.array([1.0, 2.0, np.nan, 4.0])
         y_copy = y_original.copy()
 
-        y_result = optimizer._apply_penalty_NA(y_original)
+        y_result = optimizer.apply_penalty_NA(y_original)
 
         # Original array should be unchanged (NaN still present)
         assert np.isnan(y_original[2])
@@ -534,7 +534,7 @@ class TestApplyPenaltyNAVerboseOutput:
         )
 
         y = np.array([1.0, 2.0, 3.0, np.nan])
-        _ = optimizer._apply_penalty_NA(y)
+        _ = optimizer.apply_penalty_NA(y)
 
         captured = capsys.readouterr()
         assert "adaptive penalty" in captured.out.lower()
@@ -558,7 +558,7 @@ class TestApplyPenaltyNAVerboseOutput:
         )
 
         y = np.array([5.0, np.nan])
-        _ = optimizer._apply_penalty_NA(y)
+        _ = optimizer.apply_penalty_NA(y)
 
         captured = capsys.readouterr()
         assert "insufficient finite values" in captured.out.lower()
@@ -581,7 +581,7 @@ class TestApplyPenaltyNAVerboseOutput:
 
         y = np.array([1.0, 2.0, np.nan])
         custom_penalty = 999.0
-        _ = optimizer._apply_penalty_NA(y, penalty_value=custom_penalty)
+        _ = optimizer.apply_penalty_NA(y, penalty_value=custom_penalty)
 
         captured = capsys.readouterr()
         assert "999" in captured.out or "999.0" in captured.out
@@ -606,7 +606,7 @@ class TestApplyPenaltyNAEdgeCases:
         )
 
         y = np.array([])
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
 
         assert len(y_result) == 0
 
@@ -628,7 +628,7 @@ class TestApplyPenaltyNAEdgeCases:
         )
 
         y = np.array([np.nan])
-        y_result = optimizer._apply_penalty_NA(y, sd=0.0)
+        y_result = optimizer.apply_penalty_NA(y, sd=0.0)
 
         # Should fallback to self.penalty
         assert np.isfinite(y_result[0])
@@ -656,7 +656,7 @@ class TestApplyPenaltyNAEdgeCases:
         import time
 
         start = time.time()
-        y_result = optimizer._apply_penalty_NA(y)
+        y_result = optimizer.apply_penalty_NA(y)
         elapsed = time.time() - start
 
         # Should complete quickly (< 1 second)

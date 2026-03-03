@@ -150,9 +150,7 @@ class TestMaxTimeTermination:
         # overhead on slow CI runners (1-3s), making fixed tolerances brittle.
         # 10 * 0.5s = 5s cap still catches any truly runaway termination.
         tolerance_factor = 10
-        assert (
-            elapsed_time < max_time_seconds * tolerance_factor
-        ), (
+        assert elapsed_time < max_time_seconds * tolerance_factor, (
             f"Runtime {elapsed_time:.2f}s exceeded {tolerance_factor}x the "
             f"time limit ({max_time_seconds * tolerance_factor:.1f}s). "
             "Termination logic may be broken."
