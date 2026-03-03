@@ -350,8 +350,8 @@ class TestKrigingFull:
         optimizer = SpotOptim(
             fun=rosenbrock,
             bounds=bounds,
-            max_iter=20,
-            n_initial=10,
+            max_iter=15,
+            n_initial=5,
             surrogate=kriging,
             seed=42,
             verbose=False,

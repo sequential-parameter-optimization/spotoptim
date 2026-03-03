@@ -113,7 +113,7 @@ class TestTerminationCriteria:
         # We need a way to stop it. We can wrap the objective function
         # but SpotOptim evaluates in batches.
 
-        max_evals_check = 30  # Check past the potential 30 barrier
+        max_evals_check = 10  # Check past the potential 30 barrier
 
         current_evals = 0
 

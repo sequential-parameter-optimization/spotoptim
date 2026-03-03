@@ -402,7 +402,7 @@ class SpotOptim(BaseEstimator):
         ocba_delta (int, optional): Number of additional evaluations to allocate using Optimal Computing
             Budget Allocation (OCBA) when noise handling is active. OCBA determines which existing
             design points should be re-evaluated to best distinguish between alternatives. Only used
-            when noise=True (repeats > 1) and ocba_delta > 0. Requires at least 3 design points with
+            when repeats_surrogate > 1 and ocba_delta > 0. Requires at least 3 design points with
             variance information. Defaults to 0 (no OCBA).
         tensorboard_log (bool, optional): Enable TensorBoard logging. If True, optimization metrics
             and hyperparameters are logged to TensorBoard. View logs by running:
@@ -492,13 +492,12 @@ class SpotOptim(BaseEstimator):
         max_surrogate_points (int or None): Maximum number of points for surrogate fitting.
         selection_method (str): Point selection method.
         acquisition_failure_strategy (str): Strategy for handling acquisition failures ('random').
-        noise (bool): True if noise handling is active (repeats > 1).
-        mean_X (ndarray or None): Aggregated unique design points (if noise=True).
-        mean_y (ndarray or None): Mean y values per design point (if noise=True).
-        var_y (ndarray or None): Variance of y values per design point (if noise=True).
-        min_mean_X (ndarray or None): X value of best mean y (if noise=True).
-        min_mean_y (float or None): Best mean y value (if noise=True).
-        min_var_y (float or None): Variance of best mean y (if noise=True).
+        mean_X (ndarray or None): Aggregated unique design points (if repeats_surrogate > 1).
+        mean_y (ndarray or None): Mean y values per design point (if repeats_surrogate > 1).
+        var_y (ndarray or None): Variance of y values per design point (if repeats_surrogate > 1).
+        min_mean_X (ndarray or None): X value of best mean y (if repeats_surrogate > 1).
+        min_mean_y (float or None): Best mean y value (if repeats_surrogate > 1).
+        min_var_y (float or None): Variance of best mean y (if repeats_surrogate > 1).
         de_x0_prob (float): Probability of using the best point as starting point for differential evolution.
         tricands_fringe (bool): Whether to use the fringe of the design space for the initial design.
         prob_de_tricands (float): Probability of using differential evolution as an optimizer on the surrogate model.
@@ -1219,7 +1218,7 @@ class SpotOptim(BaseEstimator):
             from spotoptim import SpotOptim
             # Normalize transformation names
             spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (1, 100)],
-                             var_trans=['log10', 'id', None, 'None'])
+                             var_trans=['log10', 'id'])
             spot.var_trans
             ```
         """
@@ -1255,14 +1254,12 @@ class SpotOptim(BaseEstimator):
             ValueError: If bounds are invalidly formatted.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[('red', 'green', 'blue'), (0, 10)])
-            >>> spot.process_factor_bounds()
-            Factor variable at dimension 0:
-              Levels: ['red', 'green', 'blue']
-              Mapped to integers: 0 to 2
-            >>> print(spot.bounds)
-            [(0, 2), (0, 10)]
+            ```{python}
+            from spotoptim import SpotOptim
+            spot = SpotOptim(fun=lambda x: x, bounds=[('red', 'green', 'blue'), (0, 10)])
+            spot.process_factor_bounds()
+            print(spot.bounds)
+            ```
         """
         processed_bounds = []
 
@@ -1332,12 +1329,21 @@ class SpotOptim(BaseEstimator):
                 Returns None if optimization hasn't started (no data).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: np.sum(x**2), bounds=[(-5, 5)], var_name=["x"])
-            >>> opt.optimize()
-            >>> best_params = opt.get_best_hyperparameters()
-            >>> print(best_params['x']) # Should be close to 0
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(fun=sphere,
+                            bounds=[(-5, 5)],
+                            n_initial=5,
+                            var_name=["x"],
+                            verbose=True)
+            opt.optimize()
+            best_params = opt.get_best_hyperparameters()
+            print(best_params['x']) # Should be close to 0
+            ```
         """
         if self.X_ is None or len(self.X_) == 0:
             return None
@@ -1626,21 +1632,24 @@ class SpotOptim(BaseEstimator):
             ndarray: Points in reduced space, shape (n_samples, n_reduced_dims).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Create problem with one fixed dimension
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
-            ...     max_iter=1,
-            ...     n_initial=3
-            ... )
-            >>> X_full = np.array([[1.0, 2.0, 3.0], [4.0, 2.0, 5.0]])
-            >>> X_red = opt.to_red_dim(X_full)
-            >>> X_red.shape
-            (2, 2)
-            >>> np.array_equal(X_red, np.array([[1.0, 3.0], [4.0, 5.0]]))
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            # Create problem with one fixed dimension
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
+                max_iter=10,
+                n_initial=3
+            )
+            X_full = np.array([[1.0, 2.0, 3.0], [4.0, 2.0, 5.0]])
+            X_red = opt.to_red_dim(X_full)
+            print(X_red.shape)
+            print(np.array_equal(X_red, np.array([[1.0, 3.0], [4.0, 5.0]])))
+            ```
         """
         if not self.red_dim:
             # No reduction occurred, return as-is
@@ -1666,21 +1675,24 @@ class SpotOptim(BaseEstimator):
             ndarray: Points in full space, shape (n_samples, n_original_dims).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Create problem with one fixed dimension
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
-            ...     max_iter=1,
-            ...     n_initial=3
-            ... )
-            >>> X_red = np.array([[1.0, 3.0], [2.0, 4.0]])  # Only x0 and x2
-            >>> X_full = opt.to_all_dim(X_red)
-            >>> X_full.shape
-            (2, 3)
-            >>> X_full[:, 1]  # Middle dimension should be 2.0
-            array([2., 2.])
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            # Create problem with one fixed dimension
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (2, 2), (-5, 5)],  # x1 is fixed at 2
+                max_iter=10,
+                n_initial=3
+            )
+            X_red = np.array([[1.0, 3.0], [2.0, 4.0]])  # Only x0 and x2
+            X_full = opt.to_all_dim(X_red)
+            print(X_full.shape)
+            print(X_full[:, 1])
+            ```
         """
         if not self.red_dim:
             # No reduction occurred, return as-is
@@ -1732,12 +1744,15 @@ class SpotOptim(BaseEstimator):
             See also inverse_transform_value.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
-            >>> spot.transform_value(10, 'log10')
-            1.0
-            >>> spot.transform_value(100, 'log(x)')
-            4.605170185988092
+            ```{python}
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
+            spot.transform_value(10, 'log10')
+            spot.transform_value(100, 'log(x)')
+            ```
         """
         # Ensure x is a float
         if not isinstance(x, float):
@@ -1803,12 +1818,15 @@ class SpotOptim(BaseEstimator):
             See also transform_value.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
-            >>> spot.inverse_transform_value(10, 'log10')
-            10.0
-            >>> spot.inverse_transform_value(100, 'log(x)')
-            10.0
+            ```{python}
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
+            spot.inverse_transform_value(10, 'log10')
+            spot.inverse_transform_value(100, 'log(x)')
+            ```
         """
         # Ensure x is a float
         if not isinstance(x, float):
@@ -1873,7 +1891,10 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> from spotoptim import SpotOptim
             >>> import numpy as np
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
+            >>> spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
             >>> X_orig = np.array([[1], [10], [100]])
             >>> spot._transform_X(X_orig)
             array([[0.        ],
@@ -1912,7 +1933,10 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> from spotoptim import SpotOptim
             >>> import numpy as np
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10)])
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
+            >>> spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
             >>> X_trans = np.array([[0], [1], [2]])
             >>> spot._inverse_transform_X(X_trans)
             array([[  1.],
@@ -1947,12 +1971,17 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (0.1, 100)])
-            >>> spot.var_trans = ['log10', 'sqrt']
-            >>> spot.transform_bounds()
-            >>> print(spot.bounds)
-            [(0.0, 1.0), (0.31622776601683794, 10.0)]
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            spot = SpotOptim(fun=sphere, bounds=[(1, 10), (0.1, 100)])
+            spot.var_trans = ['log10', 'sqrt']
+            spot.transform_bounds()
+            print(spot.bounds)
+            ```
         """
         for i, trans in enumerate(self.var_trans):
             if trans is not None:
@@ -1994,8 +2023,11 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> from spotoptim import SpotOptim
             >>> import numpy as np
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> spot = SpotOptim(
-            ...     fun=lambda x: x,
+            ...     fun=sphere,
             ...     bounds=[('red', 'blue'), (0, 10)]
             ... )
             >>> spot.process_factor_bounds()
@@ -2054,23 +2086,25 @@ class SpotOptim(BaseEstimator):
                 shape (n_initial, n_features_reduced).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10
-            ... )
-            >>> # Generate default LHS design
-            >>> X0 = opt.get_initial_design()
-            >>> X0.shape
-            (10, 2)
-            >>>
-            >>> # Provide custom initial design
-            >>> X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
-            >>> X0_processed = opt.get_initial_design(X0_custom)
-            >>> X0_processed.shape
-            (3, 2)
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10
+            )
+            # Generate default LHS design
+            X0 = opt.get_initial_design()
+            print(X0.shape)
+            # Provide custom initial design
+            X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
+            X0_processed = opt.get_initial_design(X0_custom)
+            print(X0_processed.shape)
+            ```
         """
         # Generate or use provided initial design
         if X0 is None:
@@ -2122,7 +2156,10 @@ class SpotOptim(BaseEstimator):
 
         Examples:
             >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(fun=sphere,
             ...                 bounds=[(-5, 5), (-5, 5)],
             ...                 n_initial=10)
             >>> X0 = opt._generate_initial_design()
@@ -2156,8 +2193,11 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=10,
             ...     var_type=['int', 'int']  # Integer variables may cause duplicates
@@ -2169,7 +2209,7 @@ class SpotOptim(BaseEstimator):
             >>>
             >>> # With repeats
             >>> opt_repeat = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
             ...     repeats_initial=3
@@ -2252,8 +2292,11 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=10
             ... )
@@ -2331,8 +2374,11 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     x0=np.array([1.0, 2.0])
             ... )
@@ -2432,8 +2478,11 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=10
             ... )
@@ -2450,8 +2499,11 @@ class SpotOptim(BaseEstimator):
             Error: Insufficient valid initial design points: only 1 finite value(s) out of 10 evaluated...
             >>>
             >>> # With verbose output
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt_verbose = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=10,
             ...     verbose=True
@@ -2498,8 +2550,11 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
             ...     verbose=True
@@ -2515,11 +2570,14 @@ class SpotOptim(BaseEstimator):
             Best y: 0.0
             >>>
             >>> # With noisy function
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt_noise = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
-            ...     noise=True,
+            ...     repeats_surrogate=2,
             ...     verbose=True
             ... )
             >>> opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
@@ -2559,8 +2617,11 @@ class SpotOptim(BaseEstimator):
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
             >>> # Without repeats
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     repeats_surrogate=1
             ... )
@@ -2570,8 +2631,11 @@ class SpotOptim(BaseEstimator):
             (1, 2)
             >>>
             >>> # With repeats for noisy function
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt_noisy = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     repeats_surrogate=3
             ... )
@@ -2614,7 +2678,10 @@ class SpotOptim(BaseEstimator):
         Examples:
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(fun=sphere, bounds=[(-5, 5)])
             >>> X = np.array([[1, 2], [3, 4], [5, 6]])
             >>> y = np.array([1.0, np.nan, np.inf])
             >>> X_clean, y_clean = opt._remove_nan(X, y, stop_on_zero_return=False)
@@ -2664,7 +2731,10 @@ class SpotOptim(BaseEstimator):
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
             >>> from sklearn.gaussian_process import GaussianProcessRegressor
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
+            >>> opt = SpotOptim(fun=sphere,
             ...                 bounds=[(-5, 5), (-5, 5)],
             ...                 max_surrogate_points=10,
             ...                 surrogate=GaussianProcessRegressor())
@@ -2694,7 +2764,7 @@ class SpotOptim(BaseEstimator):
         """Fit surrogate model using appropriate data based on noise handling.
 
         This method selects the appropriate training data for surrogate fitting:
-        - For noisy functions (noise=True): Uses mean_X and mean_y (aggregated values)
+        - For noisy functions (repeats_surrogate > 1): Uses mean_X and mean_y (aggregated values)
         - For deterministic functions: Uses X_ and y_ (all evaluated points)
 
         The data is transformed to internal scale before fitting the surrogate.
@@ -2707,8 +2777,11 @@ class SpotOptim(BaseEstimator):
             >>> from spotoptim import SpotOptim
             >>> from sklearn.gaussian_process import GaussianProcessRegressor
             >>> # Deterministic function
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     surrogate=GaussianProcessRegressor(),
             ...     n_initial=5
@@ -2720,13 +2793,15 @@ class SpotOptim(BaseEstimator):
             >>> # Surrogate fitted with X_ and y_
             >>>
             >>> # Noisy function
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt_noise = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     surrogate=GaussianProcessRegressor(),
             ...     n_initial=5,
             ...     repeats_initial=3,
-            ...     noise=True  # Activates noise handling
             ... )
             >>> # Simulate noisy optimization state
             >>> opt_noise.mean_X = np.array([[1, 2], [0, 0]])
@@ -2769,8 +2844,11 @@ class SpotOptim(BaseEstimator):
             >>> import numpy as np
             >>> from spotoptim import SpotOptim
             >>> from sklearn.gaussian_process import GaussianProcessRegressor
+            >>> def sphere(X):
+            ...     X = np.atleast_2d(X)
+            ...     return np.sum(X**2, axis=1)
             >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     fun=sphere,
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     surrogate=GaussianProcessRegressor()
             ... )
@@ -3857,7 +3935,10 @@ class SpotOptim(BaseEstimator):
             ```{python}
             import numpy as np
             from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(fun=sphere, bounds=[(-5, 5)])
             A = np.array([[1, 2], [3, 4], [5, 6]])
             X = np.array([[3, 4], [7, 8]])
             new_A, is_new = opt.select_new(A, X)
@@ -3892,19 +3973,23 @@ class SpotOptim(BaseEstimator):
                 where N is min(acquisition_fun_return_size, population_size).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     acquisition='ei'
-            ... )
-            >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
-            >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
-            >>> x_next = opt.optimize_acquisition_func()
-            >>> print("Next point to evaluate:", x_next)
-            Next point to evaluate: [some float values]
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                max_iter=10,
+                seed=0,
+            )
+            opt.optimize()
+            x_next = opt.suggest_next_infill_point()
+            print("Next point to evaluate:", x_next)
+            ```
         """
         if self.acquisition_optimizer == "tricands":
             return self._optimize_acquisition_tricands()
@@ -3994,24 +4079,26 @@ class SpotOptim(BaseEstimator):
                 - y: all function values
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     max_iter=20,
-            ...     seed=0,
-            ...     x0=np.array([0.0, 0.0]),
-            ...     verbose=True
-            ... )
-            >>> result = opt.optimize()
-            >>> print(result.message.splitlines()[0])
-            Optimization terminated: maximum evaluations (20) reached
-            >>> print("Best point:", result.x)
-            Best point: [0. 0.]
-            >>> print("Best value:", result.fun)
-            Best value: 0.0
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                max_iter=20,
+                seed=0,
+                x0=np.array([0.0, 0.0]),
+                verbose=True
+            )
+            result = opt.optimize()
+            print(result.message.splitlines()[0])
+            print("Best point:", result.x)
+            print("Best value:", result.fun)
+            ```
         """
         # Track results across restarts for final aggregation.
         self.restarts_results_ = []
@@ -4144,23 +4231,26 @@ class SpotOptim(BaseEstimator):
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
 
         Examples:
-            >>> import time
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     max_iter=20,
-            ...     seed=0,
-            ...     n_jobs=1,  # Use sequential optimization for deterministic output
-            ...     verbose=True
-            ... )
-            >>> status, result = opt._execute_optimization_run(timeout_start=time.time())
-            >>> print(status)
-            FINISHED
-            >>> print(result.message.splitlines()[0])
-            Optimization terminated: maximum evaluations (20) reached
+            ```{python}
+            import time
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                max_iter=20,
+                seed=0,
+                n_jobs=1,  # Use sequential optimization for deterministic output
+                verbose=True
+            )
+            status, result = opt._execute_optimization_run(timeout_start=time.time())
+            print(status)
+            print(result.message.splitlines()[0])
+            ```
         """
 
         # Dispatch to steady-state optimizer if proper parallelization is requested
@@ -4868,23 +4958,27 @@ class SpotOptim(BaseEstimator):
             Shape is (n_infill_points, n_features).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     n_infill_points=2
-            ... )
-            >>> # Need to initialize optimization state (X_, y_, surrogate)
-            >>> # Normally done inside optimize()
-            >>> np.random.seed(0)
-            >>> opt.X_ = np.random.rand(10, 2)
-            >>> opt.y_ = np.random.rand(10)
-            >>> opt._fit_surrogate(opt.X_, opt.y_)
-            >>> x_next = opt.suggest_next_infill_point()
-            >>> x_next.shape
-            (2, 2)
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                n_infill_points=2
+            )
+            # Need to initialize optimization state (X_, y_, surrogate)
+            # Normally done inside optimize()
+            np.random.seed(0)
+            opt.X_ = np.random.rand(10, 2)
+            opt.y_ = np.random.rand(10)
+            opt._fit_surrogate(opt.X_, opt.y_)
+            x_next = opt.suggest_next_infill_point()
+            x_next.shape
+            ```
         """
         # 1. Optimizer candidates
         candidates = []
@@ -5113,7 +5207,7 @@ class SpotOptim(BaseEstimator):
             >>> opt_noise = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
-            ...     noise=True,
+            ...     repeats_surrogate=2,
             ...     verbose=True
             ... )
             >>> opt_noise.n_iter_ = 1
@@ -5277,7 +5371,7 @@ class SpotOptim(BaseEstimator):
             ...     fun=lambda X: np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0]),
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
-            ...     noise=True,
+            ...     repeats_surrogate=2,
             ...     ocba_delta=5,
             ...     verbose=True
             ... )
@@ -5294,7 +5388,7 @@ class SpotOptim(BaseEstimator):
             >>> opt2 = SpotOptim(
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
-            ...     noise=True,
+            ...     repeats_surrogate=2,
             ...     ocba_delta=5,
             ...     verbose=True
             ... )
@@ -5542,33 +5636,41 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Without noise
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_iter=10, n_initial=5)
-            >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
-            >>> opt.y_ = np.array([5.0, 25.0, 1.0])
-            >>> opt.update_stats()
-            >>> opt.min_y
-            1.0
-            >>> opt.min_X
-            array([0, 1])
-            >>> opt.counter
-            3
-            >>>
-            >>> # With noise
-            >>> opt_noise = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                       bounds=[(-5, 5), (-5, 5)],
-            ...                       n_initial=5,
-            ...                       repeats_initial=2)
-            >>> opt_noise.noise = True
-            >>> opt_noise.X_ = np.array([[1, 2], [1, 2], [3, 4]])
-            >>> opt_noise.y_ = np.array([5.0, 5.0, 25.0])
-            >>> opt_noise.update_stats()
-            >>> opt_noise.mean_y.shape
-            (2,)
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                return np.sum(X**2, axis=1)
+
+            # Without noise
+            opt = SpotOptim(fun=sphere,
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_iter=10, n_initial=5)
+            print(f"opt.X_: {opt.X_}")
+            print(f"opt.y_: {opt.y_}")
+            print(f"opt.min_y: {opt.min_y}")
+            print(f"opt.min_X: {opt.min_X}")
+            print(f"opt.counter: {opt.counter}")
+
+            # With noise
+            opt_noise = SpotOptim(fun=sphere,
+                                  bounds=[(-5, 5), (-5, 5)],
+                                  n_initial=5,
+                                  repeats_surrogate=2,
+                                  repeats_initial=2)
+            print(f"opt_noise.X_: {opt_noise.X_}")
+            print(f"opt_noise.y_: {opt_noise.y_}")
+            print(f"opt_noise.min_y: {opt_noise.min_y}")
+            print(f"opt_noise.min_X: {opt_noise.min_X}")
+            print(f"opt_noise.counter: {opt_noise.counter}")
+            print(f"opt_noise.mean_X: {opt_noise.mean_X}")
+            print(f"opt_noise.mean_y: {opt_noise.mean_y}")
+            print(f"opt_noise.var_y: {opt_noise.var_y}")
+            print(f"opt_noise.min_mean_X: {opt_noise.min_mean_X}")
+            print(f"opt_noise.min_mean_y: {opt_noise.min_mean_y}")
+            print(f"opt_noise.min_var_y: {opt_noise.min_var_y}")
+            ```
         """
         if self.y_ is None or len(self.y_) == 0:
             return
@@ -5768,27 +5870,32 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Run optimization
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>>
-            >>> # Save complete results
-            >>> opt.save_result(prefix="sphere_opt")
-            Result saved to sphere_opt_res.pkl
-            >>>
-            >>> # Later: load and analyze
-            >>> # opt_loaded = SpotOptim.load_result("sphere_opt_res.pkl")
-            >>> # print("Best value:", opt_loaded.best_y_)
-            >>> # opt_loaded.plot_surrogate()
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+
+            # Run optimization
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=30,
+                n_initial=10,
+                seed=42
+            )
+            result = opt.optimize()
+
+            # Save complete results
+            opt.save_result(prefix="sphere_opt")
+
+            # Later: load and analyze
+            opt_loaded = SpotOptim.load_result("sphere_opt_res.pkl")
+            print("Best value:", opt_loaded.best_y_)
+            opt_loaded.plot_surrogate()
+            ```
         """
         # Use save_experiment with file_io unpickleables to preserve results
         if filename is None:
@@ -5826,23 +5933,41 @@ class SpotOptim(BaseEstimator):
             FileNotFoundError: If the specified file doesn't exist.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Load results
-            >>> opt = SpotOptim.load_result("sphere_opt_res.pkl")
-            Loaded result from sphere_opt_res.pkl
-            >>>
-            >>> # Analyze results
-            >>> print("Best point:", opt.best_x_)
-            >>> print("Best value:", opt.best_y_)
-            >>> print("Total evaluations:", opt.counter)
-            >>> print("Success rate:", opt.success_rate)
-            >>>
-            >>> # Continue optimization if needed
-            >>> # opt.fun = lambda X: np.sum(X**2, axis=1)  # Re-attach if continuing
-            >>> # opt.max_iter = 50  # Increase budget
-            >>> # result = opt.optimize()
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+
+            # Run optimization
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            result = opt.optimize()
+
+            # Save complete results
+            opt.save_result(prefix="sphere_opt")
+
+            # Load results
+            opt = SpotOptim.load_result("sphere_opt_res.pkl")
+
+            # Analyze results
+            print("Best point:", opt.best_x_)
+            print("Best value:", opt.best_y_)
+            print("Total evaluations:", opt.counter)
+            print("Success rate:", opt.success_rate)
+
+            # Continue optimization if needed
+            opt.fun = lambda X: np.sum(X**2, axis=1)  # Re-attach if continuing
+            opt.max_iter = 50  # Increase budget
+            result = opt.optimize()
+            ```
         """
         if not os.path.exists(filename):
             raise FileNotFoundError(f"Result file not found: {filename}")
@@ -5904,26 +6029,31 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Define experiment locally
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>>
-            >>> # Save experiment (without results)
-            >>> opt.save_experiment(prefix="sphere_opt")
-            Experiment saved to sphere_opt_exp.pkl
-            >>>
-            >>> # On remote machine: load and run
-            >>> # opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
-            >>> # result = opt_remote.optimize()
-            >>> # opt_remote.save_result(prefix="sphere_opt")  # Save results
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+
+            # Define experiment locally
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=15,
+                n_initial=10,
+                seed=42
+            )
+
+            # Save experiment (without results)
+            opt.save_experiment(prefix="sphere_opt")
+
+            # On remote machine: load and run
+            opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            result = opt_remote.optimize()
+            opt_remote.save_result(prefix="sphere_opt")  # Save results
+            ```
         """
         # Close TensorBoard writer before pickling
         self._close_and_del_tensorboard_writer()
@@ -5976,18 +6106,31 @@ class SpotOptim(BaseEstimator):
             FileNotFoundError: If the specified file doesn't exist.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Load experiment
-            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
-            Loaded experiment from sphere_opt_exp.pkl
-            >>>
-            >>> # Re-attach objective function
-            >>> opt.fun = lambda X: np.sum(X**2, axis=1)
-            >>>
-            >>> # Run optimization
-            >>> result = opt.optimize()
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+
+            # Define experiment locally
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=15,
+                n_initial=10,
+                seed=42
+            )
+
+            # Save experiment (without results)
+            opt.save_experiment(prefix="sphere_opt")
+
+            # On remote machine: load and run
+            opt_remote = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            result = opt_remote.optimize()
+            opt_remote.save_result(prefix="sphere_opt")  # Save results
+            ```
         """
         if not os.path.exists(filename):
             raise FileNotFoundError(f"Experiment file not found: {filename}")
@@ -6078,73 +6221,23 @@ class SpotOptim(BaseEstimator):
                 Defaults to 4.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Basic usage
-            >>> def sphere(X):
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     var_name=["x1", "x2"],
-            ...     max_iter=20,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> opt.print_best(result)
-            <BLANKLINE>
-            Best Solution Found:
-            --------------------------------------------------
-              x1: 0.0123
-              x2: -0.0045
-              Objective Value: 0.000173
-              Total Evaluations: 20
-            >>>
-            >>> # Example 2: With log-scale transformations (e.g., for learning rates)
-            >>> def objective(X):
-            ...     # X[:, 0]: neurons (int), X[:, 1]: layers (int),
-            ...     # X[:, 2]: log10(lr), X[:, 3]: log10(alpha)
-            ...     return np.sum(X**2, axis=1)  # Placeholder
-            >>> opt = SpotOptim(
-            ...     fun=objective,
-            ...     bounds=[(16, 128), (1, 4), (-3, 0), (-2, 1)],
-            ...     var_type=["int", "int", "float", "float"],
-            ...     var_name=["neurons", "layers", "log10_lr", "log10_alpha"],
-            ...     max_iter=30,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> # Transform log-scale parameters back to original scale
-            >>> transformations = [
-            ...     int,              # neurons -> int
-            ...     int,              # layers -> int
-            ...     lambda x: 10**x,  # log10_lr -> lr
-            ...     lambda x: 10**x   # log10_alpha -> alpha
-            ... ]
-            >>> opt.print_best(result, transformations=transformations)
-            <BLANKLINE>
-            Best Solution Found:
-            --------------------------------------------------
-              neurons: 64
-              layers: 2
-              log10_lr: 0.0012
-              log10_alpha: 0.0345
-              Objective Value: 1.2345
-              Total Evaluations: 30
-            >>>
-            >>> # Example 3: Without result object (using stored values)
-            >>> opt.print_best()  # Uses opt.best_x_ and opt.best_y_
-            >>>
-            >>> # Example 4: Hide variable names
-            >>> opt.print_best(result, show_name=False)
-            <BLANKLINE>
-            Best Solution Found:
-            --------------------------------------------------
-              x0: 0.0123
-              x1: -0.0045
-              Objective Value: 0.000173
-              Total Evaluations: 20
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x1", "x2"],
+                max_iter=10,
+                n_initial=5
+            )
+            result = opt.optimize()
+            opt.print_best(result)
+            ```
         """
         # Get values from result or stored attributes
         if result is not None:
@@ -6238,6 +6331,25 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             str: Formatted table string.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x1", "x2"],
+                max_iter=10,
+                n_initial=5
+            )
+            result = opt.optimize()
+            opt.print_results_table()
+            ```
         """
         table = self.get_results_table(
             tablefmt=tablefmt,
@@ -6298,64 +6410,28 @@ class SpotOptim(BaseEstimator):
             str: Formatted table string that can be printed or saved.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Basic usage after optimization
-            >>> def sphere(X):
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5), (-5, 5)],
-            ...     var_name=["x1", "x2", "x3"],
-            ...     var_type=["float", "float", "float"],
-            ...     max_iter=30,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> table = opt.get_results_table()
-            >>> print(table)
-            | name   | type   |   lower |   upper |   tuned |
-            |--------|--------|---------|---------|---------|
-            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
-            | x2     | num    |    -5.0 |     5.0 | -0.0234 |
-            | x3     | num    |    -5.0 |     5.0 |  0.0345 |
-            >>>
-            >>> # Example 2: With importance scores
-            >>> table = opt.get_results_table(show_importance=True)
-            >>> print(table)
-            | name   | type   |   lower |   upper |   tuned |   importance | stars   |
-            |--------|--------|---------|---------|---------|--------------|---------|
-            | x1     | num    |    -5.0 |     5.0 |  0.0123 |        45.23 | **      |
-            | x2     | num    |    -5.0 |     5.0 | -0.0234 |        32.17 | *       |
-            | x3     | num    |    -5.0 |     5.0 |  0.0345 |        22.60 | *       |
-            >>>
-            >>> # Example 3: Different table format
-            >>> table = opt.get_results_table(tablefmt="grid")
-            >>> print(table)
-            +--------+--------+---------+---------+---------+
-            | name   | type   |   lower |   upper |   tuned |
-            +========+========+=========+=========+=========+
-            | x1     | num    |    -5.0 |     5.0 |  0.0123 |
-            +--------+--------+---------+---------+---------+
-            ...
-            >>>
-            >>> # Example 4: With factor variables
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), ("red", "green", "blue")],
-            ...     var_name=["size", "color"],
-            ...     var_type=["float", "factor"],
-            ...     max_iter=20,
-            ...     n_initial=10
-            ... )
-            >>> result = opt.optimize()
-            >>> table = opt.get_results_table()
-            >>> print(table)
-            | name   | type   | lower   | upper   | tuned   |
-            |--------|--------|---------|---------|---------|
-            | size   | num    | -5.0    | 5.0     | 0.0123  |
-            | color  | factor | red     | blue    | green   |
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            # Example 1: Basic usage after optimization
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5), (-5, 5)],
+                var_name=["x1", "x2", "x3"],
+                var_type=["float", "float", "float"],
+                max_iter=15,
+                n_initial=10
+            )
+            result = opt.optimize()
+            table = opt.get_results_table()
+            print(table)
+            table = opt.get_results_table(show_importance=True)
+            print(table)
+            ```
         """
         if self.best_x_ is None or self.best_y_ is None:
             return "No optimization results available. Run optimize() first."
@@ -6482,65 +6558,25 @@ class SpotOptim(BaseEstimator):
             str: Formatted table string.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Numeric parameters
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-10, 10), (0, 1)],
-            ...     var_name=["x1", "x2", "x3"],
-            ...     var_type=["float", "int", "float"],
-            ...     max_iter=20,
-            ...     n_initial=10
-            ... )
-            >>> table = opt.get_design_table()
-            >>> print(table)
-            | name   | type   |   lower |   upper |   default |
-            |--------|--------|---------|---------|-----------|
-            | x1     | num    |    -5.0 |     5.0 |       0.0 |
-            | x2     | int    |   -10.0 |    10.0 |       0.0 |
-            | x3     | num    |     0.0 |     1.0 |       0.5 |
-            >>>
-            >>> # Example 2: With factor variables
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(10, 100), ("SGD", "Adam", "RMSprop"), (0.001, 0.1)],
-            ...     var_name=["neurons", "optimizer", "lr"],
-            ...     var_type=["int", "factor", "float"],
-            ...     max_iter=30,
-            ...     n_initial=10
-            ... )
-            >>> table = opt.get_design_table()
-            >>> print(table)
-            | name      | type   | lower   | upper   | default   |
-            |-----------|--------|---------|---------|-----------|
-            | neurons   | int    | 10.0    | 100.0   | 55.0      |
-            | optimizer | factor | SGD     | RMSprop | Adam      |
-            | lr        | num    | 0.001   | 0.1     | 0.0505    |
-            >>>
-            >>> # Example 3: Before running optimization
-            >>> def hyperparameter_objective(X):
-            ...     # X[:, 0]: layers, X[:, 1]: neurons, X[:, 2]: dropout
-            ...     return np.sum(X**2, axis=1)  # Placeholder
-            >>> opt = SpotOptim(
-            ...     fun=hyperparameter_objective,
-            ...     bounds=[(1, 5), (16, 256), (0.0, 0.5)],
-            ...     var_name=["layers", "neurons", "dropout"],
-            ...     var_type=["int", "int", "float"],
-            ...     max_iter=50,
-            ...     n_initial=15
-            ... )
-            >>> # Get design table before optimization
-            >>> print("Search Space Configuration:")
-            >>> table = opt.get_design_table()
-            >>> print(table)
-            Search Space Configuration:
-            | name    | type   |   lower |   upper |   default |
-            |---------|--------|---------|---------|-----------|
-            | layers  | int    |     1.0 |     5.0 |       3.0 |
-            | neurons | int    |    16.0 |   256.0 |     136.0 |
-            | dropout | num    |     0.0 |     0.5 |      0.25 |
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-10, 10), (0, 1)],
+                var_name=["x1", "x2", "x3"],
+                var_type=["float", "int", "float"],
+                max_iter=20,
+                n_initial=10
+            )
+            table = opt.get_design_table()
+            print(table)
+            ```
         """
         # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
         if self.red_dim and hasattr(self, "all_var_trans"):
@@ -6624,6 +6660,27 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             str: Formatted table string.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-10, 10), (0, 1)],
+                var_name=["x1", "x2", "x3"],
+                var_type=["float", "int", "float"],
+                max_iter=20,
+                n_initial=10
+            )
+            table = opt.gen_design_table()
+            print(table)
+            ```
         """
         if self.best_x_ is not None:
             return self.get_results_table(precision=precision, tablefmt=tablefmt)
@@ -6647,51 +6704,31 @@ class SpotOptim(BaseEstimator):
             List[float]: Importance scores for each dimension (0-100 scale).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>>
-            >>> # Example 1: Identify important parameters
-            >>> def test_func(X):
-            ...     # x0 has strong effect, x1 has weak effect
-            ...     return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
-            >>> opt = SpotOptim(
-            ...     fun=test_func,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     var_name=["x0", "x1"],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>> importance = opt.get_importance()
-            >>> print(f"x0 importance: {importance[0]:.2f}")
-            >>> print(f"x1 importance: {importance[1]:.2f}")
-            x0 importance: 89.23
-            x1 importance: 10.77
-            >>>
-            >>> # Example 2: With more dimensions
-            >>> def rosenbrock(X):
-            ...     return np.sum(100*(X[:, 1:] - X[:, :-1]**2)**2 + (1 - X[:, :-1])**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=rosenbrock,
-            ...     bounds=[(-2, 2)] * 4,
-            ...     var_name=["x0", "x1", "x2", "x3"],
-            ...     max_iter=50,
-            ...     n_initial=20,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>> importance = opt.get_importance()
-            >>> for i, imp in enumerate(importance):
-            ...     print(f"x{i}: {imp:.2f}%")
-            x0: 32.15%
-            x1: 28.43%
-            x2: 25.67%
-            x3: 13.75%
-            >>>
-            >>> # Example 3: Use in results table
-            >>> table = opt.print_results_table(show_importance=True)
-            >>> print(table)
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            def test_func(X):
+                # x0 has strong effect, x1 has weak effect
+                return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+
+            opt = SpotOptim(
+                fun=test_func,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x0", "x1"],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            result = opt.optimize()
+            importance = opt.get_importance()
+            print(f"x0 importance: {importance[0]:.2f}")
+            print(f"x1 importance: {importance[1]:.2f}")
+
+            # Use table to display importance
+            table = opt.print_results_table(show_importance=True)
+            print(table)
+            ```
         """
         if self.X_ is None or self.y_ is None or len(self.y_) < 3:
             # Not enough data to compute importance
@@ -6770,23 +6807,28 @@ class SpotOptim(BaseEstimator):
         - *: p < 0.05 (marginally significant)
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> import numpy as np
-            >>>
-            >>> # After running optimization
-            >>> opt = SpotOptim(...)
-            >>> result = opt.optimize()
-            >>> opt.sensitivity_spearman()
-            Sensitivity Analysis (Spearman Correlation):
-            --------------------------------------------------
-              l1 (neurons)        : +0.005 (p=0.959)
-              num_layers          : -0.192 (p=0.056)
-              activation          : (categorical variable, use visual inspection)
-              lr_unified          : -0.040 (p=0.689)
-              alpha               : -0.233 (p=0.020) *
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+
+            def test_func(X):
+                # x0 has strong effect, x1 has weak effect
+                X = np.atleast_2d(X)
+                return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+
+            opt = SpotOptim(
+                fun=test_func,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x0", "x1"],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            opt.optimize()
+            opt.sensitivity_spearman()
+            ```
 
         Note:
-            Requires scipy to be installed. If not available, raises ImportError.
             Only meaningful after optimize() has been called with sufficient evaluations.
         """
         try:
@@ -6879,6 +6921,26 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             list: A list of star strings.
+
+        Examples:
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+
+            def test_func(X):
+                return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+
+            opt = SpotOptim(
+                fun=test_func,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x0", "x1"],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            opt.optimize()
+            opt.get_stars([100, 75, 50, 10, 0])
+            ```
         """
         output_list = []
         for value in input_list:
@@ -6995,7 +7057,7 @@ class SpotOptim(BaseEstimator):
         - Best y value found so far (min_y)
         - Last y value evaluated
         - Best X coordinates (for each dimension)
-        - If noise=True: also logs mean values and variance
+        - If repeats_surrogate > 1: also logs mean values and variance
         """
         if self.tb_writer is None or self.y_ is None or len(self.y_) == 0:
             return
@@ -7147,7 +7209,38 @@ class SpotOptim(BaseEstimator):
         ylabel: str = "Objective Value",
         mo: bool = False,
     ) -> None:
-        """Plot optimization progress using spotoptim.plot.visualization.plot_progress."""
+        """Plot optimization progress using spotoptim.plot.visualization.plot_progress.
+
+        Args:
+            show (bool): Whether to show the plot.
+            log_y (bool): Whether to use a logarithmic y-axis.
+            figsize (tuple): The size of the plot.
+            ylabel (str): The label for the y-axis.
+            mo (bool): Whether the optimization is multi-objective.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+
+            def test_func(X):
+                return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+
+            opt = SpotOptim(
+                fun=test_func,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x0", "x1"],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            opt.optimize()
+            opt.plot_progress()
+            ```
+        """
         plot_progress(
             self, show=show, log_y=log_y, figsize=figsize, ylabel=ylabel, mo=mo
         )
@@ -7171,6 +7264,44 @@ class SpotOptim(BaseEstimator):
         """Plot the surrogate model for two dimensions.
 
         Delegates to spotoptim.plot.visualization.plot_surrogate.
+
+        Args:
+            i (int): The index of the first dimension.
+            j (int): The index of the second dimension.
+            show (bool): Whether to show the plot.
+            alpha (float): The alpha value for the plot.
+            var_name (Optional[List[str]]): The names of the variables.
+            cmap (str): The colormap to use.
+            num (int): The number of points to use for the plot.
+            vmin (Optional[float]): The minimum value for the plot.
+            vmax (Optional[float]): The maximum value for the plot.
+            add_points (bool): Whether to add points to the plot.
+            grid_visible (bool): Whether to show the grid.
+            contour_levels (int): The number of contour levels to use.
+            figsize (tuple): The size of the plot.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+
+            def test_func(X):
+                return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+
+            opt = SpotOptim(
+                fun=test_func,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x0", "x1"],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            opt.optimize()
+            opt.plot_surrogate()
+            ```
         """
         plot_surrogate(
             self,
@@ -7201,7 +7332,43 @@ class SpotOptim(BaseEstimator):
         contour_levels: int = 30,
         figsize: Tuple[int, int] = (12, 10),
     ) -> None:
-        """Plot surrogate contours using spotoptim.plot.visualization.plot_important_hyperparameter_contour."""
+        """Plot surrogate contours using spotoptim.plot.visualization.plot_important_hyperparameter_contour.
+
+        Args:
+            max_imp (int): The maximum number of important hyperparameters to plot.
+            show (bool): Whether to show the plot.
+            alpha (float): The alpha value for the plot.
+            cmap (str): The colormap to use.
+            num (int): The number of points to use for the plot.
+            add_points (bool): Whether to add points to the plot.
+            grid_visible (bool): Whether to show the grid.
+            contour_levels (int): The number of contour levels to use.
+            figsize (tuple): The size of the plot.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+
+            def test_func(X):
+                return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+
+            # 2-D problem: max_imp must not exceed n_dim (2)
+            opt = SpotOptim(
+                fun=test_func,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x0", "x1"],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            opt.optimize()
+            opt.plot_important_hyperparameter_contour(max_imp=2)
+            ```
+        """
         plot_important_hyperparameter_contour(
             self,
             max_imp=max_imp,
@@ -7251,6 +7418,29 @@ class SpotOptim(BaseEstimator):
         Args:
             threshold (float): Minimum importance percentage to include in plot.
             figsize (tuple): Figure size.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+
+            def test_func(X):
+                return 10 * X[:, 0]**2 + 0.1 * X[:, 1]**2
+
+            opt = SpotOptim(
+                fun=test_func,
+                bounds=[(-5, 5), (-5, 5)],
+                var_name=["x0", "x1"],
+                max_iter=15,
+                n_initial=5,
+                seed=42
+            )
+            opt.optimize()
+            opt.plot_importance()
+            ```
         """
         importance = self.get_importance()
         names = (
@@ -7315,23 +7505,26 @@ class SpotOptim(BaseEstimator):
             ValueError: If no optimization data is available.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def objective(X):
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=objective,
-            ...     bounds=[(-5, 5), (-5, 5), (-5, 5), (-5, 5)],
-            ...     var_name=["x0", "x1", "x2", "x3"],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> result = opt.optimize()
-            >>> # Plot parameter distributions
-            >>> opt.plot_parameter_scatter(result)
-            >>> # Plot with custom settings
-            >>> opt.plot_parameter_scatter(result, cmap="plasma", ylabel="Error")
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            def objective(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            opt = SpotOptim(
+                fun=objective,
+                bounds=[(-5, 5), (-5, 5), (-5, 5), (-5, 5)],
+                var_name=["x0", "x1", "x2", "x3"],
+                max_iter=30,
+                n_initial=10,
+                seed=42
+            )
+            result = opt.optimize()
+            # Plot parameter distributions
+            opt.plot_parameter_scatter(result)
+            # Plot with custom settings
+            opt.plot_parameter_scatter(result, cmap="plasma", ylabel="Error")
+            ```
         """
         try:
             import matplotlib.pyplot as plt

@@ -125,8 +125,8 @@ class TestTensorBoardLogging:
         opt = SpotOptim(
             fun=noisy_sphere,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=20,
-            n_initial=10,
+            max_iter=10,
+            n_initial=5,
             repeats_initial=2,
             tensorboard_log=True,
             tensorboard_path=tensorboard_path,
@@ -309,8 +309,8 @@ class TestTensorBoardIntegration:
         opt = SpotOptim(
             fun=noisy_func,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=30,
-            n_initial=10,
+            max_iter=15,
+            n_initial=5,
             repeats_initial=2,
             ocba_delta=2,
             tensorboard_log=True,

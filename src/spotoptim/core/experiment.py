@@ -11,9 +11,9 @@ from spotoptim.core.data import SpotDataSet
 @dataclass
 class ExperimentControl:
     """
-    Controls the experiment configuration, replacing the legacy fun_control dictionary.
+    Controls the experiment configuration.
 
-    This class serves as the central configuration object for optimization experiments,
+    This data class serves as the central configuration object for optimization experiments,
     holding the dataset, model configuration, hyperparameters, and other settings.
 
     Attributes:
@@ -38,30 +38,31 @@ class ExperimentControl:
         torch_device(): Return the torch device object.
 
     Examples:
-        >>> import numpy as np
-        >>> import torch
-        >>> from spotoptim.core.data import SpotDataFromArray
-        >>> from spotoptim.core.experiment import ExperimentControl
-        >>> from spotoptim.nn.mlp import MLP
-        >>>
-        >>> # 1. Prepare Data
-        >>> X = np.array([[0.1, 0.2], [0.3, 0.4]])
-        >>> y = np.array([[1.0], [2.0]])
-        >>> dataset = SpotDataFromArray(x_train=X, y_train=y)
-        >>>
-        >>> # 2. Define Hyperparameters
-        >>> params = {"l1": 16, "num_hidden_layers": 1, "lr": 1e-3}
-        >>>
-        >>> # 3. Initialize Control with Real Model
-        >>> exp = ExperimentControl(
-        ...     dataset=dataset,
-        ...     model_class=MLP,
-        ...     hyperparameters=params,
-        ...     experiment_name="real_model_run",
-        ...     seed=42
-        ... )
-        >>> print(exp.experiment_name)
-        real_model_run
+        ```{python}
+        import numpy as np
+        import torch
+        from spotoptim.core.data import SpotDataFromArray
+        from spotoptim.core.experiment import ExperimentControl
+        from spotoptim.nn.mlp import MLP
+
+        # 1. Prepare Data
+        X = np.array([[0.1, 0.2], [0.3, 0.4]])
+        y = np.array([[1.0], [2.0]])
+        dataset = SpotDataFromArray(x_train=X, y_train=y)
+
+        # 2. Define Hyperparameters
+        params = {"l1": 16, "num_hidden_layers": 1, "lr": 1e-3}
+
+        # 3. Initialize Control with Real Model
+        exp = ExperimentControl(
+            dataset=dataset,
+            model_class=MLP,
+            hyperparameters=params,
+            experiment_name="real_model_run",
+            seed=42
+        )
+        print(exp.to_dict())
+        ```
     """
 
     # Core Components
@@ -98,18 +99,19 @@ class ExperimentControl:
             Dict[str, Any]: Dictionary representation of the object.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim.core.data import SpotDataFromArray
-            >>> from spotoptim.core.experiment import ExperimentControl
-            >>>
-            >>> # Setup
-            >>> dataset = SpotDataFromArray(np.zeros((5,2)), np.zeros((5,1)))
-            >>> exp = ExperimentControl(dataset, model_class=None, hyperparameters={})
-            >>>
-            >>> # Convert to dict
-            >>> config = exp.to_dict()
-            >>> config['seed']
-            123
+            ```{python}
+            import numpy as np
+            from spotoptim.core.data import SpotDataFromArray
+            from spotoptim.core.experiment import ExperimentControl
+
+            # Setup
+            dataset = SpotDataFromArray(np.zeros((5,2)), np.zeros((5,1)))
+            exp = ExperimentControl(dataset, model_class=None, hyperparameters={})
+
+            # Convert to dict
+            config = exp.to_dict()
+            print(config['seed'])
+            ```
         """
         return self.__dict__.copy()
 
@@ -121,19 +123,20 @@ class ExperimentControl:
             torch.device: The torch device object.
 
         Examples:
-            >>> import torch
-            >>> from spotoptim.core.data import SpotDataFromArray
-            >>> from spotoptim.core.experiment import ExperimentControl
-            >>>
-            >>> dataset = SpotDataFromArray(np.zeros((5,2)), np.zeros((5,1)))
-            >>> exp = ExperimentControl(
-            ...     dataset,
-            ...     model_class=None,
-            ...     hyperparameters={},
-            ...     device="cpu"
-            ... )
-            >>>
-            >>> exp.torch_device
-            device(type='cpu')
+        ```{python}
+            import torch
+            from spotoptim.core.data import SpotDataFromArray
+            from spotoptim.core.experiment import ExperimentControl
+
+            dataset = SpotDataFromArray(np.zeros((5,2)), np.zeros((5,1)))
+            exp = ExperimentControl(
+                dataset,
+                model_class=None,
+                hyperparameters={},
+                device="cpu"
+            )
+
+            print(exp.torch_device)
+        ```
         """
         return torch.device(self.device)
