@@ -7,7 +7,8 @@ project:
     - docs/**/*.qmd
     - docs/**/*.md
 execute:
-  enabled: false
+  enabled: true
+  freeze: auto
 filters:
   - docs/interlinks.lua
 interlinks:

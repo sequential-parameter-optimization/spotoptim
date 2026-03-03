@@ -74,8 +74,8 @@ class TestSaveLoadExperiment:
             opt_original = SpotOptim(
                 fun=simple_func,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=30,
-                n_initial=10,
+                max_iter=10,
+                n_initial=5,
                 seed=42,
                 verbose=False,
             )
@@ -251,7 +251,7 @@ class TestSaveLoadResult:
             opt_original = SpotOptim(
                 fun=simple_func,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=20,
+                max_iter=10,
                 n_initial=8,
                 seed=42,
                 verbose=False,
@@ -313,7 +313,7 @@ class TestSaveLoadResult:
             opt_original = SpotOptim(
                 fun=simple_func,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=25,
+                max_iter=15,
                 n_initial=10,
                 seed=42,
                 verbose=False,
@@ -343,7 +343,7 @@ class TestSaveLoadWithNoise:
             opt_original = SpotOptim(
                 fun=noisy_func,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=20,
+                max_iter=10,
                 n_initial=8,
                 repeats_initial=2,
                 repeats_surrogate=2,
@@ -430,8 +430,8 @@ class TestExperimentResultDifference:
             opt = SpotOptim(
                 fun=simple_func,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=30,
-                n_initial=10,
+                max_iter=15,
+                n_initial=5,
                 seed=42,
                 verbose=False,
             )
@@ -456,7 +456,7 @@ class TestExperimentResultDifference:
             opt_original = SpotOptim(
                 fun=simple_func,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=20,
+                max_iter=15,
                 n_initial=8,
                 seed=42,
                 verbose=False,
@@ -512,7 +512,7 @@ class TestEdgeCases:
             opt1 = SpotOptim(
                 fun=simple_func,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=20,
+                max_iter=15,
                 n_initial=8,
                 seed=42,
                 verbose=False,

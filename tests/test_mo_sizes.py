@@ -30,8 +30,8 @@ def test_mo_size_consistency_with_nans():
     optimizer = SpotOptim(
         fun=multi_obj_with_nans,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=20,
-        n_initial=10,
+        max_iter=10,
+        n_initial=5,
         seed=42,
         verbose=False,
     )

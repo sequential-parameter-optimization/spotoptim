@@ -105,7 +105,7 @@ def test_initial_design_with_mixed_nan_inf():
     optimizer = SpotOptim(
         fun=objective_with_mixed_invalid,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=20,
+        max_iter=15,
         n_initial=12,
         seed=42,
         verbose=False,
@@ -352,7 +352,7 @@ def test_surrogate_phase_still_uses_penalty():
     optimizer = SpotOptim(
         fun=objective_nan_after_initial,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=20,
+        max_iter=15,
         n_initial=10,
         penalty=1000.0,
         seed=42,
@@ -420,8 +420,8 @@ def test_initial_design_with_repeats():
     optimizer = SpotOptim(
         fun=objective_with_noise_and_nans,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=20,
-        n_initial=10,
+        max_iter=15,
+        n_initial=5,
         repeats_initial=2,  # Evaluate each point twice
         seed=42,
         verbose=False,

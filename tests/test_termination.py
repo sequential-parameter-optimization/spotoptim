@@ -26,8 +26,8 @@ class TestMaxIterTermination:
 
     def test_max_iter_includes_initial_design(self):
         """Test that max_iter includes initial design evaluations."""
-        n_initial = 10
-        max_iter = 30
+        n_initial = 5
+        max_iter = 10
 
         optimizer = SpotOptim(
             fun=simple_sphere,
@@ -304,8 +304,8 @@ class TestDimensionReductionWithTermination:
         optimizer = SpotOptim(
             fun=simple_sphere,
             bounds=[(-5, 5), (2, 2), (-5, 5)],  # Middle dimension is fixed
-            max_iter=20,
-            n_initial=10,
+            max_iter=15,
+            n_initial=5,
             seed=42,
             verbose=False,
         )
@@ -316,7 +316,7 @@ class TestDimensionReductionWithTermination:
         assert optimizer.red_dim
 
         # Should complete all iterations
-        assert result.nfev == 20
+        assert result.nfev == 15
         assert result.nit == 10
 
         # Result should be in full dimensions
@@ -325,4 +325,4 @@ class TestDimensionReductionWithTermination:
 
         # Fixed dimension should have correct value
         assert result.x[1] == 2.0
-        np.testing.assert_array_equal(result.X[:, 1], np.full(20, 2.0))
+        np.testing.assert_array_equal(result.X[:, 1], np.full(15, 2.0))

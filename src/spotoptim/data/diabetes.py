@@ -100,6 +100,16 @@ def get_diabetes_dataloaders(
     Returns:
         tuple: (train_loader, test_loader, scaler)
             scaler is the StandardScaler implementation if scale_features=True, else None.
+
+    Examples:
+        ```{python}
+        from spotoptim.data.diabetes import get_diabetes_dataloaders
+
+        train_loader, test_loader, scaler = get_diabetes_dataloaders()
+        print(train_loader)
+        print(test_loader)
+        print(scaler)
+        ```
     """
     # Load data
     diabetes = load_diabetes()

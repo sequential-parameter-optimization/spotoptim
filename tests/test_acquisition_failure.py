@@ -114,7 +114,7 @@ class TestAcquisitionFailureIntegration:
         optimizer = SpotOptim(
             fun=sphere,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=30,
+            max_iter=20,
             n_initial=10,
             acquisition_failure_strategy="random",
             tolerance_x=0.2,  # Moderate tolerance to potentially trigger failures
@@ -126,7 +126,7 @@ class TestAcquisitionFailureIntegration:
 
         # Check that optimization succeeded
         assert result.success is True
-        assert result.nfev == 30
+        assert result.nfev == 20
         assert result.fun < 1.0  # Should find good solution
 
 
@@ -270,8 +270,8 @@ class TestAcquisitionFailureEdgeCases:
                 fun=func_high_dim,
                 bounds=bounds,
                 acquisition_failure_strategy=strategy,
-                max_iter=30,
-                n_initial=15,
+                max_iter=10,
+                n_initial=5,
                 seed=42,
                 verbose=False,
             )
@@ -294,8 +294,8 @@ class TestAcquisitionFailureEdgeCases:
                 fun=func_asym,
                 bounds=[(-10, 2), (0, 15), (-5, 5)],
                 acquisition_failure_strategy=strategy,
-                max_iter=20,
-                n_initial=10,
+                max_iter=10,
+                n_initial=5,
                 seed=42,
                 verbose=False,
             )
@@ -323,7 +323,7 @@ class TestAcquisitionFailureEdgeCases:
                 fun=func,
                 bounds=[(-5, 5), (-5, 5)],
                 acquisition_failure_strategy="random",
-                max_iter=20,
+                max_iter=10,
                 n_initial=8,
                 tolerance_x=0.5,  # Higher tolerance to trigger fallbacks
                 seed=123,

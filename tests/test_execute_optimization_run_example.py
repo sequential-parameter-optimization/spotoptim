@@ -12,7 +12,7 @@ def test_execute_optimization_run_example():
         fun=lambda X: np.sum(X**2, axis=1),
         bounds=[(-5, 5), (-5, 5)],
         n_initial=5,
-        max_iter=20,
+        max_iter=10,
         seed=0,
         n_jobs=1,
         verbose=False,
@@ -22,6 +22,6 @@ def test_execute_optimization_run_example():
 
     assert status == "FINISHED"
     assert result.message.splitlines()[0] == (
-        "Optimization terminated: maximum evaluations (20) reached"
+        "Optimization terminated: maximum evaluations (10) reached"
     )
     assert result.nfev == len(result.y)

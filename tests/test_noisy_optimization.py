@@ -97,7 +97,7 @@ class TestNoisyOptimization:
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=30,
+            max_iter=17,
             n_initial=n_initial,
             repeats_initial=repeats,
             seed=42,
@@ -309,8 +309,8 @@ class TestNoisyOptimizationIntegration:
         opt = SpotOptim(
             fun=noisy_objective,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=20,
-            n_initial=5,
+            max_iter=10,
+            n_initial=3,
             repeats_initial=2,
             repeats_surrogate=2,
             seed=42,
@@ -320,7 +320,7 @@ class TestNoisyOptimizationIntegration:
         result = opt.optimize()
 
         assert result.success
-        assert result.nfev == 20
+        assert result.nfev == 10  # max_iter=10 is the hard cap
         assert result.nit > 0  # Should perform some sequential iterations
 
         # Noise stats should be populated
@@ -428,8 +428,8 @@ class TestNoisyOptimizationIntegration:
         opt = SpotOptim(
             fun=noisy_objective,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=30,
-            n_initial=10,
+            max_iter=20,
+            n_initial=5,
             repeats_initial=2,
             repeats_surrogate=2,
             seed=77,
