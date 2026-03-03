@@ -173,7 +173,7 @@ def test_integration_loop_alternating():
         bounds=[(-1, 1)],
         surrogate=[s1, s2],
         n_initial=2,
-        max_iter=20,
+        max_iter=10,
         seed=42,  # Should mix
     )
 

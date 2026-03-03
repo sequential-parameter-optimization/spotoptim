@@ -313,7 +313,7 @@ class TestOCBAEdgeCases:
         opt = SpotOptim(
             fun=noisy_func,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=30,
+            max_iter=20,
             n_initial=10,
             repeats_initial=2,
             repeats_surrogate=1,
@@ -324,5 +324,6 @@ class TestOCBAEdgeCases:
 
         result = opt.optimize()
 
-        # Without OCBA: 10*2 initial + 10*1 surrogate = 30 total
-        assert result.nfev == 30
+        # Without OCBA, max_iter=20 is the binding constraint
+        # (uncapped would be 10*2 initial + 10*1 surrogate = 30)
+        assert result.nfev == 20

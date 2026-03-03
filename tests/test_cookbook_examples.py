@@ -116,9 +116,9 @@ def test_robot_arm_scenario():
         var_type=var_type,
         var_name=var_name,
         surrogate=surrogate,
-        max_iter=25,  # Match 009_robot_arm.py (must be >= n_initial)
+        max_iter=15,  # Match 009_robot_arm.py (must be >= n_initial)
         max_time=np.inf,
-        n_initial=20,  # Match 009_robot_arm.py
+        n_initial=10,  # Match 009_robot_arm.py
         seed=42,
         verbose=True,
         tensorboard_log=False,

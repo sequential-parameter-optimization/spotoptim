@@ -19,7 +19,7 @@
 | [core.data.SpotDataFromTorchDataset](core.data.SpotDataFromTorchDataset.qmd#spotoptim.core.data.SpotDataFromTorchDataset) | Data handler for PyTorch Datasets. |
 | [core.data.SpotDataSet](core.data.SpotDataSet.qmd#spotoptim.core.data.SpotDataSet) | Abstract base class for data handling in SpotOptim. |
 | [core.experiment](core.experiment.qmd#spotoptim.core.experiment) |  |
-| [core.experiment.ExperimentControl](core.experiment.ExperimentControl.qmd#spotoptim.core.experiment.ExperimentControl) | Controls the experiment configuration, replacing the legacy fun_control dictionary. |
+| [core.experiment.ExperimentControl](core.experiment.ExperimentControl.qmd#spotoptim.core.experiment.ExperimentControl) | Controls the experiment configuration. |
 
 ## Surrogate Models
 

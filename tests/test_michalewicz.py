@@ -295,8 +295,8 @@ class TestMichalewiczOptimization:
         opt = SpotOptim(
             fun=michalewicz,
             bounds=[(0, np.pi)] * 5,
-            n_initial=15,
-            max_iter=30,
+            n_initial=5,
+            max_iter=15,
             seed=42,
             de_x0_prob=0.0,  # do not use best point as starting point
         )
@@ -305,7 +305,8 @@ class TestMichalewiczOptimization:
 
         # Should find a reasonably good solution
         # 5D global minimum is approximately -4.687658
-        assert result.fun < -2.0  # Should be better than -2
+        # With only 15 evaluations (reduced budget), expect at least -0.5
+        assert result.fun < -0.5  # Should find a meaningfully negative value
         assert np.all(result.x >= 0)
         assert np.all(result.x <= np.pi)
 

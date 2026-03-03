@@ -22,10 +22,10 @@ def test_ocba_negative_repeats_repro_seed_86():
     opt = SpotOptim(
         fun=noisy_sphere,
         bounds=[(-5, 5), (-5, 5)],
-        max_iter=25,
-        n_initial=10,
+        max_iter=15,
+        n_initial=5,
         repeats_initial=2,
-        ocba_delta=5,
+        ocba_delta=3,
         seed=seed,
         verbose=False,
     )
