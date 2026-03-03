@@ -49,7 +49,7 @@ def test_factor_table_display_results(capsys):
 
 def test_factor_table_display_design(capsys):
     """
-    Test that print_design_table displays '-' for lower/upper bounds of factor variables.
+    Test that print(get_design_table()) displays '-' for lower/upper bounds of factor variables.
     """
     opt = SpotOptim(
         fun=obj,
@@ -62,8 +62,8 @@ def test_factor_table_display_design(capsys):
         verbose=False,
     )
 
-    # Capture print_design_table output
-    opt.print_design_table(precision=2)
+    # Capture print(get_design_table()) output
+    print(opt.get_design_table(precision=2))
     captured = capsys.readouterr()
     output = captured.out
 

@@ -290,9 +290,11 @@
 | [function.so.ackley](function.so.ackley.qmd#spotoptim.function.so.ackley) | N-dimensional Ackley function. |
 | [function.so.lennard_jones](function.so.lennard_jones.qmd#spotoptim.function.so.lennard_jones) | Lennard-Jones Atomic Cluster Potential Energy. |
 | [function.so.michalewicz](function.so.michalewicz.qmd#spotoptim.function.so.michalewicz) | N-dimensional Michalewicz function. |
+| [function.so.noisy_sphere](function.so.noisy_sphere.qmd#spotoptim.function.so.noisy_sphere) | N-dimensional Sphere function with noise. |
 | [function.so.robot_arm_hard](function.so.robot_arm_hard.qmd#spotoptim.function.so.robot_arm_hard) | 10-Link Robot Arm with Maze-Like Hard Constraints. |
 | [function.so.robot_arm_obstacle](function.so.robot_arm_obstacle.qmd#spotoptim.function.so.robot_arm_obstacle) | 10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance. |
 | [function.so.rosenbrock](function.so.rosenbrock.qmd#spotoptim.function.so.rosenbrock) | N-dimensional Rosenbrock function. |
+| [function.so.sphere](function.so.sphere.qmd#spotoptim.function.so.sphere) | N-dimensional Sphere function. |
 | [function.so.wingwt](function.so.wingwt.qmd#spotoptim.function.so.wingwt) | Aircraft Wing Weight function. |
 | [function.torch_objective](function.torch_objective.qmd#spotoptim.function.torch_objective) |  |
 | [function.torch_objective.TorchObjective](function.torch_objective.TorchObjective.qmd#spotoptim.function.torch_objective.TorchObjective) | A callable objective function for SpotOptim that trains and evaluates a PyTorch model. |
