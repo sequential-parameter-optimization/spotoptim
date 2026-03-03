@@ -552,12 +552,16 @@ website:
                 file: docs/reference/function.so.lennard_jones.qmd
               - text: michalewicz
                 file: docs/reference/function.so.michalewicz.qmd
+              - text: noisy_sphere
+                file: docs/reference/function.so.noisy_sphere.qmd                
               - text: robot_arm_hard
                 file: docs/reference/function.so.robot_arm_hard.qmd
               - text: robot_arm_obstacle
                 file: docs/reference/function.so.robot_arm_obstacle.qmd
               - text: rosenbrock
                 file: docs/reference/function.so.rosenbrock.qmd
+              - text: sphere
+                file: docs/reference/function.so.sphere.qmd
               - text: wingwt
                 file: docs/reference/function.so.wingwt.qmd
               - text: function.torch_objective
@@ -586,6 +590,14 @@ format:
     theme:
       light: cosmo
       dark: darkly
+    include-in-header:
+      text: |
+        <script>
+          // Default to dark mode on first visit (no stored preference)
+          if (!localStorage.getItem('quarto-color-scheme')) {
+            localStorage.setItem('quarto-color-scheme', 'dark');
+          }
+        </script>
     toc: true
     toc-depth: 3
     toc-location: right
@@ -851,9 +863,11 @@ quartodoc:
         - function.so.ackley
         - function.so.lennard_jones
         - function.so.michalewicz
+        - function.so.noisy_sphere
         - function.so.robot_arm_hard
         - function.so.robot_arm_obstacle
         - function.so.rosenbrock
+        - function.so.sphere
         - function.so.wingwt
         - function.torch_objective
         - function.torch_objective.TorchObjective

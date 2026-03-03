@@ -340,7 +340,7 @@ class TestTransformationTables:
     """Test that transformations appear correctly in tables."""
 
     def test_design_table_shows_transformations(self):
-        """Test that print_design_table shows transformation column."""
+        """Test that get_design_table() has transformation column."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0.001, 1.0), (10.0, 100.0), (-5.0, 5.0)],
@@ -350,7 +350,7 @@ class TestTransformationTables:
             n_initial=3,
         )
 
-        table = opt.print_design_table()
+        table = opt.get_design_table()
 
         # Check that table contains trans column
         assert "trans" in table
@@ -359,7 +359,7 @@ class TestTransformationTables:
         assert "-" in table  # None should show as "-"
 
     def test_results_table_shows_transformations(self):
-        """Test that print_results_table shows transformation column."""
+        """Test that get_results_table shows transformation column."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(0.001, 1.0), (10.0, 100.0)],
@@ -371,7 +371,7 @@ class TestTransformationTables:
         )
 
         _ = opt.optimize()
-        table = opt.print_results_table()
+        table = opt.get_results_table()
 
         # Check that table contains trans column
         assert "trans" in table

@@ -11,6 +11,93 @@ This module provides well-known analytical test functions commonly used for eval
 import numpy as np
 
 
+def sphere(X) -> np.ndarray:
+    """N-dimensional Sphere function.
+
+    The Sphere function is a simple test function for optimization algorithms.
+    It is characterized by a parabolic-shaped valley. The global minimum is inside
+    the valley and is easy to find for many algorithms.
+
+    For the 2D case:
+        f(x, y) = x^2 + y^2
+
+    The generalized form for N dimensions:
+        f(X) = sum_{i=1}^{N} x_i^2
+
+    Args:
+        X (array-like): Input points with shape (n_samples, n_features) or (n_features,).
+            Can be a 1D array for a single point or 2D array for multiple points.
+
+    Returns:
+        np.ndarray: Function values at the input points with shape (n_samples,).
+
+    Raises:
+        ValueError: If X has fewer than 1 dimension.
+
+    Note:
+        - Global minimum: f(0, 0, ..., 0) = 0
+        - Typical search domain: [-5, 10]^N or [-2, 2]^N
+        - Characteristics: Convex, unimodal
+
+    Examples:
+        ```{python}
+        from spotoptim.function import sphere
+        import numpy as np
+        X = np.array([1.0, 1.0])
+        sphere(X)
+        ```
+
+        ```{python}
+        from spotoptim.function import sphere
+        import numpy as np
+        X = np.array([[0.0, 0.0], [1.0, 1.0], [0.5, 0.5]])
+        sphere(X)
+        ```
+
+    """
+    X = np.atleast_2d(X)
+    return np.sum(X**2, axis=1)
+
+
+def noisy_sphere(X, sigma: float = 0.1) -> np.ndarray:
+    """N-dimensional Sphere function with noise.
+
+    Args:
+        X (array-like): Input points with shape (n_samples, n_features) or (n_features,).
+            Can be a 1D array for a single point or 2D array for multiple points.
+        sigma (float, optional): Standard deviation of the noise. Defaults to 0.1.
+
+    Returns:
+        np.ndarray: Function values at the input points with shape (n_samples,).
+
+    Raises:
+        ValueError: If X has fewer than 1 dimension.
+
+    Note:
+        - Global minimum: f(0, 0, ..., 0) = 0
+        - Typical search domain: [-5, 10]^N or [-2, 2]^N
+        - Characteristics: Convex, unimodal
+
+    Examples:
+        ```{python}
+        from spotoptim.function import noisy_sphere
+        import numpy as np
+        X = np.array([1.0, 1.0])
+        noisy_sphere(X, sigma=0.1)
+        ```
+
+        ```{python}
+        from spotoptim.function import noisy_sphere
+        import numpy as np
+        X = np.array([[0.0, 0.0], [1.0, 1.0], [0.5, 0.5]])
+        noisy_sphere(X, sigma=0.1)
+        ```
+
+    """
+    X = np.atleast_2d(X)
+    return np.sum(X**2, axis=1) + np.random.normal(0, sigma, X.shape[0])
+
+
 def rosenbrock(X) -> np.ndarray:
     """N-dimensional Rosenbrock function.
 
@@ -42,17 +129,21 @@ def rosenbrock(X) -> np.ndarray:
     Examples:
         Single point evaluation:
 
-        >>> from spotoptim.function import rosenbrock
-        >>> import numpy as np
-        >>> X = np.array([1.0, 1.0])
-        >>> rosenbrock(X)
-        array([0.])
+        ```{python}
+        from spotoptim.function import rosenbrock
+        import numpy as np
+        X = np.array([1.0, 1.0])
+        rosenbrock(X)
+        ```
 
         Multiple points evaluation:
 
-        >>> X = np.array([[0.0, 0.0], [1.0, 1.0], [0.5, 0.5]])
-        >>> rosenbrock(X)
-        array([1.00e+00, 0.00e+00, 3.06e+01])
+        ```{python}
+        from spotoptim.function import rosenbrock
+        import numpy as np
+        X = np.array([[0.0, 0.0], [1.0, 1.0], [0.5, 0.5]])
+        rosenbrock(X)
+        ```
 
     References:
         Rosenbrock, H.H. (1960). "An automatic method for finding the
@@ -113,20 +204,23 @@ def ackley(X) -> np.ndarray:
     Examples:
         Single point evaluation at global minimum:
 
-        >>> from spotoptim.function import ackley
-        >>> import numpy as np
-        >>> X = np.array([0.0, 0.0, 0.0])
-        >>> ackley(X)
-        array([0.])
+        ```{python}
+        from spotoptim.function import ackley
+        import numpy as np
+        X = np.array([0.0, 0.0, 0.0])
+        ackley(X)
+        ```
 
         Multiple points evaluation:
 
-        >>> X = np.array([[0.0, 0.0], [1.0, 1.0], [-1.0, 1.0]])
-        >>> result = ackley(X)
-        >>> result[0]  # Should be close to 0
-        0.0
-        >>> result[1] > 0  # Should be positive
-        True
+        ```{python}
+        from spotoptim.function import ackley
+        import numpy as np
+        X = np.array([[0.0, 0.0], [1.0, 1.0], [-1.0, 1.0]])
+        result = ackley(X)
+        result[0]  # Should be close to 0
+        result[1] > 0  # Should be positive
+        ```
 
     References:
         Ackley, D. H. (1987). "A connectionist machine for genetic hillclimbing".
@@ -179,24 +273,31 @@ def michalewicz(X, m: int = 10) -> np.ndarray:
     Examples:
         Single point evaluation:
 
-        >>> from spotoptim.function import michalewicz
-        >>> import numpy as np
-        >>> X = np.array([2.20, 1.57])
-        >>> result = michalewicz(X)
-        >>> result[0]  # Should be close to -1.8013
-        -1.801303...
+        ```{python}
+        from spotoptim.function import michalewicz
+        import numpy as np
+        X = np.array([2.20, 1.57])
+        result = michalewicz(X)
+        result[0]  # Should be close to -1.8013
+        ```
 
         Multiple points evaluation:
 
-        >>> X = np.array([[2.20, 1.57], [1.0, 1.0]])
-        >>> michalewicz(X)
-        array([-1.8013..., -1.4508...])
+        ```{python}
+        from spotoptim.function import michalewicz
+        import numpy as np
+        X = np.array([[2.20, 1.57], [1.0, 1.0]])
+        michalewicz(X)
+        ```
 
         Using different steepness parameter:
 
-        >>> X = np.array([2.20, 1.57])
-        >>> michalewicz(X, m=5)
-        array([-1.6862...])
+        ```{python}
+        from spotoptim.function import michalewicz
+        import numpy as np
+        X = np.array([2.20, 1.57])
+        michalewicz(X, m=5)
+        ```
 
     References:
         Michalewicz, Z. (1996). "Genetic Algorithms + Data Structures = Evolution Programs".
@@ -227,18 +328,23 @@ def wingwt(X) -> np.ndarray:
     Examples:
         Single point evaluation (Baseline Cessna C172 - Unpainted):
 
-        >>> from spotoptim.function.so import wingwt
-        >>> import numpy as np
-        >>> # Baseline configuration in unit cube
-        >>> x_base = np.array([0.48, 0.4, 0.38, 0.5, 0.62, 0.344, 0.4, 0.37, 0.38])
-        >>> wingwt(x_base)
-        array([233.90...])
+        ```{python}
+        from spotoptim.function.so import wingwt
+        import numpy as np
+        # Baseline configuration in unit cube
+        x_base = np.array([0.48, 0.4, 0.38, 0.5, 0.62, 0.344, 0.4, 0.37, 0.38])
+        wingwt(x_base)
+        ```
 
         Batch evaluation:
 
-        >>> X = np.vstack([x_base, x_base])
-        >>> wingwt(X)
-        array([233.90..., 233.90...])
+        ```{python}
+        from spotoptim.function.so import wingwt
+        import numpy as np
+        x_base = np.array([0.48, 0.4, 0.38, 0.5, 0.62, 0.344, 0.4, 0.37, 0.38])
+        X = np.vstack([x_base, x_base])
+        wingwt(X)
+        ```
 
     References:
         Forrester, A., Sobester, A., & Keane, A. (2008). Engineering design via surrogate modelling:
@@ -317,18 +423,23 @@ def lennard_jones(X: np.ndarray, n_atoms: int = 13) -> np.ndarray:
     Examples:
         Single point evaluation (random configuration):
 
-        >>> from spotoptim.function import lennard_jones
-        >>> import numpy as np
-        >>> rng = np.random.default_rng(42)
-        >>> X = rng.random(39)  # 13 atoms * 3 coords, in [0, 1]
-        >>> lennard_jones(X)
-        array([9.5...e+...])
+        ```{python}
+        from spotoptim.function import lennard_jones
+        import numpy as np
+        rng = np.random.default_rng(42)
+        X = rng.random(39)  # 13 atoms * 3 coords, in [0, 1]
+        lennard_jones(X)
+        ```
 
         Batch evaluation:
 
-        >>> X = rng.random((5, 39))
-        >>> lennard_jones(X).shape
-        (5,)
+        ```{python}
+        from spotoptim.function import lennard_jones
+        import numpy as np
+        rng = np.random.default_rng(42)
+        X = rng.random((5, 39))
+        lennard_jones(X).shape
+        ```
 
     References:
         Wales, D. J., & Doye, J. P. (1997). Global optimization by basin-hopping and
@@ -417,18 +528,22 @@ def robot_arm_obstacle(X: np.ndarray) -> np.ndarray:
     Examples:
         Single point evaluation:
 
-        >>> from spotoptim.function.so import robot_arm_obstacle
-        >>> import numpy as np
-        >>> rng = np.random.default_rng(42)
-        >>> X = rng.random(10)  # Random angles in [0, 1]
-        >>> robot_arm_obstacle(X)
-        array([2547...])
+        ```{python}
+        from spotoptim.function.so import robot_arm_obstacle
+        import numpy as np
+        rng = np.random.default_rng(42)
+        X = rng.random(10)  # Random angles in [0, 1]
+        robot_arm_obstacle(X)
+        ```
 
         Batch evaluation:
 
-        >>> X = rng.random((5, 10))
-        >>> robot_arm_obstacle(X).shape
-        (5,)
+        ```{python}
+        from spotoptim.function.so import robot_arm_obstacle
+        import numpy as np
+        X = rng.random((5, 10))
+        robot_arm_obstacle(X).shape
+        ```
     """
     X = np.atleast_2d(X).astype(float)
     n_samples = X.shape[0]
@@ -553,26 +668,34 @@ def robot_arm_hard(X: np.ndarray) -> np.ndarray:
     Examples:
         Single point evaluation with random configuration:
 
-        >>> from spotoptim.function import robot_arm_hard
-        >>> import numpy as np
-        >>> X = np.random.rand(10) * 0.5  # Conservative random angles
-        >>> result = robot_arm_hard(X)
-        >>> result.shape
+        ```{python}
+        from spotoptim.function import robot_arm_hard
+        import numpy as np
+        X = np.random.rand(10) * 0.5  # Conservative random angles
+        result = robot_arm_hard(X)
+        result.shape
         (1,)
+        ```
 
         Multiple points evaluation:
 
-        >>> X = np.array([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-        ...               [0.3, 0.4, 0.5, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]])
-        >>> robot_arm_hard(X)
-        array([...])  # Returns costs for both configurations
+        ```{python}
+        from spotoptim.function import robot_arm_hard
+        import numpy as np
+        X = np.array([[0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                      [0.3, 0.4, 0.5, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]])
+        robot_arm_hard(X)
+        ```
 
         Evaluating a straight configuration (all angles = 0.5, mapped to 0 radians):
 
-        >>> X_straight = np.full(10, 0.5)
-        >>> cost_straight = robot_arm_hard(X_straight)
-        >>> cost_straight[0] > 1000  # High cost due to obstacles
-        True
+        ```{python}
+        from spotoptim.function import robot_arm_hard
+        import numpy as np
+        X_straight = np.full(10, 0.5)
+        cost_straight = robot_arm_hard(X_straight)
+        cost_straight[0] > 1000  # High cost due to obstacles
+        ```
 
     References:
         This function is inspired by robot motion planning problems with obstacles,

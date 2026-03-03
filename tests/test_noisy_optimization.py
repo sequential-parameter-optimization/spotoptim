@@ -141,9 +141,9 @@ class TestNoisyOptimization:
 
 
 class TestAggregatemeanVar:
-    """Test suite for _aggregate_mean_var method."""
+    """Test suite for aggregate_mean_var method."""
 
-    def test_aggregate_mean_var_basic(self):
+    def testaggregate_mean_var_basic(self):
         """Test basic aggregation of mean and variance."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -154,7 +154,7 @@ class TestAggregatemeanVar:
         X = np.array([[1, 2], [3, 4], [1, 2]])
         y = np.array([1.0, 2.0, 3.0])
 
-        X_agg, y_mean, y_var = opt._aggregate_mean_var(X, y)
+        X_agg, y_mean, y_var = opt.aggregate_mean_var(X, y)
 
         # Should have 2 unique points
         assert X_agg.shape == (2, 2)
@@ -165,7 +165,7 @@ class TestAggregatemeanVar:
         # Check variances (population variance, ddof=0)
         np.testing.assert_array_equal(y_var, np.array([1.0, 0.0]))
 
-    def test_aggregate_mean_var_multiple_repeats(self):
+    def testaggregate_mean_var_multiple_repeats(self):
         """Test aggregation with multiple repeats."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -176,7 +176,7 @@ class TestAggregatemeanVar:
         X = np.array([[1, 1], [1, 1], [1, 1], [2, 2], [2, 2], [2, 2]])
         y = np.array([3.0, 3.0, 6.0, 6.0, 6.0, 6.0])
 
-        X_agg, y_mean, y_var = opt._aggregate_mean_var(X, y)
+        X_agg, y_mean, y_var = opt.aggregate_mean_var(X, y)
 
         # Should have 2 unique points
         assert X_agg.shape == (2, 2)
@@ -191,7 +191,7 @@ class TestAggregatemeanVar:
             y_var, np.array([expected_var1, expected_var2])
         )
 
-    def test_aggregate_mean_var_no_duplicates(self):
+    def testaggregate_mean_var_no_duplicates(self):
         """Test aggregation when there are no duplicates."""
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
@@ -201,7 +201,7 @@ class TestAggregatemeanVar:
         X = np.array([[1, 2], [3, 4], [5, 6]])
         y = np.array([1.0, 2.0, 3.0])
 
-        X_agg, y_mean, y_var = opt._aggregate_mean_var(X, y)
+        X_agg, y_mean, y_var = opt.aggregate_mean_var(X, y)
 
         # All points should be unique
         assert X_agg.shape == (3, 2)

@@ -7,6 +7,8 @@ Analytical test functions for optimization.
 """
 
 from .so import (
+    sphere,
+    noisy_sphere,
     rosenbrock,
     ackley,
     michalewicz,
@@ -37,6 +39,8 @@ from .torch_objective import TorchObjective
 from .remote import objective_remote
 
 __all__ = [
+    "sphere",
+    "noisy_sphere",
     "rosenbrock",
     "ackley",
     "michalewicz",

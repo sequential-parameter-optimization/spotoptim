@@ -4525,7 +4525,7 @@ class SpotOptim(BaseEstimator):
             consecutive_failures = 0
 
             # Update success rate BEFORE updating storage (so it compares against previous best)
-            self._update_success_rate(y_next)
+            self.update_success_rate(y_next)
 
             # Check for restart
             if self.success_rate == 0.0:
@@ -4896,7 +4896,7 @@ class SpotOptim(BaseEstimator):
                         elif ftype == "eval":
                             x_new, y_new = res
                             # Update
-                            self._update_success_rate(np.array([y_new]))
+                            self.update_success_rate(np.array([y_new]))
                             self._update_storage_steady(x_new, y_new)
                             self.n_iter_ += 1
 
@@ -5616,20 +5616,20 @@ class SpotOptim(BaseEstimator):
         """Update optimization statistics.
 
         Updates various statistics related to the optimization progress:
-        - `min_y`: Minimum y value found so far
-        - `min_X`: X value corresponding to minimum y
-        - `counter`: Total number of function evaluations
+            - `min_y`: Minimum y value found so far
+            - `min_X`: X value corresponding to minimum y
+            - `counter`: Total number of function evaluations
 
-        Note: `success_rate` is updated separately via `_update_success_rate()` method,
+        Note: `success_rate` is updated separately via `update_success_rate()` method,
         which is called after each batch of function evaluations.
 
-        If `noise` is True (repeats > 1), additionally computes:
-        1. `mean_X`: Unique design points (aggregated from repeated evaluations)
-        2. `mean_y`: Mean y values per design point
-        3. `var_y`: Variance of y values per design point
-        4. `min_mean_X`: X value of the best mean y value
-        5. `min_mean_y`: Best mean y value
-        6. `min_var_y`: Variance of the best mean y value
+        If "noise" is True (`repeats_initial > 1` or `repeats_surrogate > 1`), additionally computes:
+            - `mean_X`: Unique design points (aggregated from repeated evaluations)
+            - `mean_y`: Mean y values per design point
+            - `var_y`: Variance of y values per design point
+            - `min_mean_X`: X value of the best mean y value
+            - `min_mean_y`: Best mean y value
+            - `min_var_y`: Variance of the best mean y value
 
 
         Returns:
@@ -5639,14 +5639,15 @@ class SpotOptim(BaseEstimator):
             ```{python}
             import numpy as np
             from spotoptim import SpotOptim
+            from spotoptim.function import sphere, noisy_sphere
 
-            def sphere(X):
-                return np.sum(X**2, axis=1)
 
             # Without noise
             opt = SpotOptim(fun=sphere,
                             bounds=[(-5, 5), (-5, 5)],
                             max_iter=10, n_initial=5)
+            opt.optimize()
+            print("SpotOptim stats without noise:")
             print(f"opt.X_: {opt.X_}")
             print(f"opt.y_: {opt.y_}")
             print(f"opt.min_y: {opt.min_y}")
@@ -5654,11 +5655,13 @@ class SpotOptim(BaseEstimator):
             print(f"opt.counter: {opt.counter}")
 
             # With noise
-            opt_noise = SpotOptim(fun=sphere,
+            opt_noise = SpotOptim(fun=noisy_sphere,
                                   bounds=[(-5, 5), (-5, 5)],
                                   n_initial=5,
                                   repeats_surrogate=2,
                                   repeats_initial=2)
+            opt_noise.optimize()
+            print("SpotOptim stats with noise:")
             print(f"opt_noise.X_: {opt_noise.X_}")
             print(f"opt_noise.y_: {opt_noise.y_}")
             print(f"opt_noise.min_y: {opt_noise.min_y}")
@@ -5682,7 +5685,7 @@ class SpotOptim(BaseEstimator):
 
         # Aggregated stats for noisy functions
         if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-            self.mean_X, self.mean_y, self.var_y = self._aggregate_mean_var(
+            self.mean_X, self.mean_y, self.var_y = self.aggregate_mean_var(
                 self.X_, self.y_
             )
             # X value of the best mean y value so far
@@ -5693,7 +5696,7 @@ class SpotOptim(BaseEstimator):
             # Variance of the best mean y value so far
             self.min_var_y = self.var_y[best_mean_idx]
 
-    def _update_success_rate(self, y_new: np.ndarray) -> None:
+    def update_success_rate(self, y_new: np.ndarray) -> None:
         """Update the rolling success rate of the optimization process.
 
         A success is counted only if the new value is better (smaller) than the best
@@ -5707,16 +5710,18 @@ class SpotOptim(BaseEstimator):
             y_new (ndarray): The new function values to consider for the success rate update.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_iter=10, n_initial=5)
-            >>> opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
-            >>> opt.y_ = np.array([5.0, 3.0, 2.0])
-            >>> opt._update_success_rate(np.array([1.5, 2.5]))
-            >>> opt.success_rate > 0
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_iter=10, n_initial=5)
+            print(opt.success_rate)
+            opt.X_ = np.array([[1, 2], [3, 4], [0, 1]])
+            opt.y_ = np.array([5.0, 3.0, 2.0])
+            opt.update_success_rate(np.array([1.5, 2.5]))
+            print(opt.success_rate)
+            ```
         """
         # Initialize or update the rolling history of successes (1 for success, 0 for failure)
         if not hasattr(self, "_success_history") or self._success_history is None:
@@ -5750,22 +5755,23 @@ class SpotOptim(BaseEstimator):
         num_successes = sum(self._success_history)
         self.success_rate = num_successes / window_size if window_size > 0 else 0.0
 
-    def _get_success_rate(self) -> float:
+    def get_success_rate(self) -> float:
         """Get the current success rate of the optimization process.
 
         Returns:
             float: The current success rate.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x,
-            ...                 bounds=[(-5, 5), (-5, 5)])
-            >>> print(opt._get_success_rate())
-            0.0
+            ```{python}
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda x: x,
+                            bounds=[(-5, 5), (-5, 5)])
+            print(opt.get_success_rate())
+            ```
         """
         return float(getattr(self, "success_rate", 0.0) or 0.0)
 
-    def _aggregate_mean_var(
+    def aggregate_mean_var(
         self, X: np.ndarray, y: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Aggregate X and y values to compute mean and variance per group.
@@ -5784,27 +5790,26 @@ class SpotOptim(BaseEstimator):
                 - y_var (ndarray): Variance of y values per group, shape (n_groups,)
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 repeats_initial=2)
-            >>> X = np.array([[1, 2], [3, 4], [1, 2]])
-            >>> y = np.array([1, 2, 3])
-            >>> X_agg, y_mean, y_var = opt._aggregate_mean_var(X, y)
-            >>> X_agg.shape
-            (2, 2)
-            >>> y_mean
-            array([2., 2.])
-            >>> y_var
-            array([1., 0.])
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            repeats_initial=2)
+            X = np.array([[1, 2], [3, 4], [1, 2]])
+            y = np.array([1, 2, 3])
+            X_agg, y_mean, y_var = opt.aggregate_mean_var(X, y)
+            print(X_agg.shape)
+            print(y_mean)
+            print(y_var)
+            ```
         """
         # Input validation
         X = np.asarray(X)
         y = np.asarray(y)
 
         if X.ndim != 2 or y.ndim != 1 or X.shape[0] != y.shape[0]:
-            raise ValueError("Invalid input shapes for _aggregate_mean_var")
+            raise ValueError("Invalid input shapes for aggregate_mean_var")
 
         if X.shape[0] == 0:
             return np.empty((0, X.shape[1])), np.array([]), np.array([])
@@ -5899,7 +5904,7 @@ class SpotOptim(BaseEstimator):
         """
         # Use save_experiment with file_io unpickleables to preserve results
         if filename is None:
-            filename = self._get_result_filename(prefix)
+            filename = self.get_result_filename(prefix)
 
         self.save_experiment(
             filename=filename,
@@ -5918,7 +5923,7 @@ class SpotOptim(BaseEstimator):
 
     @staticmethod
     def load_result(filename: str) -> "SpotOptim":
-        """Load complete optimization results from a pickle file.
+        """Load complete optimization results from a pickle file (suffix '_res.pkl')
 
         Loads results that were saved with save_result(). The loaded optimizer
         will have both configuration and all optimization results.
@@ -5994,21 +5999,21 @@ class SpotOptim(BaseEstimator):
         unpickleables: str = "all",
         verbosity: int = 0,
     ) -> None:
-        """Save the experiment configuration to a pickle file.
+        """Save the experiment configuration to a pickle file (suffix '_exp.pkl') .
 
         An experiment contains the optimizer configuration needed to run optimization,
         but excludes the results. This is useful for defining experiments locally and
         executing them on remote machines.
 
         The experiment includes:
-        - Bounds, variable types, variable names
-        - Optimization parameters (max_iter, n_initial, etc.)
-        - Surrogate and acquisition settings
-        - Random seed
+            * Bounds, variable types, variable names
+            * Optimization parameters (max_iter, n_initial, etc.)
+            * Surrogate and acquisition settings
+            * Random seed
 
         The experiment excludes:
-        - Function evaluations (X_, y_)
-        - Optimization results
+            * Function evaluations (X_, y_)
+            * Optimization results
 
 
         Args:
@@ -6020,8 +6025,8 @@ class SpotOptim(BaseEstimator):
             overwrite (bool): If True, overwrites existing file. If False, raises error if
                 file exists. Defaults to True.
             unpickleables (str): Components to exclude for pickling:
-                - "all": Excludes surrogate, lhs_sampler, tb_writer (experiment only)
-                - "file_io": Excludes only tb_writer (lighter exclusion)
+                * "all": Excludes surrogate, lhs_sampler, tb_writer (experiment only)
+                * "file_io": Excludes only tb_writer (lighter exclusion)
                 Defaults to "all".
             verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
 
@@ -6065,7 +6070,7 @@ class SpotOptim(BaseEstimator):
 
         # Determine filename
         if filename is None:
-            filename = self._get_experiment_filename(prefix)
+            filename = self.get_experiment_filename(prefix)
 
         # Add path if provided
         if path is not None:
@@ -6090,7 +6095,7 @@ class SpotOptim(BaseEstimator):
 
     @staticmethod
     def load_experiment(filename: str) -> "SpotOptim":
-        """Load an experiment configuration from a pickle file.
+        """Load an experiment configuration from a pickle file ('*_exp.pkl').
 
         Loads an experiment that was saved with save_experiment(). The loaded optimizer
         will have the configuration and the objective function (thanks to dill).
@@ -6148,8 +6153,8 @@ class SpotOptim(BaseEstimator):
             print(f"Error loading experiment: {e}")
             raise
 
-    def _get_result_filename(self, prefix: str) -> str:
-        """Generate result filename from prefix.
+    def get_result_filename(self, prefix: str) -> str:
+        """Generate result filename (suffix '_res.pkl')from prefix.
 
         Args:
             prefix (str): Prefix for the filename.
@@ -6158,18 +6163,19 @@ class SpotOptim(BaseEstimator):
             str: Filename with '_res.pkl' suffix.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
-            >>> res_filename = opt._get_result_filename(prefix="my_experiment")
-            >>> print(res_filename)
-            my_experiment_res.pkl
+            ```{python}
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            res_filename = opt.get_result_filename(prefix="my_experiment")
+            print(res_filename)
+            ```
         """
         if prefix is None:
             return "result_res.pkl"
         return f"{prefix}_res.pkl"
 
-    def _get_experiment_filename(self, prefix: str) -> str:
-        """Generate experiment filename from prefix.
+    def get_experiment_filename(self, prefix: str) -> str:
+        """Generate experiment filename (suffix '_exp.pkl') from prefix.
 
         Args:
             prefix (str): Prefix for the filename.
@@ -6178,21 +6184,22 @@ class SpotOptim(BaseEstimator):
             str: Filename with '_exp.pkl' suffix.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
-            >>> exp_filename = opt._get_experiment_filename(prefix="my_experiment")
-            >>> print(exp_filename)
-            my_experiment_exp.pkl
+            ```{python}
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
+            exp_filename = opt.get_experiment_filename(prefix="my_experiment")
+            print(exp_filename)
+            ```
         """
         if prefix is None:
             return "experiment_exp.pkl"
         return f"{prefix}_exp.pkl"
 
     def print_results(self, *args: Any, **kwargs: Any) -> None:
-        """Alias for print_results_table for compatibility.
+        """Alias for print(get_results_table()) for compatibility.
         Prints the table.
         """
-        self.print_results_table(*args, **kwargs)
+        print(self.get_results_table(*args, **kwargs))
 
     def print_best(
         self,
@@ -6308,81 +6315,6 @@ class SpotOptim(BaseEstimator):
         # Print objective value and evaluations
         print(f"  Objective Value: {best_y:.{precision}f}")
         print(f"  Total Evaluations: {n_evals}")
-
-    def print_results_table(
-        self,
-        tablefmt: str = "github",
-        precision: int = 4,
-        show_importance: bool = False,
-        *args: Any,
-        **kwargs: Any,
-    ) -> str:
-        """Print (and return) a comprehensive table of optimization results.
-
-        This method calls `get_results_table` to generate the table string, prints it,
-        and then returns it.
-
-        Args:
-            tablefmt (str, optional): Table format. Defaults to 'github'.
-            precision (int, optional): Decimal precision. Defaults to 4.
-            show_importance (bool, optional): Show importance column. Defaults to False.
-            *args: Arguments passed to get_results_table.
-            **kwargs: Keyword arguments passed to get_results_table.
-
-        Returns:
-            str: Formatted table string.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                var_name=["x1", "x2"],
-                max_iter=10,
-                n_initial=5
-            )
-            result = opt.optimize()
-            opt.print_results_table()
-            ```
-        """
-        table = self.get_results_table(
-            tablefmt=tablefmt,
-            precision=precision,
-            show_importance=show_importance,
-            *args,
-            **kwargs,
-        )
-        print(table)
-        return table
-
-    def print_design_table(
-        self,
-        tablefmt: str = "github",
-        precision: int = 4,
-    ) -> str:
-        """Print (and return) a table showing the search space design before optimization.
-
-        This method calls `get_design_table` to generate the table string, prints it,
-        and then returns it.
-
-        Args:
-            tablefmt (str, optional): Table format for tabulate library.
-                Defaults to 'github'.
-            precision (int, optional): Number of decimal places for float values.
-                Defaults to 4.
-
-        Returns:
-            str: Formatted table string.
-        """
-        table = self.get_design_table(tablefmt=tablefmt, precision=precision)
-        print(table)
-        return table
 
     def get_results_table(
         self,
@@ -6695,10 +6627,10 @@ class SpotOptim(BaseEstimator):
         Higher scores indicate parameters that have more influence on the objective.
 
         The importance is calculated as:
-        1. For each dimension, compute the correlation between parameter values
-           and objective values
-        2. Normalize to percentage scale (0-100)
-        3. Higher values indicate more important parameters
+            1. For each dimension, compute the correlation between parameter values
+               and objective values
+            2. Normalize to percentage scale (0-100)
+            3. Higher values indicate more important parameters
 
         Returns:
             List[float]: Importance scores for each dimension (0-100 scale).
@@ -6726,7 +6658,7 @@ class SpotOptim(BaseEstimator):
             print(f"x1 importance: {importance[1]:.2f}")
 
             # Use table to display importance
-            table = opt.print_results_table(show_importance=True)
+            table = opt.get_results_table(show_importance=True)
             print(table)
             ```
         """
@@ -6797,14 +6729,14 @@ class SpotOptim(BaseEstimator):
         inspection instead.
 
         The method automatically handles different parameter types:
-        - Integer/float parameters: Direct correlation with objective values
-        - Log-transformed parameters (log10, log, ln): Correlation in log-space
-        - Factor (categorical) parameters: Skipped with informative message
+            * Integer/float parameters: Direct correlation with objective values
+            * Log-transformed parameters (log10, log, ln): Correlation in log-space
+            * Factor (categorical) parameters: Skipped with informative message
 
         Significance levels:
-        - ***: p < 0.001 (highly significant)
-        - **: p < 0.01 (significant)
-        - *: p < 0.05 (marginally significant)
+            * ***: p < 0.001 (highly significant)
+            * **: p < 0.01 (significant)
+            * *: p < 0.05 (marginally significant)
 
         Examples:
             ```{python}
