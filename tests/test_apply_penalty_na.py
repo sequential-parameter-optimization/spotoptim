@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""Tests for the _apply_penalty_NA method with y_history parameter."""
+"""Tests for the apply_penalty_NA method with y_history parameter."""
 
 import numpy as np
 from spotoptim import SpotOptim
@@ -22,7 +22,7 @@ def test_apply_penalty_with_history():
     # New values with NaN/inf
     y_new = np.array([6.0, np.nan, np.inf, 7.0])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     # Check all values are finite
     assert np.all(np.isfinite(y_clean))
@@ -51,7 +51,7 @@ def test_apply_penalty_without_history():
     # No history provided, should use y itself
     y_new = np.array([1.0, 2.0, np.nan, 4.0, 5.0])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=None)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=None)
 
     # Check all values are finite
     assert np.all(np.isfinite(y_clean))
@@ -76,7 +76,7 @@ def test_apply_penalty_history_all_finite():
     y_history = np.array([10.0, 20.0, 30.0, 40.0])
     y_new = np.array([np.nan, np.inf, -np.inf])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     assert np.all(np.isfinite(y_clean))
 
@@ -98,7 +98,7 @@ def test_apply_penalty_history_with_nan():
     y_history = np.array([1.0, np.nan, 3.0, np.inf, 5.0])
     y_new = np.array([np.nan, 7.0])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     assert np.all(np.isfinite(y_clean))
 
@@ -118,7 +118,7 @@ def test_apply_penalty_explicit_penalty_value():
     y_new = np.array([np.nan, 4.0, np.inf])
 
     # Use explicit penalty value of 100
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history, penalty_value=100.0)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history, penalty_value=100.0)
 
     assert np.all(np.isfinite(y_clean))
 
@@ -140,7 +140,7 @@ def test_apply_penalty_insufficient_history():
     y_history = np.array([42.0])  # Only one finite value
     y_new = np.array([np.nan, np.inf])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     assert np.all(np.isfinite(y_clean))
 
@@ -158,7 +158,7 @@ def test_apply_penalty_empty_history():
     y_history = np.array([])  # Empty history
     y_new = np.array([1.0, np.nan, 3.0])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     assert np.all(np.isfinite(y_clean))
 
@@ -177,7 +177,7 @@ def test_apply_penalty_all_nan_in_y_and_history():
     y_history = np.array([np.nan, np.inf])
     y_new = np.array([np.nan, np.inf])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     # Should still work with default large penalty
     assert np.all(np.isfinite(y_clean))
@@ -193,7 +193,7 @@ def test_apply_penalty_no_nan_values():
     y_history = np.array([1.0, 2.0, 3.0])
     y_new = np.array([4.0, 5.0, 6.0])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     # Should return unchanged
     assert np.array_equal(y_clean, y_new)
@@ -211,7 +211,7 @@ def test_apply_penalty_random_noise_uniqueness():
     y_history = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     y_new = np.array([np.nan, np.nan, np.nan, np.nan])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     # All values should be finite but slightly different due to noise
     assert np.all(np.isfinite(y_clean))
@@ -235,7 +235,7 @@ def test_apply_penalty_with_self_penalty_attribute():
     y_history = np.array([5.0])
     y_new = np.array([np.nan, np.inf])
 
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
 
     assert np.all(np.isfinite(y_clean))
 
@@ -254,7 +254,7 @@ def test_apply_penalty_custom_sd():
     y_new = np.array([np.nan] * 100)  # Many NaN values
 
     # Use larger sd for more spread
-    y_clean = opt._apply_penalty_NA(y_new, y_history=y_history, sd=1.0)
+    y_clean = opt.apply_penalty_NA(y_new, y_history=y_history, sd=1.0)
 
     assert np.all(np.isfinite(y_clean))
 
@@ -316,7 +316,7 @@ def test_apply_penalty_verbose_output(capsys):
     y_history = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     y_new = np.array([np.nan, 6.0, np.inf])
 
-    opt._apply_penalty_NA(y_new, y_history=y_history)
+    opt.apply_penalty_NA(y_new, y_history=y_history)
 
     captured = capsys.readouterr()
     assert "Warning: Found 2 NaN/inf value(s)" in captured.out
@@ -334,5 +334,5 @@ def test_apply_penalty_preserves_array_shape():
     # Test various shapes
     for shape in [(5,), (10,), (1,), (100,)]:
         y_new = np.full(shape, np.nan)
-        y_clean = opt._apply_penalty_NA(y_new, y_history=y_history)
+        y_clean = opt.apply_penalty_NA(y_new, y_history=y_history)
         assert y_clean.shape == shape

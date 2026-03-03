@@ -18,17 +18,17 @@ def test_determine_termination_example():
     # Case 1: Maximum evaluations reached
     opt.y_ = np.zeros(20)
     start_time = time.time()
-    msg = opt._determine_termination(start_time)
+    msg = opt.determine_termination(start_time)
     assert msg == "Optimization terminated: maximum evaluations (10) reached"
 
     # Case 2: Time limit exceeded (evaluations below max_iter so time check fires)
     opt.y_ = np.zeros(5)
     start_time = time.time() - 700
-    msg = opt._determine_termination(start_time)
+    msg = opt.determine_termination(start_time)
     assert msg == "Optimization terminated: time limit (10.00 min) reached"
 
     # Case 3: Successful completion (below max_iter and within time)
     opt.y_ = np.zeros(5)
     start_time = time.time()
-    msg = opt._determine_termination(start_time)
+    msg = opt.determine_termination(start_time)
     assert msg == "Optimization finished successfully"

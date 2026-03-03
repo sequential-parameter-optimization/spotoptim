@@ -294,7 +294,7 @@ class TestGetBestXYInitialDesign:
 
 
 class TestApplyOCBA:
-    """Tests for _apply_ocba() method."""
+    """Tests for apply_ocba() method."""
 
     def test_apply_ocba_disabled_returns_none(self):
         """Test that OCBA returns None when disabled."""
@@ -309,7 +309,7 @@ class TestApplyOCBA:
         opt.mean_y = np.array([5.0, 0.1, 5.0])
         opt.var_y = np.array([0.1, 0.05, 0.15])
 
-        X_ocba = opt._apply_ocba()
+        X_ocba = opt.apply_ocba()
 
         assert X_ocba is None
 
@@ -323,7 +323,7 @@ class TestApplyOCBA:
             seed=42,
         )
 
-        X_ocba = opt._apply_ocba()
+        X_ocba = opt.apply_ocba()
 
         assert X_ocba is None
 
@@ -340,7 +340,7 @@ class TestApplyOCBA:
         opt.mean_y = np.array([5.0, 0.1])
         opt.var_y = np.array([0.1, 0.05])
 
-        X_ocba = opt._apply_ocba()
+        X_ocba = opt.apply_ocba()
 
         assert X_ocba is None
 
@@ -357,7 +357,7 @@ class TestApplyOCBA:
         opt.mean_y = np.array([5.0, 0.1, 5.0, 2.0])
         opt.var_y = np.array([0.1, 0.05, 0.15, 0.08])
 
-        X_ocba = opt._apply_ocba()
+        X_ocba = opt.apply_ocba()
 
         # Should return some points for re-evaluation
         assert X_ocba is not None
@@ -503,7 +503,7 @@ class TestUpdateBestMainLoop:
 
 
 class TestDetermineTermination:
-    """Tests for _determine_termination() method."""
+    """Tests for determine_termination() method."""
 
     def test_determine_termination_max_iter_reached(self):
         """Test termination message when max_iter reached."""
@@ -517,7 +517,7 @@ class TestDetermineTermination:
         opt.y_ = np.zeros(20)  # Simulate 20 evaluations
 
         start_time = time.time()
-        message = opt._determine_termination(start_time)
+        message = opt.determine_termination(start_time)
 
         assert "maximum evaluations" in message
         assert "20" in message
@@ -535,7 +535,7 @@ class TestDetermineTermination:
 
         # Simulate time elapsed > max_time
         start_time = time.time() - 700  # 11.67 minutes elapsed
-        message = opt._determine_termination(start_time)
+        message = opt.determine_termination(start_time)
 
         assert "time limit" in message
         assert "10.00" in message
@@ -552,7 +552,7 @@ class TestDetermineTermination:
         opt.y_ = np.zeros(10)  # Under max_iter
 
         start_time = time.time()  # Just started
-        message = opt._determine_termination(start_time)
+        message = opt.determine_termination(start_time)
 
         assert "successfully" in message
 

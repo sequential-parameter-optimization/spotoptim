@@ -891,7 +891,7 @@ class SpotOptim(BaseEstimator):
 
         # Initialize persistent RNG
         self.rng = np.random.RandomState(self.seed)
-        self._set_seed()
+        self.set_seed()
 
         # Process bounds and factor variables
         self._factor_maps = {}  # Maps dimension index to {int: str} mapping
@@ -1084,35 +1084,35 @@ class SpotOptim(BaseEstimator):
     # Configuration & Helpers
     # ====================
 
-    def _set_seed(self) -> None:
+    def set_seed(self) -> None:
         """Set global random seeds for reproducibility.
 
         Sets seeds for:
-        - random
-        - numpy.random
-        - torch (cpu and cuda)
+            * random
+            * numpy.random
+            * torch (cpu and cuda)
 
         Only performs actions if self.seed is not None.
 
-        Args:
-            None
 
         Returns:
             None
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> import numpy as np
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(0, 1)], seed=42)
-            >>> spot._set_seed()
-            >>> np.random.rand()  # Should be deterministic
-            0.3745401188473625
+           ```{python}
+           from spotoptim import SpotOptim
+           import numpy as np
+           spot = SpotOptim(fun=lambda x: x, bounds=[(0, 1)], seed=42)
+           spot.set_seed()
+           np.random.rand()  # Should be deterministic
+           ```
         """
         if self.seed is not None:
             random.seed(self.seed)
             np.random.seed(self.seed)
             torch.manual_seed(self.seed)
             if torch.cuda.is_available():
+                torch.cuda.manual_seed(self.seed)
                 torch.cuda.manual_seed_all(self.seed)
 
     def detect_var_type(self) -> list:
@@ -1145,9 +1145,9 @@ class SpotOptim(BaseEstimator):
         """Modify bounds based on variable types.
 
         Adjusts bounds for each dimension according to its var_type:
-        - 'int': Ensures bounds are integers (ceiling for lower, floor for upper)
-        - 'factor': Bounds already set to (0, n_levels-1) by process_factor_bounds
-        - 'float': Explicitly converts bounds to float
+            * 'int': Ensures bounds are integers (ceiling for lower, floor for upper)
+            * 'factor': Bounds already set to (0, n_levels-1) by process_factor_bounds
+            * 'float': Explicitly converts bounds to float
 
         Returns:
             None
@@ -1159,13 +1159,13 @@ class SpotOptim(BaseEstimator):
             ```{python}
             from spotoptim import SpotOptim
             spot = SpotOptim(fun=lambda x: x, bounds=[(0.5, 10.5)], var_type=['int'])
-            spot.bounds
+            print(spot.bounds)
             ```
 
             ```{python}
             from spotoptim import SpotOptim
             spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10)], var_type=['float'])
-            spot.bounds
+            print(spot.bounds)
             ```
         """
         for i, vtype in enumerate(self.var_type):
@@ -1198,7 +1198,6 @@ class SpotOptim(BaseEstimator):
 
         Sets var_trans to a list of None values if not specified, or normalizes
         transformation names by converting 'id', 'None', or None to None.
-
         Also validates that var_trans length matches the number of dimensions.
 
         Returns:
@@ -1212,14 +1211,14 @@ class SpotOptim(BaseEstimator):
             from spotoptim import SpotOptim
             # Default behavior - all None
             spot = SpotOptim(fun=lambda x: x, bounds=[(0, 10), (0, 10)])
-            spot.var_trans
+            print(f"spot.var_trans (should be [None, None]): {spot.var_trans}")
             ```
             ```{python}
             from spotoptim import SpotOptim
             # Normalize transformation names
             spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (1, 100)],
                              var_trans=['log10', 'id'])
-            spot.var_trans
+            print(f"spot.var_trans (should be ['log10', 'None']): {spot.var_trans}")
             ```
         """
         # Default variable transformations (None means no transformation)
@@ -1240,12 +1239,11 @@ class SpotOptim(BaseEstimator):
             )
 
     def process_factor_bounds(self) -> None:
-        """Process bounds to handle factor variables.
+        """Process `bounds` to handle factor variables.
 
         For dimensions with tuple bounds (factor variables), creates internal
         integer mappings and replaces bounds with (0, n_levels-1).
-
-        Stores mappings in self._factor_maps: {dim_idx: {int_val: str_val}}
+        Stores mappings in `self._factor_maps`: {dim_idx: {int_val: str_val}}
 
         Returns:
             None
@@ -1258,7 +1256,7 @@ class SpotOptim(BaseEstimator):
             from spotoptim import SpotOptim
             spot = SpotOptim(fun=lambda x: x, bounds=[('red', 'green', 'blue'), (0, 10)])
             spot.process_factor_bounds()
-            print(spot.bounds)
+            print(f"spot.bounds (should be [(0, 2), (0, 10)]): {spot.bounds}")
             ```
         """
         processed_bounds = []
@@ -1330,15 +1328,13 @@ class SpotOptim(BaseEstimator):
 
         Examples:
             ```{python}
-            import numpy as np
             from spotoptim import SpotOptim
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
+            from spotoptim.function import sphere
+
             opt = SpotOptim(fun=sphere,
-                            bounds=[(-5, 5)],
+                            bounds=[(-5, 5), (0, 10)],
                             n_initial=5,
-                            var_name=["x"],
+                            var_name=["x", "y"],
                             verbose=True)
             opt.optimize()
             best_params = opt.get_best_hyperparameters()
@@ -2148,8 +2144,6 @@ class SpotOptim(BaseEstimator):
         """Generate initial space-filling design using Latin Hypercube Sampling.
         Used in the optimize() method to create the initial set of design points.
 
-        Args:
-            None
 
         Returns:
             ndarray: Initial design points, shape (n_initial, n_features).
@@ -3135,8 +3129,6 @@ class SpotOptim(BaseEstimator):
     def _optimize_acquisition_scipy(self) -> np.ndarray:
         """Optimize using scipy.optimize.minimize interface (default).
 
-        Args:
-            None
 
         Returns:
             np.ndarray: The optimized acquisition function values.
@@ -4034,7 +4026,7 @@ class SpotOptim(BaseEstimator):
         """
         # Set the seed for this run
         self.seed = seed
-        self._set_seed()
+        self.set_seed()
 
         # Re-initialize LHS sampler with new seed to ensure diversity in initial design
         if hasattr(self, "n_dim"):
@@ -4281,7 +4273,7 @@ class SpotOptim(BaseEstimator):
         shared_lock=None,
     ) -> Tuple[str, OptimizeResult]:
         """Perform a single sequential optimization run.
-        Calls _initialize_run, _rm_NA_values, _check_size_initial_design, _init_storage, _get_best_xy_initial_design, and _run_sequential_loop.
+        Calls _initialize_run, _rm_NA_values, _check_size_initial_design, init_storage, _get_best_xy_initial_design, and _run_sequential_loop.
 
 
         Args:
@@ -4332,7 +4324,7 @@ class SpotOptim(BaseEstimator):
         self._check_size_initial_design(y0, n_evaluated)
 
         # Initialize storage and statistics
-        self._init_storage(X0, y0)
+        self.init_storage(X0, y0)
         self._zero_success_count = 0
         self._success_history = []  # Clear success history for new run
 
@@ -4385,7 +4377,7 @@ class SpotOptim(BaseEstimator):
             True
         """
         # Set seed for reproducibility
-        self._set_seed()
+        self.set_seed()
 
         # Set initial design (generate or process user-provided points)
         X0 = self.get_initial_design(X0)
@@ -4456,7 +4448,7 @@ class SpotOptim(BaseEstimator):
              >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
              >>> X0, y0, n_evaluated = opt._rm_NA_values(X0, y0)
              >>> opt._check_size_initial_design(y0, n_evaluated)
-             >>> opt._init_storage(X0, y0)
+             >>> opt.init_storage(X0, y0)
              >>> opt._zero_success_count = 0
              >>> opt._success_history = []
              >>> opt.update_stats()
@@ -4498,7 +4490,7 @@ class SpotOptim(BaseEstimator):
             self._fit_scheduler()
 
             # Apply OCBA for noisy functions
-            X_ocba = self._apply_ocba()
+            X_ocba = self.apply_ocba()
 
             # Suggest next point
             x_next = self.suggest_next_infill_point()
@@ -4570,7 +4562,7 @@ class SpotOptim(BaseEstimator):
                 return "RESTART", res
 
             # Update storage
-            self._update_storage(x_next_repeated, y_next)
+            self.update_storage(x_next_repeated, y_next)
 
             # Update stats
             self.update_stats()
@@ -4597,7 +4589,7 @@ class SpotOptim(BaseEstimator):
         X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
 
         # Determine termination reason
-        status_message = self._determine_termination(timeout_start)
+        status_message = self.determine_termination(timeout_start)
 
         # Append statistics to match scipy.optimize.minimize format
         message = (
@@ -4751,7 +4743,7 @@ class SpotOptim(BaseEstimator):
             Optimization finished (Steady State)
         """
         # Setup similar to _optimize_single_run
-        self._set_seed()
+        self.set_seed()
         X0 = self.get_initial_design(X0)
         X0 = self._curate_initial_design(X0)
 
@@ -5093,7 +5085,7 @@ class SpotOptim(BaseEstimator):
         # Handle NaN/inf values in new evaluations
         # Use historical y values (self.y_) for computing penalty statistics
         if self.penalty:
-            y_next = self._apply_penalty_NA(y_next, y_history=self.y_)
+            y_next = self.apply_penalty_NA(y_next, y_history=self.y_)
 
         # Identify which points are valid (finite) BEFORE removing them
         # Note: _remove_nan filters based on y_next finite values
@@ -5101,7 +5093,7 @@ class SpotOptim(BaseEstimator):
         # Ensure y_next is a float array (maps non-convertible values like "error" or None to nan)
         # This is critical if the objective function returns non-numeric values and penalty=False
         if y_next.dtype == object:
-            # Use safe float conversion similar to _apply_penalty_NA
+            # Use safe float conversion similar to apply_penalty_NA
             def _safe_float(v):
                 try:
                     return float(v)
@@ -5286,15 +5278,15 @@ class SpotOptim(BaseEstimator):
                 msg += f" | Mean Curr: {mean_y_new:.6f}"
             print(msg)
 
-    def _determine_termination(self, timeout_start: float) -> str:
+    def determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.
 
         Checks the termination conditions and returns an appropriate message
         indicating why the optimization stopped. Three possible termination
         conditions are checked in order of priority:
-        1. Maximum number of evaluations reached
-        2. Maximum time limit exceeded
-        3. Successful completion (neither limit reached)
+            1. Maximum number of evaluations reached
+            2. Maximum time limit exceeded
+            3. Successful completion (neither limit reached)
 
         Args:
             timeout_start (float): Start time of optimization (from time.time()).
@@ -5303,35 +5295,42 @@ class SpotOptim(BaseEstimator):
             str: Message describing the termination reason.
 
         Examples:
-            >>> import numpy as np
-            >>> import time
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=20,
-            ...     max_time=10.0
-            ... )
-            >>> # Case 1: Maximum evaluations reached
-            >>> opt.y_ = np.zeros(20)  # Simulate 20 evaluations
-            >>> start_time = time.time()
-            >>> msg = opt._determine_termination(start_time)
-            >>> print(msg)
-            Optimization terminated: maximum evaluations (20) reached
-            >>>
-            >>> # Case 2: Time limit exceeded
-            >>> opt.y_ = np.zeros(10)  # Only 10 evaluations
-            >>> start_time = time.time() - 700  # Simulate 11.67 minutes elapsed
-            >>> msg = opt._determine_termination(start_time)
-            >>> print(msg)
-            Optimization terminated: time limit (10.00 min) reached
-            >>>
-            >>> # Case 3: Successful completion
-            >>> opt.y_ = np.zeros(10)  # Under max_iter
-            >>> start_time = time.time()  # Just started
-            >>> msg = opt._determine_termination(start_time)
-            >>> print(msg)
-            Optimization finished successfully
+            ```{python}
+            import numpy as np
+            import time
+            from spotoptim import SpotOptim
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=20,
+                max_time=10.0
+            )
+            # Case 1: Maximum evaluations reached
+            opt.y_ = np.zeros(20)  # Simulate 20 evaluations
+            start_time = time.time()
+            msg = opt.determine_termination(start_time)
+            print(msg)
+            ```
+            ```{python}
+            # Case 2: Time limit exceeded
+            import numpy as np
+            import time
+            from spotoptim import SpotOptim
+            opt.y_ = np.zeros(10)  # Only 10 evaluations
+            start_time = time.time() - 700  # Simulate 11.67 minutes elapsed
+            msg = opt.determine_termination(start_time)
+            print(msg)
+            ```
+            ```{python}
+            # Case 3: Successful completion
+            import numpy as np
+            import time
+            from spotoptim import SpotOptim
+            opt.y_ = np.zeros(10)  # Under max_iter
+            start_time = time.time()  # Just started
+            msg = opt.determine_termination(start_time)
+            print(msg)
+            ```
         """
         # Determine termination reason
         elapsed_time = time.time() - timeout_start
@@ -5346,7 +5345,7 @@ class SpotOptim(BaseEstimator):
 
         return message
 
-    def _apply_ocba(self) -> Optional[np.ndarray]:
+    def apply_ocba(self) -> Optional[np.ndarray]:
         """Apply Optimal Computing Budget Allocation for noisy functions.
 
         Determines which existing design points should be re-evaluated based on
@@ -5354,51 +5353,57 @@ class SpotOptim(BaseEstimator):
         the quality of the estimated best design.
 
         Returns:
-            Optional[ndarray]: Array of design points to re-evaluate, shape (n_re_eval, n_features).
+            Optional[ndarray]:
+                Array of design points to re-evaluate, shape (n_re_eval, n_features).
                 Returns None if OCBA conditions are not met or OCBA is disabled.
 
         Note:
             OCBA is only applied when:
-            - (self.repeats_initial > 1) or (self.repeats_surrogate > 1)
-            - self.ocba_delta > 0
-            - All variances are > 0
-            - At least 3 design points exist
+                * (self.repeats_initial > 1) or (self.repeats_surrogate > 1)
+                * self.ocba_delta > 0
+                * All variances are > 0
+                * At least 3 design points exist
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0]),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     repeats_surrogate=2,
-            ...     ocba_delta=5,
-            ...     verbose=True
-            ... )
-            >>> # Simulate optimization state (normally done in optimize())
-            >>> opt.mean_X = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt.mean_y = np.array([5.0, 0.1, 5.0])
-            >>> opt.var_y = np.array([0.1, 0.05, 0.15])
-            >>> X_ocba = opt._apply_ocba()
-              OCBA: Adding 5 re-evaluation(s)
-            >>> X_ocba.shape[0] == 5
-            True
-            >>>
-            >>> # OCBA skipped - insufficient points
-            >>> opt2 = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     repeats_surrogate=2,
-            ...     ocba_delta=5,
-            ...     verbose=True
-            ... )
-            >>> opt2.mean_X = np.array([[1, 2], [0, 0]])
-            >>> opt2.mean_y = np.array([5.0, 0.1])
-            >>> opt2.var_y = np.array([0.1, 0.05])
-            >>> X_ocba = opt2._apply_ocba()
-            Warning: OCBA skipped (need >2 points with variance > 0)
-            >>> X_ocba is None
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0]),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                repeats_surrogate=2,
+                ocba_delta=5,
+                verbose=True
+            )
+            # Simulate optimization state (normally done in optimize())
+            opt.mean_X = np.array([[1, 2], [0, 0], [2, 1]])
+            opt.mean_y = np.array([5.0, 0.1, 5.0])
+            opt.var_y = np.array([0.1, 0.05, 0.15])
+            X_ocba = opt.apply_ocba()
+            # OCBA: Adding 5 re-evaluation(s).
+            # The following should be true:
+            print(X_ocba.shape[0] == 5)
+            ```
+
+            OCBA skipped - insufficient points
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt2 = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                repeats_surrogate=2,
+                ocba_delta=5,
+                verbose=True
+            )
+            opt2.mean_X = np.array([[1, 2], [0, 0]])
+            opt2.mean_y = np.array([5.0, 0.1])
+            opt2.var_y = np.array([0.1, 0.05])
+            X_ocba = opt2.apply_ocba()
+            # Warning: OCBA skipped (need >2 points with variance > 0)
+            print(X_ocba is None)
+            ```
         """
         # OCBA: Compute optimal budget allocation for noisy functions
         # This determines which existing design points should be re-evaluated
@@ -5424,7 +5429,7 @@ class SpotOptim(BaseEstimator):
 
         return X_ocba
 
-    def _apply_penalty_NA(
+    def apply_penalty_NA(
         self,
         y: np.ndarray,
         y_history: Optional[np.ndarray] = None,
@@ -5446,24 +5451,27 @@ class SpotOptim(BaseEstimator):
                 If None, computes penalty as: max(finite_y_history) + 3 * std(finite_y_history).
                 If all values are NaN/inf or only one finite value exists, falls back
                 to self.penalty_val. Default is None.
-            sd (float): Standard deviation for random noise added to penalty.
+            sd (float): Standard deviation for normal distributed random noise added to penalty.
                 Default is 0.1.
 
         Returns:
-            ndarray: Array with NaN/inf replaced by penalty_value + random noise.
+            ndarray:
+                Array with NaN/inf replaced by penalty_value + random noise
+                (normal distributed with mean 0 and standard deviation sd).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> y_hist = np.array([1.0, 2.0, 3.0, 5.0])
-            >>> y_new = np.array([4.0, np.nan, np.inf])
-            >>> y_clean = opt._apply_penalty_NA(y_new, y_history=y_hist)
-            >>> np.all(np.isfinite(y_clean))
-            True
-            >>> # NaN/inf replaced with worst value from history + 3*std + noise
-            >>> y_clean[1] > 5.0  # Should be larger than max finite value in history
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            y_hist = np.array([1.0, 2.0, 3.0, 5.0])
+            y_new = np.array([4.0, np.nan, np.inf])
+            y_clean = opt.apply_penalty_NA(y_new, y_history=y_hist)
+            print(f"np.all(np.isfinite(y_clean)): {np.all(np.isfinite(y_clean))}")
+            print(f"y_clean: {y_clean}")
+            # NaN/inf replaced with worst value from history + 3*std + noise
+            print(f"y_clean[1] > 5.0: {y_clean[1] > 5.0}")  # Should be larger than max finite value in history
+            ```
         """
 
         # Ensure y is a float array (maps non-convertible values like "error" or None to nan)
@@ -5537,7 +5545,7 @@ class SpotOptim(BaseEstimator):
     # Storage & Statistics
     # ====================
 
-    def _init_storage(self, X0: np.ndarray, y0: np.ndarray) -> None:
+    def init_storage(self, X0: np.ndarray, y0: np.ndarray) -> None:
         """Initialize storage for optimization.
 
         Sets up the initial data structures needed for optimization tracking:
@@ -5555,30 +5563,28 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 n_initial=5)
-            >>> X0 = np.array([[1, 2], [3, 4], [0, 1]])
-            >>> y0 = np.array([5.0, 25.0, 1.0])
-            >>> opt._init_storage(X0, y0)
-            >>> opt.X_.shape
-            (3, 2)
-            >>> opt.y_.shape
-            (3,)
-            >>> opt.n_iter_
-            0
-            >>> opt.counter
-            3
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            n_initial=5)
+            X0 = np.array([[1, 2], [3, 4], [0, 1]])
+            y0 = np.array([5.0, 25.0, 1.0])
+            opt.init_storage(X0, y0)
+            print(f"X_ = {opt.X_}")
+            print(f"y_ = {opt.y_}")
+            print(f"n_iter_ = {opt.n_iter_}")
+            print(f"counter = {opt.counter}")
+            ```
         """
         # Initialize storage (convert to original scale for user-facing storage)
         self.X_ = self._inverse_transform_X(X0.copy())
         self.y_ = y0.copy()
         self.n_iter_ = 0
 
-    def _update_storage(self, X_new: np.ndarray, y_new: np.ndarray) -> None:
-        """Update storage with new evaluation points.
+    def update_storage(self, X_new: np.ndarray, y_new: np.ndarray) -> None:
+        """Update storage (`X_`, `y_`) with new evaluation points.
 
         Appends new design points and their function values to the storage arrays.
         Points are converted from internal scale to original scale before storage.
@@ -5591,22 +5597,26 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 n_initial=5)
-            >>> # Initialize with some data
-            >>> opt.X_ = np.array([[1, 2], [3, 4]])
-            >>> opt.y_ = np.array([5.0, 25.0])
-            >>> # Add new points
-            >>> X_new = np.array([[0, 1], [2, 3]])
-            >>> y_new = np.array([1.0, 13.0])
-            >>> opt._update_storage(X_new, y_new)
-            >>> opt.X_.shape
-            (4, 2)
-            >>> opt.y_.shape
-            (4,)
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            n_initial=5)
+            # Initialize with some data
+            opt.X_ = np.array([[1, 2], [3, 4]])
+            opt.y_ = np.array([5.0, 25.0])
+            print("Initial storage:")
+            print(opt.X_)
+            print(opt.y_)
+            # Add new points
+            X_new = np.array([[0, 1], [2, 3]])
+            y_new = np.array([1.0, 13.0])
+            opt.update_storage(X_new, y_new)
+            print("Updated storage:")
+            print(opt.X_)
+            print(opt.y_)
+            ```
         """
         # Update storage (convert to original scale for user-facing storage)
         self.X_ = np.vstack([self.X_, self._inverse_transform_X(X_new)])
@@ -5616,20 +5626,20 @@ class SpotOptim(BaseEstimator):
         """Update optimization statistics.
 
         Updates various statistics related to the optimization progress:
-            - `min_y`: Minimum y value found so far
-            - `min_X`: X value corresponding to minimum y
-            - `counter`: Total number of function evaluations
+            * `min_y`: Minimum y value found so far
+            * `min_X`: X value corresponding to minimum y
+            * `counter`: Total number of function evaluations
 
         Note: `success_rate` is updated separately via `update_success_rate()` method,
         which is called after each batch of function evaluations.
 
         If "noise" is True (`repeats_initial > 1` or `repeats_surrogate > 1`), additionally computes:
-            - `mean_X`: Unique design points (aggregated from repeated evaluations)
-            - `mean_y`: Mean y values per design point
-            - `var_y`: Variance of y values per design point
-            - `min_mean_X`: X value of the best mean y value
-            - `min_mean_y`: Best mean y value
-            - `min_var_y`: Variance of the best mean y value
+            * `mean_X`: Unique design points (aggregated from repeated evaluations)
+            * `mean_y`: Mean y values per design point
+            * `var_y`: Variance of y values per design point
+            * `min_mean_X`: X value of the best mean y value
+            * `min_mean_y`: Best mean y value
+            * `min_var_y`: Variance of the best mean y value
 
 
         Returns:
@@ -5639,9 +5649,7 @@ class SpotOptim(BaseEstimator):
             ```{python}
             import numpy as np
             from spotoptim import SpotOptim
-            from spotoptim.function import sphere, noisy_sphere
-
-
+            from spotoptim.function import sphere
             # Without noise
             opt = SpotOptim(fun=sphere,
                             bounds=[(-5, 5), (-5, 5)],
@@ -5653,7 +5661,12 @@ class SpotOptim(BaseEstimator):
             print(f"opt.min_y: {opt.min_y}")
             print(f"opt.min_X: {opt.min_X}")
             print(f"opt.counter: {opt.counter}")
+            ```
 
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import noisy_sphere
             # With noise
             opt_noise = SpotOptim(fun=noisy_sphere,
                                   bounds=[(-5, 5), (-5, 5)],
@@ -5785,9 +5798,9 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             tuple: A tuple containing:
-                - X_agg (ndarray): Unique design points, shape (n_groups, n_features)
-                - y_mean (ndarray): Mean y values per group, shape (n_groups,)
-                - y_var (ndarray): Variance of y values per group, shape (n_groups,)
+                * X_agg (ndarray): Unique design points, shape (n_groups, n_features)
+                * y_mean (ndarray): Mean y values per group, shape (n_groups,)
+                * y_var (ndarray): Variance of y values per group, shape (n_groups,)
 
         Examples:
             ```{python}
@@ -5854,12 +5867,12 @@ class SpotOptim(BaseEstimator):
         saving completed runs for later analysis.
 
         The result includes everything in an experiment plus:
-        - All evaluated points (X_)
-        - All function values (y_)
-        - Best point and best value
-        - Iteration count
-        - Success rate statistics
-        - Noise statistics (if applicable)
+            * All evaluated points (X_)
+            * All function values (y_)
+            * Best point and best value
+            * Iteration count
+            * Success rate statistics
+            * Noise statistics (if applicable)
 
         Args:
             filename (str, optional): Filename for the result file. If None, generates

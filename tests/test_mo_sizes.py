@@ -101,7 +101,7 @@ def test_mo_size_sequential_nan():
     )
 
     # Initialize normally
-    optimizer._init_storage(np.zeros((5, 1)), np.zeros(5))
+    optimizer.init_storage(np.zeros((5, 1)), np.zeros(5))
     optimizer.y_mo = np.zeros((5, 2))
 
     # Simulate a step where a point returns NaN

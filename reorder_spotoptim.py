@@ -9,13 +9,13 @@ import os
 # Define groups
 GROUPS = {
     "Core": ["__init__", "__getattr__", "__setattr__", "__dir__", "__post_init__"],
-    "Configuration & Helpers": ["_set_seed", "detect_var_type", "modify_bounds_based_on_var_type", "handle_default_var_trans", "process_factor_bounds", "get_best_hyperparameters", "_repair_non_numeric", "_reinitialize_components", "_get_pickle_safe_optimizer"],
+    "Configuration & Helpers": ["set_seed", "detect_var_type", "modify_bounds_based_on_var_type", "handle_default_var_trans", "process_factor_bounds", "get_best_hyperparameters", "_repair_non_numeric", "_reinitialize_components", "_get_pickle_safe_optimizer"],
     "Dimension Reduction": ["_setup_dimension_reduction", "to_red_dim", "to_all_dim"],
     "Variable Transformation": ["transform_value", "inverse_transform_value", "_transform_X", "_inverse_transform_X", "transform_bounds", "_map_to_factor_values"],
     "Initial Design": ["get_initial_design", "_generate_initial_design", "_curate_initial_design", "_rm_NA_values", "_validate_x0", "_check_size_initial_design", "_get_best_xy_initial_design", "_update_repeats_infill_points", "_remove_nan"],
     "Surrogate & Acquisition": ["_fit_surrogate", "_fit_scheduler", "_predict_with_uncertainty", "_acquisition_function", "_optimize_acquisition_tricands", "_optimize_acquisition_de", "_optimize_acquisition_scipy", "_try_optimizer_candidates", "_handle_acquisition_failure", "_try_fallback_strategy", "_get_shape", "_store_mo", "_mo2so", "_get_ranks", "_get_ocba", "_get_ocba_X", "_evaluate_function", "_select_distant_points", "_select_best_cluster", "_selection_dispatcher", "select_new", "acquisition", "optimize_acquisition_func"],
-    "Optimization Loop": ["optimize", "_optimize_single_run", "suggest_next_infill_point", "_handle_NA_new_points", "_update_best_main_loop", "_determine_termination", "_apply_ocba", "_apply_penalty_NA"],
-    "Storage & Statistics": ["_init_storage", "_update_storage", "update_stats", "update_success_rate", "get_success_rate", "aggregate_mean_var"],
+    "Optimization Loop": ["optimize", "_optimize_single_run", "suggest_next_infill_point", "_handle_NA_new_points", "_update_best_main_loop", "determine_termination", "apply_ocba", "apply_penalty_NA"],
+    "Storage & Statistics": ["init_storage", "update_storage", "update_stats", "update_success_rate", "get_success_rate", "aggregate_mean_var"],
     "Results & Analysis": ["save_result", "load_result", "save_experiment", "load_experiment", "get_result_filename", "get_experiment_filename", "print_results", "print_best", "get_results_table", "get_design_table", "gen_design_table", "get_importance", "sensitivity_spearman", "get_stars"],
     "TensorBoard Integration": ["_clean_tensorboard_logs", "_init_tensorboard_writer", "_write_tensorboard_scalars", "_write_tensorboard_hparams", "_close_tensorboard_writer", "_init_tensorboard", "_close_and_del_tensorboard_writer"],
     "Plotting": ["plot_progress", "plot_surrogate", "plot_important_hyperparameter_contour", "_plot_surrogate_with_factors", "plot_importance", "plot_parameter_scatter"]
