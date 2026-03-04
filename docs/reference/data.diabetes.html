@@ -108,6 +108,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<script>
+  // Default to dark mode on first visit (no stored preference)
+  if (!localStorage.getItem('quarto-color-scheme')) {
+    localStorage.setItem('quarto-color-scheme', 'dark');
+  }
+</script>
 
 
 </head>
@@ -1824,6 +1830,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.noisy_sphere.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">noisy_sphere</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/function.so.robot_arm_hard.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">robot_arm_hard</span></a>
   </div>
@@ -1838,6 +1850,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/function.so.rosenbrock.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">rosenbrock</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.sphere.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sphere</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -1913,9 +1931,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#spotoptim.data.diabetes" id="toc-spotoptim.data.diabetes" class="nav-link active" data-scroll-target="#spotoptim.data.diabetes">data.diabetes</a>
-  <ul class="collapse">
-  <li><a href="#classes" id="toc-classes" class="nav-link" data-scroll-target="#classes">Classes</a>
+  <li><a href="#classes" id="toc-classes" class="nav-link active" data-scroll-target="#classes">Classes</a>
   <ul class="collapse">
   <li><a href="#spotoptim.data.diabetes.DiabetesDataset" id="toc-spotoptim.data.diabetes.DiabetesDataset" class="nav-link" data-scroll-target="#spotoptim.data.diabetes.DiabetesDataset">DiabetesDataset</a></li>
   </ul></li>
@@ -1923,19 +1939,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#spotoptim.data.diabetes.get_diabetes_dataloaders" id="toc-spotoptim.data.diabetes.get_diabetes_dataloaders" class="nav-link" data-scroll-target="#spotoptim.data.diabetes.get_diabetes_dataloaders">get_diabetes_dataloaders</a></li>
   </ul></li>
-  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/data.diabetes.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/data.html">Data</a></li><li class="breadcrumb-item"><a href="../../docs/reference/data.diabetes.html">data.diabetes</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/data.html">Data</a></li><li class="breadcrumb-item"><a href="../../docs/reference/data.diabetes.html">data.diabetes</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">data.diabetes</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
-<section id="spotoptim.data.diabetes" class="level1">
-<h1>data.diabetes</h1>
+</header>
+
+
 <p><code>data.diabetes</code></p>
 <section id="classes" class="level2">
 <h2 class="anchored" data-anchor-id="classes">Classes</h2>
@@ -2074,9 +2103,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-
-
 </section>
+<section id="examples" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
+<div id="521601b5" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.diabetes <span class="im">import</span> get_diabetes_dataloaders</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>train_loader, test_loader, scaler <span class="op">=</span> get_diabetes_dataloaders()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(train_loader)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(test_loader)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(scaler)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;torch.utils.data.dataloader.DataLoader object at 0x1217e8980&gt;
+&lt;torch.utils.data.dataloader.DataLoader object at 0x1215f3d90&gt;
+StandardScaler()</code></pre>
+</div>
+</div>
+
+
 </section>
 </section>
 </section>

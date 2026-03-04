@@ -73,6 +73,12 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<script>
+  // Default to dark mode on first visit (no stored preference)
+  if (!localStorage.getItem('quarto-color-scheme')) {
+    localStorage.setItem('quarto-color-scheme', 'dark');
+  }
+</script>
 
 
 </head>
@@ -1789,6 +1795,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.noisy_sphere.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">noisy_sphere</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/function.so.robot_arm_hard.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">robot_arm_hard</span></a>
   </div>
@@ -1803,6 +1815,12 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/function.so.rosenbrock.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">rosenbrock</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/function.so.sphere.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">sphere</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -1962,7 +1980,7 @@ ul.task-list li input[type="checkbox"] {
 </tr>
 <tr class="odd">
 <td><a href="../../docs/reference/core.experiment.ExperimentControl.html#spotoptim.core.experiment.ExperimentControl">core.experiment.ExperimentControl</a></td>
-<td>Controls the experiment configuration, replacing the legacy fun_control dictionary.</td>
+<td>Controls the experiment configuration.</td>
 </tr>
 </tbody>
 </table>
@@ -2876,16 +2894,24 @@ ul.task-list li input[type="checkbox"] {
 <td>N-dimensional Michalewicz function.</td>
 </tr>
 <tr class="even">
+<td><a href="../../docs/reference/function.so.noisy_sphere.html#spotoptim.function.so.noisy_sphere">function.so.noisy_sphere</a></td>
+<td>N-dimensional Sphere function with noise.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/function.so.robot_arm_hard.html#spotoptim.function.so.robot_arm_hard">function.so.robot_arm_hard</a></td>
 <td>10-Link Robot Arm with Maze-Like Hard Constraints.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../../docs/reference/function.so.robot_arm_obstacle.html#spotoptim.function.so.robot_arm_obstacle">function.so.robot_arm_obstacle</a></td>
 <td>10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="../../docs/reference/function.so.rosenbrock.html#spotoptim.function.so.rosenbrock">function.so.rosenbrock</a></td>
 <td>N-dimensional Rosenbrock function.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/function.so.sphere.html#spotoptim.function.so.sphere">function.so.sphere</a></td>
+<td>N-dimensional Sphere function.</td>
 </tr>
 <tr class="odd">
 <td><a href="../../docs/reference/function.so.wingwt.html#spotoptim.function.so.wingwt">function.so.wingwt</a></td>
