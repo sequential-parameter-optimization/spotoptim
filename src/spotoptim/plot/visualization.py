@@ -681,7 +681,7 @@ def _generate_mesh_grid(
     grid_points_original[:, j] = X_j.ravel()
 
     # Apply type constraints
-    grid_points_original = optimizer._repair_non_numeric(
+    grid_points_original = optimizer.repair_non_numeric(
         grid_points_original, optimizer.var_type
     )
 
@@ -812,7 +812,7 @@ def _generate_mesh_grid_with_factors(
         grid_points_float[:, dim_idx] = grid_points_original[:, dim_idx].astype(float)
 
     # Apply type constraints (convert to proper numeric types)
-    grid_points_float = optimizer._repair_non_numeric(
+    grid_points_float = optimizer.repair_non_numeric(
         grid_points_float, optimizer.var_type
     )
 

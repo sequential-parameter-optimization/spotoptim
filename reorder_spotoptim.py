@@ -9,8 +9,8 @@ import os
 # Define groups
 GROUPS = {
     "Core": ["__init__", "__getattr__", "__setattr__", "__dir__", "__post_init__"],
-    "Configuration & Helpers": ["set_seed", "detect_var_type", "modify_bounds_based_on_var_type", "handle_default_var_trans", "process_factor_bounds", "get_best_hyperparameters", "_repair_non_numeric", "_reinitialize_components", "_get_pickle_safe_optimizer"],
-    "Dimension Reduction": ["_setup_dimension_reduction", "to_red_dim", "to_all_dim"],
+    "Configuration & Helpers": ["set_seed", "detect_var_type", "modify_bounds_based_on_var_type", "handle_default_var_trans", "process_factor_bounds", "get_best_hyperparameters", "repair_non_numeric", "reinitialize_components"],
+    "Dimension Reduction": ["setup_dimension_reduction", "to_red_dim", "to_all_dim"],
     "Variable Transformation": ["transform_value", "inverse_transform_value", "_transform_X", "_inverse_transform_X", "transform_bounds", "_map_to_factor_values"],
     "Initial Design": ["get_initial_design", "_generate_initial_design", "_curate_initial_design", "_rm_NA_values", "_validate_x0", "_check_size_initial_design", "_get_best_xy_initial_design", "_update_repeats_infill_points", "_remove_nan"],
     "Surrogate & Acquisition": ["_fit_surrogate", "_fit_scheduler", "_predict_with_uncertainty", "_acquisition_function", "_optimize_acquisition_tricands", "_optimize_acquisition_de", "_optimize_acquisition_scipy", "_try_optimizer_candidates", "_handle_acquisition_failure", "_try_fallback_strategy", "get_shape", "store_mo", "mo2so", "get_ranks", "get_ocba", "get_ocba_X", "evaluate_function", "select_distant_points", "select_best_cluster", "_selection_dispatcher", "select_new", "acquisition", "optimize_acquisition_func"],
