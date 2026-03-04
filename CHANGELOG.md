@@ -1,3 +1,18 @@
+## [0.3.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.6...v0.3.0) (2026-03-04)
+
+
+### Features
+
+* cleanup print_results_table and print_design_table ([47c4272](https://github.com/sequential-parameter-optimization/spotoptim/commit/47c4272913e1648dff0097e02108218c42770947))
+
+
+### Bug Fixes
+
+* **ci:** use Python 3.13 + uv, add linear history guard for PRs ([d3fb160](https://github.com/sequential-parameter-optimization/spotoptim/commit/d3fb160424b57d4561b3eeb59d924330f8628793))
+* docs structure and tests updated ([5ad7197](https://github.com/sequential-parameter-optimization/spotoptim/commit/5ad7197d338b2e3e9c831012e4aa909fef29994b))
+* spotOptim docs quarto ([2c997cc](https://github.com/sequential-parameter-optimization/spotoptim/commit/2c997cc0933143cbab6798e90447d6ee8b091494))
+* **test:** use proportional tolerance for max_time CI assertion ([57b78d8](https://github.com/sequential-parameter-optimization/spotoptim/commit/57b78d886366f4c64cfd5f665857c133da2797ce))
+
 ## [0.2.6](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.2.5...v0.2.6) (2026-03-02)
 
 
