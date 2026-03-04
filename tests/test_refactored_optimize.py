@@ -131,14 +131,14 @@ class TestRefactoredOptimize:
         spot_optim.set_seed = MagicMock()
         spot_optim.get_initial_design = MagicMock(return_value=np.zeros((5, 2)))
         spot_optim._curate_initial_design = MagicMock(return_value=np.zeros((5, 2)))
-        spot_optim._evaluate_function = MagicMock(return_value=np.zeros(5))
+        spot_optim.evaluate_function = MagicMock(return_value=np.zeros(5))
         spot_optim._init_tensorboard = MagicMock()
 
         X0, y0 = spot_optim._initialize_run(X0=None, y0_known=None)
 
         spot_optim.set_seed.assert_called_once()
         spot_optim.get_initial_design.assert_called_once()
-        spot_optim._evaluate_function.assert_called_once()
+        spot_optim.evaluate_function.assert_called_once()
         # _init_tensorboard should NOT be called here anymore
         spot_optim._init_tensorboard.assert_not_called()
 
