@@ -109,8 +109,8 @@ def test_mo_size_sequential_nan():
     y_new_val = np.array([np.nan])
     y_mo_new = np.array([[np.nan, np.nan]])
 
-    # Manually append to y_mo as _evaluate_function would do
-    # Note: in real flow, _evaluate_function calls _mo2so which calls _store_mo
+    # Manually append to y_mo as evaluate_function would do
+    # Note: in real flow, evaluate_function calls mo2so which calls store_mo
     # We simulate this state: y_mo has the invalid point, but we feed Nan to remove_nan logic
     optimizer.y_mo = np.vstack([optimizer.y_mo, y_mo_new])
 

@@ -259,7 +259,7 @@ def _remote_eval_wrapper(pickled_args):
         >>> import numpy as np
         >>> from spotoptim.SpotOptim import _remote_eval_wrapper
         >>> class DummyOptimizer:
-        ...     def _evaluate_function(self, X):
+        ...     def evaluate_function(self, X):
         ...         return np.sum(X**2, axis=1)
         ...
         >>> optimizer = DummyOptimizer()
@@ -279,9 +279,9 @@ def _remote_eval_wrapper(pickled_args):
 
         optimizer, x = dill.loads(pickled_args)
 
-        # Recast to 2D for _evaluate_function
+        # Recast to 2D for evaluate_function
         x_2d = x.reshape(1, -1)
-        y_arr = optimizer._evaluate_function(x_2d)
+        y_arr = optimizer.evaluate_function(x_2d)
         return x, y_arr[0]
     except Exception as e:
         return None, e
@@ -3399,7 +3399,7 @@ class SpotOptim(BaseEstimator):
 
         return None, x_last
 
-    def _get_shape(self, y: np.ndarray) -> Tuple[int, Optional[int]]:
+    def get_shape(self, y: np.ndarray) -> Tuple[int, Optional[int]]:
         """Get the shape of the objective function output.
 
         Args:
@@ -3409,22 +3409,22 @@ class SpotOptim(BaseEstimator):
             tuple: (n_samples, n_objectives) where n_objectives is None for single-objective.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=10,
-            ...     n_initial=5
-            ... )
-            >>> y_single = np.array([1.0, 2.0, 3.0])
-            >>> n, m = opt._get_shape(y_single)
-            >>> print(f"n={n}, m={m}")
-            n=3, m=None
-            >>> y_multi = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-            >>> n, m = opt._get_shape(y_multi)
-            >>> print(f"n={n}, m={m}")
-            n=3, m=2
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                n_initial=5
+            )
+            y_single = np.array([1.0, 2.0, 3.0])
+            n, m = opt.get_shape(y_single)
+            print(f"n={n}, m={m}")
+            y_multi = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+            n, m = opt.get_shape(y_multi)
+            print(f"n={n}, m={m}")
+            ```
         """
         if y.ndim == 1:
             return y.shape[0], None
@@ -3434,7 +3434,7 @@ class SpotOptim(BaseEstimator):
             # For higher dimensions, flatten to 1D
             return y.size, None
 
-    def _store_mo(self, y_mo: np.ndarray) -> None:
+    def store_mo(self, y_mo: np.ndarray) -> None:
         """Store multi-objective values in self.y_mo.
 
         If multi-objective values are present (ndim==2), they are stored in self.y_mo.
@@ -3446,29 +3446,25 @@ class SpotOptim(BaseEstimator):
                            If single-objective, shape (n_samples,).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.column_stack([
-            ...         np.sum(X**2, axis=1),
-            ...         np.sum((X-1)**2, axis=1)
-            ...     ]),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=10,
-            ...     n_initial=5
-            ... )
-            >>> y_mo_1 = np.array([[1.0, 2.0], [3.0, 4.0]])
-            >>> opt._store_mo(y_mo_1)
-            >>> print(f"y_mo after first call: {opt.y_mo}")
-            y_mo after first call: [[1. 2.]
-             [3. 4.]]
-            >>> y_mo_2 = np.array([[5.0, 6.0], [7.0, 8.0]])
-            >>> opt._store_mo(y_mo_2)
-            >>> print(f"y_mo after second call: {opt.y_mo}")
-            y_mo after second call: [[1. 2.]
-             [3. 4.]
-             [5. 6.]
-             [7. 8.]]
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(
+                fun=lambda X: np.column_stack([
+                    np.sum(X**2, axis=1),
+                    np.sum((X-1)**2, axis=1)
+                ]),
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                n_initial=5
+            )
+            y_mo_1 = np.array([[1.0, 2.0], [3.0, 4.0]])
+            opt.store_mo(y_mo_1)
+            print(f"y_mo after first call: {opt.y_mo}")
+            y_mo_2 = np.array([[5.0, 6.0], [7.0, 8.0]])
+            opt.store_mo(y_mo_2)
+            print(f"y_mo after second call: {opt.y_mo}")
+            ```
         """
         # Store y_mo in self.y_mo (append new values) if multi-objective
         if self.y_mo is None and y_mo.ndim == 2:
@@ -3476,7 +3472,7 @@ class SpotOptim(BaseEstimator):
         elif y_mo.ndim == 2:
             self.y_mo = np.vstack([self.y_mo, y_mo])
 
-    def _mo2so(self, y_mo: np.ndarray) -> np.ndarray:
+    def mo2so(self, y_mo: np.ndarray) -> np.ndarray:
         """Convert multi-objective values to single-objective.
 
         Converts multi-objective values to a single-objective value by applying a user-defined
@@ -3494,44 +3490,49 @@ class SpotOptim(BaseEstimator):
             ndarray: Single-objective values, shape (n_samples,).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Multi-objective function
-            >>> def mo_fun(X):
-            ...     return np.column_stack([
-            ...         np.sum(X**2, axis=1),
-            ...         np.sum((X-1)**2, axis=1)
-            ...     ])
-            >>>
-            >>> # Example 1: Default behavior (use first objective)
-            >>> opt1 = SpotOptim(
-            ...     fun=mo_fun,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=10,
-            ...     n_initial=5
-            ... )
-            >>> y_mo = np.array([[1.0, 2.0], [3.0, 4.0]])
-            >>> y_so = opt1._mo2so(y_mo)
-            >>> print(f"Single-objective (default): {y_so}")
-            Single-objective (default): [1. 3.]
-            >>>
-            >>> # Example 2: Custom conversion function (sum of objectives)
-            >>> def custom_mo2so(y_mo):
-            ...     return y_mo[:, 0] + y_mo[:, 1]
-            >>>
-            >>> opt2 = SpotOptim(
-            ...     fun=mo_fun,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=10,
-            ...     n_initial=5,
-            ...     fun_mo2so=custom_mo2so
-            ... )
-            >>> y_so_custom = opt2._mo2so(y_mo)
-            >>> print(f"Single-objective (custom): {y_so_custom}")
-            Single-objective (custom): [3. 7.]
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+
+            # Multi-objective function
+            def mo_fun(X):
+                return np.column_stack([
+                    np.sum(X**2, axis=1),
+                    np.sum((X-1)**2, axis=1)
+                ])
+
+            # Example 1: Default behavior (use first objective)
+            opt1 = SpotOptim(
+                fun=mo_fun,
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                n_initial=5
+            )
+            y_mo = np.array([[1.0, 2.0], [3.0, 4.0]])
+            y_so = opt1.mo2so(y_mo)
+            print(f"Single-objective (default): {y_so}")
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            # Example 2: Custom conversion function (sum of objectives)
+            def custom_mo2so(y_mo):
+                return y_mo[:, 0] + y_mo[:, 1]
+
+            opt2 = SpotOptim(
+                fun=mo_fun,
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                n_initial=5,
+                fun_mo2so=custom_mo2so
+            )
+            y_so_custom = opt2.mo2so(y_mo)
+            print(f"Single-objective (custom): {y_so_custom}")
+            ```
         """
-        n, m = self._get_shape(y_mo)
-        self._store_mo(y_mo)
+        n, m = self.get_shape(y_mo)
+        self.store_mo(y_mo)
 
         # Use ndim to check if multi-objective
         if y_mo.ndim == 2:
@@ -3550,7 +3551,7 @@ class SpotOptim(BaseEstimator):
 
         return y0
 
-    def _get_ranks(self, x: np.ndarray) -> np.ndarray:
+    def get_ranks(self, x: np.ndarray) -> np.ndarray:
         """Returns ranks of numbers within input array x.
 
         Args:
@@ -3560,18 +3561,18 @@ class SpotOptim(BaseEstimator):
             ndarray: Ranks array where ranks[i] is the rank of x[i].
 
         Examples:
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> opt._get_ranks(np.array([2, 1]))
-            array([1, 0])
-            >>> opt._get_ranks(np.array([20, 10, 100]))
-            array([1, 0, 2])
+            ```{python}
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            opt.get_ranks(np.array([2, 1]))
+            opt.get_ranks(np.array([20, 10, 100]))
+            ```
         """
         ts = x.argsort()
         ranks = np.empty_like(ts)
         ranks[ts] = np.arange(len(x))
         return ranks
 
-    def _get_ocba(
+    def get_ocba(
         self, means: np.ndarray, vars: np.ndarray, delta: int, verbose: bool = False
     ) -> np.ndarray:
         """Optimal Computing Budget Allocation (OCBA).
@@ -3593,19 +3594,22 @@ class SpotOptim(BaseEstimator):
             ndarray: Array of budget recommendations, or None if conditions not met.
 
         Examples:
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> means = np.array([1, 2, 3, 4, 5])
-            >>> vars = np.array([1, 1, 9, 9, 4])
-            >>> allocations = opt._get_ocba(means, vars, 50)
-            >>> allocations
-            array([11,  9, 19,  9,  2])
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            means = np.array([1, 2, 3, 4, 5])
+            vars = np.array([1, 1, 9, 9, 4])
+            allocations = opt.get_ocba(means, vars, 50)
+            allocations
+            ```
         """
         if np.all(vars > 0) and (means.shape[0] > 2):
             n_designs = means.shape[0]
             allocations = np.zeros(n_designs, np.int32)
             ratios = np.zeros(n_designs, np.float64)
             budget = delta
-            ranks = self._get_ranks(means)
+            ranks = self.get_ranks(means)
             best, second_best = np.argpartition(ranks, 2)[:2]
             ratios[second_best] = 1.0
             select = [i for i in range(n_designs) if i not in [best, second_best]]
@@ -3619,7 +3623,7 @@ class SpotOptim(BaseEstimator):
             more_alloc = True
 
             if verbose:
-                print("\nIn _get_ocba():")
+                print("\nIn get_ocba():")
                 print(f"means: {means}")
                 print(f"vars: {vars}")
                 print(f"delta: {delta}")
@@ -3653,7 +3657,7 @@ class SpotOptim(BaseEstimator):
         else:
             return None
 
-    def _get_ocba_X(
+    def get_ocba_X(
         self,
         X: np.ndarray,
         means: np.ndarray,
@@ -3661,8 +3665,8 @@ class SpotOptim(BaseEstimator):
         delta: int,
         verbose: bool = False,
     ) -> np.ndarray:
-        """Calculate OCBA allocation and repeat input array X.
-        Used in the optimize() method to generate new design points based on OCBA.
+        """Calculate OCBA allocation (by calling `get_ocba()`) and repeat input array X.
+        Used in the `optimize()` method to generate new design points based on OCBA.
 
         Args:
             X (ndarray): Input array to be repeated, shape (n_designs, n_features).
@@ -3676,68 +3680,75 @@ class SpotOptim(BaseEstimator):
                      conditions not met.
 
         Examples:
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            >>> X = np.array([[1, 2], [4, 5], [7, 8]])
-            >>> means = np.array([1.5, 35, 550])
-            >>> vars = np.array([0.5, 50, 5000])
-            >>> X_new = opt._get_ocba_X(X, means, vars, delta=5, verbose=False)
-            >>> X_new.shape[0] == 5  # Should have 5 additional evaluations
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            X = np.array([[1, 2], [4, 5], [7, 8]])
+            means = np.array([1.5, 35, 550])
+            vars = np.array([0.5, 50, 5000])
+            X_new = opt.get_ocba_X(X, means, vars, delta=5, verbose=False)
+            print(X_new.shape[0])  # Should have 5 additional evaluations
+            ```
         """
         if np.all(vars > 0) and (means.shape[0] > 2):
-            o = self._get_ocba(means=means, vars=vars, delta=delta, verbose=verbose)
+            o = self.get_ocba(means=means, vars=vars, delta=delta, verbose=verbose)
             return np.repeat(X, o, axis=0)
         else:
             return None
 
-    def _evaluate_function(self, X: np.ndarray) -> np.ndarray:
+    def evaluate_function(self, X: np.ndarray) -> np.ndarray:
         """Evaluate objective function at points X.
         Used in the optimize() method to evaluate the objective function.
 
-        **Input Space**: `X` is expected in **Transformed and Mapped Space** (Internal scale, Reduced dimensions).
-        **Process**:
-        1. Expands `X` to **Transformed Space** (Full dimensions) if dimension reduction is active.
-        2. Inverse transforms `X` to **Natural Space** (Original scale).
-        3. Evaluates the user function with points in **Natural Space**.
+        Input Space: `X` is expected in Transformed and Mapped Space (Internal scale, Reduced dimensions).
+        Process as follows:
+            1. Expands `X` to Transformed Space (Full dimensions) if dimension reduction is active.
+            2. Inverse transforms `X` to Natural Space (Original scale).
+            3. Evaluates the user function with points in Natural Space.
 
-        If dimension reduction is active, expands X to full dimensions before evaluation.
+        If dimension reduction is active, expands `X` to full dimensions before evaluation.
         Supports both single-objective and multi-objective functions. For multi-objective
-        functions, converts to single-objective using _mo2so method.
+        functions, converts to single-objective using `mo2so` method.
 
         Args:
-            X (ndarray): Points to evaluate in **Transformed and Mapped Space**, shape (n_samples, n_reduced_features).
+            X (ndarray): Points to evaluate in Transformed and Mapped Space, shape (n_samples, n_reduced_features).
 
         Returns:
             ndarray: Function values, shape (n_samples,).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Single-objective function
-            >>> opt_so = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=10,
-            ...     n_initial=5
-            ... )
-            >>> X = np.array([[1.0, 2.0], [3.0, 4.0]])
-            >>> y = opt_so._evaluate_function(X)
-            >>> print(f"Single-objective output: {y}")
-            Single-objective output: [ 5. 25.]
-            >>>
-            >>> # Multi-objective function (default: use first objective)
-            >>> opt_mo = SpotOptim(
-            ...     fun=lambda X: np.column_stack([
-            ...         np.sum(X**2, axis=1),
-            ...         np.sum((X-1)**2, axis=1)
-            ...     ]),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=10,
-            ...     n_initial=5
-            ... )
-            >>> y_mo = opt_mo._evaluate_function(X)
-            >>> print(f"Multi-objective output (first obj): {y_mo}")
-            Multi-objective output (first obj): [ 5. 25.]
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            # Single-objective function
+            opt_so = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                n_initial=5
+            )
+            X = np.array([[1.0, 2.0], [3.0, 4.0]])
+            y = opt_so.evaluate_function(X)
+            print(f"Single-objective output: {y}")
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            # Multi-objective function (default: use first objective)
+            opt_mo = SpotOptim(
+                fun=lambda X: np.column_stack([
+                    np.sum(X**2, axis=1),
+                    np.sum((X-1)**2, axis=1)
+                ]),
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                n_initial=5
+            )
+            y_mo = opt_mo.evaluate_function(X)
+            print(f"Multi-objective output (first obj): {y_mo}")
+            ```
         """
         # Ensure X is 2D
         X = np.atleast_2d(X)
@@ -3760,7 +3771,7 @@ class SpotOptim(BaseEstimator):
             y_raw = np.array([y_raw])
 
         # Handle multi-objective case
-        y = self._mo2so(y_raw)
+        y = self.mo2so(y_raw)
 
         # Ensure y is 1D
         if y.ndim > 1:
@@ -3768,7 +3779,7 @@ class SpotOptim(BaseEstimator):
 
         return y
 
-    def _select_distant_points(
+    def select_distant_points(
         self, X: np.ndarray, y: np.ndarray, k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Selects k points that are distant from each other using K-means clustering.
@@ -3784,20 +3795,21 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             tuple: A tuple containing:
-                - selected_X (ndarray): Selected design points, shape (k, n_features).
-                - selected_y (ndarray): Function values at selected points, shape (k,).
+                * selected_X (ndarray): Selected design points, shape (k, n_features).
+                * selected_y (ndarray): Function values at selected points, shape (k,).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_surrogate_points=5)
-            >>> X = np.random.rand(100, 2)
-            >>> y = np.random.rand(100)
-            >>> X_sel, y_sel = opt._select_distant_points(X, y, 5)
-            >>> X_sel.shape
-            (5, 2)
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_surrogate_points=5)
+            X = np.random.rand(100, 2)
+            y = np.random.rand(100)
+            X_sel, y_sel = opt.select_distant_points(X, y, 5)
+            print(X_sel.shape)
+            ```
         """
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
@@ -3812,7 +3824,7 @@ class SpotOptim(BaseEstimator):
         selected_indices = np.array(selected_indices)
         return X[selected_indices], y[selected_indices]
 
-    def _select_best_cluster(
+    def select_best_cluster(
         self, X: np.ndarray, y: np.ndarray, k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Selects all points from the cluster with the smallest mean y value.
@@ -3828,19 +3840,23 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             tuple: A tuple containing:
-                - selected_X (ndarray): Selected design points from best cluster, shape (m, n_features).
-                - selected_y (ndarray): Function values at selected points, shape (m,).
+                * selected_X (ndarray): Selected design points from best cluster, shape (m, n_features).
+                * selected_y (ndarray): Function values at selected points, shape (m,).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_surrogate_points=5,
-            ...                 selection_method='best')
-            >>> X = np.random.rand(100, 2)
-            >>> y = np.random.rand(100)
-            >>> X_sel, y_sel = opt._select_best_cluster(X, y, 5)
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_surrogate_points=5,
+                             selection_method='best')
+            X = np.random.rand(100, 2)
+            y = np.random.rand(100)
+            X_sel, y_sel = opt.select_best_cluster(X, y, 5)
+            print(f"X_sel.shape: {X_sel.shape}")
+            print(f"y_sel.shape: {y_sel.shape}")
+            ```
         """
         # Perform k-means clustering
         kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
@@ -3878,20 +3894,21 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             tuple: A tuple containing:
-                - selected_X (ndarray): Selected design points.
-                - selected_y (ndarray): Function values at selected points.
+                * selected_X (ndarray): Selected design points.
+                * selected_y (ndarray): Function values at selected points.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 max_surrogate_points=5)
-            >>> X = np.random.rand(100, 2)
-            >>> y = np.random.rand(100)
-            >>> X_sel, y_sel = opt._selection_dispatcher(X, y)
-            >>> X_sel.shape[0] <= 5
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_surrogate_points=5)
+            X = np.random.rand(100, 2)
+            y = np.random.rand(100)
+            X_sel, y_sel = opt._selection_dispatcher(X, y)
+            print(X_sel.shape[0] <= 5)
+            ```
         """
         # Resolve active max points
         max_k = getattr(self, "_active_max_surrogate_points", self.max_surrogate_points)
@@ -3900,9 +3917,9 @@ class SpotOptim(BaseEstimator):
             return X, y
 
         if self.selection_method == "distant":
-            return self._select_distant_points(X=X, y=y, k=max_k)
+            return self.select_distant_points(X=X, y=y, k=max_k)
         elif self.selection_method == "best":
-            return self._select_best_cluster(X=X, y=y, k=max_k)
+            return self.select_best_cluster(X=X, y=y, k=max_k)
         else:
             # If no valid selection method, return all points
             return X, y
@@ -3920,8 +3937,8 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             tuple: A tuple containing:
-                - ndarray: Array with unknown (new) values.
-                - ndarray: Array with True if value is new, otherwise False.
+                * ndarray: Array with unknown (new) values.
+                * ndarray: Array with True if value is new, otherwise False.
 
         Examples:
             ```{python}
@@ -4406,13 +4423,13 @@ class SpotOptim(BaseEstimator):
                 # Evaluate others
                 not_matches = ~matches
                 if np.any(not_matches):
-                    y0_others = self._evaluate_function(X0[not_matches])
+                    y0_others = self.evaluate_function(X0[not_matches])
                     y0[not_matches] = y0_others
             else:
                 # Injected point lost during curation? Should not happen if it was unique
-                y0 = self._evaluate_function(X0)
+                y0 = self.evaluate_function(X0)
         else:
-            y0 = self._evaluate_function(X0)
+            y0 = self.evaluate_function(X0)
 
         return X0, y0
 
@@ -4503,7 +4520,7 @@ class SpotOptim(BaseEstimator):
                 x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
 
             # Evaluate next point(s) including OCBA points
-            y_next = self._evaluate_function(x_next_repeated)
+            y_next = self.evaluate_function(x_next_repeated)
 
             # Handle NaN/inf values in new evaluations
             x_next_repeated, y_next = self._handle_NA_new_points(
@@ -5111,7 +5128,7 @@ class SpotOptim(BaseEstimator):
         )
 
         # If we have multi-objective values, we need to filter them too
-        # The new MO values were appended to self.y_mo in _evaluate_function -> _mo2so -> _store_mo
+        # The new MO values were appended to self.y_mo in evaluate_function -> mo2so -> store_mo
         # So self.y_mo currently contains the INVALID points at the end.
         if self.y_mo is not None:
             n_new = len(y_next)
@@ -5417,7 +5434,7 @@ class SpotOptim(BaseEstimator):
                     print("Warning: OCBA skipped (need >2 points with variance > 0)")
             elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
                 # Get OCBA allocation
-                X_ocba = self._get_ocba_X(
+                X_ocba = self.get_ocba_X(
                     self.mean_X,
                     self.mean_y,
                     self.var_y,

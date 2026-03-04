@@ -12,7 +12,7 @@ from spotoptim.SpotOptim import _remote_eval_wrapper
 class DummyOptimizer:
     """Simple optimizer for testing purposes."""
 
-    def _evaluate_function(self, X):
+    def evaluate_function(self, X):
         """Evaluate sum of squares."""
         return np.sum(X**2, axis=1)
 
@@ -20,7 +20,7 @@ class DummyOptimizer:
 class FailingOptimizer:
     """Optimizer that always raises an error."""
 
-    def _evaluate_function(self, X):
+    def evaluate_function(self, X):
         raise ValueError("Intentional evaluation error")
 
 
@@ -108,7 +108,7 @@ def test_remote_eval_wrapper_with_custom_function():
     class RosenbrockOptimizer:
         """Optimizer using Rosenbrock function."""
 
-        def _evaluate_function(self, X):
+        def evaluate_function(self, X):
             """Rosenbrock function: (1-x)^2 + 100*(y-x^2)^2"""
             x = X[:, 0]
             y = X[:, 1]

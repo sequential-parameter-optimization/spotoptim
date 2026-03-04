@@ -91,7 +91,7 @@ class TestMultiObjectiveBasics:
         np.testing.assert_array_almost_equal(optimizer.y_, expected_y)
 
     def test_get_shape_single_objective(self):
-        """Test _get_shape for single-objective arrays."""
+        """Test get_shape for single-objective arrays."""
         optimizer = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5)],
@@ -100,13 +100,13 @@ class TestMultiObjectiveBasics:
         )
 
         y_single = np.array([1.0, 2.0, 3.0])
-        n, m = optimizer._get_shape(y_single)
+        n, m = optimizer.get_shape(y_single)
 
         assert n == 3
         assert m is None
 
     def test_get_shape_multi_objective(self):
-        """Test _get_shape for multi-objective arrays."""
+        """Test get_shape for multi-objective arrays."""
         optimizer = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(-5, 5)],
@@ -115,7 +115,7 @@ class TestMultiObjectiveBasics:
         )
 
         y_multi = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-        n, m = optimizer._get_shape(y_multi)
+        n, m = optimizer.get_shape(y_multi)
 
         assert n == 3
         assert m == 2
@@ -134,7 +134,7 @@ class TestMultiObjectiveStorage:
         )
 
         y_mo = np.array([[1.0, 2.0], [3.0, 4.0]])
-        optimizer._store_mo(y_mo)
+        optimizer.store_mo(y_mo)
 
         assert optimizer.y_mo is not None
         np.testing.assert_array_equal(optimizer.y_mo, y_mo)
@@ -149,10 +149,10 @@ class TestMultiObjectiveStorage:
         )
 
         y_mo_1 = np.array([[1.0, 2.0], [3.0, 4.0]])
-        optimizer._store_mo(y_mo_1)
+        optimizer.store_mo(y_mo_1)
 
         y_mo_2 = np.array([[5.0, 6.0], [7.0, 8.0]])
-        optimizer._store_mo(y_mo_2)
+        optimizer.store_mo(y_mo_2)
 
         expected = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]])
         np.testing.assert_array_equal(optimizer.y_mo, expected)
@@ -167,7 +167,7 @@ class TestMultiObjectiveStorage:
         )
 
         y_single = np.array([1.0, 2.0, 3.0])
-        optimizer._store_mo(y_single)
+        optimizer.store_mo(y_single)
 
         assert optimizer.y_mo is None
 
@@ -185,7 +185,7 @@ class TestMultiObjectiveConversion:
         )
 
         y_mo = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-        y_so = optimizer._mo2so(y_mo)
+        y_so = optimizer.mo2so(y_mo)
 
         expected = np.array([1.0, 3.0, 5.0])
         np.testing.assert_array_equal(y_so, expected)
@@ -206,7 +206,7 @@ class TestMultiObjectiveConversion:
         )
 
         y_mo = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-        y_so = optimizer._mo2so(y_mo)
+        y_so = optimizer.mo2so(y_mo)
 
         expected = np.array([3.0, 7.0, 11.0])
         np.testing.assert_array_equal(y_so, expected)
@@ -221,7 +221,7 @@ class TestMultiObjectiveConversion:
         )
 
         y_single = np.array([1.0, 2.0, 3.0])
-        y_so = optimizer._mo2so(y_single)
+        y_so = optimizer.mo2so(y_single)
 
         np.testing.assert_array_equal(y_so, y_single)
 
@@ -241,7 +241,7 @@ class TestMultiObjectiveConversion:
         )
 
         y_mo = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
-        y_so = optimizer._mo2so(y_mo)
+        y_so = optimizer.mo2so(y_mo)
 
         expected = np.array([0.5 * 1 + 0.3 * 2 + 0.2 * 3, 0.5 * 4 + 0.3 * 5 + 0.2 * 6])
         np.testing.assert_array_almost_equal(y_so, expected)
@@ -344,7 +344,7 @@ class TestMultiObjectiveEdgeCases:
         )
 
         y_empty = np.array([]).reshape(0, 2)
-        y_so = optimizer._mo2so(y_empty)
+        y_so = optimizer.mo2so(y_empty)
 
         assert y_so.size == 0
 
