@@ -681,12 +681,12 @@ def _generate_mesh_grid(
     grid_points_original[:, j] = X_j.ravel()
 
     # Apply type constraints
-    grid_points_original = optimizer._repair_non_numeric(
+    grid_points_original = optimizer.repair_non_numeric(
         grid_points_original, optimizer.var_type
     )
 
     # Transform to internal scale for surrogate prediction
-    grid_points = optimizer._transform_X(grid_points_original)
+    grid_points = optimizer.transform_X(grid_points_original)
 
     # Validate that transformed grid points are finite
     if not np.all(np.isfinite(grid_points)):
@@ -812,12 +812,12 @@ def _generate_mesh_grid_with_factors(
         grid_points_float[:, dim_idx] = grid_points_original[:, dim_idx].astype(float)
 
     # Apply type constraints (convert to proper numeric types)
-    grid_points_float = optimizer._repair_non_numeric(
+    grid_points_float = optimizer.repair_non_numeric(
         grid_points_float, optimizer.var_type
     )
 
     # Transform grid points for surrogate prediction
-    grid_points_transformed = optimizer._transform_X(grid_points_float)
+    grid_points_transformed = optimizer.transform_X(grid_points_float)
 
     # Validate that transformed grid points are finite
     if not np.all(np.isfinite(grid_points_transformed)):

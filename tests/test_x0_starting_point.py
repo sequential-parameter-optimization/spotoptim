@@ -34,7 +34,7 @@ def test_x0_basic_usage():
 
     # Check that x0 was evaluated (should be first point in history)
     # Transform x0 to compare with stored values
-    x0_transformed = opt._transform_X(x0.reshape(1, -1)).ravel()
+    x0_transformed = opt.transform_X(x0.reshape(1, -1)).ravel()
     assert np.allclose(opt.X_[0], x0_transformed, atol=1e-6)
 
 
@@ -356,7 +356,7 @@ def test_x0_included_in_initial_design():
     assert len(opt.y_) == 20  # max_iter evaluations total
 
     # First point should be x0 (in internal scale)
-    x0_internal = opt._transform_X(x0.reshape(1, -1)).ravel()
+    x0_internal = opt.transform_X(x0.reshape(1, -1)).ravel()
     assert np.allclose(opt.X_[0], x0_internal, atol=1e-6)
 
 

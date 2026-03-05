@@ -414,7 +414,7 @@ class TestVarType:
         assert plot_succeeded, "Plotting should work with mixed var_types"
 
     def test_repair_non_numeric_direct_call(self):
-        """Test _repair_non_numeric method directly with different types."""
+        """Test repair_non_numeric method directly with different types."""
 
         def dummy_fun(X):
             return np.sum(X**2, axis=1)
@@ -427,19 +427,19 @@ class TestVarType:
         X = np.array([[1.7, 2.3, 3.9], [4.1, 5.6, 6.2]])
 
         # Test with float types (no rounding)
-        X_float = opt._repair_non_numeric(X.copy(), ["float", "float", "float"])
+        X_float = opt.repair_non_numeric(X.copy(), ["float", "float", "float"])
         assert not np.allclose(X_float, np.round(X))
 
         # Test with int types (all rounded)
-        X_int = opt._repair_non_numeric(X.copy(), ["int", "int", "int"])
+        X_int = opt.repair_non_numeric(X.copy(), ["int", "int", "int"])
         assert np.allclose(X_int, np.round(X))
 
         # Test with factor types (all rounded)
-        X_factor = opt._repair_non_numeric(X.copy(), ["factor", "factor", "factor"])
+        X_factor = opt.repair_non_numeric(X.copy(), ["factor", "factor", "factor"])
         assert np.allclose(X_factor, np.round(X))
 
         # Test with mixed types
-        X_mixed = opt._repair_non_numeric(X.copy(), ["float", "int", "factor"])
+        X_mixed = opt.repair_non_numeric(X.copy(), ["float", "int", "factor"])
         assert not np.isclose(X_mixed[0, 0], np.round(X[0, 0]))  # float not rounded
         assert np.isclose(X_mixed[0, 1], np.round(X[0, 1]))  # int rounded
         assert np.isclose(X_mixed[0, 2], np.round(X[0, 2]))  # factor rounded

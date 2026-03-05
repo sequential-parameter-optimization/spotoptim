@@ -924,7 +924,7 @@ class SpotOptim(BaseEstimator):
         self.transform_bounds()
 
         # Dimension reduction: backup original bounds and identify fixed dimensions
-        self._setup_dimension_reduction()
+        self.setup_dimension_reduction()
 
         # Validate and process starting point if provided
         if self.x0 is not None:
@@ -1378,13 +1378,13 @@ class SpotOptim(BaseEstimator):
 
         return params
 
-    def _repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
+    def repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
         """Round non-numeric values to integers based on variable type.
 
         This method applies rounding to variables that are not continuous:
-        - 'float': No rounding (continuous values)
-        - 'int': Rounded to integers
-        - 'factor': Rounded to integers (representing categorical values)
+            * 'float': No rounding (continuous values)
+            * 'int': Rounded to integers
+            * 'factor': Rounded to integers (representing categorical values)
 
         Args:
             X (ndarray): X array with values to potentially round.
@@ -1394,24 +1394,23 @@ class SpotOptim(BaseEstimator):
             ndarray: X array with non-continuous values rounded to integers.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 var_type=['int', 'float'])
-            >>> X = np.array([[1.2, 2.5], [3.7, 4.1], [5.9, 6.8]])
-            >>> X_repaired = opt._repair_non_numeric(X, opt.var_type)
-            >>> print(X_repaired)
-            [[1. 2.5]
-             [4. 4.1]
-             [6. 6.8]]
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                             bounds=[(-5, 5), (-5, 5)],
+                             var_type=['int', 'float'])
+            X = np.array([[1.2, 2.5], [3.7, 4.1], [5.9, 6.8]])
+            X_repaired = opt.repair_non_numeric(X, opt.var_type)
+            print(X_repaired)
+            ```
         """
         # Don't round float or num types (continuous values)
         mask = np.isin(var_type, ["float", "float"], invert=True)
         X[:, mask] = np.around(X[:, mask])
         return X
 
-    def _reinitialize_components(self) -> None:
+    def reinitialize_components(self) -> None:
         """Reinitialize components that were excluded during pickling.
 
         This method recreates the surrogate model and LHS sampler that were
@@ -1421,12 +1420,20 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Load experiment
-            >>> opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
-            >>> # Reinitialize components
-            >>> opt._reinitialize_components()
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            # Run experiment
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            n_initial=5,
+                            var_name=["x", "y"],
+                            verbose=True)
+            opt.optimize()
+            opt.save_experiment("sphere_opt_exp.pkl")
+            opt = SpotOptim.load_experiment("sphere_opt_exp.pkl")
+            opt.reinitialize_components()
+            ```
         """
         # Reinitialize LHS sampler if needed
         if not hasattr(self, "lhs_sampler") or self.lhs_sampler is None:
@@ -1444,7 +1451,7 @@ class SpotOptim(BaseEstimator):
                 normalize_y=True,
             )
 
-    def _get_pickle_safe_optimizer(
+    def get_pickle_safe_optimizer(
         self, unpickleables: str = "file_io", verbosity: int = 0
     ) -> "SpotOptim":
         """Create a pickle-safe copy of the optimizer.
@@ -1454,8 +1461,8 @@ class SpotOptim(BaseEstimator):
 
         Args:
             unpickleables (str): Type of unpickleable components to exclude.
-                - "file_io": Excludes only file I/O components (tb_writer) and fun
-                - "all": Excludes file I/O, fun, surrogate, and lhs_sampler
+                * "file_io": Excludes only file I/O components (tb_writer) and fun
+                * "all": Excludes file I/O, fun, surrogate, and lhs_sampler
                 Defaults to "file_io".
             verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
 
@@ -1463,19 +1470,19 @@ class SpotOptim(BaseEstimator):
             SpotOptim: A copy of the optimizer with unpickleable components removed.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Define optimizer
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     max_iter=30,
-            ...     n_initial=10,
-            ...     seed=42
-            ... )
-            >>> # Create pickle-safe copy excluding all unpickleables
-            >>> opt_safe = opt._get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
-
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(
+                 fun=lambda X: np.sum(X**2, axis=1),
+                 bounds=[(-5, 5), (-5, 5)],
+                 max_iter=30,
+                 n_initial=10,
+                 seed=42
+            )
+            # Create pickle-safe copy excluding all unpickleables
+            opt_safe = opt.get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
+            ```
         """
         # Always exclude tb_writer (can't reliably pickle file handles)
         # Determine which additional attributes to exclude
@@ -1521,7 +1528,7 @@ class SpotOptim(BaseEstimator):
     # Dimension Reduction
     # ====================
 
-    def _setup_dimension_reduction(self) -> None:
+    def setup_dimension_reduction(self) -> None:
         """Set up dimension reduction by identifying fixed dimensions.
 
         identifies dimensions where lower and upper bounds are equal in **Transformed Space**.
@@ -1533,32 +1540,27 @@ class SpotOptim(BaseEstimator):
 
         This method identifies variables that are fixed (constant) and excludes them
         from the optimization process. It stores:
-        - Original bounds and metadata in `all_*` attributes
-        - Boolean mask of fixed dimensions in `ident`
-        - Reduced bounds, types, and names for optimization
-        - `red_dim` flag indicating if reduction occurred
+            * Original bounds and metadata in `all_*` attributes
+            * Boolean mask of fixed dimensions in `ident`
+            * Reduced bounds, types, and names for optimization
+            * `red_dim` flag indicating if reduction occurred
 
         Returns:
             None
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (5, 5), (0, 1)])
-            >>> spot._setup_dimension_reduction()
-            >>> print("Original lower bounds:", spot.all_lower)
-            Original lower bounds: [ 1  5  0]
-            >>> print("Original upper bounds:", spot.all_upper)
-            Original upper bounds: [10  5  1]
-            >>> print("Fixed dimensions mask:", spot.ident)
-            Fixed dimensions mask: [False  True False]
-            >>> print("Reduced lower bounds:", spot.lower)
-            Reduced lower bounds: [1 0]
-            >>> print("Reduced upper bounds:", spot.upper)
-            Reduced upper bounds: [10  1]
-            >>> print("Reduced variable names:", spot.var_name)
-            Reduced variable names: ['x0', 'x2']
-            >>> print("Is dimension reduction active?", spot.red_dim)
-            Is dimension reduction active? True
+            ```{python}
+            from spotoptim import SpotOptim
+            spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (5, 5), (0, 1)])
+            spot.setup_dimension_reduction()
+            print("Original lower bounds:", spot.all_lower)
+            print("Original upper bounds:", spot.all_upper)
+            print("Fixed dimensions mask:", spot.ident)
+            print("Reduced lower bounds:", spot.lower)
+            print("Reduced upper bounds:", spot.upper)
+            print("Reduced variable names:", spot.var_name)
+            print("Is dimension reduction active?", spot.red_dim)
+            ```
         """
         # Backup original values
         self.all_lower = self.lower.copy()
@@ -1872,7 +1874,7 @@ class SpotOptim(BaseEstimator):
 
         raise ValueError(f"Unknown transformation: {trans}")
 
-    def _transform_X(self, X: np.ndarray) -> np.ndarray:
+    def transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from original to internal scale.
 
         Converts from **Natural Space** (Original) to **Transformed Space** (Full Dimension).
@@ -1885,17 +1887,16 @@ class SpotOptim(BaseEstimator):
             ndarray: Array in **Transformed Space** (Full Dimension)
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> import numpy as np
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
-            >>> X_orig = np.array([[1], [10], [100]])
-            >>> spot._transform_X(X_orig)
-            array([[0.        ],
-                   [1.        ],
-                   [2.        ]])
+            ```{python}
+            from spotoptim import SpotOptim
+            import numpy as np
+            def sphere(X):
+                X = np.atleast_2d(X)
+                return np.sum(X**2, axis=1)
+            spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
+            X_orig = np.array([[1], [10], [100]])
+            spot.transform_X(X_orig)
+            ```
         """
         X_transformed = X.copy()
 
@@ -2132,11 +2133,11 @@ class SpotOptim(BaseEstimator):
         else:
             X0 = np.atleast_2d(X0)
             # If user provided X0, it's in original scale - transform it
-            X0 = self._transform_X(X0)
+            X0 = self.transform_X(X0)
             # If X0 is in full dimensions and we have dimension reduction, reduce it
             if self.red_dim and X0.shape[1] == len(self.ident):
                 X0 = self.to_red_dim(X0)
-            X0 = self._repair_non_numeric(X0, self.var_type)
+            X0 = self.repair_non_numeric(X0, self.var_type)
 
         return X0
 
@@ -2166,7 +2167,7 @@ class SpotOptim(BaseEstimator):
         # Scale to [lower, upper]
         X0 = self.lower + X0_unit * (self.upper - self.lower)
 
-        return self._repair_non_numeric(X0, self.var_type)
+        return self.repair_non_numeric(X0, self.var_type)
 
     def _curate_initial_design(self, X0: np.ndarray) -> np.ndarray:
         """Remove duplicates and ensure sufficient unique points in initial design.
@@ -2238,7 +2239,7 @@ class SpotOptim(BaseEstimator):
                         n=n_additional * 2
                     )  # Generate extras
                     X_extra = self.lower + X_extra_unit * (self.upper - self.lower)
-                    X_extra = self._repair_non_numeric(X_extra, self.var_type)
+                    X_extra = self.repair_non_numeric(X_extra, self.var_type)
 
                     # Combine and get unique
                     X_combined = np.vstack([X0_unique, X_extra])
@@ -2433,11 +2434,11 @@ class SpotOptim(BaseEstimator):
         if x0.ndim == 1:
             check_point(x0)
             # Apply transformations to x0 (from original to internal scale)
-            x0_transformed = self._transform_X(x0.reshape(1, -1)).ravel()
+            x0_transformed = self.transform_X(x0.reshape(1, -1)).ravel()
         else:  # 2D case
             for idx, pt in enumerate(x0):
                 check_point(pt)
-            x0_transformed = self._transform_X(x0)
+            x0_transformed = self.transform_X(x0)
 
         # If dimension reduction is active, reduce x0 to non-fixed dimensions
         if self.red_dim:
@@ -2817,10 +2818,10 @@ class SpotOptim(BaseEstimator):
                 pass
 
         if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-            X_for_surrogate = self._transform_X(self.mean_X)
+            X_for_surrogate = self.transform_X(self.mean_X)
             self._fit_surrogate(X_for_surrogate, self.mean_y)
         else:
-            X_for_surrogate = self._transform_X(self.X_)
+            X_for_surrogate = self.transform_X(self.X_)
             self._fit_surrogate(X_for_surrogate, self.y_)
 
     def _predict_with_uncertainty(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
@@ -3079,7 +3080,7 @@ class SpotOptim(BaseEstimator):
             best_x = self.best_x_
 
         if best_x is not None:
-            best_x = self._transform_X(best_x)
+            best_x = self.transform_X(best_x)
             best_X = best_x if self.rng.rand() < self.de_x0_prob else None
         else:
             best_X = None
@@ -3264,11 +3265,11 @@ class SpotOptim(BaseEstimator):
         # _select_new checks against X passed to it.
         # We should construct the reference set once or update it.
 
-        X_transformed = self._transform_X(self.X_)
+        X_transformed = self.transform_X(self.X_)
 
         # Helper to check if a point is valid
         def is_valid(p, reference_set):
-            p_rounded = self._repair_non_numeric(p.reshape(1, -1), self.var_type)[0]
+            p_rounded = self.repair_non_numeric(p.reshape(1, -1), self.var_type)[0]
             # Check distance
             p_2d = p_rounded.reshape(1, -1)
             # select_new returns subset of A that is distant from X
@@ -3341,7 +3342,7 @@ class SpotOptim(BaseEstimator):
             x_new_unit = self.lhs_sampler.random(n=1)[0]
             x_new = self.lower + x_new_unit * (self.upper - self.lower)
 
-        return self._repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
+        return self.repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
 
     def _try_fallback_strategy(
         self, max_attempts: int = 10, current_batch: Optional[List[np.ndarray]] = None
@@ -3362,7 +3363,7 @@ class SpotOptim(BaseEstimator):
         if current_batch is None:
             current_batch = []
 
-        X_transformed = self._transform_X(self.X_)
+        X_transformed = self.transform_X(self.X_)
         # Build reference set once if possible or dynamically
         # Since fallback is random, we check against X + current_batch
 
@@ -3373,7 +3374,7 @@ class SpotOptim(BaseEstimator):
                 )
             x_next = self._handle_acquisition_failure()
 
-            x_next_rounded = self._repair_non_numeric(
+            x_next_rounded = self.repair_non_numeric(
                 x_next.reshape(1, -1), self.var_type
             )[0]
             x_last = x_next_rounded
@@ -6013,7 +6014,7 @@ class SpotOptim(BaseEstimator):
             print(f"Loaded result from {filename}")
 
             # Reinitialize components that were excluded
-            optimizer._reinitialize_components()
+            optimizer.reinitialize_components()
 
             return optimizer
         except Exception as e:
@@ -6094,7 +6095,7 @@ class SpotOptim(BaseEstimator):
         self._close_and_del_tensorboard_writer()
 
         # Create pickle-safe copy
-        optimizer_copy = self._get_pickle_safe_optimizer(
+        optimizer_copy = self.get_pickle_safe_optimizer(
             unpickleables=unpickleables, verbosity=verbosity
         )
 
@@ -6176,7 +6177,7 @@ class SpotOptim(BaseEstimator):
             print(f"Loaded experiment from {filename}")
 
             # Reinitialize components that were excluded
-            optimizer._reinitialize_components()
+            optimizer.reinitialize_components()
 
             return optimizer
         except Exception as e:
