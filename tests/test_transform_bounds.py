@@ -523,7 +523,7 @@ class TestTransformBoundsIntegration:
         x_internal = np.array([[0.5]])  # log10(sqrt(10)) ≈ 0.5
 
         # Inverse transform should give original scale
-        x_original = opt._inverse_transform_X(x_internal)
+        x_original = opt.inverse_transform_X(x_internal)
 
         # Should be approximately sqrt(10) ≈ 3.162
         assert x_original[0, 0] == pytest.approx(10**0.5, rel=1e-5)

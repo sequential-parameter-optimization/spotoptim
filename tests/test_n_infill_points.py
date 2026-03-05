@@ -80,7 +80,7 @@ def test_n_infill_with_fallback():
 
 
 def test_repeats_with_batch_infill():
-    """Test _update_repeats_infill_points with batch input."""
+    """Test update_repeats_infill_points with batch input."""
     opt = SpotOptim(
         fun=lambda x: x.sum(), bounds=[(0, 1)], n_infill_points=2, repeats_surrogate=3
     )
@@ -88,7 +88,7 @@ def test_repeats_with_batch_infill():
     # Batch input (2 points, 1 dim)
     batch = np.array([[0.1], [0.9]])
 
-    repeated = opt._update_repeats_infill_points(batch)
+    repeated = opt.update_repeats_infill_points(batch)
 
     # Expect 2 * 3 = 6 rows
     assert repeated.shape == (6, 1)

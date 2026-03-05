@@ -21,13 +21,13 @@ def test_run_sequential_loop_example():
     )
 
     X0, y0 = opt._initialize_run(X0=None, y0_known=None)
-    X0, y0, n_evaluated = opt._rm_NA_values(X0, y0)
-    opt._check_size_initial_design(y0, n_evaluated)
+    X0, y0, n_evaluated = opt.rm_NA_values(X0, y0)
+    opt.check_size_initial_design(y0, n_evaluated)
     opt.init_storage(X0, y0)
     opt._zero_success_count = 0
     opt._success_history = []
     opt.update_stats()
-    opt._get_best_xy_initial_design()
+    opt.get_best_xy_initial_design()
 
     status, result = opt._run_sequential_loop(
         timeout_start=time.time(), effective_max_iter=20

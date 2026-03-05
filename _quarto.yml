@@ -57,11 +57,11 @@ website:
             contents:
               - text: SpotOptim
                 file: docs/reference/SpotOptim.qmd
-              - text: SpotOptim
+              - text: SpotOptim.SpotOptim
                 file: docs/reference/SpotOptim.SpotOptim.qmd
-              - text: SpotOptimConfig
+              - text: SpotOptim.SpotOptimConfig
                 file: docs/reference/SpotOptim.SpotOptimConfig.qmd
-              - text: SpotOptimState
+              - text: SpotOptim.SpotOptimState
                 file: docs/reference/SpotOptim.SpotOptimState.qmd
           - section: Core
             contents:
@@ -619,7 +619,6 @@ quartodoc:
   sections:
     - title: SpotOptim
       contents:
-        - SpotOptim
         - SpotOptim.SpotOptim
         - SpotOptim.SpotOptimConfig
         - SpotOptim.SpotOptimState

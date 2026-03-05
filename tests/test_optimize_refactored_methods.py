@@ -78,7 +78,7 @@ class TestSetInitialDesign:
 
 
 class TestCurateInitialDesign:
-    """Tests for _curate_initial_design() method."""
+    """Tests for curate_initial_design() method."""
 
     def test_curate_removes_duplicates(self):
         """Test that duplicate points are removed."""
@@ -90,7 +90,7 @@ class TestCurateInitialDesign:
         )
         # Create design with duplicates
         X0 = np.array([[1, 2], [1, 2], [3, 4], [3, 4], [5, 6]])
-        X0_curated = opt._curate_initial_design(X0)
+        X0_curated = opt.curate_initial_design(X0)
 
         # Should have unique points
         unique_rows = np.unique(X0_curated, axis=0)
@@ -106,7 +106,7 @@ class TestCurateInitialDesign:
         )
         # Create design with many duplicates (only 3 unique)
         X0 = np.array([[1, 2], [1, 2], [1, 2], [3, 4], [3, 4], [5, 6], [5, 6]])
-        X0_curated = opt._curate_initial_design(X0)
+        X0_curated = opt.curate_initial_design(X0)
 
         # Should have at least 10 unique points (n_initial)
         assert X0_curated.shape[0] >= 10
@@ -121,7 +121,7 @@ class TestCurateInitialDesign:
             seed=42,
         )
         X0 = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
-        X0_curated = opt._curate_initial_design(X0)
+        X0_curated = opt.curate_initial_design(X0)
 
         # Should have 5 * 3 = 15 points
         assert X0_curated.shape[0] == 15
@@ -136,7 +136,7 @@ class TestCurateInitialDesign:
             seed=42,
         )
         X0 = np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]])
-        X0_curated = opt._curate_initial_design(X0)
+        X0_curated = opt.curate_initial_design(X0)
 
         # Should have 5 points (no repeats)
         assert X0_curated.shape[0] == 5
@@ -156,7 +156,7 @@ class TestHandleNAInitialDesign:
         X0 = np.array([[1, 2], [3, 4], [5, 6]])
         y0 = np.array([5.0, np.nan, 61.0])
 
-        X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
+        X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
 
         assert X0_clean.shape == (2, 2)
         assert len(y0_clean) == 2
@@ -174,7 +174,7 @@ class TestHandleNAInitialDesign:
         X0 = np.array([[1, 2], [3, 4], [5, 6]])
         y0 = np.array([5.0, np.inf, 61.0])
 
-        X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
+        X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
 
         assert X0_clean.shape == (2, 2)
         assert len(y0_clean) == 2
@@ -191,7 +191,7 @@ class TestHandleNAInitialDesign:
         X0 = np.array([[1, 2], [3, 4], [5, 6]])
         y0 = np.array([5.0, 25.0, 61.0])
 
-        X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
+        X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
 
         assert X0_clean.shape == (3, 2)
         assert len(y0_clean) == 3
@@ -200,7 +200,7 @@ class TestHandleNAInitialDesign:
 
 
 class TestCheckSizeInitialDesign:
-    """Tests for _check_size_initial_design() method."""
+    """Tests for check_size_initial_design() method."""
 
     def test_check_size_sufficient_points_2d(self):
         """Test that sufficient points (>= 3 for 2D) pass validation."""
@@ -213,7 +213,7 @@ class TestCheckSizeInitialDesign:
         y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
 
         # Should not raise
-        opt._check_size_initial_design(y0, n_evaluated=10)
+        opt.check_size_initial_design(y0, n_evaluated=10)
 
     def test_check_size_sufficient_points_1d(self):
         """Test that sufficient points (>= 2 for 1D) pass validation."""
@@ -223,7 +223,7 @@ class TestCheckSizeInitialDesign:
         y0 = np.array([1.0, 2.0])
 
         # Should not raise
-        opt._check_size_initial_design(y0, n_evaluated=10)
+        opt.check_size_initial_design(y0, n_evaluated=10)
 
     def test_check_size_insufficient_points_raises_error(self):
         """Test that insufficient points raise ValueError."""
@@ -238,7 +238,7 @@ class TestCheckSizeInitialDesign:
         with pytest.raises(
             ValueError, match="Insufficient valid initial design points"
         ):
-            opt._check_size_initial_design(y0, n_evaluated=10)
+            opt.check_size_initial_design(y0, n_evaluated=10)
 
     def test_check_size_verbose_warning_when_reduced(self):
         """Test that verbose mode prints warning when size reduced."""
@@ -252,11 +252,11 @@ class TestCheckSizeInitialDesign:
         y0 = np.array([1.0, 2.0, 3.0])  # 3 valid, but requested 10
 
         # Should not raise but should print warning (we can't easily test print)
-        opt._check_size_initial_design(y0, n_evaluated=10)
+        opt.check_size_initial_design(y0, n_evaluated=10)
 
 
 class TestGetBestXYInitialDesign:
-    """Tests for _get_best_xy_initial_design() method."""
+    """Tests for get_best_xy_initial_design() method."""
 
     def test_get_best_finds_minimum(self):
         """Test that best_x_ and best_y_ are set correctly."""
@@ -269,7 +269,7 @@ class TestGetBestXYInitialDesign:
         opt.X_ = np.array([[1, 2], [0, 0], [2, 1], [3, 3]])
         opt.y_ = np.array([5.0, 0.0, 5.0, 18.0])
 
-        opt._get_best_xy_initial_design()
+        opt.get_best_xy_initial_design()
 
         np.testing.assert_array_equal(opt.best_x_, [0, 0])
         assert opt.best_y_ == 0.0
@@ -287,7 +287,7 @@ class TestGetBestXYInitialDesign:
         opt.y_ = np.array([5.0, 0.02, 5.0])
         opt.min_mean_y = 0.5
 
-        opt._get_best_xy_initial_design()
+        opt.get_best_xy_initial_design()
 
         np.testing.assert_array_almost_equal(opt.best_x_, [0.1, 0.1])
         assert opt.best_y_ == 0.02

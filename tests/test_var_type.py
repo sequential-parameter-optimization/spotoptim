@@ -108,7 +108,7 @@ class TestVarType:
         opt = SpotOptim(fun=dummy_fun, bounds=bounds, var_type=var_type, seed=42)
 
         # Generate initial design
-        X0 = opt._generate_initial_design()
+        X0 = opt.generate_initial_design()
 
         # All values should be integers (or very close)
         assert np.allclose(X0, np.round(X0), atol=1e-10)
@@ -125,7 +125,7 @@ class TestVarType:
         opt = SpotOptim(fun=dummy_fun, bounds=bounds, var_type=var_type, seed=42)
 
         # Generate initial design
-        X0 = opt._generate_initial_design()
+        X0 = opt.generate_initial_design()
 
         # At least some values should NOT be exact integers
         # (with high probability for LHS sampling)
@@ -144,7 +144,7 @@ class TestVarType:
         opt = SpotOptim(fun=dummy_fun, bounds=bounds, var_type=var_type, seed=42)
 
         # Generate initial design
-        X0 = opt._generate_initial_design()
+        X0 = opt.generate_initial_design()
 
         # All values should be integers
         assert np.allclose(X0, np.round(X0), atol=1e-10)
@@ -163,7 +163,7 @@ class TestVarType:
         )
 
         # Generate initial design
-        X0 = opt._generate_initial_design()
+        X0 = opt.generate_initial_design()
 
         # First column (float) should have non-integers
         # Second column (int) should be integers

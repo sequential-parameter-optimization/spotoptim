@@ -218,7 +218,7 @@ class TestDimensionReduction:
             seed=42,
         )
 
-        X0 = opt._generate_initial_design()
+        X0 = opt.generate_initial_design()
 
         # Initial design should be in reduced space (2 dimensions)
         assert X0.shape == (10, 2)

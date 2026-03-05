@@ -17,6 +17,7 @@ from .pca import (
     get_loading_scores,
     plot_loading_scores,
 )
+from .scaler import TorchStandardScaler
 
 __all__ = [
     "get_boundaries",
@@ -35,4 +36,5 @@ __all__ = [
     "get_pca_topk",
     "get_loading_scores",
     "plot_loading_scores",
+    "TorchStandardScaler",
 ]

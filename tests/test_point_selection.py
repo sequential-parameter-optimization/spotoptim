@@ -153,7 +153,7 @@ def test_fit_surrogate_with_selection():
     )
 
     # Generate initial design
-    X = optimizer._generate_initial_design()
+    X = optimizer.generate_initial_design()
     y = optimizer.evaluate_function(X)
 
     # Add more points to exceed max_surrogate_points

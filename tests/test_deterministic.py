@@ -10,7 +10,7 @@ class TestDeterministicBehavior:
     """Test suite for deterministic and non-deterministic behavior of SpotOptim."""
 
     def test_generate_initial_design_without_seed_is_non_deterministic(self):
-        """Test that _generate_initial_design() produces different results without seed."""
+        """Test that generate_initial_design() produces different results without seed."""
 
         def dummy_fun(X):
             return np.sum(X**2, axis=1)
@@ -22,8 +22,8 @@ class TestDeterministicBehavior:
         opt2 = SpotOptim(fun=dummy_fun, bounds=bounds, n_initial=10)
 
         # Generate initial designs
-        X1 = opt1._generate_initial_design()
-        X2 = opt2._generate_initial_design()
+        X1 = opt1.generate_initial_design()
+        X2 = opt2.generate_initial_design()
 
         # They should be different (with very high probability)
         assert not np.allclose(
@@ -39,7 +39,7 @@ class TestDeterministicBehavior:
         assert np.all(X2 >= -5) and np.all(X2 <= 5)
 
     def test_generate_initial_design_with_seed_is_deterministic(self):
-        """Test that _generate_initial_design() produces identical results with same seed."""
+        """Test that generate_initial_design() produces identical results with same seed."""
 
         def dummy_fun(X):
             return np.sum(X**2, axis=1)
@@ -52,8 +52,8 @@ class TestDeterministicBehavior:
         opt2 = SpotOptim(fun=dummy_fun, bounds=bounds, n_initial=10, seed=seed)
 
         # Generate initial designs
-        X1 = opt1._generate_initial_design()
-        X2 = opt2._generate_initial_design()
+        X1 = opt1.generate_initial_design()
+        X2 = opt2.generate_initial_design()
 
         # They should be identical
         assert np.allclose(
@@ -76,8 +76,8 @@ class TestDeterministicBehavior:
         opt2 = SpotOptim(fun=dummy_fun, bounds=bounds, n_initial=10, seed=123)
 
         # Generate initial designs
-        X1 = opt1._generate_initial_design()
-        X2 = opt2._generate_initial_design()
+        X1 = opt1.generate_initial_design()
+        X2 = opt2.generate_initial_design()
 
         # They should be different
         assert not np.allclose(
@@ -85,7 +85,7 @@ class TestDeterministicBehavior:
         ), "Expected different designs with different seeds"
 
     def test_multiple_calls_with_same_seed_are_not_deterministic(self):
-        """Test that multiple calls to _generate_initial_design() with same optimizer are different.
+        """Test that multiple calls to generate_initial_design() with same optimizer are different.
 
         This tests that the internal state of the LHS sampler advances with each call.
         """
@@ -99,8 +99,8 @@ class TestDeterministicBehavior:
         opt = SpotOptim(fun=dummy_fun, bounds=bounds, n_initial=10, seed=42)
 
         # Generate initial designs twice
-        X1 = opt._generate_initial_design()
-        X2 = opt._generate_initial_design()
+        X1 = opt.generate_initial_design()
+        X2 = opt.generate_initial_design()
 
         # They should be different (sampler state advances)
         assert not np.allclose(
@@ -212,10 +212,10 @@ class TestDeterministicBehavior:
         # Zero seed
         opt3 = SpotOptim(fun=dummy_fun, bounds=bounds, seed=0)
         assert opt3.seed == 0
-        X1 = opt3._generate_initial_design()
+        X1 = opt3.generate_initial_design()
 
         opt4 = SpotOptim(fun=dummy_fun, bounds=bounds, seed=0)
-        X2 = opt4._generate_initial_design()
+        X2 = opt4.generate_initial_design()
 
         # Same seed (0) should produce same results
         np.testing.assert_array_equal(X1, X2)
@@ -232,12 +232,12 @@ class TestDeterministicBehavior:
         opt_2d_a = SpotOptim(
             fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=5, seed=seed
         )
-        X_2d_a = opt_2d_a._generate_initial_design()
+        X_2d_a = opt_2d_a.generate_initial_design()
 
         opt_2d_b = SpotOptim(
             fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=5, seed=seed
         )
-        X_2d_b = opt_2d_b._generate_initial_design()
+        X_2d_b = opt_2d_b.generate_initial_design()
 
         np.testing.assert_array_equal(X_2d_a, X_2d_b)
 
@@ -245,12 +245,12 @@ class TestDeterministicBehavior:
         opt_3d_a = SpotOptim(
             fun=sphere, bounds=[(-5, 5), (-5, 5), (-5, 5)], n_initial=5, seed=seed
         )
-        X_3d_a = opt_3d_a._generate_initial_design()
+        X_3d_a = opt_3d_a.generate_initial_design()
 
         opt_3d_b = SpotOptim(
             fun=sphere, bounds=[(-5, 5), (-5, 5), (-5, 5)], n_initial=5, seed=seed
         )
-        X_3d_b = opt_3d_b._generate_initial_design()
+        X_3d_b = opt_3d_b.generate_initial_design()
 
         np.testing.assert_array_equal(X_3d_a, X_3d_b)
 

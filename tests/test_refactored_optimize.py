@@ -87,8 +87,8 @@ class TestRefactoredOptimize:
             side_effect=[("RESTART", res1), ("FINISHED", res2)]
         )
 
-        # Mock _validate_x0 to just return input (simplification)
-        spot_optim._validate_x0 = MagicMock(side_effect=lambda x: x)
+        # Mock validate_x0 to just return input (simplification)
+        spot_optim.validate_x0 = MagicMock(side_effect=lambda x: x)
 
         result = spot_optim.optimize()
 
@@ -130,7 +130,7 @@ class TestRefactoredOptimize:
         """Verify _initialize_run calls necessary setup methods."""
         spot_optim.set_seed = MagicMock()
         spot_optim.get_initial_design = MagicMock(return_value=np.zeros((5, 2)))
-        spot_optim._curate_initial_design = MagicMock(return_value=np.zeros((5, 2)))
+        spot_optim.curate_initial_design = MagicMock(return_value=np.zeros((5, 2)))
         spot_optim.evaluate_function = MagicMock(return_value=np.zeros(5))
         spot_optim._init_tensorboard = MagicMock()
 
@@ -147,13 +147,13 @@ class TestRefactoredOptimize:
         spot_optim._initialize_run = MagicMock(
             return_value=(np.zeros((5, 2)), np.zeros(5))
         )
-        spot_optim._rm_NA_values = MagicMock(
+        spot_optim.rm_NA_values = MagicMock(
             return_value=(np.zeros((5, 2)), np.zeros(5), 5)
         )
-        spot_optim._check_size_initial_design = MagicMock()
+        spot_optim.check_size_initial_design = MagicMock()
         spot_optim.init_storage = MagicMock()
         spot_optim.update_stats = MagicMock()
-        spot_optim._get_best_xy_initial_design = MagicMock()
+        spot_optim.get_best_xy_initial_design = MagicMock()
         spot_optim._run_sequential_loop = MagicMock(
             return_value=("FINISHED", MagicMock())
         )
