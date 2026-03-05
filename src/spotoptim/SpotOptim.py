@@ -1076,77 +1076,8 @@ class SpotOptim(BaseEstimator):
         if self.x0 is not None:
             self.x0 = self.validate_x0(self.x0)
 
-        # Initialize surrogate if not provided
-        # Initialize surrogate
-        self._surrogates_list = None
-        self._prob_surrogate = None
-
-        if isinstance(self.surrogate, list):
-            self._surrogates_list = self.surrogate
-            if not self._surrogates_list:
-                raise ValueError("Surrogate list cannot be empty.")
-
-            # Handle probabilities
-            if self.config.prob_surrogate is None:
-                # Uniform probability
-                n = len(self._surrogates_list)
-                self._prob_surrogate = [1.0 / n] * n
-            else:
-                probs = self.config.prob_surrogate
-                if len(probs) != len(self._surrogates_list):
-                    raise ValueError(
-                        f"Length of prob_surrogate ({len(probs)}) must match "
-                        f"number of surrogates ({len(self._surrogates_list)})."
-                    )
-                # Normalize probabilities
-                total = sum(probs)
-                if not np.isclose(total, 1.0) and total > 0:
-                    self._prob_surrogate = [p / total for p in probs]
-                else:
-                    self._prob_surrogate = probs
-
-            # Handle max_surrogate_points list
-            self._max_surrogate_points_list = None
-            if isinstance(self.config.max_surrogate_points, list):
-                if len(self.config.max_surrogate_points) != len(self._surrogates_list):
-                    raise ValueError(
-                        f"Length of max_surrogate_points ({len(self.config.max_surrogate_points)}) "
-                        f"must match number of surrogates ({len(self._surrogates_list)})."
-                    )
-                self._max_surrogate_points_list = self.config.max_surrogate_points
-            else:
-                # If int or None, broadcast to list for easier indexing
-                self._max_surrogate_points_list = [
-                    self.config.max_surrogate_points
-                ] * len(self._surrogates_list)
-
-            # Set initial surrogate and max points
-            self.surrogate = self._surrogates_list[0]
-            self._active_max_surrogate_points = self._max_surrogate_points_list[0]
-
-        elif self.surrogate is None:
-            # Default single surrogate case
-            self._max_surrogate_points_list = None
-            self._active_max_surrogate_points = self.config.max_surrogate_points
-
-            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
-                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
-            )
-
-            # Determine optimizer for GPR
-            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
-            if self.config.acquisition_optimizer_kwargs is not None:
-                optimizer = partial(
-                    gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
-                )
-
-            self.surrogate = GaussianProcessRegressor(
-                kernel=kernel,
-                n_restarts_optimizer=100,
-                normalize_y=True,
-                random_state=self.seed,
-                optimizer=optimizer,
-            )
+        # Initialize surrogate model(s)
+        self.init_surrogate()
 
         # Design generator
         self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
@@ -1587,14 +1518,150 @@ class SpotOptim(BaseEstimator):
 
         # Reinitialize surrogate if needed
         if not hasattr(self, "surrogate") or self.surrogate is None:
+            self.init_surrogate()
+
+    def init_surrogate(self) -> None:
+        """Initialize or configure the surrogate model for optimization.
+
+        Handles three surrogate configurations:
+            * List of surrogates:
+                sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
+            * None (default):
+                creates a `GaussianProcessRegressor` with a `ConstantKernel * Matern(nu=2.5)`
+                kernel, 100 optimizer restarts, and `normalize_y=True`.
+            * User-provided surrogate:
+                accepted as-is; internal bookkeeping attributes (`_max_surrogate_points_list`,
+                `_active_max_surrogate_points`) are still initialised.
+
+        After this method returns the following attributes are set:
+            * `self.surrogate` — the active surrogate model.
+            * `self._surrogates_list` — `list | None`.
+            * `self._prob_surrogate` — normalised selection probabilities or `None`.
+            * `self._max_surrogate_points_list` — per-surrogate point caps or `None`.
+            * `self._active_max_surrogate_points` — active cap.
+
+        Raises:
+            ValueError: If the surrogate list is empty.
+            ValueError: If 'prob_surrogate' length does not match the surrogate list length.
+            ValueError: If 'max_surrogate_points' list length does not match the surrogate list length.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            # Default surrogate (GaussianProcessRegressor)
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+            )
+            print(type(opt.surrogate).__name__)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from sklearn.ensemble import RandomForestRegressor
+            # User-provided surrogate
+            rf = RandomForestRegressor(n_estimators=50, random_state=42)
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                surrogate=rf,
+            )
+            print(type(opt.surrogate).__name__)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from sklearn.ensemble import RandomForestRegressor
+            from sklearn.gaussian_process import GaussianProcessRegressor
+            # List of surrogates with selection probabilities
+            surrogates = [GaussianProcessRegressor(), RandomForestRegressor()]
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                surrogate=surrogates,
+                prob_surrogate=[0.7, 0.3],
+            )
+            print(opt._prob_surrogate)
+            print([type(s).__name__ for s in opt._surrogates_list])
+            ```
+        """
+        self._surrogates_list = None
+        self._prob_surrogate = None
+
+        if isinstance(self.surrogate, list):
+            self._surrogates_list = self.surrogate
+            if not self._surrogates_list:
+                raise ValueError("Surrogate list cannot be empty.")
+
+            # Handle probabilities
+            if self.config.prob_surrogate is None:
+                # Uniform probability
+                n = len(self._surrogates_list)
+                self._prob_surrogate = [1.0 / n] * n
+            else:
+                probs = self.config.prob_surrogate
+                if len(probs) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of prob_surrogate ({len(probs)}) must match "
+                        f"number of surrogates ({len(self._surrogates_list)})."
+                    )
+                # Normalize probabilities
+                total = sum(probs)
+                if not np.isclose(total, 1.0) and total > 0:
+                    self._prob_surrogate = [p / total for p in probs]
+                else:
+                    self._prob_surrogate = probs
+
+            # Handle max_surrogate_points list
+            self._max_surrogate_points_list = None
+            if isinstance(self.config.max_surrogate_points, list):
+                if len(self.config.max_surrogate_points) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of max_surrogate_points ({len(self.config.max_surrogate_points)}) "
+                        f"must match number of surrogates ({len(self._surrogates_list)})."
+                    )
+                self._max_surrogate_points_list = self.config.max_surrogate_points
+            else:
+                # If int or None, broadcast to list for easier indexing
+                self._max_surrogate_points_list = [
+                    self.config.max_surrogate_points
+                ] * len(self._surrogates_list)
+
+            # Set initial surrogate and max points
+            self.surrogate = self._surrogates_list[0]
+            self._active_max_surrogate_points = self._max_surrogate_points_list[0]
+
+        elif self.surrogate is None:
+            # Default single surrogate case
+            self._max_surrogate_points_list = None
+            self._active_max_surrogate_points = self.config.max_surrogate_points
+
             kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
                 length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
             )
+
+            # Determine optimizer for GPR
+            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
+            if self.config.acquisition_optimizer_kwargs is not None:
+                optimizer = partial(
+                    gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
+                )
+
             self.surrogate = GaussianProcessRegressor(
                 kernel=kernel,
                 n_restarts_optimizer=100,
-                random_state=self.seed,
                 normalize_y=True,
+                random_state=self.seed,
+                optimizer=optimizer,
             )
 
     def get_pickle_safe_optimizer(
@@ -5692,11 +5759,11 @@ class SpotOptim(BaseEstimator):
         """Initialize storage for optimization.
 
         Sets up the initial data structures needed for optimization tracking:
-        - X_: Evaluated design points (in original scale)
-        - y_: Function values at evaluated points
-        - n_iter_: Iteration counter
+            * X_: Evaluated design points (in original scale)
+            * y_: Function values at evaluated points
+            * n_iter_: Iteration counter
 
-        Then updates statistics by calling update_stats().
+        Then updates statistics by calling `update_stats()`.
 
         Args:
             X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).

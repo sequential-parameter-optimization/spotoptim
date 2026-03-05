@@ -9,7 +9,7 @@ import os
 # Define groups
 GROUPS = {
     "Core": ["__init__", "__getattr__", "__setattr__", "__dir__", "__post_init__"],
-    "Configuration & Helpers": ["set_seed", "detect_var_type", "modify_bounds_based_on_var_type", "handle_default_var_trans", "process_factor_bounds", "get_best_hyperparameters", "repair_non_numeric", "reinitialize_components", "get_pickle_safe_optimizer"],
+    "Configuration & Helpers": ["set_seed", "detect_var_type", "modify_bounds_based_on_var_type", "handle_default_var_trans", "process_factor_bounds", "get_best_hyperparameters", "repair_non_numeric", "reinitialize_components", "init_surrogate", "get_pickle_safe_optimizer"],
     "Dimension Reduction": ["setup_dimension_reduction", "to_red_dim", "to_all_dim"],
     "Variable Transformation": ["transform_value", "inverse_transform_value", "transform_X", "inverse_transform_X", "transform_bounds", "map_to_factor_values"],
     "Initial Design": ["get_initial_design", "generate_initial_design", "curate_initial_design", "rm_NA_values", "validate_x0", "check_size_initial_design", "get_best_xy_initial_design", "update_repeats_infill_points", "remove_nan"],
