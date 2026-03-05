@@ -1,3 +1,11 @@
+## [0.3.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.3.1...v0.3.2) (2026-03-05)
+
+
+### Bug Fixes
+
+* .gitignore ([9f392de](https://github.com/sequential-parameter-optimization/spotoptim/commit/9f392de665da6934310e0dd09b88c797f03ebd60))
+* dcos ([26f5af5](https://github.com/sequential-parameter-optimization/spotoptim/commit/26f5af5cc4086eb4a73d478f5c52b66ceeb842d5))
+
 ## [0.3.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.3.0...v0.3.1) (2026-03-04)
 
 
