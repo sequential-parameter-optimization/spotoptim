@@ -318,7 +318,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.html">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimConfig.html">SpotOptimConfig</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.qmd">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimConfig.html">SpotOptim.SpotOptimConfig</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -380,26 +380,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/SpotOptim.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/SpotOptim.qmd" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SpotOptim</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/SpotOptim.SpotOptim.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SpotOptim</span></a>
+ <span class="menu-text">SpotOptim.SpotOptim</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/SpotOptim.SpotOptimConfig.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">SpotOptimConfig</span></a>
+ <span class="menu-text">SpotOptim.SpotOptimConfig</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/SpotOptim.SpotOptimState.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SpotOptimState</span></a>
+ <span class="menu-text">SpotOptim.SpotOptimState</span></a>
   </div>
 </li>
       </ul>
@@ -1931,19 +1931,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#spotoptim.SpotOptim.SpotOptimConfig" id="toc-spotoptim.SpotOptim.SpotOptimConfig" class="nav-link active" data-scroll-target="#spotoptim.SpotOptim.SpotOptimConfig">SpotOptim.SpotOptimConfig</a></li>
+  <li><a href="#attributes" id="toc-attributes" class="nav-link active" data-scroll-target="#attributes">Attributes</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/SpotOptim.SpotOptimConfig.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.html">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimConfig.html">SpotOptimConfig</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.qmd">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimConfig.html">SpotOptim.SpotOptimConfig</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">SpotOptim.SpotOptimConfig</h1>
+</div>
 
 
 
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
 
 
-<section id="spotoptim.SpotOptim.SpotOptimConfig" class="level1">
-<h1>SpotOptim.SpotOptimConfig</h1>
+</header>
+
+
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>SpotOptim.SpotOptimConfig(</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    bounds<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    max_iter<span class="op">=</span><span class="dv">20</span>,</span>
@@ -1988,6 +2003,281 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>    kwargs<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Configuration parameters for SpotOptim.</p>
+<section id="attributes" class="level2 doc-section doc-section-attributes">
+<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>bounds</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>]</td>
+<td>Bounds for the input variables.</td>
+</tr>
+<tr class="even">
+<td>max_iter</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Maximum number of iterations.</td>
+</tr>
+<tr class="odd">
+<td>n_initial</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of initial points.</td>
+</tr>
+<tr class="even">
+<td>surrogate</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#object">object</a>]</td>
+<td>Surrogate model.</td>
+</tr>
+<tr class="odd">
+<td>acquisition</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Acquisition function.</td>
+</tr>
+<tr class="even">
+<td>var_type</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>]</td>
+<td>Type of variables.</td>
+</tr>
+<tr class="odd">
+<td>var_name</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>]</td>
+<td>Name of variables.</td>
+</tr>
+<tr class="even">
+<td>var_trans</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#list">list</a>]</td>
+<td>Transformation of variables.</td>
+</tr>
+<tr class="odd">
+<td>tolerance_x</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>]</td>
+<td>Tolerance for input variables.</td>
+</tr>
+<tr class="even">
+<td>max_time</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Maximum time.</td>
+</tr>
+<tr class="odd">
+<td>repeats_initial</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of repeats for initial points.</td>
+</tr>
+<tr class="even">
+<td>repeats_surrogate</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of repeats for surrogate points.</td>
+</tr>
+<tr class="odd">
+<td>ocba_delta</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Delta for OCBA.</td>
+</tr>
+<tr class="even">
+<td>tensorboard_log</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to log to TensorBoard.</td>
+</tr>
+<tr class="odd">
+<td>tensorboard_path</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]</td>
+<td>Path to TensorBoard logs.</td>
+</tr>
+<tr class="even">
+<td>tensorboard_clean</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to clean TensorBoard logs.</td>
+</tr>
+<tr class="odd">
+<td>fun_mo2so</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a>]</td>
+<td>Function to convert multi-objective to single-objective.</td>
+</tr>
+<tr class="even">
+<td>seed</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>]</td>
+<td>Seed for random number generator.</td>
+</tr>
+<tr class="odd">
+<td>verbose</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to print verbose output.</td>
+</tr>
+<tr class="even">
+<td>warnings_filter</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Filter for warnings.</td>
+</tr>
+<tr class="odd">
+<td>n_infill_points</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of infill points.</td>
+</tr>
+<tr class="even">
+<td>max_surrogate_points</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>, <a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>]]]</td>
+<td>Maximum number of surrogate points.</td>
+</tr>
+<tr class="odd">
+<td>selection_method</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Method for selecting infill points.</td>
+</tr>
+<tr class="even">
+<td>acquisition_failure_strategy</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Strategy for handling acquisition function failures.</td>
+</tr>
+<tr class="odd">
+<td>penalty</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use penalty.</td>
+</tr>
+<tr class="even">
+<td>penalty_val</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>]</td>
+<td>Penalty value.</td>
+</tr>
+<tr class="odd">
+<td>acquisition_fun_return_size</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Size of the acquisition function return.</td>
+</tr>
+<tr class="even">
+<td>acquisition_optimizer</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a>]</td>
+<td>Optimizer for the acquisition function.</td>
+</tr>
+<tr class="odd">
+<td>restart_after_n</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of iterations after which to restart.</td>
+</tr>
+<tr class="even">
+<td>restart_inject_best</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to inject the best point after restart.</td>
+</tr>
+<tr class="odd">
+<td>x0</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]</td>
+<td>Initial guess for the input variables.</td>
+</tr>
+<tr class="even">
+<td>de_x0_prob</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Probability of using differential evolution for initial guess.</td>
+</tr>
+<tr class="odd">
+<td>tricands_fringe</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Whether to use fringe for tricands.</td>
+</tr>
+<tr class="even">
+<td>prob_de_tricands</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Probability of using tricands for differential evolution.</td>
+</tr>
+<tr class="odd">
+<td>window_size</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#int">int</a>]</td>
+<td>Size of the window for tricands.</td>
+</tr>
+<tr class="even">
+<td>min_tol_metric</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Metric for minimum tolerance.</td>
+</tr>
+<tr class="odd">
+<td>prob_surrogate</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>]]</td>
+<td>Probability of using surrogate.</td>
+</tr>
+<tr class="even">
+<td>n_jobs</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of jobs.</td>
+</tr>
+<tr class="odd">
+<td>acquisition_optimizer_kwargs</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.Dict">Dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</td>
+<td>Keyword arguments for the acquisition function optimizer.</td>
+</tr>
+<tr class="even">
+<td>args</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a></td>
+<td>Arguments for the objective function.</td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.Dict">Dict</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>]]</td>
+<td>Keyword arguments for the objective function.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples" class="level2 doc-section doc-section-examples">
+<h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
+<div id="307fe003" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.SpotOptim <span class="im">import</span> SpotOptim</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.SpotOptim <span class="im">import</span> SpotOptimConfig</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process.kernels <span class="im">import</span> Matern, ConstantKernel</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>kernel <span class="op">=</span> ConstantKernel(<span class="fl">1.0</span>, (<span class="fl">1e-2</span>, <span class="fl">1e12</span>)) <span class="op">*</span> Matern(length_scale<span class="op">=</span><span class="fl">1.0</span>, length_scale_bounds<span class="op">=</span>(<span class="fl">1e-4</span>, <span class="fl">1e2</span>), nu<span class="op">=</span><span class="fl">2.5</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>surrogate <span class="op">=</span> GaussianProcessRegressor(kernel<span class="op">=</span>kernel, n_restarts_optimizer<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>config <span class="op">=</span> SpotOptimConfig(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>     bounds<span class="op">=</span>[(<span class="dv">0</span>, <span class="dv">1</span>), (<span class="dv">0</span>, <span class="dv">1</span>)],</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>     max_iter<span class="op">=</span><span class="dv">20</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>     n_initial<span class="op">=</span><span class="dv">10</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>     surrogate<span class="op">=</span>surrogate,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>     acquisition<span class="op">=</span><span class="st">"y"</span>,</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>     var_type<span class="op">=</span>[<span class="st">"continuous"</span>, <span class="st">"continuous"</span>],</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>     var_name<span class="op">=</span>[<span class="st">"x1"</span>, <span class="st">"x2"</span>],</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>     var_trans<span class="op">=</span>[<span class="st">"identity"</span>, <span class="st">"identity"</span>],</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>     tolerance_x<span class="op">=</span><span class="fl">1e-6</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>     max_time<span class="op">=</span>np.inf,</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>     repeats_initial<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>     repeats_surrogate<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>     ocba_delta<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>     tensorboard_log<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>     tensorboard_path<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>     tensorboard_clean<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>     fun_mo2so<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>     seed<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>     verbose<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>     warnings_filter<span class="op">=</span><span class="st">"ignore"</span>,</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>     n_infill_points<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>     max_surrogate_points<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>     selection_method<span class="op">=</span><span class="st">"distant"</span>,</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>     acquisition_failure_strategy<span class="op">=</span><span class="st">"random"</span>,</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>     penalty<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>     penalty_val<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>     acquisition_fun_return_size<span class="op">=</span><span class="dv">3</span>,</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>     acquisition_optimizer<span class="op">=</span><span class="st">"differential_evolution"</span>,</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>     restart_after_n<span class="op">=</span><span class="dv">100</span>,</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>     restart_inject_best<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>     x0<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>     de_x0_prob<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>     tricands_fringe<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>     prob_de_tricands<span class="op">=</span><span class="fl">0.8</span>,</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>     window_size<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>     min_tol_metric<span class="op">=</span><span class="st">"chebyshev"</span>,</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>     prob_surrogate<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>     n_jobs<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>     acquisition_optimizer_kwargs<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>     args<span class="op">=</span>(),</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>     kwargs<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 
 
 </section>

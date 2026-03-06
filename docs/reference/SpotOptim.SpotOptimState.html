@@ -318,7 +318,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.html">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimState.html">SpotOptimState</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.qmd">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimState.html">SpotOptim.SpotOptimState</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -380,26 +380,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/reference/SpotOptim.html" class="sidebar-item-text sidebar-link">
+  <a href="../../docs/reference/SpotOptim.qmd" class="sidebar-item-text sidebar-link">
  <span class="menu-text">SpotOptim</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/SpotOptim.SpotOptim.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SpotOptim</span></a>
+ <span class="menu-text">SpotOptim.SpotOptim</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/SpotOptim.SpotOptimConfig.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">SpotOptimConfig</span></a>
+ <span class="menu-text">SpotOptim.SpotOptimConfig</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/SpotOptim.SpotOptimState.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">SpotOptimState</span></a>
+ <span class="menu-text">SpotOptim.SpotOptimState</span></a>
   </div>
 </li>
       </ul>
@@ -1931,12 +1931,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#spotoptim.SpotOptim.SpotOptimState" id="toc-spotoptim.SpotOptim.SpotOptimState" class="nav-link active" data-scroll-target="#spotoptim.SpotOptim.SpotOptimState">SpotOptim.SpotOptimState</a></li>
+  <li><a href="#spotoptim.SpotOptim.SpotOptimState" id="toc-spotoptim.SpotOptim.SpotOptimState" class="nav-link active" data-scroll-target="#spotoptim.SpotOptim.SpotOptimState">SpotOptim.SpotOptimState</a>
+  <ul class="collapse">
+  <li><a href="#attributes" id="toc-attributes" class="nav-link" data-scroll-target="#attributes">Attributes</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/SpotOptim.SpotOptimState.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.html">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimState.html">SpotOptimState</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../docs/reference/index.html">API Reference</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.qmd">SpotOptim</a></li><li class="breadcrumb-item"><a href="../../docs/reference/SpotOptim.SpotOptimState.html">SpotOptim.SpotOptimState</a></li></ol></nav></header>
 
 
 
@@ -1967,8 +1970,122 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    restarts_results_<span class="op">=</span><span class="bu">list</span>(),</span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Mutable state of the optimization process.</p>
+<section id="attributes" class="level2 doc-section doc-section-attributes">
+<h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Input data.</td>
+</tr>
+<tr class="even">
+<td>y_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Output data.</td>
+</tr>
+<tr class="odd">
+<td>y_mo</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Multi-objective output data.</td>
+</tr>
+<tr class="even">
+<td>best_x_</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Best input data.</td>
+</tr>
+<tr class="odd">
+<td>best_y_</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Best output data.</td>
+</tr>
+<tr class="even">
+<td>n_iter_</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Number of iterations.</td>
+</tr>
+<tr class="odd">
+<td>counter</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Counter.</td>
+</tr>
+<tr class="even">
+<td>success_rate</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Success rate.</td>
+</tr>
+<tr class="odd">
+<td>success_counter</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Success counter.</td>
+</tr>
+<tr class="even">
+<td>_success_history</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a></td>
+<td>History of success.</td>
+</tr>
+<tr class="odd">
+<td>_zero_success_count</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Count of zero success.</td>
+</tr>
+<tr class="even">
+<td>mean_X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Mean of input data.</td>
+</tr>
+<tr class="odd">
+<td>mean_y</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Mean of output data.</td>
+</tr>
+<tr class="even">
+<td>var_y</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Variance of output data.</td>
+</tr>
+<tr class="odd">
+<td>min_mean_X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Minimum of mean input data.</td>
+</tr>
+<tr class="even">
+<td>min_mean_y</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Minimum of mean output data.</td>
+</tr>
+<tr class="odd">
+<td>min_var_y</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Minimum of mean variance of output data.</td>
+</tr>
+<tr class="even">
+<td>min_X</td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>Minimum of input data.</td>
+</tr>
+<tr class="odd">
+<td>min_y</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Minimum of output data.</td>
+</tr>
+<tr class="even">
+<td>restarts_results_</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a></td>
+<td>History of restarts.</td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
