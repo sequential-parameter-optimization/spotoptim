@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import numpy as np
-from spotoptim.SpotOptim import _gpr_minimize_wrapper
+from spotoptim.SpotOptim import gpr_minimize_wrapper
 
 
 def test_gpr_minimize_wrapper_example():
-    """Test _gpr_minimize_wrapper with L-BFGS-B method."""
+    """Test gpr_minimize_wrapper with L-BFGS-B method."""
 
     def obj_func(theta):
         value = np.sum(theta**2)
@@ -16,7 +16,7 @@ def test_gpr_minimize_wrapper_example():
 
     initial_theta = np.array([1.0, 1.0])
     bounds = [(-5, 5), (-5, 5)]
-    theta_opt, func_min = _gpr_minimize_wrapper(
+    theta_opt, func_min = gpr_minimize_wrapper(
         obj_func, initial_theta, bounds, method="L-BFGS-B", options={"maxiter": 100}
     )
 
@@ -28,7 +28,7 @@ def test_gpr_minimize_wrapper_example():
 
 
 def test_gpr_minimize_wrapper_nelder_mead():
-    """Test _gpr_minimize_wrapper with gradient-free method (Nelder-Mead)."""
+    """Test gpr_minimize_wrapper with gradient-free method (Nelder-Mead)."""
 
     def obj_func(theta):
         """Objective function that returns value and gradient."""
@@ -40,7 +40,7 @@ def test_gpr_minimize_wrapper_nelder_mead():
     bounds = [(-5, 5), (-5, 5)]
 
     # Nelder-Mead is gradient-free, should only use function values
-    theta_opt, func_min = _gpr_minimize_wrapper(
+    theta_opt, func_min = gpr_minimize_wrapper(
         obj_func, initial_theta, bounds, method="Nelder-Mead", options={"maxiter": 200}
     )
 
@@ -50,7 +50,7 @@ def test_gpr_minimize_wrapper_nelder_mead():
 
 
 def test_gpr_minimize_wrapper_default_method():
-    """Test _gpr_minimize_wrapper with default method (L-BFGS-B)."""
+    """Test gpr_minimize_wrapper with default method (L-BFGS-B)."""
 
     def obj_func(theta):
         value = np.sum((theta - 1.0) ** 2)
@@ -61,7 +61,7 @@ def test_gpr_minimize_wrapper_default_method():
     bounds = [(-5, 5), (-5, 5)]
 
     # Default method should be L-BFGS-B
-    theta_opt, func_min = _gpr_minimize_wrapper(obj_func, initial_theta, bounds)
+    theta_opt, func_min = gpr_minimize_wrapper(obj_func, initial_theta, bounds)
 
     # Should find minimum at [1, 1]
     assert np.allclose(theta_opt, [1.0, 1.0], atol=1e-6)

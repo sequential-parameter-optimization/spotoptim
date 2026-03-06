@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """
-Tests for _remote_search_task function based on documentation examples.
+Tests for remote_search_task function based on documentation examples.
 These tests validate the parallel search functionality with dill serialization.
 """
 
 import numpy as np
 import dill
-from spotoptim.SpotOptim import _remote_search_task
+from spotoptim.SpotOptim import remote_search_task
 from spotoptim import SpotOptim
 
 
@@ -31,7 +31,7 @@ def test_remote_search_task_basic_example():
     opt._fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
-    x_new = _remote_search_task(pickled_optimizer)
+    x_new = remote_search_task(pickled_optimizer)
 
     # The function should return an infill point (ndarray), not an Exception
     assert isinstance(x_new, np.ndarray), f"Expected ndarray, got {type(x_new)}"
@@ -62,7 +62,7 @@ def test_remote_search_task_1d_problem():
     opt._fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
-    x_new = _remote_search_task(pickled_optimizer)
+    x_new = remote_search_task(pickled_optimizer)
 
     assert isinstance(x_new, np.ndarray)
     assert x_new.shape == (1, 1)
@@ -87,7 +87,7 @@ def test_remote_search_task_5d_problem():
     opt._fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
-    x_new = _remote_search_task(pickled_optimizer)
+    x_new = remote_search_task(pickled_optimizer)
 
     assert isinstance(x_new, np.ndarray)
     assert x_new.shape == (1, 5)
@@ -122,7 +122,7 @@ def test_remote_search_task_custom_objective():
     opt._fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
-    x_new = _remote_search_task(pickled_optimizer)
+    x_new = remote_search_task(pickled_optimizer)
 
     assert isinstance(x_new, np.ndarray)
     assert x_new.shape == (1, 2)
@@ -149,7 +149,7 @@ def test_remote_search_task_with_acquisition_ei():
     opt._fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
-    x_new = _remote_search_task(pickled_optimizer)
+    x_new = remote_search_task(pickled_optimizer)
 
     assert isinstance(x_new, np.ndarray)
     assert x_new.shape == (1, 2)
@@ -176,7 +176,7 @@ def test_remote_search_task_different_seeds():
         opt._fit_surrogate(opt.X_, opt.y_)
 
         pickled_optimizer = dill.dumps(opt)
-        x_new = _remote_search_task(pickled_optimizer)
+        x_new = remote_search_task(pickled_optimizer)
         results.append(x_new)
 
     # With different seeds, we should get different points
@@ -197,7 +197,7 @@ def test_remote_search_task_error_handling():
     failing_opt = FailingOptimizer()
     pickled_optimizer = dill.dumps(failing_opt)
 
-    result = _remote_search_task(pickled_optimizer)
+    result = remote_search_task(pickled_optimizer)
 
     # Should return the Exception, not raise it
     assert isinstance(result, Exception)
@@ -226,7 +226,7 @@ def test_remote_search_task_preserves_optimizer_state():
     original_seed = opt.seed
 
     pickled_optimizer = dill.dumps(opt)
-    x_new = _remote_search_task(pickled_optimizer)
+    x_new = remote_search_task(pickled_optimizer)
 
     # Unpickle to verify state was preserved
     opt_unpickled = dill.loads(pickled_optimizer)

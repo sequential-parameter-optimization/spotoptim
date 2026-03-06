@@ -4,7 +4,6 @@
 
 | | |
 | --- | --- |
-| [SpotOptim](SpotOptim.qmd#spotoptim.SpotOptim) |  |
 | [SpotOptim.SpotOptim](SpotOptim.SpotOptim.qmd#spotoptim.SpotOptim.SpotOptim) | SPOT optimizer compatible with scipy.optimize interface. |
 | [SpotOptim.SpotOptimConfig](SpotOptim.SpotOptimConfig.qmd#spotoptim.SpotOptim.SpotOptimConfig) | Configuration parameters for SpotOptim. |
 | [SpotOptim.SpotOptimState](SpotOptim.SpotOptimState.qmd#spotoptim.SpotOptim.SpotOptimState) | Mutable state of the optimization process. |

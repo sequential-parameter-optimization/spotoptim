@@ -64,7 +64,7 @@ class TestFactorVariables:
 
         # Test mapping
         X_internal = np.array([[0], [1], [2]])
-        X_mapped = opt._map_to_factor_values(X_internal)
+        X_mapped = opt.map_to_factor_values(X_internal)
 
         assert X_mapped[0, 0] == "alpha"
         assert X_mapped[1, 0] == "beta"
@@ -81,7 +81,7 @@ class TestFactorVariables:
 
         # Test with fractional values
         X_internal = np.array([[0.4], [1.6], [2.9], [-0.5], [3.5]])
-        X_mapped = opt._map_to_factor_values(X_internal)
+        X_mapped = opt.map_to_factor_values(X_internal)
 
         assert X_mapped[0, 0] == "a"  # 0.4 -> 0
         assert X_mapped[1, 0] == "c"  # 1.6 -> 2 -> "c" (index 2)

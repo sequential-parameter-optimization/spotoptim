@@ -41,7 +41,108 @@ from spotoptim.plot.visualization import (
 
 @dataclass
 class SpotOptimConfig:
-    """Configuration parameters for SpotOptim."""
+    """Configuration parameters for SpotOptim.
+
+    Attributes:
+        bounds (Optional[list]): Bounds for the input variables.
+        max_iter (int): Maximum number of iterations.
+        n_initial (int): Number of initial points.
+        surrogate (Optional[object]): Surrogate model.
+        acquisition (str): Acquisition function.
+        var_type (Optional[list]): Type of variables.
+        var_name (Optional[list]): Name of variables.
+        var_trans (Optional[list]): Transformation of variables.
+        tolerance_x (Optional[float]): Tolerance for input variables.
+        max_time (float): Maximum time.
+        repeats_initial (int): Number of repeats for initial points.
+        repeats_surrogate (int): Number of repeats for surrogate points.
+        ocba_delta (int): Delta for OCBA.
+        tensorboard_log (bool): Whether to log to TensorBoard.
+        tensorboard_path (Optional[str]): Path to TensorBoard logs.
+        tensorboard_clean (bool): Whether to clean TensorBoard logs.
+        fun_mo2so (Optional[Callable]): Function to convert multi-objective to single-objective.
+        seed (Optional[int]): Seed for random number generator.
+        verbose (bool): Whether to print verbose output.
+        warnings_filter (str): Filter for warnings.
+        n_infill_points (int): Number of infill points.
+        max_surrogate_points (Optional[Union[int, List[int]]]): Maximum number of surrogate points.
+        selection_method (str): Method for selecting infill points.
+        acquisition_failure_strategy (str): Strategy for handling acquisition function failures.
+        penalty (bool): Whether to use penalty.
+        penalty_val (Optional[float]): Penalty value.
+        acquisition_fun_return_size (int): Size of the acquisition function return.
+        acquisition_optimizer (Union[str, Callable]): Optimizer for the acquisition function.
+        restart_after_n (int): Number of iterations after which to restart.
+        restart_inject_best (bool): Whether to inject the best point after restart.
+        x0 (Optional[np.ndarray]): Initial guess for the input variables.
+        de_x0_prob (float): Probability of using differential evolution for initial guess.
+        tricands_fringe (bool): Whether to use fringe for tricands.
+        prob_de_tricands (float): Probability of using tricands for differential evolution.
+        window_size (Optional[int]): Size of the window for tricands.
+        min_tol_metric (str): Metric for minimum tolerance.
+        prob_surrogate (Optional[List[float]]): Probability of using surrogate.
+        n_jobs (int): Number of jobs.
+        acquisition_optimizer_kwargs (Optional[Dict[str, Any]]): Keyword arguments for the acquisition function optimizer.
+        args (Tuple): Arguments for the objective function.
+        kwargs (Optional[Dict[str, Any]]): Keyword arguments for the objective function.
+
+
+    Examples:
+        ```{python}
+        import numpy as np
+        from spotoptim.SpotOptim import SpotOptim
+        from sklearn.gaussian_process import GaussianProcessRegressor
+        from spotoptim.SpotOptim import SpotOptimConfig
+        from sklearn.gaussian_process.kernels import Matern, ConstantKernel
+
+        kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5)
+        surrogate = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=100)
+
+        config = SpotOptimConfig(
+             bounds=[(0, 1), (0, 1)],
+             max_iter=20,
+             n_initial=10,
+             surrogate=surrogate,
+             acquisition="y",
+             var_type=["continuous", "continuous"],
+             var_name=["x1", "x2"],
+             var_trans=["identity", "identity"],
+             tolerance_x=1e-6,
+             max_time=np.inf,
+             repeats_initial=1,
+             repeats_surrogate=1,
+             ocba_delta=0,
+             tensorboard_log=False,
+             tensorboard_path=None,
+             tensorboard_clean=False,
+             fun_mo2so=None,
+             seed=None,
+             verbose=False,
+             warnings_filter="ignore",
+             n_infill_points=1,
+             max_surrogate_points=None,
+             selection_method="distant",
+             acquisition_failure_strategy="random",
+             penalty=False,
+             penalty_val=None,
+             acquisition_fun_return_size=3,
+             acquisition_optimizer="differential_evolution",
+             restart_after_n=100,
+             restart_inject_best=True,
+             x0=None,
+             de_x0_prob=0.1,
+             tricands_fringe=False,
+             prob_de_tricands=0.8,
+             window_size=None,
+             min_tol_metric="chebyshev",
+             prob_surrogate=None,
+             n_jobs=1,
+             acquisition_optimizer_kwargs=None,
+             args=(),
+             kwargs=None,
+        )
+        ```
+    """
 
     bounds: Optional[list] = None
     max_iter: int = 20
@@ -92,7 +193,30 @@ class SpotOptimConfig:
 
 @dataclass
 class SpotOptimState:
-    """Mutable state of the optimization process."""
+    """Mutable state of the optimization process.
+
+    Attributes:
+        X_ (np.ndarray): Input data.
+        y_ (np.ndarray): Output data.
+        y_mo (np.ndarray): Multi-objective output data.
+        best_x_ (np.ndarray): Best input data.
+        best_y_ (float): Best output data.
+        n_iter_ (int): Number of iterations.
+        counter (int): Counter.
+        success_rate (float): Success rate.
+        success_counter (int): Success counter.
+        _success_history (List): History of success.
+        _zero_success_count (int): Count of zero success.
+        mean_X (np.ndarray): Mean of input data.
+        mean_y (np.ndarray): Mean of output data.
+        var_y (np.ndarray): Variance of output data.
+        min_mean_X (np.ndarray): Minimum of mean input data.
+        min_mean_y (float): Minimum of mean output data.
+        min_var_y (float): Minimum of mean variance of output data.
+        min_X (np.ndarray): Minimum of input data.
+        min_y (float): Minimum of output data.
+        restarts_results_ (List): History of restarts.
+    """
 
     X_: Optional[np.ndarray] = None
     y_: Optional[np.ndarray] = None
@@ -124,7 +248,7 @@ class SpotOptimState:
     restarts_results_: List = field(default_factory=list)
 
 
-def _gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
+def gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
     """
     Wrapper for scipy.optimize.minimize to be used with sklearn GaussianProcessRegressor.
 
@@ -145,33 +269,32 @@ def _gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
 
     Returns:
         tuple: A tuple containing:
-            - theta_opt (np.ndarray): The optimized hyperparameters.
-            - func_min (float): The value of the objective function at the minimum.
+            * theta_opt (np.ndarray): The optimized hyperparameters.
+            * func_min (float): The value of the objective function at the minimum.
 
     Raises:
         ValueError: If an unsupported optimization method is specified.
 
     Examples:
-        >>> import numpy as np
-        >>> from spotoptim.SpotOptim import _gpr_minimize_wrapper
-        >>> def obj_func(theta):
-        ...     value = np.sum(theta**2)
-        ...     grad = 2 * theta
-        ...     return value, grad
-        ...
-        >>> initial_theta = np.array([1.0, 1.0])
-        >>> bounds = [(-5, 5), (-5, 5)]
-        >>> theta_opt, func_min = _gpr_minimize_wrapper(
-        ...     obj_func,
-        ...     initial_theta,
-        ...     bounds,
-        ...     method="L-BFGS-B",
-        ...     options={'maxiter': 100}
-        ... )
-        >>> np.allclose(theta_opt, [0.0, 0.0], atol=1e-6)
-        True
-        >>> np.isclose(func_min, 0.0, atol=1e-10)
-        True
+        ```{python}
+        import numpy as np
+        from spotoptim.SpotOptim import gpr_minimize_wrapper
+        def obj_func(theta):
+            value = np.sum(theta**2)
+            grad = 2 * theta
+            return value, grad
+        initial_theta = np.array([1.0, 1.0])
+        bounds = [(-5, 5), (-5, 5)]
+        theta_opt, func_min = gpr_minimize_wrapper(
+            obj_func,
+            initial_theta,
+            bounds,
+            method="L-BFGS-B",
+            options={'maxiter': 100}
+        )
+        print(np.allclose(theta_opt, [0.0, 0.0], atol=1e-6))
+        print(np.isclose(func_min, 0.0, atol=1e-10))
+        ```
     """
     # Default parameters if not specified
     if "method" not in kwargs:
@@ -236,42 +359,40 @@ def _gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
     return res.x, res.fun
 
 
-def _remote_eval_wrapper(pickled_args):
+def remote_eval_wrapper(pickled_args):
     """
     Helper function for parallel evaluation with dill.
     Accepts a single argument (pickled tuple) to bypass standard pickling limitations.
 
     Args:
         pickled_args (bytes): A pickled tuple containing (optimizer, x) where:
-            - optimizer: The SpotOptim instance (or surrogate model) to use for evaluation.
-            - x: The point at which to evaluate the objective function.
+            * optimizer: The SpotOptim instance (or surrogate model) to use for evaluation.
+            * x: The point at which to evaluate the objective function.
 
     Returns:
         tuple: A tuple containing:
-            - x (ndarray): The input point at which the function was evaluated.
-            - y (ndarray or Exception): The function value(s) at x, or an Exception if evaluation failed.
+            * x (ndarray): The input point at which the function was evaluated.
+            * y (ndarray or Exception): The function value(s) at x, or an Exception if evaluation failed.
 
     Raises:
         Exception: Any exception raised during the evaluation of the objective function is caught and returned as part of the output tuple.
         This allows the optimization process to continue even if some evaluations fail, and provides information about the failure for debugging.
 
     Examples:
-        >>> import numpy as np
-        >>> from spotoptim.SpotOptim import _remote_eval_wrapper
-        >>> class DummyOptimizer:
-        ...     def evaluate_function(self, X):
-        ...         return np.sum(X**2, axis=1)
-        ...
-        >>> optimizer = DummyOptimizer()
-        >>> x = np.array([1.0, 2.0])
-        >>> import dill
-        >>> pickled_args = dill.dumps((optimizer, x))
-        >>> x_eval, y_eval = _remote_eval_wrapper(pickled_args)
-        >>> np.allclose(x_eval, x)
-        True
-        >>> np.isclose(y_eval, 5.0)
-        True
-
+        ```{python}
+        import numpy as np
+        from spotoptim.SpotOptim import remote_eval_wrapper
+        class DummyOptimizer:
+            def evaluate_function(self, X):
+                return np.sum(X**2, axis=1)
+        optimizer = DummyOptimizer()
+        x = np.array([1.0, 2.0])
+        import dill
+        pickled_args = dill.dumps((optimizer, x))
+        x_eval, y_eval = remote_eval_wrapper(pickled_args)
+        print(np.allclose(x_eval, x))
+        print(np.isclose(y_eval, 5.0))
+        ```
     """
     try:
         # Import dill locally to ensure it's available in workers
@@ -287,7 +408,7 @@ def _remote_eval_wrapper(pickled_args):
         return None, e
 
 
-def _remote_search_task(pickled_optimizer):
+def remote_search_task(pickled_optimizer):
     """
     Helper function for parallel search with dill.
 
@@ -305,37 +426,33 @@ def _remote_search_task(pickled_optimizer):
             Exception instance and handle it appropriately.
 
     Examples:
-        >>> import numpy as np
-        >>> from spotoptim.SpotOptim import _remote_search_task
-        >>> from spotoptim import SpotOptim
-        >>> import dill
-        >>>
-        >>> # Create and initialize an optimizer
-        >>> opt = SpotOptim(
-        ...     fun=lambda X: np.sum(X**2, axis=1),
-        ...     bounds=[(-5, 5), (-5, 5)],
-        ...     n_initial=5,
-        ...     max_iter=10,
-        ...     seed=0,
-        ...     verbose=False
-        ... )
-        >>> # Initialize with some data
-        >>> np.random.seed(0)
-        >>> opt.X_ = np.random.rand(10, 2) * 10 - 5
-        >>> opt.y_ = np.sum(opt.X_**2, axis=1)
-        >>> opt._fit_surrogate(opt.X_, opt.y_)
-        >>>
-        >>> # Use the function
-        >>> pickled_optimizer = dill.dumps(opt)
-        >>> x_next = _remote_search_task(pickled_optimizer)
-        >>> isinstance(x_next, np.ndarray)
-        True
-        >>> x_next.shape
-        (1, 2)
-        >>> # Verify the point is within bounds
-        >>> (-5 <= x_next[0, 0] <= 5) and (-5 <= x_next[0, 1] <= 5)
-        True
+        ```{python}
+        import numpy as np
+        from spotoptim.SpotOptim import remote_search_task
+        from spotoptim import SpotOptim
+        import dill
 
+        # Create and initialize an optimizer
+        opt = SpotOptim(
+            fun=lambda X: np.sum(X**2, axis=1),
+            bounds=[(-5, 5), (-5, 5)],
+            n_initial=5,
+            max_iter=10,
+        )
+        # Initialize with some data
+        np.random.seed(0)
+        opt.X_ = np.random.rand(10, 2) * 10 - 5
+        opt.y_ = np.sum(opt.X_**2, axis=1)
+        opt._fit_surrogate(opt.X_, opt.y_)
+
+        # Use the function
+        pickled_optimizer = dill.dumps(opt)
+        x_next = remote_search_task(pickled_optimizer)
+        isinstance(x_next, np.ndarray)
+        x_next.shape
+        # Verify the point is within bounds
+        (-5 <= x_next[0, 0] <= 5) and (-5 <= x_next[0, 1] <= 5)
+        ```
     """
     try:
         import dill
@@ -351,52 +468,57 @@ class SpotOptim(BaseEstimator):
     """SPOT optimizer compatible with scipy.optimize interface.
 
     Args:
-        fun (callable): Objective function to minimize. Should accept array of shape (n_samples, n_features).
-        bounds (list of tuple): Bounds for each dimension as [(low, high), ...].
-        max_iter (int, optional): Maximum number of total function evaluations (including initial design).
+        fun (callable):
+            Objective function to minimize. Should accept array of shape (n_samples, n_features).
+        bounds (list of tuple):
+            Bounds for each dimension as [(low, high), ...].
+        max_iter (int, optional):
+            Maximum number of total function evaluations (including initial design).
             For example, max_iter=30 with n_initial=10 will perform 10 initial evaluations plus
             20 sequential optimization iterations. Defaults to 20.
-        n_initial (int, optional): Number of initial design points. Defaults to 10.
-        surrogate (object, optional): Surrogate model with scikit-learn interface (fit/predict methods).
+        n_initial (int, optional):
+            Number of initial design points. Defaults to 10.
+        surrogate (object, optional):
+            Surrogate model with scikit-learn interface (fit/predict methods).
             If None, uses a Gaussian Process Regressor with Matern kernel. Default configuration::
-
-                from sklearn.gaussian_process import GaussianProcessRegressor
-                from sklearn.gaussian_process.kernels import Matern, ConstantKernel
-
-                kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5)
-                surrogate = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=100)
-                surrogate = GaussianProcessRegressor(
-                    kernel=kernel,
-                    n_restarts_optimizer=10,
-                    normalize_y=True,
-                    random_state=self.seed,
-                )
+                * `from sklearn.gaussian_process import GaussianProcessRegressor`
+                * `from sklearn.gaussian_process.kernels import Matern, ConstantKernel`
+                * `kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5)`
+                * `surrogate = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=100)`
 
             Alternative surrogates can be provided, including SpotOptim's Kriging model,
             Random Forests, or any scikit-learn compatible regressor. See Examples section.
             Defaults to None (uses default Gaussian Process configuration).
-        acquisition (str, optional): Acquisition function ('ei', 'y', 'pi'). Defaults to 'y'.
-        var_type (list of str, optional): Variable types for each dimension. Supported types:
-            - 'float': Python floats, continuous optimization (no rounding)
-            - 'int': Python int, float values will be rounded to integers
-            - 'factor': Unordered categorical data, internally mapped to int values
-              (e.g., "red"->0, "green"->1, etc.)
+        acquisition (str, optional):
+            Acquisition function ('ei', 'y', 'pi'). Defaults to 'y'.
+        var_type (list of str, optional):
+            Variable types for each dimension. Supported types:
+                * 'float': Python floats, continuous optimization (no rounding)
+                * 'int': Python int, float values will be rounded to integers
+                * 'factor': Unordered categorical data, internally mapped to int values
+                  (e.g., "red"->0, "green"->1, etc.)
             Defaults to None (which sets all dimensions to 'float').
-        var_name (list of str, optional): Variable names for each dimension.
+        var_name (list of str, optional):
+            Variable names for each dimension.
             If None, uses default names ['x0', 'x1', 'x2', ...]. Defaults to None.
-        tolerance_x (float, optional): Minimum distance between points. Defaults to np.sqrt(np.spacing(1))
-        var_trans (list of str, optional): Variable transformations for each dimension. Supported:
-            - 'log': Logarithmic transformation, e.g. "log10" for base-10 log
-            - 'sqrt': Square root transformation, "sqrt" for square root
-            - None or 'id' or 'None': No transformation
+        tolerance_x (float, optional):
+            Minimum distance between points. Defaults to np.sqrt(np.spacing(1))
+        var_trans (list of str, optional):
+            Variable transformations for each dimension. Supported:
+                * 'log': Logarithmic transformation, e.g. "log10" for base-10 log
+                * 'sqrt': Square root transformation, "sqrt" for square root
+                * None or 'id' or 'None': No transformation
             Defaults to None (no transformations).
-        max_time (float, optional): Maximum runtime in minutes. If np.inf (default), no time limit.
+        max_time (float, optional):
+            Maximum runtime in minutes. If np.inf (default), no time limit.
             The optimization terminates when either max_iter evaluations are reached OR max_time
             minutes have elapsed, whichever comes first. Defaults to np.inf.
-        repeats_initial (int, optional): Number of times to evaluate each initial design point.
+        repeats_initial (int, optional):
+            Number of times to evaluate each initial design point.
             Useful for noisy objective functions. If > 1, noise handling is activated and
             statistics (mean, variance) are tracked. Defaults to 1.
-        repeats_surrogate (int, optional): Number of times to evaluate each surrogate-suggested point.
+        repeats_surrogate (int, optional):
+            Number of times to evaluate each surrogate-suggested point.
             Useful for noisy objective functions. If > 1, noise handling is activated and
             statistics (mean, variance) are tracked. Defaults to 1.
         ocba_delta (int, optional): Number of additional evaluations to allocate using Optimal Computing
@@ -404,77 +526,101 @@ class SpotOptim(BaseEstimator):
             design points should be re-evaluated to best distinguish between alternatives. Only used
             when repeats_surrogate > 1 and ocba_delta > 0. Requires at least 3 design points with
             variance information. Defaults to 0 (no OCBA).
-        tensorboard_log (bool, optional): Enable TensorBoard logging. If True, optimization metrics
+        tensorboard_log (bool, optional):
+            Enable TensorBoard logging. If True, optimization metrics
             and hyperparameters are logged to TensorBoard. View logs by running:
             `tensorboard --logdir=<tensorboard_path>` in a separate terminal. Defaults to False.
-        tensorboard_path (str, optional): Path for TensorBoard log files. If None and tensorboard_log
+        tensorboard_path (str, optional):
+            Path for TensorBoard log files. If None and tensorboard_log
             is True, creates a default path: runs/spotoptim_YYYYMMDD_HHMMSS. Defaults to None.
-        tensorboard_clean (bool, optional): If True, removes all old TensorBoard log directories from
+        tensorboard_clean (bool, optional):
+            If True, removes all old TensorBoard log directories from
             the 'runs' folder before starting optimization. Use with caution as this permanently
             deletes all subdirectories in 'runs'. Defaults to False.
-        fun_mo2so (callable, optional): Function to convert multi-objective values to single-objective.
+        fun_mo2so (callable, optional):
+            Function to convert multi-objective values to single-objective.
             Takes an array of shape (n_samples, n_objectives) and returns array of shape (n_samples,).
             If None and objective function returns multi-objective values, uses first objective.
             Defaults to None.
-        seed (int, optional): Random seed for reproducibility. Defaults to None.
-        verbose (bool, optional): Print progress information. Defaults to False.
-        warnings_filter (str, optional): Filter for warnings. One of "error", "ignore", "always", "all",
+        seed (int, optional):
+            Random seed for reproducibility. Defaults to None.
+        verbose (bool, optional):
+            Print progress information. Defaults to False.
+        warnings_filter (str, optional):
+            Filter for warnings. One of "error", "ignore", "always", "all",
             "default", "module", or "once". Defaults to "ignore".
-        n_infill_points (int, optional): Number of infill points to suggest at each iteration.
+        n_infill_points (int, optional):
+            Number of infill points to suggest at each iteration.
             Defaults to 1. If > 1, multiple distinct points are proposed using the optimizer
             and fallback strategies.
-        max_surrogate_points (int, optional): Maximum number of points to use for surrogate model fitting.
+        max_surrogate_points (int, optional):
+            Maximum number of points to use for surrogate model fitting.
             If None, all points are used. If the number of evaluated points exceeds this limit,
             a subset is selected using the selection method. Defaults to None.
-        selection_method (str, optional): Method for selecting points when max_surrogate_points is exceeded.
+        selection_method (str, optional):
+            Method for selecting points when max_surrogate_points is exceeded.
             Options: 'distant' (Select points that are distant from each other via K-means clustering) or
             'best' (Select all points from the cluster with the best mean objective value).
             Defaults to 'distant'.
-        acquisition_failure_strategy (str, optional): Strategy for handling acquisition function failures.
+        acquisition_failure_strategy (str, optional):
+            Strategy for handling acquisition function failures.
             Options: 'random' (space-filling design via Latin Hypercube Sampling)
             Defaults to 'random'.
-        penalty (bool, optional): Whether to use penalty for handling NaN/inf values in objective function evaluations.
+        penalty (bool, optional):
+            Whether to use penalty for handling NaN/inf values in objective function evaluations.
             Defaults to False.
-        penalty_val (float, optional): Penalty value to replace NaN/inf values in objective function evaluations.
+        penalty_val (float, optional):
+            Penalty value to replace NaN/inf values in objective function evaluations.
             When the objective function returns NaN or inf, these values are replaced with penalty plus
             a small random noise (sampled from N(0, 0.1)) to avoid identical penalty values.
             This allows optimization to continue despite occasional function evaluation failures.
             Defaults to None.
-        acquisition_fun_return_size (int, optional): Number of top candidates to return from acquisition function optimization.
+        acquisition_fun_return_size (int, optional):
+            Number of top candidates to return from acquisition function optimization.
             Defaults to 3.
-        acquisition_optimizer (str or callable, optional): Optimizer to use for maximizing acquisition function.
+        acquisition_optimizer (str or callable, optional):
+            Optimizer to use for maximizing acquisition function.
             Can be "differential_evolution" (default) or any method name supported by scipy.optimize.minimize
             (e.g., "Nelder-Mead", "L-BFGS-B"). Can also be a callable with signature compatible with
             scipy.optimize.minimize (fun, x0, bounds, ...). A specific version is "de_tricands", which combines DE with Tricands.
             It can be parameterized with "prob_de_tricands" (probability of using DE).
             Defaults to "differential_evolution".
-        acquisition_optimizer_kwargs (dict, optional): Kwargs passed to the acquisition function optimizer
+        acquisition_optimizer_kwargs (dict, optional):
+            Kwargs passed to the acquisition function optimizer
             and GPR surrogate optimizer. Defaults to {'maxiter': 10000, 'gtol': 1e-9}.
-        restart_after_n (int, optional): Number of consecutive iterations with zero success rate
+        restart_after_n (int, optional):
+            Number of consecutive iterations with zero success rate
             before triggering a restart. Defaults to 100.
-        restart_inject_best (bool, optional): Whether to inject the best solution found so far
+        restart_inject_best (bool, optional):
+            Whether to inject the best solution found so far
             as a starting point for the next restart. Defaults to True.
-        x0 (array-like, optional): Starting point for optimization, shape (n_features,).
+        x0 (array-like, optional):
+            Starting point for optimization, shape (n_features,).
             If provided, this point will be evaluated first and included in the initial design.
             The point should be within the bounds and will be validated before use.
             Defaults to None (no starting point, uses only LHS design).
-        de_x0_prob (float, optional): Probability of using the best point as starting point for differential evolution.
+        de_x0_prob (float, optional):
+            Probability of using the best point as starting point for differential evolution.
             Defaults to 0.1.
-        tricands_fringe (bool, optional): Whether to use the fringe of the design space for the initial design.
+        tricands_fringe (bool, optional):
+            Whether to use the fringe of the design space for the initial design.
             Defaults to False.
-        prob_de_tricands (float, optional): Probability of using differential evolution as an optimizer
+        prob_de_tricands (float, optional):
+            Probability of using differential evolution as an optimizer
             on the surrogate model. 1 - prob_de_tricands is the probability of using tricands. Defaults to 0.8.
-        window_size (int, optional): Window size for success rate calculation.
-        min_tol_metric (str, optional): Distance metric used when checking `tolerance_x` for
+        window_size (int, optional):
+            Window size for success rate calculation.
+        min_tol_metric (str, optional):
+            Distance metric used when checking `tolerance_x` for
             duplicate detection. Default is "chebyshev". Supports all metrics from
             scipy.spatial.distance.cdist, including:
-            - "chebyshev": L-infinity distance (hypercube). Default. Matches previous behavior.
-            - "euclidean": L2 distance (hypersphere).
-            - "minkowski": Lp distance (default p=2).
-            - "cityblock": Manhattan/L1 distance.
-            - "cosine": Cosine distance.
-            - "correlation": Correlation distance.
-            - "canberra", "braycurtis", "sqeuclidean", etc.
+                * "chebyshev": L-infinity distance (hypercube). Default. Matches previous behavior.
+                * "euclidean": L2 distance (hypersphere).
+                * "minkowski": Lp distance (default p=2).
+                * "cityblock": Manhattan/L1 distance.
+                * "cosine": Cosine distance.
+                * "correlation": Correlation distance.
+                * "canberra", "braycurtis", "sqeuclidean", etc.
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -551,10 +697,10 @@ class SpotOptim(BaseEstimator):
         optimizer = SpotOptim(
             fun=noisy_objective,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=30,
-            n_initial=10,
-            repeats_initial=3,      # Evaluate each initial point 3 times
-            repeats_surrogate=2,    # Evaluate each new point 2 times
+            max_iter=10,
+            n_initial=5,
+            repeats_initial=1,      # Evaluate each initial point once
+            repeats_surrogate=2,    # Evaluate each new point twice
             seed=42,                # For reproducibility
             verbose=True
         )
@@ -579,8 +725,8 @@ class SpotOptim(BaseEstimator):
         optimizer_ocba = SpotOptim(
             fun=noisy_objective,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=50,
-            n_initial=10,
+            max_iter=20,
+            n_initial=5,
             repeats_initial=2,      # Initial repeats
             repeats_surrogate=1,    # Surrogate repeats
             ocba_delta=3,           # Allocate 3 additional evaluations per iteration
@@ -610,7 +756,7 @@ class SpotOptim(BaseEstimator):
         optimizer_tb = SpotOptim(
             fun=objective,
             bounds=[(-5, 5), (-5, 5)],
-            max_iter=15,
+            max_iter=10,
             n_initial=5,
             tensorboard_log=True,   # Enable TensorBoard
             tensorboard_path=tb_dir,  # Optional custom path
@@ -646,7 +792,7 @@ class SpotOptim(BaseEstimator):
             fun=objective,
             bounds=[(-5, 5), (-5, 5)],
             surrogate=kriging_model,
-            max_iter=15,
+            max_iter=10,
             n_initial=5,
             seed=42,
             verbose=True
@@ -682,7 +828,7 @@ class SpotOptim(BaseEstimator):
             fun=objective,
             bounds=[(-5, 5), (-5, 5)],
             surrogate=gp_custom,
-            max_iter=15,
+            max_iter=10,
             n_initial=5,
             seed=42
         )
@@ -708,7 +854,7 @@ class SpotOptim(BaseEstimator):
             fun=objective,
             bounds=[(-5, 5), (-5, 5)],
             surrogate=rf_model,
-            max_iter=15,
+            max_iter=10,
             n_initial=5,
             seed=42
         )
@@ -747,7 +893,7 @@ class SpotOptim(BaseEstimator):
 
         # Use any of these as surrogate
         optimizer_rbf = SpotOptim(fun=objective, bounds=[(-5, 5), (-5, 5)],
-                                  surrogate=gp_rbf, max_iter=15, n_initial=5)
+                                  surrogate=gp_rbf, max_iter=10, n_initial=5)
         result = optimizer_rbf.optimize()
         ```
     """
@@ -928,79 +1074,10 @@ class SpotOptim(BaseEstimator):
 
         # Validate and process starting point if provided
         if self.x0 is not None:
-            self.x0 = self._validate_x0(self.x0)
+            self.x0 = self.validate_x0(self.x0)
 
-        # Initialize surrogate if not provided
-        # Initialize surrogate
-        self._surrogates_list = None
-        self._prob_surrogate = None
-
-        if isinstance(self.surrogate, list):
-            self._surrogates_list = self.surrogate
-            if not self._surrogates_list:
-                raise ValueError("Surrogate list cannot be empty.")
-
-            # Handle probabilities
-            if self.config.prob_surrogate is None:
-                # Uniform probability
-                n = len(self._surrogates_list)
-                self._prob_surrogate = [1.0 / n] * n
-            else:
-                probs = self.config.prob_surrogate
-                if len(probs) != len(self._surrogates_list):
-                    raise ValueError(
-                        f"Length of prob_surrogate ({len(probs)}) must match "
-                        f"number of surrogates ({len(self._surrogates_list)})."
-                    )
-                # Normalize probabilities
-                total = sum(probs)
-                if not np.isclose(total, 1.0) and total > 0:
-                    self._prob_surrogate = [p / total for p in probs]
-                else:
-                    self._prob_surrogate = probs
-
-            # Handle max_surrogate_points list
-            self._max_surrogate_points_list = None
-            if isinstance(self.config.max_surrogate_points, list):
-                if len(self.config.max_surrogate_points) != len(self._surrogates_list):
-                    raise ValueError(
-                        f"Length of max_surrogate_points ({len(self.config.max_surrogate_points)}) "
-                        f"must match number of surrogates ({len(self._surrogates_list)})."
-                    )
-                self._max_surrogate_points_list = self.config.max_surrogate_points
-            else:
-                # If int or None, broadcast to list for easier indexing
-                self._max_surrogate_points_list = [
-                    self.config.max_surrogate_points
-                ] * len(self._surrogates_list)
-
-            # Set initial surrogate and max points
-            self.surrogate = self._surrogates_list[0]
-            self._active_max_surrogate_points = self._max_surrogate_points_list[0]
-
-        elif self.surrogate is None:
-            # Default single surrogate case
-            self._max_surrogate_points_list = None
-            self._active_max_surrogate_points = self.config.max_surrogate_points
-
-            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
-                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
-            )
-
-            # Determine optimizer for GPR
-            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
-            if self.config.acquisition_optimizer_kwargs is not None:
-                optimizer = partial(
-                    _gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
-                )
-
-            self.surrogate = GaussianProcessRegressor(
-                kernel=kernel,
-                n_restarts_optimizer=100,
-                normalize_y=True,
-                random_state=self.seed,
-                optimizer=optimizer,
-            )
+        # Initialize surrogate model(s)
+        self.init_surrogate()
 
         # Design generator
         self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
@@ -1357,7 +1434,7 @@ class SpotOptim(BaseEstimator):
 
         # Map factors using existing method (handles 2D, returns 2D)
         # We pass best_x as (1, D) and get (1, D) back
-        mapped_x = self._map_to_factor_values(best_x.reshape(1, -1))[0]
+        mapped_x = self.map_to_factor_values(best_x.reshape(1, -1))[0]
 
         # Convert to dictionary with types
         params = {}
@@ -1441,14 +1518,150 @@ class SpotOptim(BaseEstimator):
 
         # Reinitialize surrogate if needed
         if not hasattr(self, "surrogate") or self.surrogate is None:
+            self.init_surrogate()
+
+    def init_surrogate(self) -> None:
+        """Initialize or configure the surrogate model for optimization.
+
+        Handles three surrogate configurations:
+            * List of surrogates:
+                sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
+            * None (default):
+                creates a `GaussianProcessRegressor` with a `ConstantKernel * Matern(nu=2.5)`
+                kernel, 100 optimizer restarts, and `normalize_y=True`.
+            * User-provided surrogate:
+                accepted as-is; internal bookkeeping attributes (`_max_surrogate_points_list`,
+                `_active_max_surrogate_points`) are still initialised.
+
+        After this method returns the following attributes are set:
+            * `self.surrogate` — the active surrogate model.
+            * `self._surrogates_list` — `list | None`.
+            * `self._prob_surrogate` — normalised selection probabilities or `None`.
+            * `self._max_surrogate_points_list` — per-surrogate point caps or `None`.
+            * `self._active_max_surrogate_points` — active cap.
+
+        Raises:
+            ValueError: If the surrogate list is empty.
+            ValueError: If 'prob_surrogate' length does not match the surrogate list length.
+            ValueError: If 'max_surrogate_points' list length does not match the surrogate list length.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            # Default surrogate (GaussianProcessRegressor)
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+            )
+            print(type(opt.surrogate).__name__)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from sklearn.ensemble import RandomForestRegressor
+            # User-provided surrogate
+            rf = RandomForestRegressor(n_estimators=50, random_state=42)
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                surrogate=rf,
+            )
+            print(type(opt.surrogate).__name__)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from sklearn.ensemble import RandomForestRegressor
+            from sklearn.gaussian_process import GaussianProcessRegressor
+            # List of surrogates with selection probabilities
+            surrogates = [GaussianProcessRegressor(), RandomForestRegressor()]
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                surrogate=surrogates,
+                prob_surrogate=[0.7, 0.3],
+            )
+            print(opt._prob_surrogate)
+            print([type(s).__name__ for s in opt._surrogates_list])
+            ```
+        """
+        self._surrogates_list = None
+        self._prob_surrogate = None
+
+        if isinstance(self.surrogate, list):
+            self._surrogates_list = self.surrogate
+            if not self._surrogates_list:
+                raise ValueError("Surrogate list cannot be empty.")
+
+            # Handle probabilities
+            if self.config.prob_surrogate is None:
+                # Uniform probability
+                n = len(self._surrogates_list)
+                self._prob_surrogate = [1.0 / n] * n
+            else:
+                probs = self.config.prob_surrogate
+                if len(probs) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of prob_surrogate ({len(probs)}) must match "
+                        f"number of surrogates ({len(self._surrogates_list)})."
+                    )
+                # Normalize probabilities
+                total = sum(probs)
+                if not np.isclose(total, 1.0) and total > 0:
+                    self._prob_surrogate = [p / total for p in probs]
+                else:
+                    self._prob_surrogate = probs
+
+            # Handle max_surrogate_points list
+            self._max_surrogate_points_list = None
+            if isinstance(self.config.max_surrogate_points, list):
+                if len(self.config.max_surrogate_points) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of max_surrogate_points ({len(self.config.max_surrogate_points)}) "
+                        f"must match number of surrogates ({len(self._surrogates_list)})."
+                    )
+                self._max_surrogate_points_list = self.config.max_surrogate_points
+            else:
+                # If int or None, broadcast to list for easier indexing
+                self._max_surrogate_points_list = [
+                    self.config.max_surrogate_points
+                ] * len(self._surrogates_list)
+
+            # Set initial surrogate and max points
+            self.surrogate = self._surrogates_list[0]
+            self._active_max_surrogate_points = self._max_surrogate_points_list[0]
+
+        elif self.surrogate is None:
+            # Default single surrogate case
+            self._max_surrogate_points_list = None
+            self._active_max_surrogate_points = self.config.max_surrogate_points
+
             kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
                 length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
             )
+
+            # Determine optimizer for GPR
+            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
+            if self.config.acquisition_optimizer_kwargs is not None:
+                optimizer = partial(
+                    gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
+                )
+
             self.surrogate = GaussianProcessRegressor(
                 kernel=kernel,
                 n_restarts_optimizer=100,
-                random_state=self.seed,
                 normalize_y=True,
+                random_state=self.seed,
+                optimizer=optimizer,
             )
 
     def get_pickle_safe_optimizer(
@@ -1476,8 +1689,8 @@ class SpotOptim(BaseEstimator):
             opt = SpotOptim(
                  fun=lambda X: np.sum(X**2, axis=1),
                  bounds=[(-5, 5), (-5, 5)],
-                 max_iter=30,
-                 n_initial=10,
+                 max_iter=10,
+                 n_initial=5,
                  seed=42
             )
             # Create pickle-safe copy excluding all unpickleables
@@ -1915,30 +2128,27 @@ class SpotOptim(BaseEstimator):
                 )
         return X_transformed
 
-    def _inverse_transform_X(self, X: np.ndarray) -> np.ndarray:
+    def inverse_transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from internal to original scale.
 
-        Converts from **Transformed Space** (Full Dimension) to **Natural Space** (Original).
+        Converts from Transformed Space (Full Dimension) to Natural Space (Original).
         Does NOT handle dimension expansion (un-mapping).
 
         Args:
-            X (ndarray): Array in **Transformed Space**, shape (n_samples, n_features)
+            X (ndarray): Array in Transformed Space, shape (n_samples, n_features)
 
         Returns:
-            ndarray: Array in **Natural Space**
+            ndarray: Array in Natural Space
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> import numpy as np
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
-            >>> X_trans = np.array([[0], [1], [2]])
-            >>> spot._inverse_transform_X(X_trans)
-            array([[  1.],
-                   [ 10.],
-                   [100.]])
+            ```{python}
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            import numpy as np
+            spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
+            X_trans = np.array([[0], [1], [2]])
+            spot.inverse_transform_X(X_trans)
+            ```
         """
         X_original = X.copy()
 
@@ -2003,7 +2213,7 @@ class SpotOptim(BaseEstimator):
             else:
                 self.bounds.append((float(self.lower[i]), float(self.upper[i])))
 
-    def _map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
+    def map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
         """Map internal integer factor values back to string labels.
 
         For factor variables, converts integer indices back to original string values.
@@ -2018,20 +2228,19 @@ class SpotOptim(BaseEstimator):
                 Dtype will be object or string if mixed types are present.
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> import numpy as np
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> spot = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[('red', 'blue'), (0, 10)]
-            ... )
-            >>> spot.process_factor_bounds()
-            >>> X_int = np.array([[0, 5.0], [1, 8.0]])
-            >>> X_str = spot._map_to_factor_values(X_int)
-            >>> print(X_str[0])
-            ['red' 5.0]
+            ```{python}
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            import numpy as np
+            spot = SpotOptim(
+                fun=sphere,
+                bounds=[('red', 'blue'), (0, 10)]
+            )
+            spot.process_factor_bounds()
+            X_int = np.array([[0, 5.0], [1, 8.0]])
+            X_str = spot.map_to_factor_values(X_int)
+            print(X_str[0])
+            ```
         """
 
         if not self._factor_maps:
@@ -2105,7 +2314,7 @@ class SpotOptim(BaseEstimator):
         """
         # Generate or use provided initial design
         if X0 is None:
-            X0 = self._generate_initial_design()
+            X0 = self.generate_initial_design()
 
             # If starting point x0 was provided, include it in initial design
             if self.x0 is not None:
@@ -2141,7 +2350,7 @@ class SpotOptim(BaseEstimator):
 
         return X0
 
-    def _generate_initial_design(self) -> np.ndarray:
+    def generate_initial_design(self) -> np.ndarray:
         """Generate initial space-filling design using Latin Hypercube Sampling.
         Used in the optimize() method to create the initial set of design points.
 
@@ -2150,16 +2359,15 @@ class SpotOptim(BaseEstimator):
             ndarray: Initial design points, shape (n_initial, n_features).
 
         Examples:
-            >>> from spotoptim import SpotOptim
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(fun=sphere,
-            ...                 bounds=[(-5, 5), (-5, 5)],
-            ...                 n_initial=10)
-            >>> X0 = opt._generate_initial_design()
-            >>> X0.shape
-            (10, 2)
+            ```{python}
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(fun=sphere,
+                            bounds=[(-5, 5), (-5, 5)],
+                            n_initial=10)
+            X0 = opt.generate_initial_design()
+            print(X0.shape)
+            ```
         """
         # Generate samples in [0, 1]^d
         X0_unit = self.lhs_sampler.random(n=self.n_initial)
@@ -2169,7 +2377,7 @@ class SpotOptim(BaseEstimator):
 
         return self.repair_non_numeric(X0, self.var_type)
 
-    def _curate_initial_design(self, X0: np.ndarray) -> np.ndarray:
+    def curate_initial_design(self, X0: np.ndarray) -> np.ndarray:
         """Remove duplicates and ensure sufficient unique points in initial design.
 
         This method handles deduplication that can occur after rounding integer/factor
@@ -2186,33 +2394,36 @@ class SpotOptim(BaseEstimator):
                 if necessary, shape (n_unique * repeats_initial, n_features).
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10,
-            ...     var_type=['int', 'int']  # Integer variables may cause duplicates
-            ... )
-            >>> X0 = opt.get_initial_design()
-            >>> X0_curated = opt._curate_initial_design(X0)
-            >>> X0_curated.shape[0] == 10  # Should have n_initial unique points
-            True
-            >>>
-            >>> # With repeats
-            >>> opt_repeat = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     repeats_initial=3
-            ... )
-            >>> X0 = opt_repeat.get_initial_design()
-            >>> X0_curated = opt_repeat._curate_initial_design(X0)
-            >>> X0_curated.shape[0] == 15  # 5 unique points * 3 repeats
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10,
+                var_type=['int', 'int']  # Integer variables may cause duplicates
+            )
+            X0 = opt.get_initial_design()
+            X0_curated = opt.curate_initial_design(X0)
+            X0_curated.shape[0] == 10  # Should have n_initial unique points
+            ```
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            # With repeats
+            opt_repeat = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                repeats_initial=3
+            )
+            X0 = opt_repeat.get_initial_design()
+            X0_curated = opt_repeat.curate_initial_design(X0)
+            X0_curated.shape[0] == 15  # 5 unique points * 3 repeats
+            ```
         """
         # Remove duplicates from initial design (can occur after rounding integers/factors)
         # Keep only unique rows based on rounded values
@@ -2264,7 +2475,7 @@ class SpotOptim(BaseEstimator):
 
         return X0
 
-    def _rm_NA_values(
+    def rm_NA_values(
         self, X0: np.ndarray, y0: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, int]:
         """Remove NaN/inf values from initial design evaluations.
@@ -2285,34 +2496,28 @@ class SpotOptim(BaseEstimator):
                 y0 has shape (n_valid,), and the int is the original size.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10
-            ... )
-            >>> X0 = np.array([[1, 2], [3, 4], [5, 6]])
-            >>> y0 = np.array([5.0, np.nan, np.inf])
-            >>> X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
-            >>> X0_clean.shape
-            (1, 2)
-            >>> y0_clean
-            array([5.])
-            >>> n_eval
-            3
-            >>>
-            >>> # All valid values - no filtering
-            >>> X0 = np.array([[1, 2], [3, 4]])
-            >>> y0 = np.array([5.0, 25.0])
-            >>> X0_clean, y0_clean, n_eval = opt._rm_NA_values(X0, y0)
-            >>> X0_clean.shape
-            (2, 2)
-            >>> n_eval
-            2
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10
+            )
+            X0 = np.array([[1, 2], [3, 4], [5, 6]])
+            y0 = np.array([5.0, np.nan, np.inf])
+            X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
+            print(X0_clean.shape) # (1, 2)
+            print(y0_clean) # array([5.])
+            print(n_eval) # 3
+            # All valid values - no filtering
+            X0 = np.array([[1, 2], [3, 4]])
+            y0 = np.array([5.0, 25.0])
+            X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
+            print(X0_clean.shape) # (2, 2)
+            print(n_eval) # 2
+            ```
         """
         # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
 
@@ -2348,14 +2553,14 @@ class SpotOptim(BaseEstimator):
 
         return X0, y0, len(finite_mask)
 
-    def _validate_x0(self, x0: np.ndarray) -> np.ndarray:
-        """Validate and process starting point x0.
+    def validate_x0(self, x0: np.ndarray) -> np.ndarray:
+        """Validate and process starting point x0. Called in `__init__` and `optimize`.
 
         This method checks that x0:
-        - Is a numpy array
-        - Has the correct number of dimensions
-        - Has values within bounds (in original scale)
-        - Is properly transformed to internal scale
+            * Is a numpy array
+            * Has the correct number of dimensions
+            * Has values within bounds (in original scale)
+            * Is properly transformed to internal scale
 
         Args:
             x0 (array-like): Starting point in original scale
@@ -2367,17 +2572,17 @@ class SpotOptim(BaseEstimator):
             ValueError: If x0 is invalid
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     x0=np.array([1.0, 2.0])
-            ... )
-            >>> # x0 is validated during initialization
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                x0=np.array([1.0, 2.0])
+            )
+            # x0 is validated during initialization
+            ```
         """
         # Convert to numpy array
         x0 = np.asarray(x0)
@@ -2451,13 +2656,14 @@ class SpotOptim(BaseEstimator):
 
         return x0_transformed
 
-    def _check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
+    def check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
         """Validate that initial design has sufficient points for surrogate fitting.
 
         Checks if the number of valid initial design points meets the minimum
         requirement for fitting a surrogate model. The minimum required is the
-        smaller of: (a) typical minimum for surrogate fitting (3 for multi-dimensional,
-        2 for 1D), or (b) what the user requested (n_initial).
+        smaller of:
+            * (a) typical minimum for surrogate fitting (3 for multi-dimensional, 2 for 1D), or
+            * (b) what the user requested (`n_initial`).
 
         Args:
             y0 (ndarray): Function values at initial design points (after filtering),
@@ -2471,41 +2677,37 @@ class SpotOptim(BaseEstimator):
             ValueError: If the number of valid points is less than the minimum required.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10
-            ... )
-            >>> # Sufficient points - no error
-            >>> y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-            >>> opt._check_size_initial_design(y0, n_evaluated=10)
-            >>>
-            >>> # Insufficient points - raises ValueError
-            >>> y0_small = np.array([1.0])
-            >>> try:
-            ...     opt._check_size_initial_design(y0_small, n_evaluated=10)
-            ... except ValueError as e:
-            ...     print(f"Error: {e}")
-            Error: Insufficient valid initial design points: only 1 finite value(s) out of 10 evaluated...
-            >>>
-            >>> # With verbose output
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt_verbose = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=10,
-            ...     verbose=True
-            ... )
-            >>> y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
-            >>> opt_verbose._check_size_initial_design(y0_reduced, n_evaluated=10)
-            Note: Initial design size (3) is smaller than requested (10) due to NaN/inf values
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10
+            )
+            # Sufficient points - no error
+            y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+            opt.check_size_initial_design(y0, n_evaluated=10)
+
+            # Insufficient points - raises ValueError
+            y0_small = np.array([1.0])
+            try:
+                opt.check_size_initial_design(y0_small, n_evaluated=10)
+            except ValueError as e:
+                print(f"Error: {e}")
+
+            # With verbose output
+            opt_verbose = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10,
+                verbose=True
+            )
+            y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
+            opt_verbose.check_size_initial_design(y0_reduced, n_evaluated=10)
+            ```
         """
         # Check if we have enough points to continue
         # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
@@ -2526,7 +2728,7 @@ class SpotOptim(BaseEstimator):
                 f"({self.n_initial}) due to NaN/inf values"
             )
 
-    def _get_best_xy_initial_design(self) -> None:
+    def get_best_xy_initial_design(self) -> None:
         """Determine and store the best point from initial design.
 
         Finds the best (minimum) function value in the initial design,
@@ -2543,43 +2745,43 @@ class SpotOptim(BaseEstimator):
             None
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     verbose=True
-            ... )
-            >>> # Simulate initial design (normally done in optimize())
-            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt._get_best_xy_initial_design()
-            Initial best: f(x) = 0.000000
-            >>> print(f"Best x: {opt.best_x_}")
-            Best x: [0 0]
-            >>> print(f"Best y: {opt.best_y_}")
-            Best y: 0.0
-            >>>
-            >>> # With noisy function
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt_noise = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     repeats_surrogate=2,
-            ...     verbose=True
-            ... )
-            >>> opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt_noise.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt_noise.min_mean_y = 0.5  # Simulated mean best
-            >>> opt_noise._get_best_xy_initial_design()
-            Initial best: f(x) = 0.000000, mean best: f(x) = 0.500000
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                verbose=True
+            )
+            # Simulate initial design (normally done in optimize())
+            opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            opt.y_ = np.array([5.0, 0.0, 5.0])
+            opt.get_best_xy_initial_design()
+            print(f"Best x: {opt.best_x_}")
+            print(f"Best y: {opt.best_y_}")
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import noisy_sphere
+            # With noisy function
+            opt_noise = SpotOptim(
+                fun=noisy_sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                repeats_surrogate=2,
+                verbose=True
+            )
+            opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            opt_noise.y_ = np.array([5.0, 0.0, 5.0])
+            opt_noise.min_mean_y = 0.5  # Simulated mean best
+            opt_noise.get_best_xy_initial_design()
+            print(f"Best x: {opt_noise.best_x_}")
+            print(f"Best y: {opt_noise.best_y_}")
+            ```
         """
         # Initial best
         best_idx = np.argmin(self.y_)
@@ -2594,7 +2796,7 @@ class SpotOptim(BaseEstimator):
             else:
                 print(f"Initial best: f(x) = {self.best_y_:.6f}")
 
-    def _update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
+    def update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
         """Repeat infill point for noisy function evaluation.
 
         For noisy objective functions (repeats_surrogate > 1), creates multiple
@@ -2609,38 +2811,33 @@ class SpotOptim(BaseEstimator):
                 or (1, n_features) if repeats_surrogate == 1.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> # Without repeats
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     repeats_surrogate=1
-            ... )
-            >>> x_next = np.array([1.0, 2.0])
-            >>> x_repeated = opt._update_repeats_infill_points(x_next)
-            >>> x_repeated.shape
-            (1, 2)
-            >>>
-            >>> # With repeats for noisy function
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt_noisy = SpotOptim(
-            ...     fun=sphere,
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     repeats_surrogate=3
-            ... )
-            >>> x_next = np.array([1.0, 2.0])
-            >>> x_repeated = opt_noisy._update_repeats_infill_points(x_next)
-            >>> x_repeated.shape
-            (3, 2)
-            >>> # All three copies should be identical
-            >>> np.all(x_repeated[0] == x_repeated[1])
-            True
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere, noisy_sphere
+            # Without repeats
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                repeats_surrogate=1
+            )
+            x_next = np.array([1.0, 2.0])
+            x_repeated = opt.update_repeats_infill_points(x_next)
+            print(x_repeated.shape)
+
+            # With repeats for noisy function
+            opt_noisy = SpotOptim(
+                fun=noisy_sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                repeats_surrogate=3
+            )
+            x_next = np.array([1.0, 2.0])
+            x_repeated = opt_noisy.update_repeats_infill_points(x_next)
+            print(x_repeated.shape)
+            # All three copies should be identical
+            np.all(x_repeated[0] == x_repeated[1])
+            ```
         """
         if x_next.ndim == 1:
             x_next = x_next.reshape(1, -1)
@@ -2653,7 +2850,7 @@ class SpotOptim(BaseEstimator):
             x_next_repeated = x_next
         return x_next_repeated
 
-    def _remove_nan(
+    def remove_nan(
         self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
     ) -> tuple:
         """Remove rows where y contains NaN or inf values.
@@ -2671,19 +2868,17 @@ class SpotOptim(BaseEstimator):
             ValueError: If all values are NaN/inf and stop_on_zero_return is True.
 
         Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> def sphere(X):
-            ...     X = np.atleast_2d(X)
-            ...     return np.sum(X**2, axis=1)
-            >>> opt = SpotOptim(fun=sphere, bounds=[(-5, 5)])
-            >>> X = np.array([[1, 2], [3, 4], [5, 6]])
-            >>> y = np.array([1.0, np.nan, np.inf])
-            >>> X_clean, y_clean = opt._remove_nan(X, y, stop_on_zero_return=False)
-            >>> print("Clean X:", X_clean)
-            Clean X: [[1 2]]
-            >>> print("Clean y:", y_clean)
-            Clean y: [1.]
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+            X = np.array([[1, 2], [3, 4], [5, 6]])
+            y = np.array([1.0, np.nan, np.inf])
+            X_clean, y_clean = opt.remove_nan(X, y, stop_on_zero_return=False)
+            print("Clean X:", X_clean)
+            print("Clean y:", y_clean)
+            ```
         """
         # Find finite values
         finite_mask = np.isfinite(y)
@@ -3759,10 +3954,10 @@ class SpotOptim(BaseEstimator):
             X = self.to_all_dim(X)
 
         # Apply inverse transformations to get original scale for function evaluation
-        X_original = self._inverse_transform_X(X)
+        X_original = self.inverse_transform_X(X)
 
         # Map factor variables to original string values
-        X_for_eval = self._map_to_factor_values(X_original)
+        X_for_eval = self.map_to_factor_values(X_original)
 
         # Evaluate function
         y_raw = self.fun(X_for_eval, *self.args, **self.kwargs)
@@ -4063,14 +4258,14 @@ class SpotOptim(BaseEstimator):
         """Run the optimization process.
 
         The optimization terminates when either:
-        - Total function evaluations reach max_iter (including initial design), OR
-        - Runtime exceeds max_time minutes
+            * Total function evaluations reach max_iter (including initial design), OR
+            * Runtime exceeds max_time minutes
 
         Input/Output Spaces:
-        - Input X0: Expected in Natural Space (original scale, physical units).
-        - Output result.x: Returned in Natural Space.
-        - Output result.X: Returned in Natural Space.
-        - Internal Optimization: Performed in Transformed and Mapped Space.
+            * Input X0: Expected in Natural Space (original scale, physical units).
+            * Output result.x: Returned in Natural Space.
+            * Output result.X: Returned in Natural Space.
+            * Internal Optimization: Performed in Transformed and Mapped Space.
 
         Args:
             X0 (ndarray, optional): Initial design points in Natural Space, shape (n_initial, n_features).
@@ -4078,15 +4273,14 @@ class SpotOptim(BaseEstimator):
 
         Returns:
             OptimizeResult: Optimization result with fields:
-                - x: best point found in Natural Space
-                - fun: best function value
-                - nfev: number of function evaluations (including initial design)
-                - nit: number of sequential optimization iterations (after initial design)
-                - success: whether optimization succeeded
-                - message: termination message indicating reason for stopping, including
-                  statistics (function value, iterations, evaluations)
-                - X: all evaluated points in Natural Space
-                - y: all function values
+                * x: best point found in Natural Space
+                * fun: best function value
+                * nfev: number of function evaluations (including initial design)
+                * nit: number of sequential optimization iterations (after initial design)
+                * success: whether optimization succeeded
+                * message: termination message indicating reason for stopping, including statistics (function value, iterations, evaluations)
+                * X: all evaluated points in Natural Space
+                * y: all function values
 
         Examples:
             ```{python}
@@ -4099,7 +4293,7 @@ class SpotOptim(BaseEstimator):
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
                 n_initial=5,
-                max_iter=20,
+                max_iter=10,
                 seed=0,
                 x0=np.array([0.0, 0.0]),
                 verbose=True
@@ -4172,9 +4366,9 @@ class SpotOptim(BaseEstimator):
 
                     if self.restart_inject_best:
                         # Inject the current global best into the next run's initial design.
-                        # best_res.x is in natural scale; _validate_x0 converts to internal scale
+                        # best_res.x is in natural scale; validate_x0 converts to internal scale
                         # so the injected point can be mixed with LHS samples.
-                        self.x0 = self._validate_x0(best_res.x)
+                        self.x0 = self.validate_x0(best_res.x)
                         # Keep current_X0 unset so the initial design is rebuilt around the injected x0.
                         current_X0 = None
 
@@ -4252,7 +4446,7 @@ class SpotOptim(BaseEstimator):
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
                 n_initial=5,
-                max_iter=20,
+                max_iter=10,
                 seed=0,
                 n_jobs=1,  # Use sequential optimization for deterministic output
                 verbose=True
@@ -4291,7 +4485,7 @@ class SpotOptim(BaseEstimator):
         shared_lock=None,
     ) -> Tuple[str, OptimizeResult]:
         """Perform a single sequential optimization run.
-        Calls _initialize_run, _rm_NA_values, _check_size_initial_design, init_storage, _get_best_xy_initial_design, and _run_sequential_loop.
+        Calls _initialize_run, rm_NA_values, check_size_initial_design, init_storage, get_best_xy_initial_design, and _run_sequential_loop.
 
 
         Args:
@@ -4316,7 +4510,7 @@ class SpotOptim(BaseEstimator):
             ...     fun=lambda X: np.sum(X**2, axis=1),
             ...     bounds=[(-5, 5), (-5, 5)],
             ...     n_initial=5,
-            ...     max_iter=20,
+            ...     max_iter=10,
             ...     seed=0,
             ...     n_jobs=1,  # Use sequential optimization for deterministic output
             ...     verbose=True
@@ -4336,10 +4530,10 @@ class SpotOptim(BaseEstimator):
         X0, y0 = self._initialize_run(X0, y0_known)
 
         # Handle NaN/inf values in initial design (remove invalid points)
-        X0, y0, n_evaluated = self._rm_NA_values(X0, y0)
+        X0, y0, n_evaluated = self.rm_NA_values(X0, y0)
 
         # Check if we have enough valid points to continue
-        self._check_size_initial_design(y0, n_evaluated)
+        self.check_size_initial_design(y0, n_evaluated)
 
         # Initialize storage and statistics
         self.init_storage(X0, y0)
@@ -4353,7 +4547,7 @@ class SpotOptim(BaseEstimator):
         self._init_tensorboard()
 
         # Determine and report initial best
-        self._get_best_xy_initial_design()
+        self.get_best_xy_initial_design()
 
         # Run the main sequential optimization loop
         effective_max_iter = (
@@ -4401,7 +4595,7 @@ class SpotOptim(BaseEstimator):
         X0 = self.get_initial_design(X0)
 
         # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
-        X0 = self._curate_initial_design(X0)
+        X0 = self.curate_initial_design(X0)
 
         # Evaluate initial design
         if y0_known is not None and self.x0 is not None:
@@ -4458,24 +4652,24 @@ class SpotOptim(BaseEstimator):
              ...     fun=lambda X: np.sum(X**2, axis=1),
              ...     bounds=[(-5, 5), (-5, 5)],
              ...     n_initial=5,
-             ...     max_iter=20,
+             ...     max_iter=10,
              ...     seed=0,
              ...     n_jobs=1,  # Use sequential optimization for deterministic output
              ...     verbose=True
              ... )
              >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
-             >>> X0, y0, n_evaluated = opt._rm_NA_values(X0, y0)
-             >>> opt._check_size_initial_design(y0, n_evaluated)
+             >>> X0, y0, n_evaluated = opt.rm_NA_values(X0, y0)
+             >>> opt.check_size_initial_design(y0, n_evaluated)
              >>> opt.init_storage(X0, y0)
              >>> opt._zero_success_count = 0
              >>> opt._success_history = []
              >>> opt.update_stats()
-             >>> opt._get_best_xy_initial_design()
-             >>> status, result = opt._run_sequential_loop(timeout_start=time.time(), effective_max_iter=20)
+             >>> opt.get_best_xy_initial_design()
+             >>> status, result = opt._run_sequential_loop(timeout_start=time.time(), effective_max_iter=10)
              >>> print(status)
              FINISHED
              >>> print(result.message.splitlines()[0])
-             Optimization terminated: maximum evaluations (20) reached
+             Optimization terminated: maximum evaluations (10) reached
         """
         consecutive_failures = 0
 
@@ -4514,7 +4708,7 @@ class SpotOptim(BaseEstimator):
             x_next = self.suggest_next_infill_point()
 
             # Repeat next point if repeats_surrogate > 1
-            x_next_repeated = self._update_repeats_infill_points(x_next)
+            x_next_repeated = self.update_repeats_infill_points(x_next)
 
             # Append OCBA points to new design points (if applicable)
             if X_ocba is not None:
@@ -4560,11 +4754,9 @@ class SpotOptim(BaseEstimator):
                 X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
 
                 # Map factor variables back to original strings
-                best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[
-                    0
-                ]
+                best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
                 X_result = (
-                    self._map_to_factor_values(X_full) if self._factor_maps else X_full
+                    self.map_to_factor_values(X_full) if self._factor_maps else X_full
                 )
 
                 res = OptimizeResult(
@@ -4621,8 +4813,8 @@ class SpotOptim(BaseEstimator):
         self._close_tensorboard_writer()
 
         # Map factor variables back to original strings for results
-        best_x_result = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
-        X_result = self._map_to_factor_values(X_full) if self._factor_maps else X_full
+        best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        X_result = self.map_to_factor_values(X_full) if self._factor_maps else X_full
 
         # Return scipy-style result
         return "FINISHED", OptimizeResult(
@@ -4763,7 +4955,7 @@ class SpotOptim(BaseEstimator):
         # Setup similar to _optimize_single_run
         self.set_seed()
         X0 = self.get_initial_design(X0)
-        X0 = self._curate_initial_design(X0)
+        X0 = self.curate_initial_design(X0)
 
         # We need to know how many evaluations to do
         effective_max_iter = (
@@ -4792,7 +4984,7 @@ class SpotOptim(BaseEstimator):
                 finally:
                     self.tb_writer = _tb_writer_temp
 
-                fut = executor.submit(_remote_eval_wrapper, pickled_args)
+                fut = executor.submit(remote_eval_wrapper, pickled_args)
                 futures[fut] = "eval"
 
             # Wait for all initial to complete
@@ -4829,7 +5021,7 @@ class SpotOptim(BaseEstimator):
                 )
 
             self.update_stats()
-            self._get_best_xy_initial_design()
+            self.get_best_xy_initial_design()
 
             # Fit first surrogate
             if self.verbose:
@@ -4865,7 +5057,7 @@ class SpotOptim(BaseEstimator):
                             finally:
                                 self.tb_writer = _tb_writer_temp
 
-                            fut = executor.submit(_remote_search_task, pickled_opt)
+                            fut = executor.submit(remote_search_task, pickled_opt)
                             futures[fut] = "search"
                         else:
                             break
@@ -4899,7 +5091,7 @@ class SpotOptim(BaseEstimator):
                                 self.tb_writer = _tb_writer_temp
 
                             fut_eval = executor.submit(
-                                _remote_eval_wrapper, pickled_args
+                                remote_eval_wrapper, pickled_args
                             )
                             futures[fut_eval] = "eval"
 
@@ -5106,7 +5298,7 @@ class SpotOptim(BaseEstimator):
             y_next = self.apply_penalty_NA(y_next, y_history=self.y_)
 
         # Identify which points are valid (finite) BEFORE removing them
-        # Note: _remove_nan filters based on y_next finite values
+        # Note: remove_nan filters based on y_next finite values
 
         # Ensure y_next is a float array (maps non-convertible values like "error" or None to nan)
         # This is critical if the objective function returns non-numeric values and penalty=False
@@ -5124,7 +5316,7 @@ class SpotOptim(BaseEstimator):
 
         finite_mask = np.isfinite(y_next)
 
-        X_next_clean, y_next_clean = self._remove_nan(
+        X_next_clean, y_next_clean = self.remove_nan(
             x_next, y_next, stop_on_zero_return=False
         )
 
@@ -5252,7 +5444,7 @@ class SpotOptim(BaseEstimator):
         if current_best < self.best_y_:
             best_idx_in_new = np.argmin(y_next)
             # x_next_repeated is in transformed space, convert to original for storage
-            self.best_x_ = self._inverse_transform_X(
+            self.best_x_ = self.inverse_transform_X(
                 x_next_repeated[best_idx_in_new].reshape(1, -1)
             )[0]
             self.best_y_ = current_best
@@ -5320,7 +5512,7 @@ class SpotOptim(BaseEstimator):
             opt = SpotOptim(
                 fun=lambda X: np.sum(X**2, axis=1),
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=20,
+                max_iter=10,
                 max_time=10.0
             )
             # Case 1: Maximum evaluations reached
@@ -5567,11 +5759,11 @@ class SpotOptim(BaseEstimator):
         """Initialize storage for optimization.
 
         Sets up the initial data structures needed for optimization tracking:
-        - X_: Evaluated design points (in original scale)
-        - y_: Function values at evaluated points
-        - n_iter_: Iteration counter
+            * X_: Evaluated design points (in original scale)
+            * y_: Function values at evaluated points
+            * n_iter_: Iteration counter
 
-        Then updates statistics by calling update_stats().
+        Then updates statistics by calling `update_stats()`.
 
         Args:
             X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).
@@ -5597,7 +5789,7 @@ class SpotOptim(BaseEstimator):
             ```
         """
         # Initialize storage (convert to original scale for user-facing storage)
-        self.X_ = self._inverse_transform_X(X0.copy())
+        self.X_ = self.inverse_transform_X(X0.copy())
         self.y_ = y0.copy()
         self.n_iter_ = 0
 
@@ -5637,7 +5829,7 @@ class SpotOptim(BaseEstimator):
             ```
         """
         # Update storage (convert to original scale for user-facing storage)
-        self.X_ = np.vstack([self.X_, self._inverse_transform_X(X_new)])
+        self.X_ = np.vstack([self.X_, self.inverse_transform_X(X_new)])
         self.y_ = np.append(self.y_, y_new)
 
     def update_stats(self) -> None:
@@ -5918,8 +6110,8 @@ class SpotOptim(BaseEstimator):
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=30,
-                n_initial=10,
+                max_iter=10,
+                n_initial=5,
                 seed=42
             )
             result = opt.optimize()
@@ -5981,7 +6173,7 @@ class SpotOptim(BaseEstimator):
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -6001,7 +6193,7 @@ class SpotOptim(BaseEstimator):
 
             # Continue optimization if needed
             opt.fun = lambda X: np.sum(X**2, axis=1)  # Re-attach if continuing
-            opt.max_iter = 50  # Increase budget
+            opt.max_iter = 20  # Increase budget
             result = opt.optimize()
             ```
         """
@@ -6077,8 +6269,8 @@ class SpotOptim(BaseEstimator):
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=15,
-                n_initial=10,
+                max_iter=10,
+                n_initial=5,
                 seed=42
             )
 
@@ -6154,8 +6346,8 @@ class SpotOptim(BaseEstimator):
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
-                max_iter=15,
-                n_initial=10,
+                max_iter=10,
+                n_initial=5,
                 seed=42
             )
 
@@ -6297,7 +6489,7 @@ class SpotOptim(BaseEstimator):
             best_x_full = best_x
 
         # Map factor variables back to original string values
-        best_x_full = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        best_x_full = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
 
         # Determine variable names to use
         if show_name and self.all_var_name is not None:
@@ -6386,8 +6578,8 @@ class SpotOptim(BaseEstimator):
                 bounds=[(-5, 5), (-5, 5), (-5, 5)],
                 var_name=["x1", "x2", "x3"],
                 var_type=["float", "float", "float"],
-                max_iter=15,
-                n_initial=10
+                max_iter=10,
+                n_initial=5
             )
             result = opt.optimize()
             table = opt.get_results_table()
@@ -6407,7 +6599,7 @@ class SpotOptim(BaseEstimator):
             best_x_full = self.best_x_
 
         # Map factor variables back to original string values
-        best_x_display = self._map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        best_x_display = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
 
         # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
         if self.red_dim and hasattr(self, "all_var_trans"):
@@ -6534,8 +6726,8 @@ class SpotOptim(BaseEstimator):
                 bounds=[(-5, 5), (-10, 10), (0, 1)],
                 var_name=["x1", "x2", "x3"],
                 var_type=["float", "int", "float"],
-                max_iter=20,
-                n_initial=10
+                max_iter=10,
+                n_initial=5
             )
             table = opt.get_design_table()
             print(table)
@@ -6638,8 +6830,8 @@ class SpotOptim(BaseEstimator):
                 bounds=[(-5, 5), (-10, 10), (0, 1)],
                 var_name=["x1", "x2", "x3"],
                 var_type=["float", "int", "float"],
-                max_iter=20,
-                n_initial=10
+                max_iter=10,
+                n_initial=5
             )
             table = opt.gen_design_table()
             print(table)
@@ -6679,7 +6871,7 @@ class SpotOptim(BaseEstimator):
                 fun=test_func,
                 bounds=[(-5, 5), (-5, 5)],
                 var_name=["x0", "x1"],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -6783,7 +6975,7 @@ class SpotOptim(BaseEstimator):
                 fun=test_func,
                 bounds=[(-5, 5), (-5, 5)],
                 var_name=["x0", "x1"],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -6897,7 +7089,7 @@ class SpotOptim(BaseEstimator):
                 fun=test_func,
                 bounds=[(-5, 5), (-5, 5)],
                 var_name=["x0", "x1"],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -7196,7 +7388,7 @@ class SpotOptim(BaseEstimator):
                 fun=test_func,
                 bounds=[(-5, 5), (-5, 5)],
                 var_name=["x0", "x1"],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -7258,7 +7450,7 @@ class SpotOptim(BaseEstimator):
                 fun=test_func,
                 bounds=[(-5, 5), (-5, 5)],
                 var_name=["x0", "x1"],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -7324,7 +7516,7 @@ class SpotOptim(BaseEstimator):
                 fun=test_func,
                 bounds=[(-5, 5), (-5, 5)],
                 var_name=["x0", "x1"],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -7397,7 +7589,7 @@ class SpotOptim(BaseEstimator):
                 fun=test_func,
                 bounds=[(-5, 5), (-5, 5)],
                 var_name=["x0", "x1"],
-                max_iter=15,
+                max_iter=10,
                 n_initial=5,
                 seed=42
             )
@@ -7478,8 +7670,8 @@ class SpotOptim(BaseEstimator):
                 fun=objective,
                 bounds=[(-5, 5), (-5, 5), (-5, 5), (-5, 5)],
                 var_name=["x0", "x1", "x2", "x3"],
-                max_iter=30,
-                n_initial=10,
+                max_iter=10,
+                n_initial=5,
                 seed=42
             )
             result = opt.optimize()

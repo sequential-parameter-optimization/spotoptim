@@ -6,7 +6,7 @@
 import numpy as np
 import dill
 
-from spotoptim.SpotOptim import _remote_eval_wrapper
+from spotoptim.SpotOptim import remote_eval_wrapper
 
 
 class DummyOptimizer:
@@ -25,36 +25,36 @@ class FailingOptimizer:
 
 
 def test_remote_eval_wrapper_example():
-    """Test _remote_eval_wrapper with basic example from documentation."""
+    """Test remote_eval_wrapper with basic example from documentation."""
     optimizer = DummyOptimizer()
     x = np.array([1.0, 2.0])
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     assert np.allclose(x_eval, x)
     assert np.isclose(y_eval, 5.0)  # 1^2 + 2^2 = 5
 
 
 def test_remote_eval_wrapper_single_dimension():
-    """Test _remote_eval_wrapper with 1D input."""
+    """Test remote_eval_wrapper with 1D input."""
     optimizer = DummyOptimizer()
     x = np.array([3.0])
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     assert np.allclose(x_eval, x)
     assert np.isclose(y_eval, 9.0)  # 3^2 = 9
 
 
 def test_remote_eval_wrapper_high_dimensional():
-    """Test _remote_eval_wrapper with high-dimensional input."""
+    """Test remote_eval_wrapper with high-dimensional input."""
     optimizer = DummyOptimizer()
     x = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     assert np.allclose(x_eval, x)
     # 1 + 4 + 9 + 16 + 25 = 55
@@ -62,24 +62,24 @@ def test_remote_eval_wrapper_high_dimensional():
 
 
 def test_remote_eval_wrapper_zero_point():
-    """Test _remote_eval_wrapper at the origin."""
+    """Test remote_eval_wrapper at the origin."""
     optimizer = DummyOptimizer()
     x = np.array([0.0, 0.0, 0.0])
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     assert np.allclose(x_eval, x)
     assert np.isclose(y_eval, 0.0)
 
 
 def test_remote_eval_wrapper_negative_values():
-    """Test _remote_eval_wrapper with negative values."""
+    """Test remote_eval_wrapper with negative values."""
     optimizer = DummyOptimizer()
     x = np.array([-2.0, -3.0])
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     assert np.allclose(x_eval, x)
     # (-2)^2 + (-3)^2 = 4 + 9 = 13
@@ -87,12 +87,12 @@ def test_remote_eval_wrapper_negative_values():
 
 
 def test_remote_eval_wrapper_error_handling():
-    """Test _remote_eval_wrapper handles evaluation errors correctly."""
+    """Test remote_eval_wrapper handles evaluation errors correctly."""
     optimizer = FailingOptimizer()
     x = np.array([1.0, 2.0])
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     # When an exception occurs, x_eval should be None
     assert x_eval is None
@@ -103,7 +103,7 @@ def test_remote_eval_wrapper_error_handling():
 
 
 def test_remote_eval_wrapper_with_custom_function():
-    """Test _remote_eval_wrapper with a different objective function."""
+    """Test remote_eval_wrapper with a different objective function."""
 
     class RosenbrockOptimizer:
         """Optimizer using Rosenbrock function."""
@@ -118,7 +118,7 @@ def test_remote_eval_wrapper_with_custom_function():
     x = np.array([0.0, 0.0])
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     assert np.allclose(x_eval, x)
     # At (0,0): (1-0)^2 + 100*(0-0)^2 = 1
@@ -126,13 +126,13 @@ def test_remote_eval_wrapper_with_custom_function():
 
 
 def test_remote_eval_wrapper_preserves_input():
-    """Test that _remote_eval_wrapper preserves the input point."""
+    """Test that remote_eval_wrapper preserves the input point."""
     optimizer = DummyOptimizer()
     original_x = np.array([1.5, 2.5, 3.5])
     x = original_x.copy()
 
     pickled_args = dill.dumps((optimizer, x))
-    x_eval, y_eval = _remote_eval_wrapper(pickled_args)
+    x_eval, y_eval = remote_eval_wrapper(pickled_args)
 
     # Verify the returned x matches the input
     assert np.array_equal(x_eval, original_x)
