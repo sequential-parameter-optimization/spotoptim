@@ -1,7 +1,6 @@
   sections:
     - title: "SpotOptim"
       contents:
-        - SpotOptim
         - SpotOptim.SpotOptim
         - SpotOptim.SpotOptimConfig
         - SpotOptim.SpotOptimState

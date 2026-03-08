@@ -505,9 +505,8 @@ class SpotOptim(BaseEstimator):
             Minimum distance between points. Defaults to np.sqrt(np.spacing(1))
         var_trans (list of str, optional):
             Variable transformations for each dimension. Supported:
-                * 'log': Logarithmic transformation, e.g. "log10" for base-10 log
-                * 'sqrt': Square root transformation, "sqrt" for square root
-                * None or 'id' or 'None': No transformation
+            It can be one of `id`, `log10`, `log`, `ln`, `sqrt`, `exp`, `square`, `cube`, `inv`, `reciprocal`, or `None`.
+            Also supports dynamic strings like `log(x)`, `sqrt(x)`, `pow(x, p)`.
             Defaults to None (no transformations).
         max_time (float, optional):
             Maximum runtime in minutes. If np.inf (default), no time limit.
@@ -1031,6 +1030,9 @@ class SpotOptim(BaseEstimator):
 
         # Other attributes
         self.fun = fun
+        # The fun (objective function) object defines objective_names as a property (e.g., in torch_objective.py).
+        # SpotOptim.__init__ copies it onto self so downstream code can access it via optimizer.objective_names.
+        # The visualization module reads it from the optimizer to label plots.
         self.objective_names = getattr(
             fun, "objective_names", getattr(fun, "metrics", None)
         )
@@ -1040,7 +1042,15 @@ class SpotOptim(BaseEstimator):
         self.set_seed()
 
         # Process bounds and factor variables
+        # The _factor_maps structure is essentially a per-dimension integer-to-string lookup table —
+        # the optimizer works entirely with integers internally, and _factor_maps is what
+        # translates back to meaningful labels for output and visualization, e.g.:
+        # self._factor_maps = {
+        #     1: {0: "low",   1: "medium", 2: "high"},
+        #     2: {0: "red",   1: "green",  2: "blue"},
+        # }
         self._factor_maps = {}  # Maps dimension index to {int: str} mapping
+
         self._original_bounds = self.bounds.copy()  # Store original bounds
         self.process_factor_bounds()  # Maps factor bounds to integer indices (updates config.bounds)
 
@@ -1054,6 +1064,8 @@ class SpotOptim(BaseEstimator):
         # Modify bounds based on var_type
         self.modify_bounds_based_on_var_type()
 
+        # Convert the bounds to numpy arrays, e.g.,
+        # self.bounds = [(0, 1), (0, 1)] -> self.lower = [0, 0], self.upper = [1, 1]
         self.lower = np.array([b[0] for b in self.bounds])
         self.upper = np.array([b[1] for b in self.bounds])
 
@@ -1061,7 +1073,8 @@ class SpotOptim(BaseEstimator):
         if self.var_name is None:
             self.var_name = [f"x{i}" for i in range(self.n_dim)]
 
-        # Handle default variable transformations
+        # Handle default variable transformations. No transformations are performed here,
+        # only None and id transformations are set correctly.
         self.handle_default_var_trans()
 
         # Apply transformations to bounds (internal representation)
@@ -1072,15 +1085,16 @@ class SpotOptim(BaseEstimator):
         # Dimension reduction: backup original bounds and identify fixed dimensions
         self.setup_dimension_reduction()
 
-        # Validate and process starting point if provided
+        # Validate and process starting point if provided,
+        # it must be in natural scale (full dimensions) and will be returned in internal scale (reduced dimensions)
         if self.x0 is not None:
             self.x0 = self.validate_x0(self.x0)
 
         # Initialize surrogate model(s)
         self.init_surrogate()
 
-        # Design generator
-        self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+        # Design generator (from scipy.stats.qmc)
+        self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
 
         # Logic for window_size default based on restart_after_n
         if self.window_size is None:
@@ -1271,11 +1285,10 @@ class SpotOptim(BaseEstimator):
                 )
 
     def handle_default_var_trans(self) -> None:
-        """Handle default variable transformations.
-
-        Sets var_trans to a list of None values if not specified, or normalizes
-        transformation names by converting 'id', 'None', or None to None.
-        Also validates that var_trans length matches the number of dimensions.
+        """Handle default variable transformations. Does not perform any transformations,
+        only sets `var_trans` to a list of `None` values if not specified, or normalizes
+        transformation names by converting `id`, `None`, or `None` to `None`.
+        Also validates that `var_trans` length matches the number of dimensions.
 
         Returns:
             None
@@ -1514,26 +1527,21 @@ class SpotOptim(BaseEstimator):
         """
         # Reinitialize LHS sampler if needed
         if not hasattr(self, "lhs_sampler") or self.lhs_sampler is None:
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+            self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
 
         # Reinitialize surrogate if needed
         if not hasattr(self, "surrogate") or self.surrogate is None:
             self.init_surrogate()
 
     def init_surrogate(self) -> None:
-        """Initialize or configure the surrogate model for optimization.
+        """Initialize or configure the surrogate model for optimization. Handles three surrogate configurations:
 
-        Handles three surrogate configurations:
-            * List of surrogates:
-                sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
-            * None (default):
-                creates a `GaussianProcessRegressor` with a `ConstantKernel * Matern(nu=2.5)`
-                kernel, 100 optimizer restarts, and `normalize_y=True`.
-            * User-provided surrogate:
-                accepted as-is; internal bookkeeping attributes (`_max_surrogate_points_list`,
-                `_active_max_surrogate_points`) are still initialised.
+            * List of surrogates: sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
+            * None (default): creates a `GaussianProcessRegressor` with a `ConstantKernel * Matern(nu=2.5)` kernel, 100 optimizer restarts, and `normalize_y=True`.
+            * User-provided surrogate: accepted as-is; internal bookkeeping attributes (`_max_surrogate_points_list`, `_active_max_surrogate_points`) are still initialised.
 
         After this method returns the following attributes are set:
+
             * `self.surrogate` — the active surrogate model.
             * `self._surrogates_list` — `list | None`.
             * `self._prob_surrogate` — normalised selection probabilities or `None`.
@@ -1744,15 +1752,16 @@ class SpotOptim(BaseEstimator):
     def setup_dimension_reduction(self) -> None:
         """Set up dimension reduction by identifying fixed dimensions.
 
-        identifies dimensions where lower and upper bounds are equal in **Transformed Space**.
-        Reduces `self.bounds`, `self.lower`, `self.upper`, etc., to the **Mapped Space**
+        identifies dimensions where lower and upper bounds are equal in Transformed Space.
+        Reduces `self.bounds`, `self.lower`, `self.upper`, etc., to the Mapped Space
         (active variables only).
 
-        The resulting `self.bounds` defines the **Transformed and Mapped Space** used
+        The resulting `self.bounds` defines the Transformed and Mapped Space used
         for optimization.
 
         This method identifies variables that are fixed (constant) and excludes them
         from the optimization process. It stores:
+
             * Original bounds and metadata in `all_*` attributes
             * Boolean mask of fixed dimensions in `ident`
             * Reduced bounds, types, and names for optimization
@@ -1765,7 +1774,6 @@ class SpotOptim(BaseEstimator):
             ```{python}
             from spotoptim import SpotOptim
             spot = SpotOptim(fun=lambda x: x, bounds=[(1, 10), (5, 5), (0, 1)])
-            spot.setup_dimension_reduction()
             print("Original lower bounds:", spot.all_lower)
             print("Original upper bounds:", spot.all_upper)
             print("Fixed dimensions mask:", spot.ident)
@@ -1828,7 +1836,7 @@ class SpotOptim(BaseEstimator):
                     self.bounds.append((float(self.lower[i]), float(self.upper[i])))
 
             # Recreate LHS sampler with reduced dimensions
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+            self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
 
     def to_red_dim(self, X_full: np.ndarray) -> np.ndarray:
         """Reduce full-dimensional points to optimization space.
@@ -1940,9 +1948,9 @@ class SpotOptim(BaseEstimator):
 
         Args:
             x: Value to transform
-            trans: Transformation name. Can be one of 'id', 'log10', 'log', 'ln', 'sqrt',
-                   'exp', 'square', 'cube', 'inv', 'reciprocal', or None.
-                   Also supports dynamic strings like 'log(x)', 'sqrt(x)', 'pow(x, p)'.
+            trans: Transformation name. Can be one of `id`, `log10`, `log`, `ln`, `sqrt`,
+                   `exp`, `square`, `cube`, `inv`, `reciprocal`, or `None`.
+                   Also supports dynamic strings like `log(x)`, `sqrt(x)`, `pow(x, p)`.
 
         Returns:
             Transformed value
@@ -1957,9 +1965,7 @@ class SpotOptim(BaseEstimator):
         Examples:
             ```{python}
             from spotoptim import SpotOptim
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
+            from spotoptim.function import sphere
             spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
             spot.transform_value(10, 'log10')
             spot.transform_value(100, 'log(x)')
@@ -1991,7 +1997,6 @@ class SpotOptim(BaseEstimator):
             return 1.0 / x
 
         # Dynamic Transformations
-        import re
 
         if trans == "log(x)":
             return np.log(x)
@@ -2171,19 +2176,24 @@ class SpotOptim(BaseEstimator):
     def transform_bounds(self) -> None:
         """Transform bounds from original to internal scale.
 
-        Updates `self.bounds` (and `self.lower`, `self.upper`) from **Natural Space**
-        to **Transformed Space**.
+        Updates `self.bounds` (and `self.lower`, `self.upper`) from Natural Space
+        to Transformed Space. Calls `transform_value` for each bound and converts
+        numpy types to Python native types (`int` or `float` based on `var_type`).
+        Handles also reversed bounds, e.g., as an effect of `reciprocal` transformation.
 
         Returns:
             None
 
+        Notes:
+            Uses settings in `self.var_trans`. It can be one of `id`, `log10`, `log`, `ln`, `sqrt`,
+            `exp`, `square`, `cube`, `inv`, `reciprocal`, or `None`. Also supports dynamic
+            strings like `log(x)`, `sqrt(x)`, `pow(x, p)`.
+
         Examples:
             ```{python}
             from spotoptim import SpotOptim
+            from spotoptim.function import sphere
             import numpy as np
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
             spot = SpotOptim(fun=sphere, bounds=[(1, 10), (0.1, 100)])
             spot.var_trans = ['log10', 'sqrt']
             spot.transform_bounds()
@@ -2555,7 +2565,6 @@ class SpotOptim(BaseEstimator):
 
     def validate_x0(self, x0: np.ndarray) -> np.ndarray:
         """Validate and process starting point x0. Called in `__init__` and `optimize`.
-
         This method checks that x0:
             * Is a numpy array
             * Has the correct number of dimensions
@@ -2578,10 +2587,12 @@ class SpotOptim(BaseEstimator):
             from spotoptim.function import sphere
             opt = SpotOptim(
                 fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                x0=np.array([1.0, 2.0])
+                bounds=[(-5, 5), (5,5), (-10, 10)],
+                x0=np.array([1.0, 5.0, 9.0]),
+                var_trans=["log10", "id", "sqrt"]
             )
-            # x0 is validated during initialization
+            # x0 is validated during initialization and transformed to internal scale
+            print(f"x0 in internal scale: {opt.x0}")
             ```
         """
         # Convert to numpy array
@@ -2638,12 +2649,27 @@ class SpotOptim(BaseEstimator):
 
         if x0.ndim == 1:
             check_point(x0)
-            # Apply transformations to x0 (from original to internal scale)
-            x0_transformed = self.transform_X(x0.reshape(1, -1)).ravel()
+            # Apply transformations to x0 (from original to internal scale).
+            # IMPORTANT: use all_var_trans (full-dimension list), not self.var_trans
+            # (the reduced list).  transform_X iterates its list by index i and
+            # applies trans to column i.  When a fixed dimension sits between two
+            # free ones, the reduced var_trans list is shorter than the number of
+            # columns in the full-dim x0, so transforms land on the wrong columns.
+            # Using all_var_trans preserves the correct dim-to-transform mapping.
+            x0_2d = x0.reshape(1, -1).astype(float).copy()
+            for i, trans in enumerate(self.all_var_trans):
+                if trans is not None:
+                    x0_2d[0, i] = self.transform_value(x0[i], trans)
+            x0_transformed = x0_2d.ravel()
         else:  # 2D case
             for idx, pt in enumerate(x0):
                 check_point(pt)
-            x0_transformed = self.transform_X(x0)
+            x0_transformed = x0.astype(float).copy()
+            for i, trans in enumerate(self.all_var_trans):
+                if trans is not None:
+                    x0_transformed[:, i] = [
+                        self.transform_value(v, trans) for v in x0[:, i]
+                    ]
 
         # If dimension reduction is active, reduce x0 to non-fixed dimensions
         if self.red_dim:
@@ -4243,7 +4269,7 @@ class SpotOptim(BaseEstimator):
 
         # Re-initialize LHS sampler with new seed to ensure diversity in initial design
         if hasattr(self, "n_dim"):
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, seed=self.seed)
+            self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
 
         return self._optimize_single_run(
             timeout_start,
@@ -4255,17 +4281,12 @@ class SpotOptim(BaseEstimator):
         )
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
-        """Run the optimization process.
-
-        The optimization terminates when either:
-            * Total function evaluations reach max_iter (including initial design), OR
-            * Runtime exceeds max_time minutes
-
-        Input/Output Spaces:
-            * Input X0: Expected in Natural Space (original scale, physical units).
-            * Output result.x: Returned in Natural Space.
-            * Output result.X: Returned in Natural Space.
-            * Internal Optimization: Performed in Transformed and Mapped Space.
+        """Run the optimization process. The optimization terminates when either the total function evaluations reach
+            `max_iter` (including initial design), or the runtime exceeds max_time minutes. Input/Output spaces are
+                * Input `X0`: Expected in Natural Space (original scale, physical units).
+                * Output `result.x`: Returned in Natural Space.
+                * Output `result.X`: Returned in Natural Space.
+                * Internal Optimization: Performed in Transformed and Mapped Space.
 
         Args:
             X0 (ndarray, optional): Initial design points in Natural Space, shape (n_initial, n_features).
@@ -4286,16 +4307,14 @@ class SpotOptim(BaseEstimator):
             ```{python}
             import numpy as np
             from spotoptim import SpotOptim
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
+            from spotoptim.function import sphere
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
                 n_initial=5,
                 max_iter=10,
                 seed=0,
-                x0=np.array([0.0, 0.0]),
+                x0=np.array([0.1, -0.1]),
                 verbose=True
             )
             result = opt.optimize()
@@ -5569,6 +5588,7 @@ class SpotOptim(BaseEstimator):
 
         Note:
             OCBA is only applied when:
+
                 * (self.repeats_initial > 1) or (self.repeats_surrogate > 1)
                 * self.ocba_delta > 0
                 * All variances are > 0

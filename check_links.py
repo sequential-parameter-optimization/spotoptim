@@ -31,7 +31,7 @@ def print_sections():
     src_dir = Path("src/spotoptim")
     
     sections = {
-        "SpotOptim": ["SpotOptim", "SpotOptim.SpotOptim", "SpotOptim.SpotOptimConfig", "SpotOptim.SpotOptimState"],
+        "SpotOptim": ["SpotOptim.SpotOptim", "SpotOptim.SpotOptimConfig", "SpotOptim.SpotOptimState"],
         "Core": ["core", "core.data", "core.experiment"],
         "Surrogate Models": ["surrogate", "surrogate.kriging", "surrogate.simple_kriging", "surrogate.mlp_surrogate", "surrogate.nystroem", "surrogate.kernels", "surrogate.pipeline"],
         "Sampling": ["sampling", "sampling.design", "sampling.effects", "sampling.lhs", "sampling.mm"],

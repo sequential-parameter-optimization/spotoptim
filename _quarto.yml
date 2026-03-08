@@ -49,14 +49,14 @@ website:
         file: docs/examples.qmd
       - text: Download
         file: docs/download.qmd
+      - text: SpotOptim `__init__()` method
+        file: docs/spotoptim_init.qmd
       - section: API Reference
         contents:
           - text: Overview
             file: docs/reference/index.qmd
           - section: SpotOptim
             contents:
-              - text: SpotOptim
-                file: docs/reference/SpotOptim.qmd
               - text: SpotOptim.SpotOptim
                 file: docs/reference/SpotOptim.SpotOptim.qmd
               - text: SpotOptim.SpotOptimConfig
