@@ -1080,7 +1080,7 @@ def plot_mmphi_vs_n_lhs(
         return
     mmphi_results = []
     mmphi_intensive_results = []
-    lhs_sampler = LatinHypercube(d=k_dim, seed=seed)
+    lhs_sampler = LatinHypercube(d=k_dim, rng=seed)
 
     for n_points in n_values:
         if n_points < 2:  # mmphi requires at least 2 points to calculate distances

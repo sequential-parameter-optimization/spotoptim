@@ -268,7 +268,7 @@ def generate_qmc_lhs_design(
     if isinstance(seed, np.random.Generator):
         random_state = seed.integers(0, 2**32 - 1)
 
-    sampler = qmc.LatinHypercube(d=n_dim, seed=random_state)
+    sampler = qmc.LatinHypercube(d=n_dim, rng=random_state)
     X_unit = sampler.random(n=n_design)
 
     # Scale to bounds

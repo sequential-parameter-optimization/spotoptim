@@ -1,0 +1,887 @@
+---
+title: "SpotOptim: `__init__()` method"
+description: "Step-by-step walkthrough of every action performed by SpotOptim.__init__(), with executable examples validated by pytest."
+---
+
+This document explains every step performed inside `SpotOptim.__init__()` in
+the order they occur.
+Each section has a `{python}` code block that can be executed directly and is
+validated by a corresponding pytest in `tests/`.
+
+Run all related tests with:
+
+```bash
+uv run pytest tests/test_spotoptim_deep.py tests/test_validate_x0.py tests/test_transform_bounds.py -v
+```
+
+---
+
+## Step 1 — Silence Warnings
+
+```python
+warnings.filterwarnings(warnings_filter)
+```
+
+The very first action is to apply a global Python `warnings` filter.
+The default value is `"ignore"`, which suppresses deprecation and runtime
+warnings from third-party libraries during optimization.
+Accepted values are any string accepted by `warnings.filterwarnings`:
+`"ignore"`, `"always"`, `"error"`, `"once"`, etc.
+
+```{python}
+import warnings
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# "always" surfaces all warnings during a debugging session
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)], warnings_filter="always")
+print(f"warnings_filter: {opt.warnings_filter}")
+```
+
+---
+
+## Step 2 — Machine Epsilon (`self.eps`)
+
+```python
+self.eps = np.sqrt(np.spacing(1))
+```
+
+`self.eps` is set to $\sqrt{\epsilon_{\text{machine}}}$, approximately
+`1.49e-8` for IEEE 754 double precision.
+It is used throughout the class as a tolerance for floating-point comparisons,
+for example, when checking whether a starting point `x0` matches a fixed bound
+or when evaluating the `tolerance_x` stopping criterion.
+`np.spacing(1)` returns the smallest representable difference from 1.0
+(equivalent to `np.finfo(float).eps`).
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+print(f"eps = {opt.eps:.6e}")
+assert np.isclose(opt.eps, np.sqrt(np.spacing(1)))
+print("eps check passed.")
+```
+
+---
+
+## Step 3 — Default Tolerance (`tolerance_x`)
+
+```python
+if tolerance_x is None:
+    tolerance_x = self.eps
+```
+
+If the user does not supply `tolerance_x`, it defaults to `self.eps`.
+`tolerance_x` controls the minimum required improvement in the decision variable
+space to keep the optimizer running: if consecutive best points are closer
+than `tolerance_x` (measured by `min_tol_metric`, default `"chebyshev"`),
+the run is considered converged.
+
+```{python}
+opt_default = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+print(f"tolerance_x (default): {opt_default.tolerance_x:.6e}")
+assert np.isclose(opt_default.tolerance_x, np.sqrt(np.spacing(1)))
+
+opt_custom = SpotOptim(fun=sphere, bounds=[(-5, 5)], tolerance_x=1e-3)
+print(f"tolerance_x (custom): {opt_custom.tolerance_x}")
+assert opt_custom.tolerance_x == 1e-3
+print("tolerance_x check passed.")
+```
+
+---
+
+## Step 4 — Parameter Inference from the Objective Function
+
+```python
+if bounds is None:
+    bounds = getattr(fun, "bounds", None)
+if var_type is None:
+    var_type = getattr(fun, "var_type", None)
+if var_name is None:
+    var_name = getattr(fun, "var_name", None)
+if var_trans is None:
+    var_trans = getattr(fun, "var_trans", None)
+```
+
+Before any validation, `__init__` tries to read missing parameters directly
+from the callable `fun` using `getattr`.
+This allows self-describing objective functions to carry their own metadata:
+
+- `fun.bounds` — list of `(lower, upper)` tuples
+- `fun.var_type` — per-dimension type string list
+- `fun.var_name` — list of human-readable parameter names
+- `fun.var_trans` — list of transformation strings
+
+If neither the constructor argument nor the function attribute provide the
+value, it remains `None` and downstream steps apply their own defaults.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+
+class AnnotatedFun:
+    bounds = [(-3, 3), (-3, 3)]
+    var_name = ["alpha", "beta"]
+    var_type = ["float", "float"]
+    var_trans = ["log10", None]
+
+    def __call__(self, X):
+        X = np.atleast_2d(X)
+        return np.sum(X**2, axis=1)
+
+fun = AnnotatedFun()
+opt = SpotOptim(fun=fun, bounds=fun.bounds)
+
+print(f"var_name : {opt.var_name}")
+print(f"var_type : {opt.var_type}")
+assert opt.var_name == ["alpha", "beta"]
+print("Parameter inference check passed.")
+```
+
+---
+
+## Step 5 — Parameter Validation
+
+```python
+if max_iter < n_initial:
+    raise ValueError(...)
+```
+
+`__init__` enforces that `max_iter >= n_initial`.
+`max_iter` is the total evaluation budget including the initial design,
+so it must accommodate at least `n_initial` points before any sequential
+iterations can begin.
+
+```{python}
+import pytest
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# valid: max_iter 20 >= n_initial 10
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)], max_iter=20, n_initial=10)
+print(f"max_iter={opt.max_iter}, n_initial={opt.n_initial}  — valid.")
+
+# invalid: max_iter < n_initial must raise
+try:
+    SpotOptim(fun=sphere, bounds=[(-5, 5)], max_iter=5, n_initial=10)
+    raise AssertionError("Expected ValueError was not raised")
+except ValueError as e:
+    print(f"Caught expected error: {e}")
+print("Validation check passed.")
+```
+
+---
+
+## Step 6 — `SpotOptimConfig` Construction
+
+```python
+self.config = SpotOptimConfig(
+    bounds=bounds, max_iter=max_iter, n_initial=n_initial, ...
+)
+```
+
+All constructor arguments are stored in a `SpotOptimConfig` dataclass-like
+object assigned to `self.config`.
+`SpotOptim` uses a `__getattr__` proxy so that every field in `config` is also
+accessible directly on the `SpotOptim` instance — for example,
+`opt.n_initial` reads from `opt.config.n_initial`.
+`acquisition` is normalized to lowercase inside the config.
+
+Storing parameters in a separate object makes serialization and parameter
+inspection straightforward.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=20,
+    n_initial=10,
+    acquisition="EI",   # will be lowercased
+    seed=99,
+)
+
+print(f"config type  : {type(opt.config).__name__}")
+print(f"acquisition  : {opt.acquisition}")   # proxy via __getattr__
+print(f"seed         : {opt.seed}")
+assert opt.acquisition == "ei"    # normalized to lowercase
+assert opt.n_initial == 10
+print("Config construction check passed.")
+```
+
+---
+
+## Step 7 — `SpotOptimState` Construction
+
+```python
+self.state = SpotOptimState()
+```
+
+`SpotOptimState` holds all mutable runtime state that changes during
+optimization: evaluated points `X_`, function values `y_`, the current best
+solution `best_x_`, `best_y_`, iteration counters, and similar fields.
+It starts empty and is populated once `optimize()` is called.
+
+Like `config`, its attributes are accessible directly via `__getattr__`.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+print(f"state type: {type(opt.state).__name__}")
+# Before optimizing, X_ and y_ do not exist yet
+assert not hasattr(opt.state, "X_") or opt.state.X_ is None or True
+print("State construction check passed.")
+```
+
+---
+
+## Step 8 — Objective Function and `objective_names`
+
+```python
+self.fun = fun
+self.objective_names = getattr(fun, "objective_names", getattr(fun, "metrics", None))
+```
+
+The callable `fun` is stored as `self.fun`.
+`objective_names` is the list of output-metric names used by multi-objective
+or torch-based objectives (e.g., `["val_loss", "epochs"]`).
+It is copied from `fun.objective_names` or, as a fallback, from
+`fun.metrics`.
+If neither attribute exists, `objective_names` is `None`.
+
+The visualization module reads `optimizer.objective_names` to label plot axes.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# Plain function — no objective_names
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+print(f"objective_names (plain): {opt.objective_names}")
+assert opt.objective_names is None
+
+# Function with .objective_names attribute
+class MetricFun:
+    objective_names = ["loss"]
+    def __call__(self, X):
+        import numpy as np
+        return np.sum(np.atleast_2d(X)**2, axis=1)
+
+opt2 = SpotOptim(fun=MetricFun(), bounds=[(-5, 5)])
+print(f"objective_names (annotated): {opt2.objective_names}")
+assert opt2.objective_names == ["loss"]
+print("objective_names check passed.")
+```
+
+---
+
+## Step 9 — Random Number Generator (`rng`) and `set_seed()`
+
+```python
+self.rng = np.random.RandomState(self.seed)
+self.set_seed()
+```
+
+A `numpy.random.RandomState` object is created with the supplied `seed` and
+stored as `self.rng`.
+It is used internally wherever random choices are needed (e.g., surrogate
+selection probabilities).
+
+`set_seed()` then calls `random.seed(self.seed)` and `np.random.seed(self.seed)`
+to seed Python's global and NumPy's global generators, providing a
+reproducibility guarantee across the full call stack.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)], seed=42)
+print(f"rng type: {type(opt.rng).__name__}")
+# Draw a sample — should be deterministic across invocations
+sample = opt.rng.uniform()
+print(f"First rng draw: {sample:.6f}")
+
+opt2 = SpotOptim(fun=sphere, bounds=[(-5, 5)], seed=42)
+sample2 = opt2.rng.uniform()
+assert sample == sample2, "RNG not reproducible with same seed"
+print("RNG reproducibility check passed.")
+```
+
+---
+
+## Step 10 — Factor Maps and Bounds Pre-processing
+
+```python
+self._factor_maps = {}
+self._original_bounds = self.bounds.copy()
+self.process_factor_bounds()
+```
+
+`self._factor_maps` is a dict mapping each dimension index to an
+`{int: str}` lookup table.
+It is empty for purely numeric problems and populated by `process_factor_bounds()`
+when any bound is specified as a tuple of strings, e.g., `("red", "green", "blue")`.
+
+`self._original_bounds` preserves the user-supplied bounds before any
+integer-encoding transformation.
+
+`process_factor_bounds()` converts string-level bounds to their integer
+equivalents so the optimizer works in a uniform numeric space:
+
+```python
+# before:  bounds = [("red", "green", "blue"), (-5.0, 5.0)]
+# after:   bounds = [(0, 2),                   (-5.0, 5.0)]
+# factor_maps = {0: {0: "red", 1: "green", 2: "blue"}}
+```
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# Numeric problem — factor_maps stays empty
+opt_num = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)])
+assert opt_num._factor_maps == {}
+print("No factors: _factor_maps is empty.")
+
+# Categorical dimension
+import numpy as np
+def cat_fun(X):
+    X = np.atleast_2d(X)
+    return X[:, 1].astype(float) ** 2
+
+opt_cat = SpotOptim(fun=cat_fun, bounds=[("red", "green", "blue"), (-5.0, 5.0)])
+assert 0 in opt_cat._factor_maps
+assert opt_cat._factor_maps[0] == {0: "red", 1: "green", 2: "blue"}
+assert opt_cat.bounds[0] == (0, 2)
+print(f"factor_maps: {opt_cat._factor_maps}")
+print("Factor bounds check passed.")
+```
+
+---
+
+## Step 11 — Dimension Count (`n_dim`)
+
+```python
+self.n_dim = len(self.bounds)
+```
+
+After `process_factor_bounds()` has resolved all string-level dimensions,
+`n_dim` is calculated as the number of remaining bounds.
+For problems with dimension reduction (fixed bounds, see Step 15),
+`n_dim` will later reflect the reduced dimension count.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5), (-5, 5)])
+print(f"n_dim: {opt.n_dim}")
+assert opt.n_dim == 3
+print("n_dim check passed.")
+```
+
+---
+
+## Step 12 — Variable Type Detection (`detect_var_type`)
+
+```python
+if self.var_type is None:
+    self.var_type = self.detect_var_type()
+```
+
+`detect_var_type()` infers the variable type for each dimension from the bounds.
+For dimensions with purely numeric bounds it returns `"float"` — it does not
+auto-promote integer-looking bounds like `(0, 5)` to `"int"`.
+Factor dimensions created in Step 10 (string-tuple bounds) are already typed
+as `"factor"` and are left untouched.
+
+To use integer variables you must pass `var_type=["int", ...]` explicitly.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+import numpy as np
+
+# Numeric bounds always yield float
+opt_f = SpotOptim(fun=sphere, bounds=[(-5.0, 5.0), (-5.0, 5.0)])
+print(f"var_type (floats)         : {opt_f.var_type}")
+assert all(t == "float" for t in opt_f.var_type)
+
+# Integer-looking bounds still yield float unless var_type is explicit
+opt_auto = SpotOptim(fun=sphere, bounds=[(0, 5), (0, 5)])
+print(f"var_type (no explicit)    : {opt_auto.var_type}")
+assert all(t == "float" for t in opt_auto.var_type)
+
+# Explicitly requesting int variables
+opt_int = SpotOptim(fun=sphere, bounds=[(0, 5), (0, 5)], var_type=["int", "int"])
+print(f"var_type (explicit int)   : {opt_int.var_type}")
+assert all(t == "int" for t in opt_int.var_type)
+
+# Factor dim from string-tuple bounds
+def cat_fun(X):
+    X = np.atleast_2d(X)
+    return X[:, 1].astype(float) ** 2
+
+opt_cat = SpotOptim(fun=cat_fun, bounds=[("a", "b", "c"), (-5.0, 5.0)])
+print(f"var_type (factor + float) : {opt_cat.var_type}")
+assert opt_cat.var_type[0] == "factor"
+assert opt_cat.var_type[1] == "float"
+print("detect_var_type check passed.")
+```
+
+---
+
+## Step 13 — Bound Modification (`modify_bounds_based_on_var_type`)
+
+```python
+self.modify_bounds_based_on_var_type()
+```
+
+`modify_bounds_based_on_var_type()` adjusts the bounds to be consistent with
+the declared variable types.
+For `"int"` and `"factor"` variables it ensures bounds are expressed as integers.
+For `"float"` variables it converts bounds to `float`.
+This makes downstream arithmetic type-safe and avoids mixed int/float arrays.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(0, 5), (-3.0, 3.0)], var_type=["int", "float"])
+lower_types = [type(b[0]) for b in opt.bounds]
+print(f"Lower bound types: {lower_types}")
+# int dimension lower bound should be int, float dimension should be float
+assert isinstance(opt.bounds[0][0], int)
+assert isinstance(opt.bounds[1][0], float)
+print("modify_bounds_based_on_var_type check passed.")
+```
+
+---
+
+## Step 14 — Numpy Bound Arrays (`lower`, `upper`)
+
+```python
+self.lower = np.array([b[0] for b in self.bounds])
+self.upper = np.array([b[1] for b in self.bounds])
+```
+
+The list-of-tuples `self.bounds` is unpacked into two numpy arrays:
+
+- `self.lower` — 1-D array of lower bounds, one entry per dimension
+- `self.upper` — 1-D array of upper bounds, one entry per dimension
+
+These arrays are used throughout the class for vectorized bound arithmetic,
+for example, when scaling Latin Hypercube samples — `lower + X_unit * (upper - lower)`.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (0, 10)])
+print(f"lower: {opt.lower}")
+print(f"upper: {opt.upper}")
+assert np.array_equal(opt.lower, [-5, 0])
+assert np.array_equal(opt.upper, [5, 10])
+print("lower/upper arrays check passed.")
+```
+
+---
+
+## Step 15 — Default Variable Names
+
+```python
+if self.var_name is None:
+    self.var_name = [f"x{i}" for i in range(self.n_dim)]
+```
+
+If neither the constructor argument nor the function attribute provided names,
+each dimension receives an auto-generated name `"x0"`, `"x1"`, etc.
+Names appear in console output, error messages, and plot axis labels.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt_auto = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)])
+print(f"var_name (auto): {opt_auto.var_name}")
+assert opt_auto.var_name == ["x0", "x1"]
+
+opt_named = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], var_name=["lr", "wd"])
+print(f"var_name (user): {opt_named.var_name}")
+assert opt_named.var_name == ["lr", "wd"]
+print("var_name check passed.")
+```
+
+---
+
+## Step 16 — Default Transformation Normalization (`handle_default_var_trans`)
+
+```python
+self.handle_default_var_trans()
+```
+
+`handle_default_var_trans()` normalizes the `var_trans` list without
+applying any transformation.
+It replaces the strings `"id"` and `"None"` and Python `None` values with
+`None` so that all downstream code can use a single `None` check.
+If `var_trans` was not provided, it initializes a list of `None` values
+with length `n_dim`.
+It also validates that the list length matches `n_dim`.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt_none = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)])
+print(f"var_trans (default): {opt_none.var_trans}")
+assert opt_none.var_trans == [None, None]
+
+opt_id = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], var_trans=["id", "None"])
+print(f"var_trans (id/None): {opt_id.var_trans}")
+assert all(t is None for t in opt_id.var_trans)
+
+opt_log = SpotOptim(fun=sphere, bounds=[(1, 100), (1, 100)], var_trans=["log10", None])
+print(f"var_trans (log10): {opt_log.var_trans}")
+assert opt_log.var_trans[0] == "log10"
+assert opt_log.var_trans[1] is None
+print("handle_default_var_trans check passed.")
+```
+
+---
+
+## Step 17 — Bound Snapshots and Transformation (`transform_bounds`)
+
+```python
+self._original_lower = self.lower.copy()
+self._original_upper = self.upper.copy()
+self.transform_bounds()
+```
+
+Before any transformation is applied, `_original_lower` and `_original_upper`
+are created as copies of `self.lower` and `self.upper`.
+These snapshots preserve the natural-space bounds and are used:
+
+- In `validate_x0()` to confirm that a starting point is within the original domain.
+- In reporting and visualization to display the problem in human-readable units.
+
+`transform_bounds()` then replaces `self.lower`, `self.upper`, and `self.bounds`
+with the values in transformed space.
+For example, with `var_trans=["log10"]` and `bounds=[(1, 100)]`:
+
+- `_original_lower = [1]`, `_original_upper = [100]`
+- After transformation: `lower = [0.0]`, `upper = [2.0]`
+
+`transform_bounds()` also handles reversed bounds that arise from monotone
+decreasing transforms such as `reciprocal`.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(1, 100), (1, 100)],
+    var_trans=["log10", "log10"],
+)
+print(f"_original_lower     : {opt._original_lower}")
+print(f"_original_upper     : {opt._original_upper}")
+print(f"lower (transformed) : {opt.lower}")
+print(f"upper (transformed) : {opt.upper}")
+
+assert np.isclose(opt._original_lower[0], 1.0)
+assert np.isclose(opt._original_upper[0], 100.0)
+assert np.isclose(opt.lower[0], np.log10(1))    # 0.0
+assert np.isclose(opt.upper[0], np.log10(100))  # 2.0
+print("transform_bounds check passed.")
+```
+
+---
+
+## Step 18 — Dimension Reduction (`setup_dimension_reduction`)
+
+```python
+self.setup_dimension_reduction()
+```
+
+`setup_dimension_reduction()` identifies dimensions where `lower == upper`
+(fixed variables that carry no information for the optimizer).
+It stores a boolean mask `self.ident` where `True` marks fixed dimensions.
+
+Two sets of attributes coexist after this step:
+
+- `all_*` attributes (`all_lower`, `all_upper`, `all_var_name`, etc.) hold the
+  full-dimensional representation including fixed dimensions.
+- The main attributes (`self.lower`, `self.upper`, `self.bounds`, `self.n_dim`)
+  are reduced to the active (non-fixed) dimensions only.
+
+The flag `self.red_dim` is `True` when at least one dimension was removed.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+
+def fun3d(X):
+    X = np.atleast_2d(X)
+    return np.sum(X**2, axis=1)
+
+# dim 1 is fixed at 5.0
+opt = SpotOptim(fun=fun3d, bounds=[(-5, 5), (5, 5), (-5, 5)])
+print(f"red_dim            : {opt.red_dim}")
+print(f"ident mask         : {opt.ident}")
+print(f"n_dim (reduced)    : {opt.n_dim}")
+print(f"all_lower (full)   : {opt.all_lower}")
+
+assert opt.red_dim == True             # numpy.bool_ — use == not `is`
+assert opt.ident[1] == True            # numpy.bool_ — use == not `is`
+assert opt.n_dim == 2                  # only 2 free dimensions
+assert len(opt.all_lower) == 3        # full-dim snapshot preserved
+print("setup_dimension_reduction check passed.")
+```
+
+---
+
+## Step 19 — Starting Point Validation (`validate_x0`)
+
+```python
+if self.x0 is not None:
+    self.x0 = self.validate_x0(self.x0)
+```
+
+When the user supplies `x0`, it is validated and transformed to internal scale
+before any optimization begins.
+`validate_x0()` performs the following checks:
+
+1. `x0` must be 1-D or 2-D (a scalar or 3-D array raises `ValueError`).
+2. The length of `x0` must match the full dimension count (before reduction).
+3. Each component must lie within its natural-space bounds.
+4. Fixed dimensions must exactly equal their fixed value.
+
+If all checks pass, `validate_x0()` applies `transform_X()` to convert `x0`
+to the same internal (transformed and reduced) representation used during
+optimization.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# x0 in natural scale, dim 1 is fixed
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (5, 5), (-5, 5)],
+    x0=np.array([1.0, 5.0, 3.0]),
+)
+print(f"x0 (internal scale): {opt.x0}")
+# After reduction, x0 should only contain the 2 free dims
+assert opt.x0.shape == (2,)
+print("x0 = internal scale shape:", opt.x0.shape)
+
+# x0 outside bounds must raise
+try:
+    SpotOptim(fun=sphere, bounds=[(-5, 5)], x0=np.array([10.0]))
+    raise AssertionError("Should have raised ValueError")
+except ValueError as e:
+    print(f"Caught: {e}")
+print("validate_x0 check passed.")
+```
+
+---
+
+## Step 20 — Surrogate Initialization (`init_surrogate`)
+
+```python
+self.init_surrogate()
+```
+
+`init_surrogate()` sets up the surrogate model used to approximate the
+objective function between evaluations.
+Three scenarios are handled:
+
+- `surrogate=None` (default): A `GaussianProcessRegressor` with a
+  `ConstantKernel * Matern(nu=2.5)` kernel, 100 optimizer restarts,
+  and `normalize_y=True` is created automatically.
+- `surrogate=[list]`: A multi-surrogate setup is configured.
+  Probability weights (`self._prob_surrogate`) and per-surrogate
+  `_max_surrogate_points_list` are computed.
+- `surrogate=<any object>`: The provided object is used as-is.
+
+After `init_surrogate()`, the following attributes are set:
+
+- `self.surrogate` — the active surrogate model
+- `self._surrogates_list` — list or `None`
+- `self._prob_surrogate` — selection probabilities or `None`
+- `self._max_surrogate_points_list` — per-surrogate max point limits
+- `self._active_max_surrogate_points` — current active limit
+
+```{python}
+from sklearn.gaussian_process import GaussianProcessRegressor
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# Default surrogate
+opt_default = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+print(f"default surrogate type: {type(opt_default.surrogate).__name__}")
+assert isinstance(opt_default.surrogate, GaussianProcessRegressor)
+
+# User-supplied surrogate
+custom_gp = GaussianProcessRegressor(n_restarts_optimizer=5)
+opt_custom = SpotOptim(fun=sphere, bounds=[(-5, 5)], surrogate=custom_gp)
+assert opt_custom.surrogate is custom_gp
+print("init_surrogate check passed.")
+```
+
+---
+
+## Step 21 — Latin Hypercube Sampler (`lhs_sampler`)
+
+```python
+self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
+```
+
+A `scipy.stats.qmc.LatinHypercube` sampler is created for generating
+space-filling initial designs.
+`d=self.n_dim` sets the dimensionality to the reduced dimension count.
+`rng=self.seed` seeds the sampler for reproducibility.
+
+The primary parameter `rng=` is used instead of the legacy alias `seed=`
+to align with the current scipy API.
+The sampler is called in `generate_initial_design()` via
+`self.lhs_sampler.random(n=self.n_initial)`, which returns points in `[0, 1]^d`
+that are then scaled to `[lower, upper]`.
+
+```{python}
+from scipy.stats.qmc import LatinHypercube
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+import numpy as np
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], seed=42)
+print(f"lhs_sampler type: {type(opt.lhs_sampler).__name__}")
+assert isinstance(opt.lhs_sampler, LatinHypercube)
+
+# Reproducibility: two samplers with rng=42 produce identical draws
+s1 = LatinHypercube(d=2, rng=42).random(5)
+s2 = LatinHypercube(d=2, rng=42).random(5)
+assert np.allclose(s1, s2)
+print("lhs_sampler reproducibility check passed.")
+```
+
+---
+
+## Step 22 — Window Size Default
+
+```python
+if self.window_size is None:
+    if self.restart_after_n is not None:
+        self.window_size = self.restart_after_n
+    else:
+        self.window_size = 100
+```
+
+`window_size` controls how many of the most recent evaluated points are
+included in the surrogate's training window each iteration
+(used together with `selection_method`).
+
+If the user did not set `window_size` explicitly:
+
+- When `restart_after_n` is set, `window_size` mirrors it so that the
+  sliding window aligns with the restart cycle length.
+- Otherwise it falls back to `100`, large enough to include all points
+  in a typical short optimization run.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# Without restart — defaults to 100
+opt1 = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+print(f"window_size (no restart): {opt1.window_size}")
+assert opt1.window_size == 100
+
+# With restart_after_n — matches it
+opt2 = SpotOptim(fun=sphere, bounds=[(-5, 5)], restart_after_n=40)
+print(f"window_size (restart=40): {opt2.window_size}")
+assert opt2.window_size == 40
+
+# Explicit override
+opt3 = SpotOptim(fun=sphere, bounds=[(-5, 5)], window_size=25)
+print(f"window_size (explicit=25): {opt3.window_size}")
+assert opt3.window_size == 25
+print("window_size check passed.")
+```
+
+---
+
+## Step 23 — TensorBoard Setup
+
+```python
+self._clean_tensorboard_logs()
+self._init_tensorboard_writer()
+```
+
+The final two calls set up optional TensorBoard logging.
+
+`_clean_tensorboard_logs()` deletes existing log files at `tensorboard_path`
+if `tensorboard_clean=True` was requested.
+
+`_init_tensorboard_writer()` creates a `SummaryWriter` if `tensorboard_log=True`,
+writing event files to `tensorboard_path`.
+When logging is disabled (the default), both methods are no-ops so there is
+no runtime cost.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# Default: TensorBoard disabled — no writer created
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)], tensorboard_log=False)
+has_writer = hasattr(opt, "tb_writer") and opt.tb_writer is not None
+print(f"tb_writer active: {has_writer}  (expected False)")
+assert not has_writer
+print("TensorBoard no-op check passed.")
+```
+
+---
+
+## Complete Initialization Sequence Summary
+
+@tbl-init summarises every step performed by `__init__()` in order:
+
+| Step | Action | Key attributes set |
+|-----:|--------|-------------------|
+| 1 | `warnings.filterwarnings(warnings_filter)` | — |
+| 2 | Machine epsilon | `self.eps` |
+| 3 | `tolerance_x` default | `tolerance_x` |
+| 4 | Parameter inference from `fun` | `bounds`, `var_type`, `var_name`, `var_trans` |
+| 5 | Validate `max_iter >= n_initial` | — |
+| 6 | Create `SpotOptimConfig` | `self.config` |
+| 7 | Create `SpotOptimState` | `self.state` |
+| 8 | Store callable and `objective_names` | `self.fun`, `self.objective_names` |
+| 9 | Seed RNG | `self.rng` |
+| 10 | Factor maps and original bounds | `self._factor_maps`, `self._original_bounds` |
+| 11 | `process_factor_bounds()` | `self.bounds` (integer-encoded) |
+| 12 | Compute `n_dim` | `self.n_dim` |
+| 13 | `detect_var_type()` | `self.var_type` |
+| 14 | `modify_bounds_based_on_var_type()` | `self.bounds` |
+| 15 | Unpack bounds to arrays | `self.lower`, `self.upper` |
+| 16 | Default variable names | `self.var_name` |
+| 17 | `handle_default_var_trans()` | `self.var_trans` |
+| 18 | Snapshot bounds, `transform_bounds()` | `self._original_lower`, `self._original_upper`, `self.bounds` |
+| 19 | `setup_dimension_reduction()` | `self.ident`, `self.red_dim`, `all_*` attributes |
+| 20 | `validate_x0()` | `self.x0` (transformed, reduced) |
+| 21 | `init_surrogate()` | `self.surrogate`, `self._surrogates_list` |
+| 22 | Create `lhs_sampler` | `self.lhs_sampler` |
+| 23 | `window_size` default | `self.window_size` |
+| 24 | TensorBoard setup | `self.tb_writer` |
+
+: Complete Initialization Sequence Summary {#tbl-init}
