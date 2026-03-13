@@ -168,6 +168,8 @@ website:
                 file: docs/reference/sampling.mm.mm.qmd
               - text: mm_improvement
                 file: docs/reference/sampling.mm.mm_improvement.qmd
+              - text: mm_corrected_improvement
+                file: docs/reference/sampling.mm.mm_corrected_improvement.qmd
               - text: mm_improvement_contour
                 file: docs/reference/sampling.mm.mm_improvement_contour.qmd
               - text: mmlhs
@@ -178,6 +180,10 @@ website:
                 file: docs/reference/sampling.mm.mmphi_intensive.qmd
               - text: mmphi_intensive_update
                 file: docs/reference/sampling.mm.mmphi_intensive_update.qmd
+              - text: mmphi_corrected
+                file: docs/reference/sampling.mm.mmphi_corrected.qmd
+              - text: mmphi_corrected_update
+                file: docs/reference/sampling.mm.mmphi_corrected_update.qmd
               - text: mmsort
                 file: docs/reference/sampling.mm.mmsort.qmd
               - text: perturb
@@ -186,11 +192,18 @@ website:
                 file: docs/reference/sampling.mm.phisort.qmd
               - text: plot_mmphi_vs_n_lhs
                 file: docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.qmd
+              - text: plot_mmphi_corrected_vs_n_lhs
+                file: docs/reference/sampling.mm.plot_mmphi_corrected_vs_n_lhs.qmd
               - text: plot_mmphi_vs_points
                 file: docs/reference/sampling.mm.plot_mmphi_vs_points.qmd
+              - text: plot_mmphi_corrected_vs_points
+                file: docs/reference/sampling.mm.plot_mmphi_corrected_vs_points.qmd
               - text: propose_mmphi_intensive_minimizing_point
-                file: 
+                file:
                   docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.qmd
+              - text: propose_mmphi_corrected_minimizing_point
+                file:
+                  docs/reference/sampling.mm.propose_mmphi_corrected_minimizing_point.qmd
               - text: subset
                 file: docs/reference/sampling.mm.subset.qmd
           - section: Optimization
@@ -676,17 +689,23 @@ quartodoc:
         - sampling.mm.jd
         - sampling.mm.mm
         - sampling.mm.mm_improvement
+        - sampling.mm.mm_corrected_improvement
         - sampling.mm.mm_improvement_contour
         - sampling.mm.mmlhs
         - sampling.mm.mmphi
         - sampling.mm.mmphi_intensive
         - sampling.mm.mmphi_intensive_update
+        - sampling.mm.mmphi_corrected
+        - sampling.mm.mmphi_corrected_update
         - sampling.mm.mmsort
         - sampling.mm.perturb
         - sampling.mm.phisort
         - sampling.mm.plot_mmphi_vs_n_lhs
+        - sampling.mm.plot_mmphi_corrected_vs_n_lhs
         - sampling.mm.plot_mmphi_vs_points
+        - sampling.mm.plot_mmphi_corrected_vs_points
         - sampling.mm.propose_mmphi_intensive_minimizing_point
+        - sampling.mm.propose_mmphi_corrected_minimizing_point
         - sampling.mm.subset
     - title: Optimization
       contents:

@@ -70,17 +70,23 @@
 | [sampling.mm.jd](sampling.mm.jd.qmd#spotoptim.sampling.mm.jd) | Computes and counts the distinct p-norm distances between all pairs of points in X. |
 | [sampling.mm.mm](sampling.mm.mm.qmd#spotoptim.sampling.mm.mm) | Determines which of two sampling plans has better space-filling properties |
 | [sampling.mm.mm_improvement](sampling.mm.mm_improvement.qmd#spotoptim.sampling.mm.mm_improvement) | Calculates the Morris-Mitchell improvement for a candidate point x. |
+| [sampling.mm.mm_corrected_improvement](sampling.mm.mm_corrected_improvement.qmd#spotoptim.sampling.mm.mm_corrected_improvement) | Calculates the corrected Morris-Mitchell improvement for a candidate point. |
 | [sampling.mm.mm_improvement_contour](sampling.mm.mm_improvement_contour.qmd#spotoptim.sampling.mm.mm_improvement_contour) | Generates a contour plot of the Morris-Mitchell improvement over a grid defined by x1 and x2. |
 | [sampling.mm.mmlhs](sampling.mm.mmlhs.qmd#spotoptim.sampling.mm.mmlhs) | Performs an evolutionary search (using perturbations) to find a Morris-Mitchell |
 | [sampling.mm.mmphi](sampling.mm.mmphi.qmd#spotoptim.sampling.mm.mmphi) | Calculates the Morris-Mitchell sampling plan quality criterion. |
 | [sampling.mm.mmphi_intensive](sampling.mm.mmphi_intensive.qmd#spotoptim.sampling.mm.mmphi_intensive) | Calculates a size-invariant Morris-Mitchell criterion. |
 | [sampling.mm.mmphi_intensive_update](sampling.mm.mmphi_intensive_update.qmd#spotoptim.sampling.mm.mmphi_intensive_update) | Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design. |
+| [sampling.mm.mmphi_corrected](sampling.mm.mmphi_corrected.qmd#spotoptim.sampling.mm.mmphi_corrected) | Calculates the corrected, dimension-aware Morris-Mitchell criterion. |
+| [sampling.mm.mmphi_corrected_update](sampling.mm.mmphi_corrected_update.qmd#spotoptim.sampling.mm.mmphi_corrected_update) | Updates the corrected Morris-Mitchell criterion after adding one point. |
 | [sampling.mm.mmsort](sampling.mm.mmsort.qmd#spotoptim.sampling.mm.mmsort) | Ranks multiple sampling plans stored in a 3D array according to the |
 | [sampling.mm.perturb](sampling.mm.perturb.qmd#spotoptim.sampling.mm.perturb) | Performs a specified number of random element swaps on a sampling plan. |
 | [sampling.mm.phisort](sampling.mm.phisort.qmd#spotoptim.sampling.mm.phisort) | Ranks multiple sampling plans stored in a 3D array by the Morris-Mitchell |
 | [sampling.mm.plot_mmphi_vs_n_lhs](sampling.mm.plot_mmphi_vs_n_lhs.qmd#spotoptim.sampling.mm.plot_mmphi_vs_n_lhs) | Generates LHS designs for varying n, calculates mmphi and mmphi_intensive, |
+| [sampling.mm.plot_mmphi_corrected_vs_n_lhs](sampling.mm.plot_mmphi_corrected_vs_n_lhs.qmd#spotoptim.sampling.mm.plot_mmphi_corrected_vs_n_lhs) | Generate LHS designs for varying n and plot the Corrected Morris-Mitchell |
 | [sampling.mm.plot_mmphi_vs_points](sampling.mm.plot_mmphi_vs_points.qmd#spotoptim.sampling.mm.plot_mmphi_vs_points) | Plot the Morris-Mitchell criterion versus the number of added points. |
+| [sampling.mm.plot_mmphi_corrected_vs_points](sampling.mm.plot_mmphi_corrected_vs_points.qmd#spotoptim.sampling.mm.plot_mmphi_corrected_vs_points) | Plot the Corrected Morris-Mitchell Criterion versus the number of added points. |
 | [sampling.mm.propose_mmphi_intensive_minimizing_point](sampling.mm.propose_mmphi_intensive_minimizing_point.qmd#spotoptim.sampling.mm.propose_mmphi_intensive_minimizing_point) | Propose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion. |
+| [sampling.mm.propose_mmphi_corrected_minimizing_point](sampling.mm.propose_mmphi_corrected_minimizing_point.qmd#spotoptim.sampling.mm.propose_mmphi_corrected_minimizing_point) | Proposes a new point that minimizes the corrected Morris-Mitchell criterion. |
 | [sampling.mm.subset](sampling.mm.subset.qmd#spotoptim.sampling.mm.subset) | Returns a space-filling subset of a given size from a sampling plan, along with |
 
 ## Optimization

@@ -753,6 +753,95 @@ def mmphi_intensive(
     return intensive_phiq, J, d
 
 
+def mmphi_corrected(
+    X: np.ndarray,
+    q: Optional[float] = 2.0,
+    p: Optional[float] = 2.0,
+    normalize_flag: bool = False,
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """Calculates the corrected, dimension-aware Morris-Mitchell criterion.
+
+    This criterion is size-invariant by normalizing the standard Morris-Mitchell
+    criterion by :math:`n^{1+q/k}`, where ``n`` is the number of design points
+    and ``k`` is the dimension of the design space. It is defined as:
+
+    .. math::
+
+        \\hat{\\Phi}_q(P)
+        = \\left(\\frac{\\sum_{j=1}^{m} J_j\\, d_j^{-q}}{n^{1+q/k}}\\right)^{1/q}
+        = \\frac{\\Phi_q(P)}{n^{1/q+1/k}}
+
+    Unlike the standard criterion :math:`\\Phi_q` (which always increases with
+    ``n``) and the intensive criterion :math:`\\Phi_q^{*}` (which increases for
+    :math:`q > k`), :math:`\\hat{\\Phi}_q` is asymptotically size-invariant and
+    decreases when an optimally placed point is added for sufficiently large
+    ``n``.
+
+    Args:
+        X (np.ndarray):
+            A 2D array representing the sampling plan (shape: (n, k)).
+        q (float, optional):
+            The exponent used in the computation of the metric. Defaults to 2.0.
+        p (float, optional):
+            The distance norm to use (e.g., p=1 for Manhattan, p=2 for Euclidean).
+            Defaults to 2.0.
+        normalize_flag (bool, optional):
+            If True, normalizes the X array to [0, 1] before computing distances.
+            Defaults to False.
+
+    Returns:
+        tuple[float, np.ndarray, np.ndarray]:
+            A tuple containing:
+
+            - corrected_phiq (float): The corrected space-fillingness metric.
+              Smaller values indicate better (more space-filling) designs.
+              Returns ``np.inf`` for degenerate inputs (fewer than 2 unique points).
+            - J (np.ndarray): Multiplicities of the unique distances.
+            - d (np.ndarray): Unique pairwise distances.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import mmphi_corrected
+        >>> # Simple 3-point sampling plan in 2D
+        >>> X = np.array([
+        ...     [0.0, 0.0],
+        ...     [0.5, 0.5],
+        ...     [1.0, 1.0]
+        ... ])
+        >>> phi_hat, J, d = mmphi_corrected(X, q=2, p=2)
+        >>> print(phi_hat)
+    """
+    if X.shape[0] != len(np.unique(X, axis=0)):
+        X = np.unique(X, axis=0)
+
+    n = X.shape[0]
+    k = X.shape[1]
+
+    if normalize_flag:
+        X = normalize_X(X)
+
+    if n < 2:
+        return np.inf, 0, 0
+
+    J, d = jd(X, p=p)
+
+    if d.size == 0:
+        return np.inf, J, d
+
+    try:
+        sum_term = np.sum(J * (d ** (-q)))
+        normalization = n ** (1.0 + q / k)
+        corrected_phiq = (sum_term / normalization) ** (1.0 / q)
+    except ZeroDivisionError:
+        return np.inf
+    except FloatingPointError:
+        return np.inf
+    except Exception:
+        return np.inf
+
+    return corrected_phiq, J, d
+
+
 def mmphi_intensive_update(
     X: np.ndarray,
     new_point: np.ndarray,
@@ -826,6 +915,109 @@ def mmphi_intensive_update(
     return intensive_phiq, updated_J, updated_d
 
 
+def mmphi_corrected_update(
+    X: np.ndarray,
+    new_point: np.ndarray,
+    J: np.ndarray,
+    d: np.ndarray,
+    q: float = 2.0,
+    p: float = 2.0,
+    normalize_flag: bool = False,
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """Updates the corrected Morris-Mitchell criterion after adding one point.
+
+    Incrementally computes :math:`\\hat{\\Phi}_q` for the design
+    :math:`P \\cup \\{x_{n+1}\\}` using the cached distances ``J`` and ``d``
+    from the existing ``n``-point design ``P``.  Only the ``n`` new distances
+    between ``new_point`` and each existing point need to be computed, making
+    this more efficient than calling :func:`mmphi_corrected` from scratch.
+
+    The corrected criterion for the updated :math:`n+1` point design is:
+
+    .. math::
+
+        \\hat{\\Phi}_q(P \\cup \\{x_{n+1}\\})
+        = \\left(\\frac{\\sum_{j} J_j^{\\prime}\\, d_j^{\\prime\\,-q}}{
+            (n+1)^{1+q/k}}\\right)^{1/q}
+
+    where :math:`J^{\\prime}` and :math:`d^{\\prime}` are the updated
+    multiplicities and distances, :math:`n+1` is the new design size, and
+    :math:`k` is the dimension of the design space.
+
+    Args:
+        X (np.ndarray):
+            Existing sampling plan of shape ``(n, k)``.
+        new_point (np.ndarray):
+            New point to add, shape ``(k,)``.
+        J (np.ndarray):
+            Multiplicity array for the existing ``n``-point design, as
+            returned by :func:`mmphi_corrected`.
+        d (np.ndarray):
+            Unique-distance array for the existing ``n``-point design, as
+            returned by :func:`mmphi_corrected`.
+        q (float, optional):
+            Exponent used in the Morris-Mitchell metric. Defaults to 2.0.
+        p (float, optional):
+            Distance norm (e.g., p=1 Manhattan, p=2 Euclidean). Defaults to 2.0.
+        normalize_flag (bool, optional):
+            If True, normalizes ``X`` and ``new_point`` to [0, 1] before
+            computing distances. Defaults to False.
+
+    Returns:
+        tuple[float, np.ndarray, np.ndarray]:
+            A tuple containing:
+
+            - corrected_phiq (float): Updated corrected criterion value for the
+              ``n+1`` point design.
+            - updated_J (np.ndarray): Updated multiplicities array.
+            - updated_d (np.ndarray): Updated unique-distance array.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import mmphi_corrected, mmphi_corrected_update
+        >>> X = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+        >>> phi_hat, J, d = mmphi_corrected(X, q=2, p=2)
+        >>> new_point = np.array([0.25, 0.75])
+        >>> updated_phi, updated_J, updated_d = mmphi_corrected_update(
+        ...     X, new_point, J, d, q=2, p=2
+        ... )
+        >>> print(updated_phi)
+    """
+    n_points = X.shape[0]
+    if n_points < 1:
+        raise ValueError("The existing design must contain at least one point.")
+
+    k = X.shape[1]
+
+    if normalize_flag:
+        X = normalize_X(X)
+        new_point = (new_point - np.min(X, axis=0)) / (
+            np.max(X, axis=0) - np.min(X, axis=0)
+        )
+
+    # Distances between new_point and each existing point
+    new_distances = np.array(
+        [np.linalg.norm(new_point - X[i], ord=p) for i in range(n_points)]
+    )
+
+    # Reconstruct flat distance list from cached (J, d) and append new distances
+    all_distances = []
+    for dist, count in zip(d, J):
+        all_distances.extend([dist] * count)
+    all_distances.extend(new_distances)
+
+    updated_d, updated_J = np.unique(all_distances, return_counts=True)
+
+    # Corrected normalization: (n+1)^(1 + q/k)
+    n_new = n_points + 1
+    normalization = n_new ** (1.0 + q / k)
+
+    sum_term = np.sum(updated_J * (updated_d ** (-q)))
+    corrected_phiq = (sum_term / normalization) ** (1.0 / q)
+
+    return corrected_phiq, updated_J, updated_d
+
+
 def propose_mmphi_intensive_minimizing_point(
     X: np.ndarray,
     n_candidates: int = 1000,
@@ -896,6 +1088,96 @@ def propose_mmphi_intensive_minimizing_point(
     return best_point.reshape(1, -1)
 
 
+def propose_mmphi_corrected_minimizing_point(
+    X: np.ndarray,
+    n_candidates: int = 1000,
+    q: float = 2.0,
+    p: float = 2.0,
+    seed: Optional[int] = None,
+    lower: Optional[np.ndarray] = None,
+    upper: Optional[np.ndarray] = None,
+    normalize_flag: bool = False,
+) -> np.ndarray:
+    """Proposes a new point that minimizes the corrected Morris-Mitchell criterion.
+
+    Samples ``n_candidates`` points uniformly at random within ``[lower, upper]``
+    and returns the one whose addition to ``X`` yields the lowest value of the
+    corrected criterion :math:`\\hat{\\Phi}_q` (see :func:`mmphi_corrected`).
+
+    Internally the function pre-computes the base distance cache ``(J, d)`` for
+    ``X`` once and then evaluates each candidate via :func:`mmphi_corrected_update`,
+    which only needs to compute the ``n`` new distances between the candidate and
+    the existing points rather than all :math:`\\binom{n+1}{2}` pairwise distances.
+    This makes the search :math:`O(n)` per candidate instead of
+    :math:`O(n^2)`.
+
+    Args:
+        X (np.ndarray):
+            Existing design points, shape ``(n_points, n_dim)``.
+        n_candidates (int, optional):
+            Number of random candidate points to evaluate. Defaults to 1000.
+        q (float, optional):
+            Exponent for the corrected Morris-Mitchell criterion. Defaults to 2.0.
+        p (float, optional):
+            Distance norm (e.g., p=1 Manhattan, p=2 Euclidean). Defaults to 2.0.
+        seed (int, optional):
+            Random seed for reproducibility. Defaults to None.
+        lower (np.ndarray, optional):
+            Lower bounds for each dimension, shape ``(n_dim,)``.
+            Defaults to ``np.zeros(n_dim)``.
+        upper (np.ndarray, optional):
+            Upper bounds for each dimension, shape ``(n_dim,)``.
+            Defaults to ``np.ones(n_dim)``.
+        normalize_flag (bool, optional):
+            If True, normalizes ``X`` and all candidate points to [0, 1]
+            before computing distances. Defaults to False.
+
+    Returns:
+        np.ndarray: The best candidate point found, shape ``(1, n_dim)``.
+
+    Raises:
+        ValueError: If any element of ``lower`` is greater than or equal to
+            the corresponding element of ``upper``.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import propose_mmphi_corrected_minimizing_point
+        >>> X = np.array([[0.1, 0.2], [0.5, 0.5], [0.9, 0.8]])
+        >>> new_point = propose_mmphi_corrected_minimizing_point(
+        ...     X, n_candidates=200, q=2, p=2, seed=0
+        ... )
+        >>> print(new_point.shape)
+        (1, 2)
+    """
+    rng = np.random.default_rng(seed)
+    n_dim = X.shape[1]
+    if lower is None:
+        lower = np.zeros(n_dim)
+    if upper is None:
+        upper = np.ones(n_dim)
+    if np.any(lower >= upper):
+        raise ValueError("Lower bounds must be less than upper bounds.")
+
+    candidates = rng.uniform(lower, upper, size=(n_candidates, n_dim))
+
+    if normalize_flag:
+        X = normalize_X(X)
+        candidates = (candidates - lower) / (upper - lower)
+
+    # Pre-compute base (J, d) once; each candidate only needs n new distances
+    _, J_base, d_base = mmphi_corrected(X, q=q, p=p)
+
+    best_phi = np.inf
+    best_point = None
+    for cand in candidates:
+        phi, _, _ = mmphi_corrected_update(X, cand, J_base, d_base, q=q, p=p)
+        if phi < best_phi:
+            best_phi = phi
+            best_point = cand
+
+    return best_point.reshape(1, -1)
+
+
 def mm_improvement(
     x,
     X_base,
@@ -948,6 +1230,103 @@ def mm_improvement(
         print(f"Morris-Mitchell base: {phi_base}")
         print(f"Morris-Mitchell new: {phi_new}")
         print(f"Morris-Mitchell improvement: {y_mm}")
+    return float(y_mm)
+
+
+def mm_corrected_improvement(
+    x,
+    X_base: np.ndarray,
+    phi_base: Optional[float] = None,
+    J_base: Optional[np.ndarray] = None,
+    d_base: Optional[np.ndarray] = None,
+    q: float = 2,
+    p: float = 2,
+    normalize_flag: bool = False,
+    verbose: bool = False,
+    exponential: bool = True,
+) -> float:
+    """Calculates the corrected Morris-Mitchell improvement for a candidate point.
+
+    Measures how much the corrected criterion :math:`\\hat{\\Phi}_q` improves
+    (decreases) when ``x`` is added to the existing design ``X_base``.
+
+    The improvement is defined as:
+
+    .. math::
+
+        \\Delta\\hat{\\Phi}(x) =
+        \\begin{cases}
+            \\exp\\bigl(\\hat{\\Phi}_q(X_{\\text{base}}) -
+                       \\hat{\\Phi}_q(X_{\\text{base}} \\cup \\{x\\})\\bigr)
+                & \\text{if } \\texttt{exponential=True} \\\\
+            \\hat{\\Phi}_q(X_{\\text{base}}) -
+                \\hat{\\Phi}_q(X_{\\text{base}} \\cup \\{x\\})
+                & \\text{otherwise}
+        \\end{cases}
+
+    A positive value indicates that adding ``x`` **improves** the design
+    (lowers :math:`\\hat{\\Phi}_q`). The exponential form maps the improvement
+    to :math:`(0, \\infty)` and is convenient as a desirability-function input.
+
+    The cached ``(phi_base, J_base, d_base)`` triple can be supplied to avoid
+    recomputing the base criterion when calling this function repeatedly for
+    many candidates.  If omitted, the base criterion is computed from scratch.
+
+    Args:
+        x (np.ndarray):
+            Candidate point, shape ``(k,)`` or ``(1, k)``.
+        X_base (np.ndarray):
+            Existing design points, shape ``(n, k)``.
+        phi_base (float, optional):
+            Pre-computed :math:`\\hat{\\Phi}_q` for ``X_base``.  Computed
+            internally if not provided.
+        J_base (np.ndarray, optional):
+            Pre-computed multiplicity array for ``X_base``.  Computed
+            internally if not provided.
+        d_base (np.ndarray, optional):
+            Pre-computed unique-distance array for ``X_base``.  Computed
+            internally if not provided.
+        q (float, optional):
+            Exponent for the corrected Morris-Mitchell criterion. Defaults to 2.
+        p (float, optional):
+            Distance norm (p=1 Manhattan, p=2 Euclidean). Defaults to 2.
+        normalize_flag (bool, optional):
+            If True, normalizes ``X_base`` and ``x`` to [0, 1] before
+            computing distances. Defaults to False.
+        verbose (bool, optional):
+            If True, prints the base criterion, new criterion, and improvement.
+            Defaults to False.
+        exponential (bool, optional):
+            If True, returns :math:`\\exp(\\hat{\\Phi}_{\\text{base}} -
+            \\hat{\\Phi}_{\\text{new}})`.  If False, returns the raw
+            difference. Defaults to True.
+
+    Returns:
+        float: The corrected Morris-Mitchell improvement score.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import mm_corrected_improvement
+        >>> X_base = np.array([[0.1, 0.2], [0.4, 0.5], [0.7, 0.8]])
+        >>> x = np.array([0.0, 1.0])
+        >>> score = mm_corrected_improvement(x, X_base, q=2, p=2)
+        >>> print(score)
+    """
+    if phi_base is None or J_base is None or d_base is None:
+        phi_base, J_base, d_base = mmphi_corrected(
+            X_base, q=q, p=p, normalize_flag=normalize_flag
+        )
+    phi_new, _, _ = mmphi_corrected_update(
+        X_base, x, J_base, d_base, q=q, p=p, normalize_flag=normalize_flag
+    )
+    if exponential:
+        y_mm = np.exp(phi_base - phi_new)
+    else:
+        y_mm = phi_base - phi_new
+    if verbose:
+        print(f"Corrected Morris-Mitchell base: {phi_base}")
+        print(f"Corrected Morris-Mitchell new:  {phi_new}")
+        print(f"Corrected Morris-Mitchell improvement: {y_mm}")
     return float(y_mm)
 
 
@@ -1255,6 +1634,112 @@ def plot_mmphi_vs_points(
     return df_summary
 
 
+def plot_mmphi_corrected_vs_points(
+    X_base: np.ndarray,
+    x_min: np.ndarray,
+    x_max: np.ndarray,
+    p_min: int = 10,
+    p_max: int = 100,
+    p_step: int = 10,
+    n_repeats: int = 5,
+    q: float = 2.0,
+    p_norm: float = 2.0,
+) -> pd.DataFrame:
+    """Plot the Corrected Morris-Mitchell Criterion versus the number of added points.
+
+    For each point count in ``range(p_min, p_max + 1, p_step)`` a set of
+    uniformly random points is appended to ``X_base`` and the corrected
+    criterion ``hat_Phi_q`` is evaluated on the extended design.  This is
+    repeated ``n_repeats`` times per point count to capture stochastic
+    variability.  The resulting mean ± std curve is compared to the baseline
+    criterion of ``X_base`` alone.
+
+    Unlike ``plot_mmphi_vs_points``, which uses the intensive criterion
+    (normalized by ``M = n(n-1)/2``), this function uses the corrected
+    criterion (normalized by ``n^{1+q/k}``), which is asymptotically
+    size-invariant and therefore provides a more reliable comparison across
+    designs of different sizes.
+
+    Args:
+        X_base (np.ndarray): Base design matrix of shape ``(n, k)``.
+        x_min (np.ndarray): Lower bounds for each dimension, shape ``(k,)``.
+        x_max (np.ndarray): Upper bounds for each dimension, shape ``(k,)``.
+        p_min (int): Minimum number of points to add. Defaults to 10.
+        p_max (int): Maximum number of points to add. Defaults to 100.
+        p_step (int): Step size for the number of added points. Defaults to 10.
+        n_repeats (int): Number of repetitions per point count. Defaults to 5.
+        q (float): Exponent q for the corrected Morris-Mitchell criterion.
+            Defaults to 2.0.
+        p_norm (float): Distance norm p. Defaults to 2.0.
+
+    Returns:
+        pd.DataFrame: Summary DataFrame with columns ``n_points``,
+        ``(mmphi_corrected, mean)``, and ``(mmphi_corrected, std)`` for each
+        number of added points.
+
+    Examples:
+        >>> import numpy as np
+        >>> from spotoptim.sampling.mm import plot_mmphi_corrected_vs_points
+        >>> X_base = np.array([[0.1, 0.2], [0.4, 0.5], [0.7, 0.8]])
+        >>> x_min = np.array([0.0, 0.0])
+        >>> x_max = np.array([1.0, 1.0])
+        >>> df_summary = plot_mmphi_corrected_vs_points(X_base, x_min, x_max, p_min=10, p_max=50, p_step=10, n_repeats=3)
+    """
+    _, m = X_base.shape
+    p_values = range(p_min, p_max + 1, p_step)
+
+    mmphi_corrected_base, _, _ = mmphi_corrected(X=X_base, q=q, p=p_norm)
+
+    results = []
+    for p in p_values:
+        for _ in range(n_repeats):
+            x_random = np.random.uniform(low=x_min, high=x_max, size=(p, m))
+            X_extended = np.append(X_base, x_random, axis=0)
+            phi_corrected_ext, _, _ = mmphi_corrected(X=X_extended, q=q, p=p_norm)
+            results.append({"n_points": p, "mmphi_corrected": phi_corrected_ext})
+
+    df_results = pd.DataFrame(results)
+    df_summary = (
+        df_results.groupby("n_points")
+        .agg({"mmphi_corrected": ["mean", "std"]})
+        .reset_index()
+    )
+
+    plt.figure(figsize=(10, 6))
+    plt.errorbar(
+        df_summary["n_points"],
+        df_summary["mmphi_corrected"]["mean"],
+        yerr=df_summary["mmphi_corrected"]["std"],
+        fmt="bo-",
+        capsize=5,
+        capthick=1,
+        elinewidth=1,
+        label="Mean mmphi_corrected ± std",
+    )
+    plt.fill_between(
+        df_summary["n_points"],
+        df_summary["mmphi_corrected"]["mean"] - df_summary["mmphi_corrected"]["std"],
+        df_summary["mmphi_corrected"]["mean"] + df_summary["mmphi_corrected"]["std"],
+        alpha=0.1,
+        color="blue",
+    )
+    plt.axhline(
+        y=mmphi_corrected_base,
+        color="r",
+        linestyle="--",
+        label=f"Base design mmphi_corrected ({mmphi_corrected_base:.4f})",
+    )
+    plt.xlabel("Number of Added Points")
+    plt.ylabel("Corrected Morris-Mitchell Criterion (hat_Phiq)")
+    plt.title("Corrected Morris-Mitchell Criterion vs Number of Added Points")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+    plt.close()
+
+    return df_summary
+
+
 def mm_improvement_contour(
     X_base, x1=np.linspace(0, 1, 100), x2=np.linspace(0, 1, 100), q=2, p=2
 ):
@@ -1298,3 +1783,109 @@ def mm_improvement_contour(
     plt.grid()
     plt.show()
     plt.close()
+
+
+def plot_mmphi_corrected_vs_n_lhs(
+    k_dim: int,
+    seed: int,
+    n_min: int = 10,
+    n_max: int = 100,
+    n_step: int = 5,
+    q_phi: float = 2.0,
+    p_phi: float = 2.0,
+) -> None:
+    """Generate LHS designs for varying n and plot the Corrected Morris-Mitchell
+    Criterion against the standard criterion.
+
+    For each sample size ``n`` in ``range(n_min, n_max + 1, n_step)`` a fresh
+    Latin Hypercube design is drawn and both the intensive criterion
+    ``hat_Phi_q^I`` (normalized by ``M = n(n-1)/2``) and the corrected
+    criterion ``hat_Phi_q`` (normalized by ``n^{1+q/k}``) are computed.  The
+    two series are displayed on a shared x-axis with independent y-axes so
+    their trends can be compared directly.
+
+    The *corrected* criterion is asymptotically size-invariant: for large ``n``
+    its expected value stabilizes at a finite constant that depends only on the
+    spatial distribution of the design, not on ``n`` itself.  This plot makes
+    that convergence behaviour visible.
+
+    Args:
+        k_dim (int): Number of dimensions for the LHS design.
+        seed (int): Random seed for reproducibility.
+        n_min (int): Minimum number of samples. Defaults to 10.
+        n_max (int): Maximum number of samples. Defaults to 100.
+        n_step (int): Step size for increasing n. Defaults to 5.
+        q_phi (float): Exponent q for the Morris-Mitchell criteria. Defaults to 2.0.
+        p_phi (float): Distance norm p for the Morris-Mitchell criteria. Defaults to 2.0.
+
+    Returns:
+        None: Displays a dual-axis plot of ``mmphi_intensive`` and
+        ``mmphi_corrected`` vs. number of samples (n).
+
+    Examples:
+        >>> from spotoptim.sampling.mm import plot_mmphi_corrected_vs_n_lhs
+        >>> plot_mmphi_corrected_vs_n_lhs(k_dim=3, seed=42, n_min=10, n_max=50, n_step=5, q_phi=2.0, p_phi=2.0)
+    """
+    n_values = list(range(n_min, n_max + 1, n_step))
+    if not n_values:
+        print("Warning: n_values list is empty. Check n_min, n_max, and n_step.")
+        return
+    mmphi_intensive_results = []
+    mmphi_corrected_results = []
+    lhs_sampler = LatinHypercube(d=k_dim, rng=seed)
+
+    for n_points in n_values:
+        if n_points < 2:
+            print(f"Skipping n={n_points} as it's less than 2.")
+            mmphi_intensive_results.append(np.nan)
+            mmphi_corrected_results.append(np.nan)
+            continue
+        try:
+            X_design = lhs_sampler.random(n=n_points)
+            phi_intensive, _, _ = mmphi_intensive(X_design, q=q_phi, p=p_phi)
+            phi_corrected, _, _ = mmphi_corrected(X_design, q=q_phi, p=p_phi)
+            mmphi_intensive_results.append(phi_intensive)
+            mmphi_corrected_results.append(phi_corrected)
+        except Exception as e:
+            print(f"Error calculating for n={n_points}: {e}")
+            mmphi_intensive_results.append(np.nan)
+            mmphi_corrected_results.append(np.nan)
+
+    fig, ax1 = plt.subplots(figsize=(9, 6))
+
+    color = "tab:red"
+    ax1.set_xlabel("Number of Samples (n)")
+    ax1.set_ylabel("mmphi_intensive (PhiqI)", color=color)
+    ax1.plot(
+        n_values,
+        mmphi_intensive_results,
+        color=color,
+        marker="o",
+        linestyle="-",
+        label="mmphi_intensive (PhiqI)",
+    )
+    ax1.tick_params(axis="y", labelcolor=color)
+    ax1.grid(True, linestyle="--", alpha=0.7)
+
+    ax2 = ax1.twinx()
+    color = "tab:blue"
+    ax2.set_ylabel("mmphi_corrected (hat_Phiq)", color=color)
+    ax2.plot(
+        n_values,
+        mmphi_corrected_results,
+        color=color,
+        marker="x",
+        linestyle="--",
+        label="mmphi_corrected (hat_Phiq)",
+    )
+    ax2.tick_params(axis="y", labelcolor=color)
+
+    fig.tight_layout()
+    plt.title(
+        f"Corrected vs. Intensive Morris-Mitchell Criterion vs. Number of Samples (n)\n"
+        f"LHS (k={k_dim}, q={q_phi}, p={p_phi})"
+    )
+    lines, labels = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, loc="best")
+    plt.show()
