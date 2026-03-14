@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import pytest
 import numpy as np
 from spotoptim import SpotOptim
 from spotoptim.surrogate import MLPSurrogate
@@ -63,16 +62,6 @@ def test_spotoptim_optimize_loop_mlp():
     assert result.fun < 100.0
 
 
-@pytest.mark.skip(
-    reason=(
-        "MLPSurrogate with dropout=0.5 takes ~178 s locally and >900 s on CI "
-        "for just 2 sequential iterations (max_iter=5, n_initial=3). "
-        "The bottleneck is surrogate re-fitting inside the optimization loop, "
-        "not _predict_with_uncertainty (which is instant). "
-        "Performance bug in MLPSurrogate training when dropout>0 — "
-        "needs investigation before re-enabling."
-    )
-)
 def test_mlp_surrogate_uncertainty_in_loop():
     """Test that MLPSurrogate provides uncertainty estimates used by SpotOptim."""
     bounds = [(-2, 2), (-2, 2)]
