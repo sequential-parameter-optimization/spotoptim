@@ -43,9 +43,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  # PyTorch CPU-only index is configured in pyproject.toml [tool.uv.sources]
-
 jobs:
   release:
     name: Create Release
