@@ -1,0 +1,100 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# =============================================================================
+# .github/workflows/sync-develop.yml  —  Auto-sync main → develop
+# =============================================================================
+#
+# WHY THIS EXISTS
+# ---------------
+# develop → main PRs use squash-merge, which collapses all develop commits
+# into a single new commit on main. From that moment, main and develop share
+# no common ancestor for the files that were changed, so git treats every
+# subsequent PR as a three-way conflict on those lines — even when the same
+# person made all the changes.
+#
+# This workflow eliminates that by merging main back into develop immediately
+# after every push to main, re-establishing the common ancestor before
+# divergence can accumulate.
+#
+# TRIGGERS
+# --------
+#   push to main    — handles PR merges and Dependabot updates instantly.
+#   schedule (06:00 UTC daily) — fallback for pushes that carry [skip ci]
+#                     in their commit message (e.g. semantic-release chore
+#                     commits), which GitHub silently skips all workflow
+#                     triggers for.
+#   workflow_dispatch — manual trigger for on-demand syncs.
+#
+# CONFLICT BEHAVIOUR
+# ------------------
+# If a genuine merge conflict exists (real code divergence, not a squash
+# artefact), the job exits non-zero with instructions. Resolve manually:
+#   git fetch origin && git merge origin/main
+# =============================================================================
+
+name: Sync main → develop
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+# Never cancel a sync mid-flight — a partial merge left dangling is worse
+# than waiting for the previous run to finish.
+concurrency:
+  group: sync-develop
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Merge main into develop
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: develop
+          fetch-depth: 0
+          # Explicit token so git push origin develop is authorised.
+          # Pushes via GITHUB_TOKEN intentionally do NOT re-trigger workflows
+          # on develop (GitHub's built-in loop prevention) — correct behaviour
+          # here because the incoming code already passed CI on main.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check whether a sync is needed
+        id: check
+        run: |
+          git fetch origin main
+          behind=$(git rev-list --count HEAD..origin/main)
+          echo "behind=${behind}" >> "$GITHUB_OUTPUT"
+          if [ "${behind}" -eq 0 ]; then
+            echo "::notice::develop is already up-to-date with main — nothing to do"
+          else
+            echo "::notice::develop is ${behind} commit(s) behind main — syncing now"
+          fi
+
+      - name: Merge main into develop
+        if: steps.check.outputs.behind != '0'
+        run: |
+          git merge origin/main \
+            -m "chore: sync main into develop [skip ci]" \
+            || {
+              echo "::error::Merge conflict detected — manual resolution required."
+              echo "::error::Run locally: git fetch origin && git merge origin/main"
+              exit 1
+            }
+          git push origin develop
