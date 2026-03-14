@@ -237,29 +237,38 @@ class MLPSurrogate(BaseEstimator, RegressorMixin):
         X_tensor = torch.tensor(X_scaled)
 
         if return_std:
-            # MC Dropout Prediction
-            self.model_.train()  # Enable dropout
-            preds_scaled = []
+            # MC Dropout: vectorised batch instead of a Python loop.
+            #
+            # WHY: the acquisition optimiser calls predict(return_std=True)
+            # thousands of times per sequential iteration.  The original loop
+            # ran mc_dropout_passes separate forward passes per call, each
+            # incurring Python/PyTorch dispatch overhead.  Tiling the input to
+            # (mc_dropout_passes × n_samples, n_features) folds all passes into
+            # a single batched forward call; PyTorch applies independent dropout
+            # masks to every row, so the statistics are identical to the loop.
+            # Speedup: ~mc_dropout_passes× (e.g. 30× for the default).
+            n_samples = X_tensor.shape[0]
+            # Shape: (mc_dropout_passes * n_samples, n_features)
+            X_tiled = X_tensor.repeat(self.mc_dropout_passes, 1)
 
+            self.model_.train()  # Enable dropout for MC sampling
             with torch.no_grad():
-                for _ in range(self.mc_dropout_passes):
-                    out = self.model_(X_tensor)
-                    preds_scaled.append(out.numpy())
+                out_tiled = self.model_(X_tiled)  # (passes * n, out_dim)
+            self.model_.eval()  # Restore eval mode — was left in train mode before this fix
 
-            # Stack to shape (passes, n_samples, out_dim)
-            preds_scaled = np.stack(preds_scaled)
+            # Reshape to (passes, n_samples, out_dim)
+            out_dim = out_tiled.shape[-1]
+            preds_scaled = out_tiled.reshape(
+                self.mc_dropout_passes, n_samples, out_dim
+            ).numpy()
 
-            # Compute mean and std in scaled space
-            mean_scaled = np.mean(preds_scaled, axis=0)
-            std_scaled = np.std(preds_scaled, axis=0)
+            mean_scaled = np.mean(preds_scaled, axis=0)  # (n_samples, out_dim)
+            std_scaled = np.std(preds_scaled, axis=0)  # (n_samples, out_dim)
 
-            # Inverse transform mean
             mean = self.scaler_y_.inverse_transform(mean_scaled)
-
-            # Transform std: std_real = std_scaled * scale_
+            # std_real = std_scaled * scaler.scale_  (inverse of StandardScaler)
             std = std_scaled * self.scaler_y_.scale_
 
-            # Flatten to match Kriging interface (n_samples,)
             if mean.shape[1] == 1:
                 mean = mean.flatten()
                 std = std.flatten()
@@ -267,8 +276,8 @@ class MLPSurrogate(BaseEstimator, RegressorMixin):
             return mean, std
 
         else:
-            # Single Deterministic Prediction
-            self.model_.eval()  # Disable dropout
+            # Single deterministic prediction — dropout disabled
+            self.model_.eval()
             with torch.no_grad():
                 pred_scaled = self.model_(X_tensor).numpy()
 
