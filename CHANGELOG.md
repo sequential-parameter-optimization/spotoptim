@@ -1,3 +1,19 @@
+## [0.5.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.5.0...v0.5.1) (2026-03-14)
+
+
+### Bug Fixes
+
+* **ci:** resolve all pipeline failures ([eb94af5](https://github.com/sequential-parameter-optimization/spotoptim/commit/eb94af57e19e72a09b86c2f8c530800d8c5da590))
+* correctness of mlp_surrogate ([af1f59e](https://github.com/sequential-parameter-optimization/spotoptim/commit/af1f59ef6bf752b35c3b3c65edc183eb7cebc250))
+* problem with scipy's DE bound handling ([bf5f2dd](https://github.com/sequential-parameter-optimization/spotoptim/commit/bf5f2dda39911535e6c9b6dd07ac16842523f156))
+* **surrogate+test:** vectorise MC dropout predict and fix timing assertions ([18d0749](https://github.com/sequential-parameter-optimization/spotoptim/commit/18d07492e0453d102f0d3744002754bd29948d3c))
+* **test:** correct skip reason for test_mlp_surrogate_uncertainty_in_loop ([129325a](https://github.com/sequential-parameter-optimization/spotoptim/commit/129325a90f9328face512236b132ae662be65400))
+
+
+### Performance Improvements
+
+* **acquisition:** vectorise DE and tricands — 18× speedup for slow surrogates ([8870a51](https://github.com/sequential-parameter-optimization/spotoptim/commit/8870a5135a1e525f887e17a0462e79a5547e0423))
+
 ## [0.5.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.4.0...v0.5.0) (2026-03-14)
 
 
