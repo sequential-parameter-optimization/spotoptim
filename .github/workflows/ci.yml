@@ -49,9 +49,7 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.13"
-  # CPU-only PyTorch — no CUDA bundles needed for testing
-  UV_EXTRA_INDEX_URL: "https://download.pytorch.org/whl/cpu"
-  UV_INDEX_STRATEGY: "unsafe-best-match"
+  # PyTorch CPU-only index is configured in pyproject.toml [tool.uv.sources]
 
 jobs:
 

@@ -88,6 +88,16 @@ build-backend = "uv_build"
 [tool.uv]
 package = true
 
+# PyTorch CPU-only index — used ONLY for torch to avoid pulling
+# incompatible wheels for other packages (markupsafe, importlib-metadata, etc.)
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/spotoptim"]
 
