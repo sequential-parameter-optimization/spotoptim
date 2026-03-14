@@ -25,6 +25,18 @@
 #   coverage   — merge shard reports & upload to Codecov
 #   quality    — ruff + bandit (skip for docs-only, non-blocking)
 # =============================================================================
+#
+# Jobs:
+#   reuse      — REUSE licence compliance (PR + push)
+#   test       — pytest + coverage upload (PR + push, Python 3.13)
+#   lint       — black / isort / ruff formatting checks (non-blocking)
+#   security   — safety + bandit vulnerability scans (non-blocking)
+#
+# Note: Linear-history enforcement (no merge commits) is handled by GitHub's
+# built-in "Require linear history" branch-protection rule, which is faster,
+# more reliable, and blocks the merge button before CI even starts.
+# The previous `no-merge-commits` CI job has been removed.
+# =============================================================================
 
 name: CI Tests
 

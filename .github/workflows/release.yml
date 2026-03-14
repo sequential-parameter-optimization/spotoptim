@@ -14,6 +14,16 @@
 #   4. Build wheel + sdist
 #   5. Publish to PyPI via Trusted Publisher (OIDC)
 # =============================================================================
+#
+# Triggered by the Release Preflight workflow succeeding on main.
+# Steps:
+#   1. Checkout main (SHA-pinned, not PR SHA — see security note)
+#   2. Verify checkout integrity
+#   3. Semantic Release (version bump, changelog, GitHub Release tag)
+#   4. Build wheel + sdist
+#   5. Publish to PyPI via Trusted Publisher (OIDC)
+#   6. Verify PyPI availability
+# =============================================================================
 
 name: Release
 
