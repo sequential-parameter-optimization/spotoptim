@@ -1,3 +1,28 @@
+## [0.5.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.4.0...v0.5.0) (2026-03-14)
+
+
+### Features
+
+* class organisation ([0378c68](https://github.com/sequential-parameter-optimization/spotoptim/commit/0378c68fa106f5becb82be71f5090126a23ebb22))
+* corrected mm ([#36](https://github.com/sequential-parameter-optimization/spotoptim/issues/36)) ([6888851](https://github.com/sequential-parameter-optimization/spotoptim/commit/6888851a346812b16db0da50567258fd542ae5e1))
+* figsize for mm plots ([762f96a](https://github.com/sequential-parameter-optimization/spotoptim/commit/762f96a81b711e2b7610259ac236fb2fcd692985))
+* init_surrogate() ([a5da126](https://github.com/sequential-parameter-optimization/spotoptim/commit/a5da12602f7961c6854eed5845aa84987d1d5996))
+* mm-corrected ([0c22139](https://github.com/sequential-parameter-optimization/spotoptim/commit/0c22139d940ba03b03707bad897c61e77d1138b6))
+
+
+### Bug Fixes
+
+* **ci:** add UV_INDEX_STRATEGY for uv v7 index resolution ([adb6709](https://github.com/sequential-parameter-optimization/spotoptim/commit/adb670907f4108cbcbd5c1d6f25bcaf6e959044b))
+* **ci:** configure PyTorch CPU index in pyproject.toml for uv v7 ([b4a0ae1](https://github.com/sequential-parameter-optimization/spotoptim/commit/b4a0ae12a881fd762841067b8ea5fbd731f8eb17))
+* **ci:** increase test shard timeout to 45 minutes ([3a783aa](https://github.com/sequential-parameter-optimization/spotoptim/commit/3a783aa2ff71512e69eb1eb534c0d1a9e0dec8e6))
+* **ci:** raise per-test timeout 300s→900s for slow optimization tests ([13486ce](https://github.com/sequential-parameter-optimization/spotoptim/commit/13486cea719820a79fb46f58a8fbd8abbc9a2859))
+* **ci:** remove empty env block from release.yml ([da9fcbd](https://github.com/sequential-parameter-optimization/spotoptim/commit/da9fcbdcd0a5771d6f54a4c26a89c08e7df3feac))
+* **ci:** resolve workflow conflicts with main, keep improved versions ([63ee649](https://github.com/sequential-parameter-optimization/spotoptim/commit/63ee6494d010e281159f3ae9f3780224960c90b3))
+* release workflow ([67b0bce](https://github.com/sequential-parameter-optimization/spotoptim/commit/67b0bcee4fcf5c780aded7ef87a4d4df3a34e862))
+* remove empty env block in release workflow ([ae853c2](https://github.com/sequential-parameter-optimization/spotoptim/commit/ae853c2d3f73aa0e3cbc30e30e9e6b07b350688e))
+* transform_X bug ([2957e9a](https://github.com/sequential-parameter-optimization/spotoptim/commit/2957e9aa26ae359defd0b0d42a419aca9573b641))
+* workflow ([3fa3f62](https://github.com/sequential-parameter-optimization/spotoptim/commit/3fa3f62dc4d62ef11e35128200bea42813dda0f4))
+
 ## [0.4.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.3.2...v0.4.0) (2026-03-06)
 
 
