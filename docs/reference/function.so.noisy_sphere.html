@@ -725,6 +725,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_corrected_improvement.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_corrected_improvement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.mm_improvement_contour.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mm_improvement_contour</span></a>
   </div>
@@ -755,6 +761,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_corrected.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_corrected</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_corrected_update.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_corrected_update</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.mmsort.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mmsort</span></a>
   </div>
@@ -779,14 +797,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_corrected_vs_n_lhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_corrected_vs_n_lhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_points.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot_mmphi_vs_points</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_corrected_vs_points.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_corrected_vs_points</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">propose_mmphi_intensive_minimizing_point</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.propose_mmphi_corrected_minimizing_point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">propose_mmphi_corrected_minimizing_point</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -2039,22 +2075,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<div id="757a6a03" class="cell" data-execution_count="1">
+<div id="66e51e71" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="1">
-<pre><code>array([1.8585151])</code></pre>
+<pre><code>array([1.8300391])</code></pre>
 </div>
 </div>
-<div id="7fcac3ea" class="cell" data-execution_count="2">
+<div id="2f020ef6" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="2">
-<pre><code>array([0.04891231, 2.09425352, 0.48469642])</code></pre>
+<pre><code>array([0.08160734, 1.89544989, 0.48915116])</code></pre>
 </div>
 </div>
 

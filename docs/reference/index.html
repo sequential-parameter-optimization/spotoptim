@@ -690,6 +690,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mm_corrected_improvement.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mm_corrected_improvement</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.mm_improvement_contour.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mm_improvement_contour</span></a>
   </div>
@@ -720,6 +726,18 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_corrected.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_corrected</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.mmphi_corrected_update.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">mmphi_corrected_update</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.mmsort.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">mmsort</span></a>
   </div>
@@ -744,14 +762,32 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_corrected_vs_n_lhs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_corrected_vs_n_lhs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.plot_mmphi_vs_points.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">plot_mmphi_vs_points</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.plot_mmphi_corrected_vs_points.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_mmphi_corrected_vs_points</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">propose_mmphi_intensive_minimizing_point</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/sampling.mm.propose_mmphi_corrected_minimizing_point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">propose_mmphi_corrected_minimizing_point</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -2157,48 +2193,72 @@ ul.task-list li input[type="checkbox"] {
 <td>Calculates the Morris-Mitchell improvement for a candidate point x.</td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.mm_corrected_improvement.html#spotoptim.sampling.mm.mm_corrected_improvement">sampling.mm.mm_corrected_improvement</a></td>
+<td>Calculates the corrected Morris-Mitchell improvement for a candidate point.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/sampling.mm.mm_improvement_contour.html#spotoptim.sampling.mm.mm_improvement_contour">sampling.mm.mm_improvement_contour</a></td>
 <td>Generates a contour plot of the Morris-Mitchell improvement over a grid defined by x1 and x2.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="../../docs/reference/sampling.mm.mmlhs.html#spotoptim.sampling.mm.mmlhs">sampling.mm.mmlhs</a></td>
 <td>Performs an evolutionary search (using perturbations) to find a Morris-Mitchell</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../../docs/reference/sampling.mm.mmphi.html#spotoptim.sampling.mm.mmphi">sampling.mm.mmphi</a></td>
 <td>Calculates the Morris-Mitchell sampling plan quality criterion.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="../../docs/reference/sampling.mm.mmphi_intensive.html#spotoptim.sampling.mm.mmphi_intensive">sampling.mm.mmphi_intensive</a></td>
 <td>Calculates a size-invariant Morris-Mitchell criterion.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../../docs/reference/sampling.mm.mmphi_intensive_update.html#spotoptim.sampling.mm.mmphi_intensive_update">sampling.mm.mmphi_intensive_update</a></td>
 <td>Updates the Morris-Mitchell intensive criterion for n+1 points by adding a new point to the design.</td>
 </tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.mmphi_corrected.html#spotoptim.sampling.mm.mmphi_corrected">sampling.mm.mmphi_corrected</a></td>
+<td>Calculates the corrected, dimension-aware Morris-Mitchell criterion.</td>
+</tr>
 <tr class="even">
+<td><a href="../../docs/reference/sampling.mm.mmphi_corrected_update.html#spotoptim.sampling.mm.mmphi_corrected_update">sampling.mm.mmphi_corrected_update</a></td>
+<td>Updates the corrected Morris-Mitchell criterion after adding one point.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/sampling.mm.mmsort.html#spotoptim.sampling.mm.mmsort">sampling.mm.mmsort</a></td>
 <td>Ranks multiple sampling plans stored in a 3D array according to the</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../../docs/reference/sampling.mm.perturb.html#spotoptim.sampling.mm.perturb">sampling.mm.perturb</a></td>
 <td>Performs a specified number of random element swaps on a sampling plan.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="../../docs/reference/sampling.mm.phisort.html#spotoptim.sampling.mm.phisort">sampling.mm.phisort</a></td>
 <td>Ranks multiple sampling plans stored in a 3D array by the Morris-Mitchell</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="../../docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.html#spotoptim.sampling.mm.plot_mmphi_vs_n_lhs">sampling.mm.plot_mmphi_vs_n_lhs</a></td>
 <td>Generates LHS designs for varying n, calculates mmphi and mmphi_intensive,</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.plot_mmphi_corrected_vs_n_lhs.html#spotoptim.sampling.mm.plot_mmphi_corrected_vs_n_lhs">sampling.mm.plot_mmphi_corrected_vs_n_lhs</a></td>
+<td>Generate LHS designs for varying n and plot the Corrected Morris-Mitchell</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/sampling.mm.plot_mmphi_vs_points.html#spotoptim.sampling.mm.plot_mmphi_vs_points">sampling.mm.plot_mmphi_vs_points</a></td>
 <td>Plot the Morris-Mitchell criterion versus the number of added points.</td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.plot_mmphi_corrected_vs_points.html#spotoptim.sampling.mm.plot_mmphi_corrected_vs_points">sampling.mm.plot_mmphi_corrected_vs_points</a></td>
+<td>Plot the Corrected Morris-Mitchell Criterion versus the number of added points.</td>
+</tr>
+<tr class="even">
 <td><a href="../../docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html#spotoptim.sampling.mm.propose_mmphi_intensive_minimizing_point">sampling.mm.propose_mmphi_intensive_minimizing_point</a></td>
 <td>Propose a new point that, when added to X, minimizes the intensive Morris-Mitchell (mmphi_intensive) criterion.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/sampling.mm.propose_mmphi_corrected_minimizing_point.html#spotoptim.sampling.mm.propose_mmphi_corrected_minimizing_point">sampling.mm.propose_mmphi_corrected_minimizing_point</a></td>
+<td>Proposes a new point that minimizes the corrected Morris-Mitchell criterion.</td>
 </tr>
 <tr class="even">
 <td><a href="../../docs/reference/sampling.mm.subset.html#spotoptim.sampling.mm.subset">sampling.mm.subset</a></td>
