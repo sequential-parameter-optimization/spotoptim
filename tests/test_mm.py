@@ -4,7 +4,6 @@
 
 import numpy as np
 import matplotlib
-matplotlib.use("Agg")  # non-interactive backend for all plot tests
 
 from spotoptim.sampling.mm import (
     mmphi_intensive,
@@ -16,6 +15,8 @@ from spotoptim.sampling.mm import (
     plot_mmphi_corrected_vs_n_lhs,
     plot_mmphi_corrected_vs_points,
 )
+
+matplotlib.use("Agg")  # non-interactive backend for all plot tests
 
 
 def test_mmphi_intensive_basic():
@@ -149,6 +150,7 @@ def test_mmphi_intensive_update_consistency():
 # Tests for mmphi_corrected
 # ---------------------------------------------------------------------------
 
+
 def test_mmphi_corrected_basic():
     """Verify corrected criterion against manual calculation for a 3-point plan.
 
@@ -211,9 +213,9 @@ def test_mmphi_corrected_size_invariance():
 
     results = np.array(results)
     # Coefficient of variation < 15 % indicates convergence
-    assert results.std() / results.mean() < 0.15, (
-        f"hat_Phi did not converge: mean={results.mean():.4f}, std={results.std():.4f}"
-    )
+    assert (
+        results.std() / results.mean() < 0.15
+    ), f"hat_Phi did not converge: mean={results.mean():.4f}, std={results.std():.4f}"
 
 
 def test_mmphi_corrected_insufficient_points():
@@ -265,6 +267,7 @@ def test_mmphi_corrected_normalize_flag():
 # ---------------------------------------------------------------------------
 # Tests for mmphi_corrected_update
 # ---------------------------------------------------------------------------
+
 
 def test_mmphi_corrected_update_matches_from_scratch():
     """Update result must equal mmphi_corrected called on the full (n+1)-point design."""
@@ -359,7 +362,9 @@ def test_mmphi_corrected_update_single_existing_point():
     # Build a minimal J/d for the 1-point design (no pairs yet)
     J_empty = np.array([], dtype=int)
     d_empty = np.array([], dtype=float)
-    phi_upd, J_upd, d_upd = mmphi_corrected_update(X, new_point, J_empty, d_empty, q=q, p=p)
+    phi_upd, J_upd, d_upd = mmphi_corrected_update(
+        X, new_point, J_empty, d_empty, q=q, p=p
+    )
 
     assert np.isclose(phi_upd, phi_scratch)
 
@@ -377,8 +382,12 @@ def test_mmphi_corrected_update_normalize_flag():
     q, p = 2.0, 2.0
 
     _, J, d = mmphi_corrected(X, q=q, p=p)
-    phi_no_norm, _, _ = mmphi_corrected_update(X, new_point, J, d, q=q, p=p, normalize_flag=False)
-    phi_norm, _, _ = mmphi_corrected_update(X, new_point, J, d, q=q, p=p, normalize_flag=True)
+    phi_no_norm, _, _ = mmphi_corrected_update(
+        X, new_point, J, d, q=q, p=p, normalize_flag=False
+    )
+    phi_norm, _, _ = mmphi_corrected_update(
+        X, new_point, J, d, q=q, p=p, normalize_flag=True
+    )
 
     assert np.isfinite(phi_norm) and phi_norm > 0
     assert not np.isclose(phi_no_norm, phi_norm)
@@ -387,6 +396,7 @@ def test_mmphi_corrected_update_normalize_flag():
 # ---------------------------------------------------------------------------
 # Tests for propose_mmphi_corrected_minimizing_point
 # ---------------------------------------------------------------------------
+
 
 def test_propose_mmphi_corrected_return_shape():
     """Returned array has shape (1, n_dim)."""
@@ -472,6 +482,7 @@ def test_propose_mmphi_corrected_invalid_bounds_raises():
     """ValueError is raised when lower >= upper for any dimension."""
     X = np.random.default_rng(0).random((3, 2))
     import pytest
+
     with pytest.raises(ValueError, match="Lower bounds"):
         propose_mmphi_corrected_minimizing_point(
             X, lower=np.array([0.5, 0.0]), upper=np.array([0.3, 1.0])
@@ -527,7 +538,9 @@ def test_mm_corrected_improvement_cached_equals_scratch():
     X = np.random.default_rng(17).random((6, 2))
     x = np.array([0.3, 0.7])
     phi_base, J_base, d_base = mmphi_corrected(X)
-    result_cached = mm_corrected_improvement(x, X, phi_base=phi_base, J_base=J_base, d_base=d_base)
+    result_cached = mm_corrected_improvement(
+        x, X, phi_base=phi_base, J_base=J_base, d_base=d_base
+    )
     result_scratch = mm_corrected_improvement(x, X)
     assert np.isclose(result_cached, result_scratch)
 
@@ -573,6 +586,7 @@ def test_mm_corrected_improvement_normalize_flag_differs():
 def test_plot_mmphi_corrected_vs_n_lhs_runs(monkeypatch):
     """Function completes without raising for a valid parameter set."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
     plot_mmphi_corrected_vs_n_lhs(k_dim=2, seed=0, n_min=10, n_max=20, n_step=5)
 
@@ -580,6 +594,7 @@ def test_plot_mmphi_corrected_vs_n_lhs_runs(monkeypatch):
 def test_plot_mmphi_corrected_vs_n_lhs_empty_range(monkeypatch, capsys):
     """Empty n_values range prints a warning and returns early without plotting."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
     plot_mmphi_corrected_vs_n_lhs(k_dim=2, seed=0, n_min=50, n_max=10, n_step=5)
     captured = capsys.readouterr()
@@ -589,6 +604,7 @@ def test_plot_mmphi_corrected_vs_n_lhs_empty_range(monkeypatch, capsys):
 def test_plot_mmphi_corrected_vs_n_lhs_single_value(monkeypatch):
     """Single n value (n_min == n_max) runs without error."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
     plot_mmphi_corrected_vs_n_lhs(k_dim=3, seed=7, n_min=15, n_max=15, n_step=5)
 
@@ -596,6 +612,7 @@ def test_plot_mmphi_corrected_vs_n_lhs_single_value(monkeypatch):
 def test_plot_mmphi_corrected_vs_n_lhs_higher_dim(monkeypatch):
     """Works for higher-dimensional designs (k=5)."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
     plot_mmphi_corrected_vs_n_lhs(k_dim=5, seed=1, n_min=10, n_max=20, n_step=10)
 
@@ -621,9 +638,9 @@ def test_plot_mmphi_corrected_vs_n_lhs_ratio_identity():
         phi_i, _, _ = mmphi_intensive(X, q=q, p=p)
         phi_c, _, _ = mmphi_corrected(X, q=q, p=p)
         expected = phi_i * (M / n ** (1.0 + q / k)) ** (1.0 / q)
-        assert np.isclose(phi_c, expected, rtol=1e-10), (
-            f"q={q}, p={p}: corrected={phi_c:.6f}, expected={expected:.6f}"
-        )
+        assert np.isclose(
+            phi_c, expected, rtol=1e-10
+        ), f"q={q}, p={p}: corrected={phi_c:.6f}, expected={expected:.6f}"
 
 
 # ---------------------------------------------------------------------------
@@ -635,12 +652,15 @@ def test_plot_mmphi_corrected_vs_points_returns_dataframe(monkeypatch):
     """Return value is a pd.DataFrame with the expected column structure."""
     import pandas as pd
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
 
     X_base = np.array([[0.1, 0.2], [0.4, 0.5], [0.7, 0.8]])
     x_min = np.array([0.0, 0.0])
     x_max = np.array([1.0, 1.0])
-    df = plot_mmphi_corrected_vs_points(X_base, x_min, x_max, p_min=5, p_max=10, p_step=5, n_repeats=2)
+    df = plot_mmphi_corrected_vs_points(
+        X_base, x_min, x_max, p_min=5, p_max=10, p_step=5, n_repeats=2
+    )
 
     assert isinstance(df, pd.DataFrame)
     assert "n_points" in df.columns
@@ -649,12 +669,15 @@ def test_plot_mmphi_corrected_vs_points_returns_dataframe(monkeypatch):
 def test_plot_mmphi_corrected_vs_points_row_count(monkeypatch):
     """One row per distinct n_points value in range(p_min, p_max+1, p_step)."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
 
     X_base = np.random.default_rng(0).random((4, 2))
     x_min = np.zeros(2)
     x_max = np.ones(2)
-    df = plot_mmphi_corrected_vs_points(X_base, x_min, x_max, p_min=5, p_max=20, p_step=5, n_repeats=2)
+    df = plot_mmphi_corrected_vs_points(
+        X_base, x_min, x_max, p_min=5, p_max=20, p_step=5, n_repeats=2
+    )
 
     expected_rows = len(range(5, 21, 5))
     assert len(df) == expected_rows
@@ -663,12 +686,15 @@ def test_plot_mmphi_corrected_vs_points_row_count(monkeypatch):
 def test_plot_mmphi_corrected_vs_points_mean_finite(monkeypatch):
     """Mean corrected criterion is finite and positive for all point counts."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
 
     X_base = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
     x_min = np.zeros(2)
     x_max = np.ones(2)
-    df = plot_mmphi_corrected_vs_points(X_base, x_min, x_max, p_min=5, p_max=15, p_step=5, n_repeats=3)
+    df = plot_mmphi_corrected_vs_points(
+        X_base, x_min, x_max, p_min=5, p_max=15, p_step=5, n_repeats=3
+    )
 
     means = df["mmphi_corrected"]["mean"].values
     assert np.all(np.isfinite(means))
@@ -678,13 +704,22 @@ def test_plot_mmphi_corrected_vs_points_mean_finite(monkeypatch):
 def test_plot_mmphi_corrected_vs_points_custom_q_p(monkeypatch):
     """Runs successfully with non-default q and p_norm values."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
 
     X_base = np.random.default_rng(7).random((5, 3))
     x_min = np.zeros(3)
     x_max = np.ones(3)
     df = plot_mmphi_corrected_vs_points(
-        X_base, x_min, x_max, p_min=5, p_max=10, p_step=5, n_repeats=2, q=3.0, p_norm=1.0
+        X_base,
+        x_min,
+        x_max,
+        p_min=5,
+        p_max=10,
+        p_step=5,
+        n_repeats=2,
+        q=3.0,
+        p_norm=1.0,
     )
     assert len(df) == 2
 
@@ -692,12 +727,15 @@ def test_plot_mmphi_corrected_vs_points_custom_q_p(monkeypatch):
 def test_plot_mmphi_corrected_vs_points_std_nonneg(monkeypatch):
     """Std of criterion is non-negative for n_repeats > 1."""
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
 
     X_base = np.random.default_rng(3).random((4, 2))
     x_min = np.zeros(2)
     x_max = np.ones(2)
-    df = plot_mmphi_corrected_vs_points(X_base, x_min, x_max, p_min=10, p_max=10, p_step=5, n_repeats=4)
+    df = plot_mmphi_corrected_vs_points(
+        X_base, x_min, x_max, p_min=10, p_max=10, p_step=5, n_repeats=4
+    )
 
     stds = df["mmphi_corrected"]["std"].values
     assert np.all(stds >= 0)
@@ -710,6 +748,7 @@ def test_plot_mmphi_corrected_vs_points_matches_mmphi_corrected(monkeypatch):
     equals it (since std-of-one is NaN, we check with n_repeats=1).
     """
     import matplotlib.pyplot as plt
+
     monkeypatch.setattr(plt, "show", lambda: None)
     np.random.seed(42)
 

@@ -249,7 +249,7 @@ def plot_progress(
         # Determine names
         names = optimizer.objective_names
         if names is None or len(names) != n_obj:
-            names = [f"Objective {i+1}" for i in range(n_obj)]
+            names = [f"Objective {i + 1}" for i in range(n_obj)]
 
         # Basic colors (excluding gray/red used for main plot)
         # Use a colormap or a set list

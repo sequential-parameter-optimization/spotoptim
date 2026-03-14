@@ -58,9 +58,11 @@ class TestTricandsIntegration:
         def side_effect(x):
             # Return a value based on the candidate's coordinates to ensure deterministic selection.
             # We want point 0 ([-5, 0]) to have lowest value (best), then point 1, etc.
-            # Let's just sum the coordinates.
-            # x is shape (2,)
-            return np.sum(x)
+            # Must be vectorized-aware: the tricands path calls _acquisition_function
+            # with X_cands.T of shape (n_dim, n_cands) and expects (n_cands,) back.
+            if x.ndim == 2:
+                return np.sum(x, axis=0)  # sum per candidate column → (n_cands,)
+            return np.sum(x)  # single-point call → scalar
 
         self.opt._acquisition_function = MagicMock(side_effect=side_effect)
 

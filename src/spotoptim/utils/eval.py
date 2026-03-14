@@ -108,7 +108,7 @@ def mo_eval_models(
     for i in range(target_count):
         # Fit pipeline for this target
         if verbose:
-            print(f"Training model for target {i+1}/{target_count}...")
+            print(f"Training model for target {i + 1}/{target_count}...")
         model_pipeline = model_define_func()
 
         y_train_target = _get_target_column(y_train, i)
@@ -231,7 +231,7 @@ def mo_cv_models(X, y, model_define_func, cv=5, scores=None):
     results = {name: [] for name in scoring_items}
 
     for i in range(target_count):
-        print(f"Cross-validating target {i+1}/{target_count}...")
+        print(f"Cross-validating target {i + 1}/{target_count}...")
         y_target = _get_target_column(y, i)
 
         # Fresh model for each target (and cross_val_score clones it anyway)

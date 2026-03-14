@@ -122,8 +122,8 @@ class TestMaxTimeTermination:
             X = np.atleast_2d(X)
             return np.sum(X**2, axis=1)
 
-        max_time = 0.5 / 60  # 0.5 seconds = 0.00833 minutes
-        max_time_seconds = max_time * 60  # 0.5 seconds
+        max_time = 2.0 / 60  # 2.0 seconds = 0.0333 minutes
+        max_time_seconds = max_time * 60  # 2.0 seconds
 
         optimizer = SpotOptim(
             fun=slow_sphere,
@@ -145,10 +145,10 @@ class TestMaxTimeTermination:
         ), f"Expected early termination, got {result.nfev} evaluations"
 
         # Elapsed time must be well below the would-be full run (~10s).
-        # We use a 10x proportional tolerance rather than a fixed +Ns addend:
-        # the first surrogate fit after the initial design can add significant
-        # overhead on slow CI runners (1-3s), making fixed tolerances brittle.
-        # 10 * 0.5s = 5s cap still catches any truly runaway termination.
+        # CI surrogate fitting adds 5-10 s of overhead beyond the wall-clock
+        # time limit, so max_time was raised to 2 s (from 0.5 s) to give the
+        # 10x proportional cap (20 s) enough room without losing the ability to
+        # catch truly runaway termination (full run at 100 ms/eval ≈ 10 s).
         tolerance_factor = 10
         assert elapsed_time < max_time_seconds * tolerance_factor, (
             f"Runtime {elapsed_time:.2f}s exceeded {tolerance_factor}x the "

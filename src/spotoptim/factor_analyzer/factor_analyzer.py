@@ -605,8 +605,7 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
         if self.rotation is not None:
             if loadings.shape[1] <= 1:
                 warnings.warn(
-                    "No rotation will be performed when "
-                    "the number of factors equals 1."
+                    "No rotation will be performed when the number of factors equals 1."
                 )
             else:
                 if "method" in self.rotation_kwargs:

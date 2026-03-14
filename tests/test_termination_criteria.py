@@ -27,7 +27,6 @@ def count_evals_wrapper(fun):
 
 
 class TestTerminationCriteria:
-
     def test_finite_iter_infinite_time(self):
         """Test Case 1: Finite max_iter, Infinite max_time. Should stop at max_iter."""
         max_iter = 10

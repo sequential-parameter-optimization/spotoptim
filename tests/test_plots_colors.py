@@ -25,7 +25,6 @@ def add_points_1():
 
 
 class TestPlotIpHistogramsColors:
-
     @patch("matplotlib.pyplot.show")
     @patch("matplotlib.axes.Axes.scatter")
     def test_multi_color_valid(self, mock_scatter, mock_show, sample_df, add_points_2):
@@ -82,7 +81,6 @@ class TestPlotIpHistogramsColors:
 
 
 class TestPlotIpBoxplotsColors:
-
     @patch("matplotlib.pyplot.show")
     @patch("matplotlib.axes.Axes.scatter")
     def test_multi_color_valid(self, mock_scatter, mock_show, sample_df, add_points_2):

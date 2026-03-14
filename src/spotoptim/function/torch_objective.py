@@ -463,8 +463,9 @@ class TorchObjective:
                 val_steps = 0
                 with torch.no_grad():
                     for X_batch, y_batch in val_loader:
-                        X_batch, y_batch = X_batch.to(self.device), y_batch.to(
-                            self.device
+                        X_batch, y_batch = (
+                            X_batch.to(self.device),
+                            y_batch.to(self.device),
                         )
                         outputs = model(X_batch)
                         loss = criterion(outputs, y_batch)

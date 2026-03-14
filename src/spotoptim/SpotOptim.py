@@ -3088,18 +3088,31 @@ class SpotOptim(BaseEstimator):
             y_std = np.zeros_like(y_pred)
             return y_pred, y_std
 
-    def _acquisition_function(self, x: np.ndarray) -> float:
-        """Compute acquisition function value.
+    def _acquisition_function(self, x: np.ndarray) -> np.ndarray:
+        """Compute acquisition function value(s), supporting vectorised evaluation.
         Used in the suggest_next_infill_point() method.
 
         This implements "Infill Criteria" as described in Forrester et al. (2008),
         Section 3 "Exploring and Exploiting".
 
+        Supports two calling conventions so it works both as a plain callable and
+        as the ``func`` argument to ``differential_evolution(vectorized=True)``:
+
+        * **Single-point** (x.ndim == 1, shape ``(n_dim,)``):
+          returns a scalar float.
+        * **Vectorised batch** (x.ndim == 2, shape ``(n_dim, n_population)``):
+          scipy passes the whole DE population at once; each *column* is one
+          candidate.  Returns an array of shape ``(n_population,)``.
+          A single batched surrogate call replaces ``n_population`` serial calls,
+          cutting per-generation overhead by ~``popsize``× (typically 30–150×).
+
         Args:
-            x (ndarray): Point to evaluate, shape (n_features,).
+            x (ndarray): Single point ``(n_dim,)`` or population matrix
+                ``(n_dim, n_population)``.
 
         Returns:
-            float: Acquisition function value (to be minimized).
+            float | ndarray: Scalar for single-point calls; array of shape
+            ``(n_population,)`` for vectorised calls (values to be minimised).
 
         Examples:
             >>> import numpy as np
@@ -3119,42 +3132,43 @@ class SpotOptim(BaseEstimator):
             >>> print("Acquisition function value:", acq_value)
             Acquisition function value: [some float value]
         """
-        x = x.reshape(1, -1)
+        # Vectorised call from differential_evolution(vectorized=True):
+        #   x is (n_dim, n_population) — columns are candidates.
+        # Single-point call: x is (n_dim,).
+        if x.ndim == 2:
+            X = x.T  # (n_population, n_dim)
+            batched = True
+        else:
+            X = x.reshape(1, -1)  # (1, n_dim)
+            batched = False
 
         if self.acquisition == "y":
-            # Predicted mean
-            return self.surrogate.predict(x)[0]
+            vals = self.surrogate.predict(X)  # (n,)
+            return vals if batched else float(vals[0])
 
-        elif self.acquisition == "ei":
-            # Expected Improvement
-            mu, sigma = self._predict_with_uncertainty(x)
-            mu = mu[0]
-            sigma = sigma[0]
-
-            if sigma < 1e-10:
-                return 0.0
-
+        elif self.acquisition in ("ei", "pi"):
+            mu, sigma = self._predict_with_uncertainty(X)  # (n,), (n,)
             y_best = np.min(self.y_)
-            improvement = y_best - mu
-            Z = improvement / sigma
-            ei = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
-            return -ei  # Minimize negative EI
 
-        elif self.acquisition == "pi":
-            # Probability of Improvement
-            mu, sigma = self._predict_with_uncertainty(x)
-            mu = mu[0]
-            sigma = sigma[0]
+            if self.acquisition == "ei":
+                # Vectorised EI — guard against sigma ≈ 0 without branching
+                safe_sigma = np.where(sigma < 1e-10, 1.0, sigma)
+                improvement = y_best - mu
+                Z = improvement / safe_sigma
+                acq = np.where(
+                    sigma < 1e-10,
+                    0.0,
+                    improvement * norm.cdf(Z) + sigma * norm.pdf(Z),
+                )
+            else:  # pi
+                safe_sigma = np.where(sigma < 1e-10, 1.0, sigma)
+                Z = (y_best - mu) / safe_sigma
+                acq = np.where(sigma < 1e-10, 0.0, norm.cdf(Z))
 
-            if sigma < 1e-10:
-                return 0.0
+            neg_acq = -acq
+            return neg_acq if batched else float(neg_acq[0])
 
-            y_best = np.min(self.y_)
-            Z = (y_best - mu) / sigma
-            pi = norm.cdf(Z)
-            return -pi  # Minimize negative PI
-
-            raise ValueError(f"Unknown acquisition function: {self.acquisition}")
+        raise ValueError(f"Unknown acquisition function: {self.acquisition}")
 
     def _optimize_acquisition_tricands(self) -> np.ndarray:
         """Optimize using geometric infill strategy via triangulation candidates.
@@ -3215,10 +3229,10 @@ class SpotOptim(BaseEstimator):
         # Denormalize candidates back to original space
         X_cands = X_cands_norm * (self.upper - self.lower) + self.lower
 
-        # Evaluate acquisition function on all candidates
-        # _acquisition_function returns NEGATIVE acquisition values (minimization)
-        # We iterate to ensure correct handling of 1D/2D shapes by _acquisition_function
-        acq_values = np.array([self._acquisition_function(x) for x in X_cands])
+        # Evaluate acquisition function on all candidates in a single batched call.
+        # X_cands is (n_cands, n_dim); transposing to (n_dim, n_cands) matches the
+        # vectorised convention used by _acquisition_function and differential_evolution.
+        acq_values = self._acquisition_function(X_cands.T)
 
         # Sort indices (smallest is best because of negation)
         sorted_indices = np.argsort(acq_values)
@@ -3302,6 +3316,15 @@ class SpotOptim(BaseEstimator):
 
         if best_x is not None:
             best_x = self.transform_X(best_x)
+            # Nudge x0 strictly inside DE bounds using nextafter to absorb FP rounding.
+            # Example: sqrt(10) ≈ 3.1622776601683795 is the exact lower bound; after
+            # scipy's _unscale_parameters, the value may compute to −1e-16 instead of
+            # 0.0, triggering "Some entries in x0 lay outside the specified bounds".
+            _lb = np.array([b[0] for b in self.bounds])
+            _ub = np.array([b[1] for b in self.bounds])
+            best_x = np.clip(
+                best_x, np.nextafter(_lb, _ub), np.nextafter(_ub, _lb)
+            )
             best_X = best_x if self.rng.rand() < self.de_x0_prob else None
         else:
             best_X = None
@@ -3319,6 +3342,7 @@ class SpotOptim(BaseEstimator):
             seed=self.rng,
             callback=callback,
             x0=best_X,
+            vectorized=True,  # Entire population evaluated in one batched call
             **self._prepare_de_kwargs(best_X),
         )
 
@@ -3522,7 +3546,7 @@ class SpotOptim(BaseEstimator):
                 valid_candidates.append(candidate)
             elif self.verbose:
                 print(
-                    f"Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate/invalid."
+                    f"Optimizer candidate {i + 1}/{len(obs_candidates)} was duplicate/invalid."
                 )
 
         return valid_candidates
@@ -7208,7 +7232,6 @@ class SpotOptim(BaseEstimator):
             True
         """
         if self.tensorboard_log:
-
             if self.tensorboard_path is None:
                 # Create default path with timestamp
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

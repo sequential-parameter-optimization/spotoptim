@@ -60,7 +60,6 @@ def test_batch_size_tuning():
         with patch.object(
             objective, "train_model", return_value={"val_loss": 0.5, "epochs": 1}
         ):
-
             # 4. Evaluate with a specific batch size
             # X corresponds to [lr, batch_size]
             # Let's say lr=0.01, batch_size=64
@@ -127,7 +126,6 @@ def test_fixed_batch_size():
         with patch.object(
             objective, "train_model", return_value={"val_loss": 0.5, "epochs": 1}
         ):
-
             X_eval = np.array([[0.01]])
             objective(X_eval)
 

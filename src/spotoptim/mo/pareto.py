@@ -169,7 +169,7 @@ def mo_xy_surface(
     for i, j in feature_pairs:
         if not (0 <= i < n_features and 0 <= j < n_features):
             raise ValueError(
-                f"Invalid feature pair ({i}, {j}). Indices must be between 0 and {n_features-1}."
+                f"Invalid feature pair ({i}, {j}). Indices must be between 0 and {n_features - 1}."
             )
 
     # Create a grid of subplots
@@ -288,7 +288,7 @@ def mo_xy_contour(
     for i, j in feature_pairs:
         if not (0 <= i < n_features and 0 <= j < n_features):
             raise ValueError(
-                f"Invalid feature pair ({i}, {j}). Indices must be between 0 and {n_features-1}."
+                f"Invalid feature pair ({i}, {j}). Indices must be between 0 and {n_features - 1}."
             )
 
     # Create a grid of subplots

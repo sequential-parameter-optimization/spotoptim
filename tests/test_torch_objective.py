@@ -192,7 +192,6 @@ def test_manual_seed_function():
         patch("spotoptim.function.torch_objective.np.random") as mock_np_random,
         patch("spotoptim.function.torch_objective.torch") as mock_torch,
     ):
-
         # Basic mock setup enough to instantiate
         exp = MagicMock(spec=ExperimentControl)
         # exp needs hyperparameters.seed check to pass init cleanly if we don't provide seed arg

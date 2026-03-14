@@ -29,9 +29,14 @@ class TestOptimizeAcquisitionFunc:
             acquisition_fun_return_size=1,
         )
 
-        # Mock _acquisition_function to avoid needing a trained surrogate
-        # Just return sum of squares (simple convex function)
-        optimizer._acquisition_function = MagicMock(side_effect=lambda x: np.sum(x**2))
+        # Mock _acquisition_function to avoid needing a trained surrogate.
+        # Must be vectorized-aware: differential_evolution(vectorized=True) passes
+        # x as (n_dim, S) and expects (S,) back; single-point calls pass (n_dim,).
+        optimizer._acquisition_function = MagicMock(
+            side_effect=lambda x: (
+                np.sum(x**2, axis=0) if x.ndim == 2 else float(np.sum(x**2))
+            )
+        )
 
         # Call method
         x_opt = optimizer.optimize_acquisition_func()
@@ -97,8 +102,10 @@ class TestOptimizeAcquisitionFunc:
             acquisition_fun_return_size=1,
         )
 
-        # Mock acquisition function
-        optimizer._acquisition_function = MagicMock(return_value=0.0)
+        # Mock acquisition function — must handle vectorized calls: (n_dim, S) → (S,)
+        optimizer._acquisition_function = MagicMock(
+            side_effect=lambda x: np.zeros(x.shape[1]) if x.ndim == 2 else 0.0
+        )
 
         # Call method
         x_opt = optimizer.optimize_acquisition_func()
