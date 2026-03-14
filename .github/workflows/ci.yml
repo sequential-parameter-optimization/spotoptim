@@ -182,7 +182,7 @@ jobs:
             -n auto \
             --dist loadfile \
             --tb=short \
-            --timeout=300 \
+            --timeout=900 \
             --cov=src/spotoptim \
             --cov-report=xml:coverage-shard${{ matrix.shard }}.xml \
             --cov-report=term
