@@ -381,9 +381,7 @@ def duplication_matrix(n=1):
         https://en.wikipedia.org/wiki/Duplication_and_elimination_matrices
     """
     if n < 1:
-        raise ValueError(
-            "The argument `n` must be a " "positive integer greater than 1."
-        )
+        raise ValueError("The argument `n` must be a positive integer greater than 1.")
 
     dup = np.zeros((int(n * n), int(n * (n + 1) / 2)))
     count = 0

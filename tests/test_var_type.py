@@ -168,12 +168,12 @@ class TestVarType:
         # First column (float) should have non-integers
         # Second column (int) should be integers
         # Third column (factor) should be integers
-        assert np.allclose(
-            X0[:, 1], np.round(X0[:, 1]), atol=1e-10
-        ), "Int column should be integers"
-        assert np.allclose(
-            X0[:, 2], np.round(X0[:, 2]), atol=1e-10
-        ), "Factor column should be integers"
+        assert np.allclose(X0[:, 1], np.round(X0[:, 1]), atol=1e-10), (
+            "Int column should be integers"
+        )
+        assert np.allclose(X0[:, 2], np.round(X0[:, 2]), atol=1e-10), (
+            "Factor column should be integers"
+        )
 
     def test_optimize_with_float_variables(self):
         """Test full optimization with float variables."""
@@ -289,12 +289,12 @@ class TestVarType:
         assert np.allclose(opt.X_[:, 2], np.round(opt.X_[:, 2]), atol=1e-10)
 
         # Best point verification
-        assert np.isclose(
-            result.x[1], np.round(result.x[1]), atol=1e-10
-        ), "Int var should be integer"
-        assert np.isclose(
-            result.x[2], np.round(result.x[2]), atol=1e-10
-        ), "Factor var should be integer"
+        assert np.isclose(result.x[1], np.round(result.x[1]), atol=1e-10), (
+            "Int var should be integer"
+        )
+        assert np.isclose(result.x[2], np.round(result.x[2]), atol=1e-10), (
+            "Factor var should be integer"
+        )
 
     def test_var_type_persistence_throughsuggest_next_infill_point(self):
         """Test that var_type is applied when suggesting next points."""
@@ -320,12 +320,12 @@ class TestVarType:
         # Check that all suggested points (including those after initial design)
         # respect the variable types
         for i in range(opt.X_.shape[0]):
-            assert np.isclose(
-                opt.X_[i, 0], np.round(opt.X_[i, 0]), atol=1e-10
-            ), f"Point {i}, dim 0 should be int"
-            assert np.isclose(
-                opt.X_[i, 1], np.round(opt.X_[i, 1]), atol=1e-10
-            ), f"Point {i}, dim 1 should be factor"
+            assert np.isclose(opt.X_[i, 0], np.round(opt.X_[i, 0]), atol=1e-10), (
+                f"Point {i}, dim 0 should be int"
+            )
+            assert np.isclose(opt.X_[i, 1], np.round(opt.X_[i, 1]), atol=1e-10), (
+                f"Point {i}, dim 1 should be factor"
+            )
 
     def test_var_type_in_provided_initial_design(self):
         """Test that var_type is applied to user-provided initial design."""

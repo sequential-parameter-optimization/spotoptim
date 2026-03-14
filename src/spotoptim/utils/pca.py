@@ -45,7 +45,7 @@ def get_pca(df, n_components=3) -> tuple:
     feature_names = numeric_df.columns
     pca = PCA(n_components=n_components)
     pca_scores = pca.fit_transform(numeric_df)
-    pca_columns = [f"PC{i+1}" for i in range(pca_scores.shape[1])]
+    pca_columns = [f"PC{i + 1}" for i in range(pca_scores.shape[1])]
     df_pca_components = pd.DataFrame(data=pca_scores, columns=pca_columns)
     sample_names = df.index
     return pca, pca_scores, feature_names, sample_names, df_pca_components
@@ -267,7 +267,7 @@ def get_loading_scores(pca, feature_names) -> pd.DataFrame:
     """
     loading_scores = pd.DataFrame(
         pca.components_.T,
-        columns=[f"PC{i+1}" for i in range(pca.n_components_)],
+        columns=[f"PC{i + 1}" for i in range(pca.n_components_)],
         index=feature_names,
     )
     return loading_scores

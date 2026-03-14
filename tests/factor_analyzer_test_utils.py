@@ -146,7 +146,6 @@ def collect_r_output(
 
     output = {}
     for output_type in output_types:
-
         filename = f"{output_type}_{method}_{rotation}_{factors}_{test_name}.csv"
 
         filename = os.path.join(top_dir, test_name, filename)
@@ -304,7 +303,6 @@ def check_scenario(
     )
 
     for output_type in output_types:
-
         data1 = r_output[output_type]
         data2 = py_output[output_type]
         print(output_type)
@@ -448,7 +446,6 @@ def check_cfa(
     )
 
     for output_type in output_types:
-
         data1 = outputs_r[output_type].values
         data2 = outputs_p[output_type]
         print(data1)

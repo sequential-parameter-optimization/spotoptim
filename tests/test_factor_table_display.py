@@ -42,9 +42,9 @@ def test_factor_table_display_results(capsys):
     assert cat_line is not None, "Factor variable 'cat' not found in output table"
     assert " - " in cat_line, "Factor variable 'cat' should have '-' in columns"
     # To be more specific, we expect two '-' entries for lower and upper
-    assert (
-        cat_line.count(" - ") >= 2
-    ), "Factor variable 'cat' should have '-' for both lower and upper bounds"
+    assert cat_line.count(" - ") >= 2, (
+        "Factor variable 'cat' should have '-' for both lower and upper bounds"
+    )
 
 
 def test_factor_table_display_design(capsys):
@@ -74,6 +74,6 @@ def test_factor_table_display_design(capsys):
     assert cat_line is not None, "Factor variable 'cat' not found in design table"
     assert " - " in cat_line, "Factor variable 'cat' should have '-' in columns"
     # To be more specific, we expect two '-' entries for lower and upper
-    assert (
-        cat_line.count(" - ") >= 2
-    ), "Factor variable 'cat' should have '-' for both lower and upper bounds"
+    assert cat_line.count(" - ") >= 2, (
+        "Factor variable 'cat' should have '-' for both lower and upper bounds"
+    )

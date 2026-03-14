@@ -45,15 +45,15 @@ def test_prepare_data_logic():
 
     # 3. Test default
     train_loader, _ = objective._prepare_data()
-    assert (
-        train_loader.batch_size == 10
-    ), "Should use default batch size from experiment"
+    assert train_loader.batch_size == 10, (
+        "Should use default batch size from experiment"
+    )
 
     # 4. Test override
     train_loader_override, _ = objective._prepare_data(batch_size=25)
-    assert (
-        train_loader_override.batch_size == 25
-    ), "Should use provided batch size override"
+    assert train_loader_override.batch_size == 25, (
+        "Should use provided batch size override"
+    )
 
 
 def test_call_functional_flow():
@@ -87,9 +87,9 @@ def test_call_functional_flow():
     def mock_train_model(model, train_loader, val_loader, params):
         # Assertions inside the flow
         expected_bs = int(params["batch_size"])
-        assert (
-            train_loader.batch_size == expected_bs
-        ), f"Expected batch size {expected_bs}, got {train_loader.batch_size}"
+        assert train_loader.batch_size == expected_bs, (
+            f"Expected batch size {expected_bs}, got {train_loader.batch_size}"
+        )
         return {"val_loss": 0.1, "epochs": 1.0}
 
     objective.train_model = mock_train_model

@@ -16,9 +16,9 @@ class TestRosenbrock:
         """Test that the global minimum is correctly identified at [1, 1]."""
         X = np.array([[1.0, 1.0]])
         result = rosenbrock(X)
-        assert np.isclose(
-            result[0], 0.0, atol=1e-10
-        ), f"Global minimum should be 0, got {result[0]}"
+        assert np.isclose(result[0], 0.0, atol=1e-10), (
+            f"Global minimum should be 0, got {result[0]}"
+        )
 
     def test_single_point_2d(self):
         """Test evaluation at a single 2D point."""
@@ -36,20 +36,20 @@ class TestRosenbrock:
 
         # Check first point [0, 0]
         expected_0 = (1 - 0) ** 2 + 100 * (0 - 0**2) ** 2
-        assert np.isclose(
-            result[0], expected_0
-        ), f"Point [0, 0]: expected {expected_0}, got {result[0]}"
+        assert np.isclose(result[0], expected_0), (
+            f"Point [0, 0]: expected {expected_0}, got {result[0]}"
+        )
 
         # Check second point [1, 1] (global minimum)
-        assert np.isclose(
-            result[1], 0.0, atol=1e-10
-        ), f"Point [1, 1]: expected 0, got {result[1]}"
+        assert np.isclose(result[1], 0.0, atol=1e-10), (
+            f"Point [1, 1]: expected 0, got {result[1]}"
+        )
 
         # Check third point [0.5, 0.5]
         expected_2 = (1 - 0.5) ** 2 + 100 * (0.5 - 0.5**2) ** 2
-        assert np.isclose(
-            result[2], expected_2
-        ), f"Point [0.5, 0.5]: expected {expected_2}, got {result[2]}"
+        assert np.isclose(result[2], expected_2), (
+            f"Point [0.5, 0.5]: expected {expected_2}, got {result[2]}"
+        )
 
     def test_known_values_2d(self):
         """Test against known function values."""
@@ -64,9 +64,9 @@ class TestRosenbrock:
         for x, y, expected in test_cases:
             X = np.array([[x, y]])
             result = rosenbrock(X)
-            assert np.isclose(
-                result[0], expected, atol=1e-10
-            ), f"For point ({x}, {y}): expected {expected}, got {result[0]}"
+            assert np.isclose(result[0], expected, atol=1e-10), (
+                f"For point ({x}, {y}): expected {expected}, got {result[0]}"
+            )
 
     def test_negative_values(self):
         """Test that function handles negative coordinates correctly."""
@@ -84,9 +84,9 @@ class TestRosenbrock:
         result2 = rosenbrock(X2)
 
         # Rosenbrock is not symmetric, so these should differ
-        assert not np.isclose(
-            result1[0], result2[0]
-        ), "Rosenbrock function should not be symmetric"
+        assert not np.isclose(result1[0], result2[0]), (
+            "Rosenbrock function should not be symmetric"
+        )
 
     def test_input_shape_1d(self):
         """Test that 1D input is correctly converted to 2D."""
@@ -127,17 +127,17 @@ class TestRosenbrock:
         """Test Rosenbrock function in 3D."""
         X = np.array([[1.0, 1.0, 1.0]])
         result = rosenbrock(X)
-        assert np.isclose(
-            result[0], 0.0, atol=1e-10
-        ), "Global minimum at [1,1,1] should be 0"
+        assert np.isclose(result[0], 0.0, atol=1e-10), (
+            "Global minimum at [1,1,1] should be 0"
+        )
 
     def test_higher_dimensions_4d(self):
         """Test Rosenbrock function in 4D."""
         X = np.array([[1.0, 1.0, 1.0, 1.0]])
         result = rosenbrock(X)
-        assert np.isclose(
-            result[0], 0.0, atol=1e-10
-        ), "Global minimum at [1,1,1,1] should be 0"
+        assert np.isclose(result[0], 0.0, atol=1e-10), (
+            "Global minimum at [1,1,1,1] should be 0"
+        )
 
     def test_higher_dimensions_non_optimum(self):
         """Test Rosenbrock function at non-optimum point in higher dimensions."""
@@ -153,17 +153,17 @@ class TestRosenbrock:
         """Test that output is always a numpy array."""
         X = np.array([[1.0, 1.0]])
         result = rosenbrock(X)
-        assert isinstance(
-            result, np.ndarray
-        ), f"Expected numpy array, got {type(result)}"
+        assert isinstance(result, np.ndarray), (
+            f"Expected numpy array, got {type(result)}"
+        )
 
     def test_output_dtype(self):
         """Test that output has float dtype."""
         X = np.array([[1, 1]], dtype=int)
         result = rosenbrock(X)
-        assert np.issubdtype(
-            result.dtype, np.floating
-        ), f"Expected float dtype, got {result.dtype}"
+        assert np.issubdtype(result.dtype, np.floating), (
+            f"Expected float dtype, got {result.dtype}"
+        )
 
     def test_large_values(self):
         """Test function behavior with large input values."""
@@ -271,9 +271,9 @@ class TestRobotArmHard:
         result = robot_arm_hard(X)
 
         assert result.shape == (1,), f"Expected shape (1,), got {result.shape}"
-        assert isinstance(
-            result, np.ndarray
-        ), f"Expected numpy array, got {type(result)}"
+        assert isinstance(result, np.ndarray), (
+            f"Expected numpy array, got {type(result)}"
+        )
         assert result[0] > 0, "Cost should be positive for non-optimal configuration"
 
     def test_multiple_points_evaluation(self):
@@ -315,9 +315,9 @@ class TestRobotArmHard:
 
         X = np.random.rand(10)
         result = robot_arm_hard(X)
-        assert isinstance(
-            result, np.ndarray
-        ), f"Expected numpy array, got {type(result)}"
+        assert isinstance(result, np.ndarray), (
+            f"Expected numpy array, got {type(result)}"
+        )
 
     def test_output_dtype(self):
         """Test that output has float dtype."""
@@ -325,9 +325,9 @@ class TestRobotArmHard:
 
         X = np.random.rand(10)
         result = robot_arm_hard(X)
-        assert np.issubdtype(
-            result.dtype, np.floating
-        ), f"Expected float dtype, got {result.dtype}"
+        assert np.issubdtype(result.dtype, np.floating), (
+            f"Expected float dtype, got {result.dtype}"
+        )
 
     def test_boundary_values(self):
         """Test with boundary values (0 and 1)."""
@@ -346,9 +346,9 @@ class TestRobotArmHard:
         # Mixed boundaries
         X_mixed = np.array([0.0, 1.0, 0.0, 1.0, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0])
         result_mixed = robot_arm_hard(X_mixed)
-        assert np.isfinite(
-            result_mixed[0]
-        ), "Result should be finite for mixed boundaries"
+        assert np.isfinite(result_mixed[0]), (
+            "Result should be finite for mixed boundaries"
+        )
 
     def test_constraint_penalty_effect(self):
         """Test that constraint violations result in high penalties."""
@@ -360,9 +360,9 @@ class TestRobotArmHard:
         cost_straight = robot_arm_hard(X_straight)
 
         # The cost should be substantial due to obstacles
-        assert (
-            cost_straight[0] > 100
-        ), "Straight arm should have high cost due to obstacles"
+        assert cost_straight[0] > 100, (
+            "Straight arm should have high cost due to obstacles"
+        )
 
     def test_vectorized_computation(self):
         """Test that vectorized computation matches individual evaluations."""
@@ -425,9 +425,9 @@ class TestRobotArmHard:
         cost2 = robot_arm_hard(X2)
 
         # Very unlikely to be exactly equal for random configurations
-        assert not np.isclose(
-            cost1[0], cost2[0]
-        ), "Different configurations should have different costs"
+        assert not np.isclose(cost1[0], cost2[0]), (
+            "Different configurations should have different costs"
+        )
 
     def test_all_positive_costs(self):
         """Test that all cost components result in non-negative total cost."""
@@ -447,9 +447,9 @@ class TestRobotArmHard:
         X = np.random.rand(100, 10)
         results = robot_arm_hard(X)
 
-        assert all(
-            np.isfinite(results)
-        ), "All random samples should produce finite costs"
+        assert all(np.isfinite(results)), (
+            "All random samples should produce finite costs"
+        )
 
     def test_performance_large_batch(self):
         """Test that function can handle large batches efficiently."""
@@ -459,9 +459,9 @@ class TestRobotArmHard:
         X = np.random.rand(n_points, 10)
         result = robot_arm_hard(X)
 
-        assert (
-            len(result) == n_points
-        ), f"Expected {n_points} results, got {len(result)}"
+        assert len(result) == n_points, (
+            f"Expected {n_points} results, got {len(result)}"
+        )
         assert all(np.isfinite(result)), "All results should be finite"
 
     def test_atleast_2d_behavior(self):

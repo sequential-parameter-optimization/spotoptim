@@ -42,9 +42,9 @@ def test_select_distant_points_basic():
 
     # Check that selected points are from original set
     for point in selected_X:
-        assert any(
-            np.allclose(point, x) for x in X
-        ), "Selected point not in original set"
+        assert any(np.allclose(point, x) for x in X), (
+            "Selected point not in original set"
+        )
 
 
 def test_select_best_cluster_basic():
@@ -70,9 +70,9 @@ def test_select_best_cluster_basic():
 
     # Check that selected points are from original set
     for point in selected_X:
-        assert any(
-            np.allclose(point, x) for x in X
-        ), "Selected point not in original set"
+        assert any(np.allclose(point, x) for x in X), (
+            "Selected point not in original set"
+        )
 
     # Check that the best cluster (with smaller y values) was selected
     assert np.mean(selected_y) < 5, "Expected best cluster with smaller y values"
@@ -273,9 +273,9 @@ def test_verbose_output(capsys):
     optimizer._fit_surrogate(X, y)
 
     captured = capsys.readouterr()
-    assert (
-        "Selecting subset" in captured.out
-    ), "Expected verbose output about point selection"
+    assert "Selecting subset" in captured.out, (
+        "Expected verbose output about point selection"
+    )
 
 
 if __name__ == "__main__":

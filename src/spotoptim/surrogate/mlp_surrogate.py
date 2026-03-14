@@ -204,7 +204,7 @@ class MLPSurrogate(BaseEstimator, RegressorMixin):
 
             if self.verbose and (epoch + 1) % (self.epochs // 10 or 1) == 0:
                 print(
-                    f"Epoch {epoch+1}/{self.epochs}, Loss: {total_loss/num_batches:.6f}"
+                    f"Epoch {epoch + 1}/{self.epochs}, Loss: {total_loss / num_batches:.6f}"
                 )
 
         # Schedule-Free Optimizer finalization

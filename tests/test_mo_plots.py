@@ -29,7 +29,6 @@ def mock_plt():
         patch("matplotlib.pyplot.subplots") as mock_subplots,
         patch("matplotlib.pyplot.show"),
     ):
-
         # Setup mock figure and axes
         fig = MagicMock()
         ax = MagicMock()

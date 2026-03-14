@@ -48,8 +48,9 @@ def test_get_best_hyperparameters_noisy():
     # Or just rely on SpotOptim logic: min_mean_X is set when repeats_initial > 1.
 
     opt = SpotOptim(
-        fun=lambda X: np.sum(X**2, axis=1)
-        + np.random.normal(0, 0.1, size=len(X)),  # noisy sphere
+        fun=lambda X: (
+            np.sum(X**2, axis=1) + np.random.normal(0, 0.1, size=len(X))
+        ),  # noisy sphere
         bounds=[(-1, 1)],
         repeats_initial=2,
         max_iter=4,  # Just initial design basically

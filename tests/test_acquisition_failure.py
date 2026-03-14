@@ -156,9 +156,9 @@ class TestAcquisitionFailureWithVariableTypes:
 
             # Check that all points are integers
             for x in optimizer.X_:
-                assert np.all(
-                    x == np.round(x)
-                ), f"Strategy '{strategy}': Expected integer values, got {x}"
+                assert np.all(x == np.round(x)), (
+                    f"Strategy '{strategy}': Expected integer values, got {x}"
+                )
 
             # Check final result
             assert result.success is True
@@ -187,9 +187,9 @@ class TestAcquisitionFailureWithVariableTypes:
 
             # Check that all points are integers (factors)
             for x in optimizer.X_:
-                assert np.all(
-                    x == np.round(x)
-                ), f"Strategy '{strategy}': Expected factor (int) values, got {x}"
+                assert np.all(x == np.round(x)), (
+                    f"Strategy '{strategy}': Expected factor (int) values, got {x}"
+                )
 
             # Check final result
             assert result.success is True
@@ -219,13 +219,13 @@ class TestAcquisitionFailureWithVariableTypes:
             for x in optimizer.X_:
                 # x[0] is float - can be any float
                 # x[1] is int - must be integer
-                assert x[1] == np.round(
-                    x[1]
-                ), f"Strategy '{strategy}': x[1] should be int, got {x[1]}"
+                assert x[1] == np.round(x[1]), (
+                    f"Strategy '{strategy}': x[1] should be int, got {x[1]}"
+                )
                 # x[2] is factor - must be integer
-                assert x[2] == np.round(
-                    x[2]
-                ), f"Strategy '{strategy}': x[2] should be factor (int), got {x[2]}"
+                assert x[2] == np.round(x[2]), (
+                    f"Strategy '{strategy}': x[2] should be factor (int), got {x[2]}"
+                )
 
             assert result.success is True
 

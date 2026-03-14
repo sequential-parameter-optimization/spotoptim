@@ -633,8 +633,9 @@ class Rotator(BaseEstimator):
 
         else:
             raise ValueError(
-                "The value for `method` must be one of the "
-                "following: {}.".format(", ".join(POSSIBLE_ROTATIONS))
+                "The value for `method` must be one of the following: {}.".format(
+                    ", ".join(POSSIBLE_ROTATIONS)
+                )
             )
 
         self.loadings_, self.rotation_, self.phi_ = (

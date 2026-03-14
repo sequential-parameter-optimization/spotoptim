@@ -122,9 +122,9 @@ class TestSpotOptimOptimize:
 
             assert isinstance(result, OptimizeResult)
             assert result.success is True
-            assert (
-                result.fun < 10.0
-            ), f"Acquisition '{acquisition}' produced poor result: {result.fun}"
+            assert result.fun < 10.0, (
+                f"Acquisition '{acquisition}' produced poor result: {result.fun}"
+            )
 
     def test_optimize_single_dimension(self):
         """Test optimization on a 1D function."""

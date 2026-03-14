@@ -1528,7 +1528,7 @@ def plot_mmphi_vs_points(
     p_max: int = 100,
     p_step: int = 10,
     n_repeats: int = 5,
-    figsize=(10, 6)
+    figsize=(10, 6),
 ) -> pd.DataFrame:
     """
     Plot the Morris-Mitchell criterion versus the number of added points.
@@ -1646,7 +1646,7 @@ def plot_mmphi_corrected_vs_points(
     n_repeats: int = 5,
     q: float = 2.0,
     p_norm: float = 2.0,
-    figsize=(10, 6)
+    figsize=(10, 6),
 ) -> pd.DataFrame:
     """Plot the Corrected Morris-Mitchell Criterion versus the number of added points.
 

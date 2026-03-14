@@ -26,9 +26,9 @@ class TestDeterministicBehavior:
         X2 = opt2.generate_initial_design()
 
         # They should be different (with very high probability)
-        assert not np.allclose(
-            X1, X2
-        ), "Expected different designs without seed, but got identical results"
+        assert not np.allclose(X1, X2), (
+            "Expected different designs without seed, but got identical results"
+        )
 
         # Check shapes are correct
         assert X1.shape == (10, 2)
@@ -56,9 +56,9 @@ class TestDeterministicBehavior:
         X2 = opt2.generate_initial_design()
 
         # They should be identical
-        assert np.allclose(
-            X1, X2
-        ), "Expected identical designs with same seed, but got different results"
+        assert np.allclose(X1, X2), (
+            "Expected identical designs with same seed, but got different results"
+        )
 
         # Verify they are exactly equal
         np.testing.assert_array_equal(X1, X2)
@@ -80,9 +80,9 @@ class TestDeterministicBehavior:
         X2 = opt2.generate_initial_design()
 
         # They should be different
-        assert not np.allclose(
-            X1, X2
-        ), "Expected different designs with different seeds"
+        assert not np.allclose(X1, X2), (
+            "Expected different designs with different seeds"
+        )
 
     def test_multiple_calls_with_same_seed_are_not_deterministic(self):
         """Test that multiple calls to generate_initial_design() with same optimizer are different.
@@ -103,9 +103,9 @@ class TestDeterministicBehavior:
         X2 = opt.generate_initial_design()
 
         # They should be different (sampler state advances)
-        assert not np.allclose(
-            X1, X2
-        ), "Expected different designs on multiple calls to same optimizer"
+        assert not np.allclose(X1, X2), (
+            "Expected different designs on multiple calls to same optimizer"
+        )
 
     def test_optimize_with_seed_is_deterministic(self):
         """Test that full optimization is deterministic with seed."""
@@ -147,9 +147,9 @@ class TestDeterministicBehavior:
         _ = opt2.optimize()
 
         # Initial designs should be different
-        assert not np.allclose(
-            opt1.X_[:5], opt2.X_[:5]
-        ), "Expected different initial designs without seed"
+        assert not np.allclose(opt1.X_[:5], opt2.X_[:5]), (
+            "Expected different initial designs without seed"
+        )
 
     def test_seed_affects_surrogate_model(self):
         """Test that seed affects the Gaussian Process surrogate model."""

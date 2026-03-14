@@ -254,9 +254,9 @@ def test_generate_mesh_grid_with_factors_mean_computation():
     # The middle dimension (activation) should be constant across all grid points
     # Check that all values in dimension 1 are the same
     dim1_values = grid_points[:, 1]
-    assert (
-        len(np.unique(dim1_values)) == 1
-    ), "Non-plotted dimension should have constant value"
+    assert len(np.unique(dim1_values)) == 1, (
+        "Non-plotted dimension should have constant value"
+    )
 
     # Check that the constant value is valid (should be 0, 1, or 2 after transformation)
     unique_val = dim1_values[0]

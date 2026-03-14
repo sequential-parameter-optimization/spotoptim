@@ -35,9 +35,9 @@ def test_mmphi_intensive_smaller_is_better():
     phi_poor, _, _ = mmphi_intensive(X_poor, q=2, p=2)
 
     # Assert that the good design has a LOWER metric value
-    assert (
-        phi_good < phi_poor
-    ), f"Expected good design to have lower metric ({phi_good}) than poor design ({phi_poor})"
+    assert phi_good < phi_poor, (
+        f"Expected good design to have lower metric ({phi_good}) than poor design ({phi_poor})"
+    )
 
 
 def test_mmphi_intensive_1d():

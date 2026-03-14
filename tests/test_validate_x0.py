@@ -33,6 +33,7 @@ from spotoptim.function import sphere
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_opt(bounds, var_trans=None, var_type=None, seed=42):
     """Create a minimal SpotOptim instance without running optimize()."""
     return SpotOptim(
@@ -48,6 +49,7 @@ def make_opt(bounds, var_trans=None, var_type=None, seed=42):
 # ---------------------------------------------------------------------------
 # 1. Shape / dimensionality checks
 # ---------------------------------------------------------------------------
+
 
 class TestValidateX0Shape:
     """Tests for shape and dimensionality validation."""
@@ -113,6 +115,7 @@ class TestValidateX0Shape:
 # 2. Bounds checks
 # ---------------------------------------------------------------------------
 
+
 class TestValidateX0Bounds:
     """Tests for value-in-bounds validation."""
 
@@ -160,6 +163,7 @@ class TestValidateX0Bounds:
 # 3. Transformation to internal scale
 # ---------------------------------------------------------------------------
 
+
 class TestValidateX0Transform:
     """Tests that the returned array is in internal (transformed) scale."""
 
@@ -197,6 +201,7 @@ class TestValidateX0Transform:
 # ---------------------------------------------------------------------------
 # 4. Dimension reduction (fixed dimensions)
 # ---------------------------------------------------------------------------
+
 
 class TestValidateX0DimensionReduction:
     """Tests for dimension reduction when some bounds are fixed (lower == upper)."""
@@ -236,6 +241,7 @@ class TestValidateX0DimensionReduction:
 # 5. Verbose output
 # ---------------------------------------------------------------------------
 
+
 class TestValidateX0Verbose:
     """Tests for the verbose output of validate_x0."""
 
@@ -262,6 +268,7 @@ class TestValidateX0Verbose:
 # ---------------------------------------------------------------------------
 # 6. Bug: var_trans misalignment with dimension reduction
 # ---------------------------------------------------------------------------
+
 
 class TestValidateX0TransformWithDimReduction:
     """Regression tests for var_trans applied via validate_x0 when a fixed

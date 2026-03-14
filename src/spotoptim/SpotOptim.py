@@ -3522,7 +3522,7 @@ class SpotOptim(BaseEstimator):
                 valid_candidates.append(candidate)
             elif self.verbose:
                 print(
-                    f"Optimizer candidate {i+1}/{len(obs_candidates)} was duplicate/invalid."
+                    f"Optimizer candidate {i + 1}/{len(obs_candidates)} was duplicate/invalid."
                 )
 
         return valid_candidates
@@ -7208,7 +7208,6 @@ class SpotOptim(BaseEstimator):
             True
         """
         if self.tensorboard_log:
-
             if self.tensorboard_path is None:
                 # Create default path with timestamp
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

@@ -209,7 +209,6 @@ def tricands(
 
     # throw some away?
     if nmax < Xcand.shape[0]:
-
         adj = []
 
         # Bayesian optimization strategic subsetting

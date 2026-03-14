@@ -73,9 +73,9 @@ class TestLinearRegressorLR:
                 optimizer = model.get_optimizer(optimizer_name)
                 expected_lr = OPTIMIZER_DEFAULT_LR[optimizer_name]
                 actual_lr = optimizer.param_groups[0]["lr"]
-                assert (
-                    actual_lr == expected_lr
-                ), f"{optimizer_name}: expected {expected_lr}, got {actual_lr}"
+                assert actual_lr == expected_lr, (
+                    f"{optimizer_name}: expected {expected_lr}, got {actual_lr}"
+                )
             except Exception as e:
                 pytest.fail(f"Failed to create {optimizer_name}: {str(e)}")
 
