@@ -13,15 +13,6 @@
 #   3. Semantic Release (version bump, changelog, GitHub Release tag)
 #   4. Build wheel + sdist
 #   5. Publish to PyPI via Trusted Publisher (OIDC)
-# =============================================================================
-#
-# Triggered by the Release Preflight workflow succeeding on main.
-# Steps:
-#   1. Checkout main (SHA-pinned, not PR SHA — see security note)
-#   2. Verify checkout integrity
-#   3. Semantic Release (version bump, changelog, GitHub Release tag)
-#   4. Build wheel + sdist
-#   5. Publish to PyPI via Trusted Publisher (OIDC)
 #   6. Verify PyPI availability
 # =============================================================================
 
@@ -96,17 +87,11 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      # Cache the full .venv for faster builds
-      - name: Cache virtual environment
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
-        with:
-          path: .venv
-          key: venv-release-${{ runner.os }}-py3.13-${{ hashFiles('uv.lock') }}
-          restore-keys: |
-            venv-release-${{ runner.os }}-py3.13-
-
-      - name: Install Python dependencies
-        run: uv sync --all-extras --group dev
+      # Release only needs `uv build` (run by semantic-release's prepareCmd).
+      # uv build does not require the runtime deps (torch, xgboost, etc.),
+      # so skip --all-extras to avoid a 2–3 GB download on every release.
+      - name: Install build tools
+        run: uv sync --no-install-project --group dev
 
       - name: Set up Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0

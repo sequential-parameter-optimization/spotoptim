@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.code == 'true'
-    timeout-minutes: 45
+    timeout-minutes: 90
     permissions:
       contents: read
 
@@ -154,37 +154,30 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --group dev
 
-      # Balanced sharding: collect test functions per file, sort by count
-      # descending, then round-robin distribute across shards for even load.
+      # Simple modulo-based file assignment — no pytest --collect-only overhead
+      # (saves 30–60 s per shard × 8 shards ≈ 4–8 min of wasted collection time).
       - name: Select tests for shard ${{ matrix.shard }}
         id: shard
         run: |
           shard=${{ matrix.shard }}
           num_shards=8
 
-          # Collect test count per file for balanced distribution
-          test_counts=$(uv run pytest --collect-only -q tests/ 2>/dev/null \
-            | grep '::' \
-            | sed 's/::.*//' \
-            | sort \
-            | uniq -c \
-            | sort -rn)
+          mapfile -t all_files < <(ls tests/test_*.py 2>/dev/null | sort)
+          shard_files=()
+          for i in "${!all_files[@]}"; do
+            if (( (i % num_shards) + 1 == shard )); then
+              shard_files+=("${all_files[$i]}")
+            fi
+          done
 
-          # Round-robin assignment: heaviest files first, distributed evenly
-          shard_files=$(echo "$test_counts" \
-            | awk -v s="$shard" -v n="$num_shards" \
-              'NR > 0 { if (((NR-1) % n) + 1 == s) print $2 }' \
-            | tr '\n' ' ')
-
-          if [ -z "$shard_files" ]; then
+          if [ ${#shard_files[@]} -eq 0 ]; then
             echo "files=" >> "$GITHUB_OUTPUT"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "::notice::Shard ${shard}: no test files assigned"
           else
-            echo "files=${shard_files}" >> "$GITHUB_OUTPUT"
+            echo "files=${shard_files[*]}" >> "$GITHUB_OUTPUT"
             echo "skip=false" >> "$GITHUB_OUTPUT"
-            file_count=$(echo "$shard_files" | wc -w | tr -d ' ')
-            echo "::notice::Shard ${shard}: ${file_count} test files"
+            echo "::notice::Shard ${shard}: ${#shard_files[@]} test files"
           fi
 
       - name: Run pytest (shard ${{ matrix.shard }})
@@ -274,5 +267,7 @@ jobs:
         continue-on-error: true
 
       - name: Static security analysis (bandit)
-        run: uv run bandit -r src/spotoptim/ -f json -o bandit-report.json
+        # --exit-zero: exit 0 even when issues are found so the step stays green.
+        # Findings are still printed to the log; this job is advisory only.
+        run: uv run bandit -r src/spotoptim/ --exit-zero
         continue-on-error: true

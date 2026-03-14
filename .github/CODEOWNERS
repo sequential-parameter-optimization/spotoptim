@@ -1,0 +1,19 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# CODEOWNERS — defines required reviewers for sensitive paths.
+#
+# GitHub enforces this on every PR that touches a matching path:
+# the listed owner(s) must approve before the PR can be merged,
+# regardless of other branch-protection settings.
+#
+# This ensures that changes to CI/CD pipelines always receive an
+# explicit human sign-off and cannot land on main via a bot PR
+# (Dependabot, semantic-release, etc.) without review.
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Workflow files — any PR that modifies .github/workflows/ requires
+# approval from the repository owner before it can be merged.
+.github/workflows/ @bartzbeielstein
