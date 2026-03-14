@@ -1528,6 +1528,7 @@ def plot_mmphi_vs_points(
     p_max: int = 100,
     p_step: int = 10,
     n_repeats: int = 5,
+    figsize=(10, 6)
 ) -> pd.DataFrame:
     """
     Plot the Morris-Mitchell criterion versus the number of added points.
@@ -1540,6 +1541,7 @@ def plot_mmphi_vs_points(
         p_max (int): Maximum number of points to add
         p_step (int): Step size for number of points
         n_repeats (int): Number of repetitions for each point count
+        figsize (tuple): Size of the plot (width, height)
 
     Returns:
         pd.DataFrame: Summary DataFrame with mean and std of mmphi for each number of added points.
@@ -1589,7 +1591,7 @@ def plot_mmphi_vs_points(
     )
 
     # Create the plot
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=figsize)
 
     # Plot mean line with error bars
     plt.errorbar(
@@ -1644,6 +1646,7 @@ def plot_mmphi_corrected_vs_points(
     n_repeats: int = 5,
     q: float = 2.0,
     p_norm: float = 2.0,
+    figsize=(10, 6)
 ) -> pd.DataFrame:
     """Plot the Corrected Morris-Mitchell Criterion versus the number of added points.
 
@@ -1671,6 +1674,7 @@ def plot_mmphi_corrected_vs_points(
         q (float): Exponent q for the corrected Morris-Mitchell criterion.
             Defaults to 2.0.
         p_norm (float): Distance norm p. Defaults to 2.0.
+        figsize (tuple): Size of the plot (width, height). Defaults to (10, 6).
 
     Returns:
         pd.DataFrame: Summary DataFrame with columns ``n_points``,
@@ -1705,7 +1709,7 @@ def plot_mmphi_corrected_vs_points(
         .reset_index()
     )
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=figsize)
     plt.errorbar(
         df_summary["n_points"],
         df_summary["mmphi_corrected"]["mean"],
