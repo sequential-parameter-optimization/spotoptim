@@ -63,9 +63,9 @@ class TestLennardJones:
         X_random = np.random.rand(1, 39)
         E_random = lennard_jones(X_random)
 
-        assert E_overlap > E_random, (
-            "Overlapping atoms should have huge repulsion energy"
-        )
+        assert (
+            E_overlap > E_random
+        ), "Overlapping atoms should have huge repulsion energy"
 
     def test_deterministic(self):
         """Test that function is deterministic."""
@@ -91,9 +91,9 @@ class TestLennardJones:
         # At r=6.9, potential is very close to 0 (as r >> 1).
 
         val = lennard_jones(X, n_atoms=2)
-        assert abs(val[0]) < 1.0, (
-            f"At large separation, energy should be near 0, got {val[0]}"
-        )
+        assert (
+            abs(val[0]) < 1.0
+        ), f"At large separation, energy should be near 0, got {val[0]}"
 
         # Now place them closer in input space
         # To test overlapping, force both to SAME input value.
@@ -127,6 +127,6 @@ class TestLennardJones:
         val = lennard_jones(X, n_atoms=2)
 
         # Allow small floating point error
-        assert np.isclose(val[0], -1.0, atol=1e-4), (
-            f"Expected -1.0 at equilibrium, got {val[0]}"
-        )
+        assert np.isclose(
+            val[0], -1.0, atol=1e-4
+        ), f"Expected -1.0 at equilibrium, got {val[0]}"

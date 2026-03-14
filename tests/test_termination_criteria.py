@@ -63,18 +63,18 @@ class TestTerminationCriteria:
         elapsed = time.time() - start_time
 
         # Check if it ran for at least roughly the requested time (allow small margin)
-        assert elapsed >= 1.5, (
-            f"Optimization stopped too early: {elapsed}s vs expected ~2s"
-        )
+        assert (
+            elapsed >= 1.5
+        ), f"Optimization stopped too early: {elapsed}s vs expected ~2s"
 
         # Should have done more than initial design + default iter (20) if valid
         # sphere_1d is non-expensive, should be very fast.
-        assert res.nfev > 10, (
-            f"Expected >10 evaluations (at least initial design + 1), got {res.nfev}"
-        )
-        assert "time limit" in res.message or "Time limit" in res.message, (
-            f"Expected time limit message, got: {res.message}"
-        )
+        assert (
+            res.nfev > 10
+        ), f"Expected >10 evaluations (at least initial design + 1), got {res.nfev}"
+        assert (
+            "time limit" in res.message or "Time limit" in res.message
+        ), f"Expected time limit message, got: {res.message}"
 
         # Check message or status if possible (SpotOptim might return success=False if max_iter not reached but time is?)
         # Current logic: stops loop if time exceeded.

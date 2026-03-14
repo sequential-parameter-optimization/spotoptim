@@ -80,14 +80,14 @@ def test_batch_size_tuning():
                 call for call in mock_prepare.mock_calls if "batch_size" in call.kwargs
             ]
 
-            assert len(kw_calls) > 0, (
-                "_prepare_data should have been called with batch_size kwarg"
-            )
+            assert (
+                len(kw_calls) > 0
+            ), "_prepare_data should have been called with batch_size kwarg"
 
             last_call_kwargs = kw_calls[-1].kwargs
-            assert last_call_kwargs["batch_size"] == 64, (
-                f"Expected batch_size=64, got {last_call_kwargs['batch_size']}"
-            )
+            assert (
+                last_call_kwargs["batch_size"] == 64
+            ), f"Expected batch_size=64, got {last_call_kwargs['batch_size']}"
 
 
 def test_fixed_batch_size():

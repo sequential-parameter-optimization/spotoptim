@@ -217,9 +217,9 @@ class TestTransformValue:
         """inverse_transform_value(transform_value(x)) == x."""
         tx = self.opt.transform_value(x, trans)
         x_back = self.opt.inverse_transform_value(tx, trans)
-        assert np.isclose(x_back, x, rtol=1e-9), (
-            f"Roundtrip failed for trans={trans!r}: {x} -> {tx} -> {x_back}"
-        )
+        assert np.isclose(
+            x_back, x, rtol=1e-9
+        ), f"Roundtrip failed for trans={trans!r}: {x} -> {tx} -> {x_back}"
 
     def test_log10_known_value(self):
         """log10(10) == 1."""
@@ -305,9 +305,9 @@ class TestOptimizeContract:
     def test_x_within_bounds(self):
         """Best point must lie within the original bounds."""
         for i, (lo, hi) in enumerate([(-3, 3), (-3, 3)]):
-            assert lo <= self.result.x[i] <= hi, (
-                f"Dimension {i}: {self.result.x[i]} not in [{lo}, {hi}]"
-            )
+            assert (
+                lo <= self.result.x[i] <= hi
+            ), f"Dimension {i}: {self.result.x[i]} not in [{lo}, {hi}]"
 
     def test_all_X_within_bounds(self):
         """Every evaluated point must lie within bounds."""
@@ -413,9 +413,9 @@ class TestVariableTypes:
             seed=0,
         )
         result = opt.optimize()
-        assert np.allclose(result.x, np.round(result.x), atol=1e-9), (
-            f"Expected integer-valued x, got {result.x}"
-        )
+        assert np.allclose(
+            result.x, np.round(result.x), atol=1e-9
+        ), f"Expected integer-valued x, got {result.x}"
 
     def test_integer_vars_stored_X_are_integers(self):
         """All stored X points must be integers when var_type=['int', 'int']."""

@@ -162,9 +162,9 @@ class TestToleranceXIntegerVariables:
         n_unique = len(np.unique(X_rounded, axis=0))
         n_total = len(X_rounded)
 
-        assert n_unique == n_total, (
-            f"Found {n_total - n_unique} duplicate integer combinations"
-        )
+        assert (
+            n_unique == n_total
+        ), f"Found {n_total - n_unique} duplicate integer combinations"
 
     def test_rounding_causes_no_duplicates(self):
         """Test that rounding to integers doesn't create duplicates.
@@ -579,9 +579,9 @@ class TestToleranceXEdgeCases:
         n_unique = len(np.unique(X_int, axis=0))
         n_total = len(X_int)
 
-        assert n_unique == n_total, (
-            f"Found {n_total - n_unique} duplicate configurations"
-        )
+        assert (
+            n_unique == n_total
+        ), f"Found {n_total - n_unique} duplicate configurations"
 
     def test_very_large_tolerance(self):
         """Test that very large tolerance_x triggers fallback strategies appropriately."""

@@ -28,7 +28,6 @@ import pytest
 from spotoptim import SpotOptim
 from spotoptim.function import sphere
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

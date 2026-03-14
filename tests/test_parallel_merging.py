@@ -48,9 +48,9 @@ def test_parallel_merging():
     print(f"Expected evaluations (n_jobs * max_iter): {expected_evals}")
 
     # Assert that we have recorded data for ALL evaluations, not just the best run
-    assert opt.counter >= expected_evals * 0.9, (
-        f"Evaluations count {opt.counter} is significantly less than expected {expected_evals}. Data from parallel runs might be lost."
-    )
+    assert (
+        opt.counter >= expected_evals * 0.9
+    ), f"Evaluations count {opt.counter} is significantly less than expected {expected_evals}. Data from parallel runs might be lost."
 
     # Also check underlying data arrays
     assert len(opt.y_) == opt.counter

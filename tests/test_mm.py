@@ -5,8 +5,6 @@
 import numpy as np
 import matplotlib
 
-matplotlib.use("Agg")  # non-interactive backend for all plot tests
-
 from spotoptim.sampling.mm import (
     mmphi_intensive,
     mmphi_intensive_update,
@@ -17,6 +15,8 @@ from spotoptim.sampling.mm import (
     plot_mmphi_corrected_vs_n_lhs,
     plot_mmphi_corrected_vs_points,
 )
+
+matplotlib.use("Agg")  # non-interactive backend for all plot tests
 
 
 def test_mmphi_intensive_basic():
@@ -213,9 +213,9 @@ def test_mmphi_corrected_size_invariance():
 
     results = np.array(results)
     # Coefficient of variation < 15 % indicates convergence
-    assert results.std() / results.mean() < 0.15, (
-        f"hat_Phi did not converge: mean={results.mean():.4f}, std={results.std():.4f}"
-    )
+    assert (
+        results.std() / results.mean() < 0.15
+    ), f"hat_Phi did not converge: mean={results.mean():.4f}, std={results.std():.4f}"
 
 
 def test_mmphi_corrected_insufficient_points():
@@ -638,9 +638,9 @@ def test_plot_mmphi_corrected_vs_n_lhs_ratio_identity():
         phi_i, _, _ = mmphi_intensive(X, q=q, p=p)
         phi_c, _, _ = mmphi_corrected(X, q=q, p=p)
         expected = phi_i * (M / n ** (1.0 + q / k)) ** (1.0 / q)
-        assert np.isclose(phi_c, expected, rtol=1e-10), (
-            f"q={q}, p={p}: corrected={phi_c:.6f}, expected={expected:.6f}"
-        )
+        assert np.isclose(
+            phi_c, expected, rtol=1e-10
+        ), f"q={q}, p={p}: corrected={phi_c:.6f}, expected={expected:.6f}"
 
 
 # ---------------------------------------------------------------------------

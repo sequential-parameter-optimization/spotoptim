@@ -15,9 +15,9 @@ class TestMapLR:
         """Test that lr_unified=1.0 returns optimizer defaults."""
         for optimizer_name, expected_lr in OPTIMIZER_DEFAULT_LR.items():
             actual_lr = map_lr(1.0, optimizer_name)
-            assert actual_lr == expected_lr, (
-                f"For {optimizer_name}, expected {expected_lr}, got {actual_lr}"
-            )
+            assert (
+                actual_lr == expected_lr
+            ), f"For {optimizer_name}, expected {expected_lr}, got {actual_lr}"
 
     def test_scaling_multiplier(self):
         """Test that lr_unified acts as a multiplier."""
@@ -49,9 +49,9 @@ class TestMapLR:
                 assert lr > 0, f"{optimizer_name} returned non-positive lr: {lr}"
                 # Check that it's the correct multiple
                 expected = lr_unified * OPTIMIZER_DEFAULT_LR[optimizer_name]
-                assert lr == expected, (
-                    f"{optimizer_name}: expected {expected}, got {lr}"
-                )
+                assert (
+                    lr == expected
+                ), f"{optimizer_name}: expected {expected}, got {lr}"
             except Exception as e:
                 pytest.fail(f"Failed for {optimizer_name}: {str(e)}")
 
@@ -60,9 +60,9 @@ class TestMapLR:
         lr_unified = 0.123
         for optimizer_name in OPTIMIZER_DEFAULT_LR.keys():
             actual_lr = map_lr(lr_unified, optimizer_name, use_default_scale=False)
-            assert actual_lr == lr_unified, (
-                f"With use_default_scale=False, expected {lr_unified}, got {actual_lr}"
-            )
+            assert (
+                actual_lr == lr_unified
+            ), f"With use_default_scale=False, expected {lr_unified}, got {actual_lr}"
 
     def test_invalid_optimizer(self):
         """Test that invalid optimizer name raises ValueError."""
@@ -154,9 +154,9 @@ class TestMapLR:
             # Adam variants should have similar (though not necessarily identical) defaults
             # We just check they're in the same ballpark (within 10x)
             ratio = lr / adam_lr
-            assert 0.1 <= ratio <= 10, (
-                f"{optimizer_name} lr {lr} too different from Adam lr {adam_lr}"
-            )
+            assert (
+                0.1 <= ratio <= 10
+            ), f"{optimizer_name} lr {lr} too different from Adam lr {adam_lr}"
 
     def test_float_precision(self):
         """Test that float precision is maintained."""
@@ -198,9 +198,9 @@ class TestMapLR:
         ]
 
         for optimizer_name in expected_optimizers:
-            assert optimizer_name in OPTIMIZER_DEFAULT_LR, (
-                f"Optimizer {optimizer_name} missing from OPTIMIZER_DEFAULT_LR"
-            )
+            assert (
+                optimizer_name in OPTIMIZER_DEFAULT_LR
+            ), f"Optimizer {optimizer_name} missing from OPTIMIZER_DEFAULT_LR"
 
     def test_realistic_use_case(self):
         """Test realistic hyperparameter optimization scenario."""
@@ -213,9 +213,9 @@ class TestMapLR:
                 lr = map_lr(lr_u, opt)
 
                 # Check that lr is reasonable
-                assert 1e-6 < lr < 10.0, (
-                    f"Unreasonable lr {lr} for {opt} with unified lr {lr_u}"
-                )
+                assert (
+                    1e-6 < lr < 10.0
+                ), f"Unreasonable lr {lr} for {opt} with unified lr {lr_u}"
 
                 # Check that it's the correct mapping
                 expected = lr_u * OPTIMIZER_DEFAULT_LR[opt]
@@ -233,9 +233,9 @@ class TestDefaultLRConstants:
     def test_all_values_reasonable(self):
         """Test that all default learning rates are in reasonable range."""
         for optimizer_name, lr in OPTIMIZER_DEFAULT_LR.items():
-            assert 0.0001 <= lr <= 10.0, (
-                f"{optimizer_name} has unreasonable default lr: {lr}"
-            )
+            assert (
+                0.0001 <= lr <= 10.0
+            ), f"{optimizer_name} has unreasonable default lr: {lr}"
 
     def test_dictionary_not_empty(self):
         """Test that the dictionary is not empty."""

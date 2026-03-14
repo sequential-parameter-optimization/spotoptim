@@ -50,9 +50,9 @@ def test_mo_size_consistency_with_nans():
     n_y_mo = len(optimizer.y_mo)
 
     assert n_X == n_y, f"X_ ({n_X}) and y_ ({n_y}) sizes mismatch"
-    assert n_X == n_y_mo, (
-        f"X_ ({n_X}) and y_mo ({n_y_mo}) sizes mismatch (y_mo has extra points?)"
-    )
+    assert (
+        n_X == n_y_mo
+    ), f"X_ ({n_X}) and y_mo ({n_y_mo}) sizes mismatch (y_mo has extra points?)"
 
 
 def test_mo_size_initial_design_nan():
@@ -120,13 +120,13 @@ def test_mo_size_sequential_nan():
     # Check consistency
     if x_clean is None:
         # If skipped, y_mo should be original size (5)
-        assert len(optimizer.y_mo) == 5, (
-            f"y_mo should be 5 when skipped, got {len(optimizer.y_mo)}"
-        )
+        assert (
+            len(optimizer.y_mo) == 5
+        ), f"y_mo should be 5 when skipped, got {len(optimizer.y_mo)}"
     else:
         # If kept (penalized), y_mo should be size 6
-        assert len(optimizer.y_mo) == 6, (
-            f"y_mo should be 6 when kept, got {len(optimizer.y_mo)}"
-        )
+        assert (
+            len(optimizer.y_mo) == 6
+        ), f"y_mo should be 6 when kept, got {len(optimizer.y_mo)}"
         assert len(x_clean) == 1
         assert len(y_clean) == 1

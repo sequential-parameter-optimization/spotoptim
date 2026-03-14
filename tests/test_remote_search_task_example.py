@@ -39,9 +39,9 @@ def test_remote_search_task_basic_example():
 
     # Check that the point is within bounds
     for i, (low, high) in enumerate([(-5, 5), (-5, 5)]):
-        assert low <= x_new[0, i] <= high, (
-            f"Point {x_new[0, i]} out of bounds [{low}, {high}]"
-        )
+        assert (
+            low <= x_new[0, i] <= high
+        ), f"Point {x_new[0, i]} out of bounds [{low}, {high}]"
 
 
 def test_remote_search_task_1d_problem():

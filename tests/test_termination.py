@@ -41,15 +41,15 @@ class TestMaxIterTermination:
         result = optimizer.optimize()
 
         # Total evaluations should equal max_iter
-        assert result.nfev == max_iter, (
-            f"Expected {max_iter} evaluations, got {result.nfev}"
-        )
+        assert (
+            result.nfev == max_iter
+        ), f"Expected {max_iter} evaluations, got {result.nfev}"
 
         # Number of sequential iterations should be max_iter - n_initial
         expected_iterations = max_iter - n_initial
-        assert result.nit == expected_iterations, (
-            f"Expected {expected_iterations} iterations, got {result.nit}"
-        )
+        assert (
+            result.nit == expected_iterations
+        ), f"Expected {expected_iterations} iterations, got {result.nit}"
 
         # Check termination message
         assert "maximum evaluations" in result.message.lower()
@@ -140,9 +140,9 @@ class TestMaxTimeTermination:
         elapsed_time = time.time() - start_time
 
         # Should terminate before completing all iterations
-        assert result.nfev < 100, (
-            f"Expected early termination, got {result.nfev} evaluations"
-        )
+        assert (
+            result.nfev < 100
+        ), f"Expected early termination, got {result.nfev} evaluations"
 
         # Elapsed time must be well below the would-be full run (~10s).
         # CI surrogate fitting adds 5-10 s of overhead beyond the wall-clock
@@ -242,9 +242,9 @@ class TestCombinedTermination:
         result = optimizer.optimize()
 
         # Should terminate due to max_time before reaching max_iter
-        assert result.nfev < 100, (
-            f"Expected early termination, got {result.nfev} evaluations"
-        )
+        assert (
+            result.nfev < 100
+        ), f"Expected early termination, got {result.nfev} evaluations"
         assert "time limit" in result.message.lower()
 
 

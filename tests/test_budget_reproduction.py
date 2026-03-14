@@ -46,9 +46,9 @@ def test_max_iter_budget_with_restarts():
     # Actually, if the last restart doesn't finish initial design because of check?
     # Current implementation doesn't check global, so it will likely exceed.
 
-    assert obj.count <= max_iter, (
-        f"Total evaluations {obj.count} exceeded max_iter {max_iter}"
-    )
+    assert (
+        obj.count <= max_iter
+    ), f"Total evaluations {obj.count} exceeded max_iter {max_iter}"
 
     # We expect at least one restart if logic works as claimed currently (it restarts and resets budget)
     # With global budget:

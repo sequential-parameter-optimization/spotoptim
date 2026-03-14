@@ -63,9 +63,9 @@ class TestRobotArm:
         # Check closest approach to obstacle 1 at x=2: dist = 2. r+0.1 = 1.1. No violation.
 
         cost = robot_arm_obstacle(X)[0]
-        assert np.isclose(cost, 50.0, atol=1e-4), (
-            f"Expected cost 50.0 for straight arm, got {cost}"
-        )
+        assert np.isclose(
+            cost, 50.0, atol=1e-4
+        ), f"Expected cost 50.0 for straight arm, got {cost}"
 
     def test_obstacle_collision(self):
         """Test that hitting an obstacle incurs high penalty."""
