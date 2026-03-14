@@ -3316,6 +3316,15 @@ class SpotOptim(BaseEstimator):
 
         if best_x is not None:
             best_x = self.transform_X(best_x)
+            # Nudge x0 strictly inside DE bounds using nextafter to absorb FP rounding.
+            # Example: sqrt(10) ≈ 3.1622776601683795 is the exact lower bound; after
+            # scipy's _unscale_parameters, the value may compute to −1e-16 instead of
+            # 0.0, triggering "Some entries in x0 lay outside the specified bounds".
+            _lb = np.array([b[0] for b in self.bounds])
+            _ub = np.array([b[1] for b in self.bounds])
+            best_x = np.clip(
+                best_x, np.nextafter(_lb, _ub), np.nextafter(_ub, _lb)
+            )
             best_X = best_x if self.rng.rand() < self.de_x0_prob else None
         else:
             best_X = None
