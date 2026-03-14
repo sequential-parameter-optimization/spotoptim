@@ -65,10 +65,12 @@ def test_spotoptim_optimize_loop_mlp():
 
 @pytest.mark.skip(
     reason=(
-        "Hangs >900 s on CI despite max_iter=5/epochs=5 — "
-        "suspected infinite loop or excessive MC-dropout passes in "
-        "MLPSurrogate._predict_with_uncertainty. "
-        "Needs profiling before re-enabling."
+        "MLPSurrogate with dropout=0.5 takes ~178 s locally and >900 s on CI "
+        "for just 2 sequential iterations (max_iter=5, n_initial=3). "
+        "The bottleneck is surrogate re-fitting inside the optimization loop, "
+        "not _predict_with_uncertainty (which is instant). "
+        "Performance bug in MLPSurrogate training when dropout>0 — "
+        "needs investigation before re-enabling."
     )
 )
 def test_mlp_surrogate_uncertainty_in_loop():
