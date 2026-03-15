@@ -90,6 +90,12 @@ class SpotOptimConfig:
             zero serialization overhead). ``-1`` resolves to ``os.cpu_count()``
             (all available CPU cores). ``0`` and values ``< -1`` raise
             ``ValueError``. Defaults to ``1``.
+        eval_batch_size (int): Number of candidate points to accumulate before
+            dispatching a single ``fun(X_batch)`` call to the process pool.
+            ``1`` (default) dispatches each candidate immediately, preserving
+            current behavior. Values ``> 1`` reduce process-spawn and IPC
+            overhead when ``fun`` supports vectorized batch input.
+            Must be ``>= 1``. Defaults to ``1``.
         acquisition_optimizer_kwargs (Optional[Dict[str, Any]]): Keyword arguments for the acquisition function optimizer.
         args (Tuple): Arguments for the objective function.
         kwargs (Optional[Dict[str, Any]]): Keyword arguments for the objective function.
@@ -190,6 +196,7 @@ class SpotOptimConfig:
     min_tol_metric: str = "chebyshev"
     prob_surrogate: Optional[List[float]] = None
     n_jobs: int = 1
+    eval_batch_size: int = 1
     acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
@@ -416,6 +423,52 @@ def remote_eval_wrapper(pickled_args):
         return None, e
 
 
+def remote_batch_eval_wrapper(pickled_args):
+    """Helper for parallel batch evaluation with dill.
+
+    Evaluates a batch of candidate points in a single call to ``fun(X_batch)``,
+    spreading process-spawn and IPC overhead across the whole batch.
+
+    Args:
+        pickled_args (bytes): A pickled tuple ``(optimizer, X_batch)`` where
+            ``X_batch`` has shape ``(n, d)`` — ``n`` candidate points, ``d``
+            dimensions each.
+
+    Returns:
+        tuple: ``(X_batch, y_batch)`` on success where ``y_batch`` has shape
+            ``(n,)``, or ``(None, Exception)`` on failure.
+
+    Examples:
+        ```{python}
+        import numpy as np
+        from spotoptim.SpotOptim import remote_batch_eval_wrapper
+        from spotoptim import SpotOptim
+        import dill
+
+        opt = SpotOptim(
+            fun=lambda X: np.sum(X**2, axis=1),
+            bounds=[(-5, 5), (-5, 5)],
+            n_initial=5,
+            max_iter=10,
+        )
+        X_batch = np.array([[1.0, 2.0], [0.5, -0.5]])
+        pickled_args = dill.dumps((opt, X_batch))
+        X_out, y_out = remote_batch_eval_wrapper(pickled_args)
+        print(X_out.shape)   # (2, 2)
+        print(y_out.shape)   # (2,)
+        print(np.allclose(y_out, [5.0, 0.5]))
+        ```
+    """
+    try:
+        import dill
+
+        optimizer, X_batch = dill.loads(pickled_args)
+        y_batch = optimizer.evaluate_function(X_batch)
+        return X_batch, y_batch
+    except Exception as e:
+        return None, e
+
+
 def remote_search_task(pickled_optimizer):
     """
     Helper function for parallel search with dill.
@@ -622,6 +675,13 @@ class SpotOptim(BaseEstimator):
             across ``n_jobs`` processes. Pass ``-1`` to use all available
             CPU cores (``os.cpu_count()``). ``0`` and values ``< -1`` raise
             ``ValueError``. Defaults to ``1``.
+        eval_batch_size (int, optional):
+            Number of candidate points gathered from search tasks before a
+            single ``fun(X_batch)`` call is dispatched to the process pool.
+            ``1`` (default) preserves one-point-per-call behavior.
+            Set to ``n_jobs`` or higher to exploit vectorized objective
+            functions and reduce process-spawn overhead. Ignored when
+            ``n_jobs == 1``. Must be ``>= 1``. Defaults to ``1``.
         window_size (int, optional):
             Window size for success rate calculation.
         min_tol_metric (str, optional):
@@ -957,6 +1017,7 @@ class SpotOptim(BaseEstimator):
         min_tol_metric: str = "chebyshev",
         prob_surrogate: Optional[List[float]] = None,
         n_jobs: int = 1,
+        eval_batch_size: int = 1,
         acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
@@ -999,6 +1060,10 @@ class SpotOptim(BaseEstimator):
             raise ValueError(
                 f"n_jobs must be a positive integer or -1 (all CPU cores), got {n_jobs}."
             )
+
+        # Validate eval_batch_size.
+        if eval_batch_size < 1:
+            raise ValueError(f"eval_batch_size must be >= 1, got {eval_batch_size}.")
 
         if acquisition_optimizer_kwargs is None:
             acquisition_optimizer_kwargs = {"maxiter": 10000, "gtol": 1e-9}
@@ -1043,6 +1108,7 @@ class SpotOptim(BaseEstimator):
             min_tol_metric=min_tol_metric,
             prob_surrogate=prob_surrogate,
             n_jobs=n_jobs,
+            eval_batch_size=eval_batch_size,
             acquisition_optimizer_kwargs=acquisition_optimizer_kwargs,
             args=args,
             kwargs=kwargs,
@@ -4978,13 +5044,18 @@ class SpotOptim(BaseEstimator):
         3.  Parallel Search (Thread Pool):
             Up to ``n_jobs`` search tasks are submitted to ``search_pool``.
             Each acquires ``_surrogate_lock`` before calling
-            ``suggest_next_infill_point()``, serialising concurrent surrogate reads.
+            ``suggest_next_infill_point()``, serializing concurrent surrogate reads.
 
-        4.  Steady-State Loop:
-            - Search completes → candidate ``x_cand`` dispatched to ``eval_pool``
-              (dill-serialized for process isolation).
-            - Eval completes → surrogate refit under ``_surrogate_lock``,
-              then new search slots are filled.
+        4.  Steady-State Loop with Batch Dispatch:
+            - Search completes → candidate appended to ``pending_cands``.
+            - When ``len(pending_cands) >= eval_batch_size`` (or no search tasks
+              remain), all pending candidates are stacked into ``X_batch`` and
+              dispatched as a **single** ``remote_batch_eval_wrapper`` call to
+              ``eval_pool``.  This amortizes process-spawn and IPC overhead.
+            - Batch eval completes → storage updated for every point, surrogate
+              refit once under ``_surrogate_lock``, new search slots filled.
+            - ``eval_batch_size=1`` (default) dispatches immediately on each
+              search completion, preserving the original one-point behavior.
             - This cycle continues until ``max_iter`` evaluations or ``max_time``
               minutes is reached.
 
@@ -5126,30 +5197,80 @@ class SpotOptim(BaseEstimator):
             if self.verbose:
                 print("Starting steady-state optimization loop...")
 
+            # Candidates returned by search tasks, waiting to form the next batch.
+            pending_cands: list = []
+
+            # Maps each in-flight batch_eval future → number of points it carries.
+            # Used for accurate budget accounting: reserved = committed + in_flight
+            # + pending, so we never over-dispatch search tasks.
+            _future_n_pts: dict = {}
+
+            def _flush_batch() -> None:
+                """Dispatch all pending_cands as a single batch eval task."""
+                nonlocal pending_cands
+                X_batch = np.vstack(pending_cands)
+                n_in_batch = len(pending_cands)
+                pending_cands = []
+                _tb_writer_temp = self.tb_writer
+                self.tb_writer = None
+                try:
+                    pickled_args = dill.dumps((self, X_batch))
+                finally:
+                    self.tb_writer = _tb_writer_temp
+                fut_eval = eval_pool.submit(remote_batch_eval_wrapper, pickled_args)
+                futures[fut_eval] = "batch_eval"
+                _future_n_pts[fut_eval] = n_in_batch
+
+            def _batch_ready() -> bool:
+                """True when pending_cands should be flushed to eval_pool."""
+                if not pending_cands:
+                    return False
+                if len(pending_cands) >= self.eval_batch_size:
+                    return True
+                # Flush early if no search tasks remain — prevents starvation
+                # when budget is nearly exhausted and no new searches will run.
+                return not any(t == "search" for t in futures.values())
+
             while (len(self.y_) < effective_max_iter) and (
                 time.time() < timeout_start + self.max_time * 60
             ):
-                # 1. Fill slots - dispatch search tasks to thread pool
+                # 1. Flush pending candidates if the batch threshold is reached
+                #    or if no search tasks are in flight (starvation guard).
+                if _batch_ready():
+                    _flush_batch()
+
+                # 2. Fill open slots with search tasks (thread pool).
                 n_active = len(futures)
                 n_slots = self.n_jobs - n_active
 
                 if n_slots > 0:
                     for _ in range(n_slots):
-                        n_pending_evals = sum(
-                            1 for t in futures.values() if t == "eval"
-                        )
-                        if len(self.y_) + n_pending_evals < effective_max_iter:
-                            # Search task runs in a thread — no dill serialization.
-                            # _thread_search_task acquires _surrogate_lock internally.
+                        # Budget: committed evals + in-flight eval points
+                        #         + candidates not yet dispatched.
+                        n_in_flight = sum(_future_n_pts.values())
+                        reserved = len(self.y_) + n_in_flight + len(pending_cands)
+                        if reserved < effective_max_iter:
+                            # Search runs in a thread — no dill serialization;
+                            # _thread_search_task holds _surrogate_lock.
                             fut = search_pool.submit(_thread_search_task)
                             futures[fut] = "search"
                         else:
                             break
 
-                if not futures:
-                    break  # Done
+                # 3. Flush again — new slot-filling may have pushed batch over
+                #    the threshold (e.g. no budget left for more searches).
+                if _batch_ready():
+                    _flush_batch()
 
-                # 2. Wait for completion
+                if not futures and not pending_cands:
+                    break  # Nothing left to do
+
+                if not futures:
+                    # Pending candidates but no in-flight futures — flush now.
+                    _flush_batch()
+                    continue
+
+                # 4. Wait for any future to complete.
                 done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
                 for fut in done:
                     ftype = futures.pop(fut)
@@ -5158,61 +5279,61 @@ class SpotOptim(BaseEstimator):
                         if isinstance(res, Exception):
                             if self.verbose:
                                 print(f"Remote {ftype} failed: {res}")
-                            # Failed search → slot freed, next iteration refills.
-                            # Failed eval → budget not consumed, will retry.
+                            # Failed search → slot freed; loop refills next iter.
+                            # Failed batch_eval → points lost (budget not charged).
+                            _future_n_pts.pop(fut, None)
                             continue
 
                         if ftype == "search":
                             x_cand = res
-                            # Eval task runs in process pool for isolation.
-                            # dill serialization is still required here because
-                            # the user's objective fun may be a lambda/closure.
-                            _tb_writer_temp = self.tb_writer
-                            self.tb_writer = None
-                            try:
-                                pickled_args = dill.dumps((self, x_cand))
-                            finally:
-                                self.tb_writer = _tb_writer_temp
+                            pending_cands.append(x_cand)
+                            # Flush immediately if batch threshold reached —
+                            # avoids an extra loop iteration for batch_size=1.
+                            if _batch_ready():
+                                _flush_batch()
 
-                            fut_eval = eval_pool.submit(
-                                remote_eval_wrapper, pickled_args
-                            )
-                            futures[fut_eval] = "eval"
+                        elif ftype == "batch_eval":
+                            _future_n_pts.pop(fut, None)
+                            X_done, y_done = res
+                            if isinstance(y_done, Exception):
+                                if self.verbose:
+                                    print(f"Batch eval failed: {y_done}")
+                            else:
+                                # Update storage for every point in the batch.
+                                for xi, yi in zip(X_done, y_done):
+                                    self.update_success_rate(np.array([yi]))
+                                    self._update_storage_steady(xi, yi)
+                                    self.n_iter_ += 1
 
-                        elif ftype == "eval":
-                            x_new, y_new = res
-                            # Update
-                            self.update_success_rate(np.array([y_new]))
-                            self._update_storage_steady(x_new, y_new)
-                            self.n_iter_ += 1
+                                if self.verbose:
+                                    if self.max_time != np.inf:
+                                        prog_val = (
+                                            (time.time() - timeout_start)
+                                            / (self.max_time * 60)
+                                            * 100
+                                        )
+                                        progress_str = f"Time: {prog_val:.1f}%"
+                                    else:
+                                        prog_val = (
+                                            len(self.y_) / effective_max_iter * 100
+                                        )
+                                        progress_str = f"Evals: {prog_val:.1f}%"
 
-                            if self.verbose:
-                                # Calculate progress
-                                if self.max_time != np.inf:
-                                    prog_val = (
-                                        (time.time() - timeout_start)
-                                        / (self.max_time * 60)
-                                        * 100
+                                    print(
+                                        f"Iter {len(self.y_)}/{effective_max_iter}"
+                                        f" | Best: {self.best_y_:.6f}"
+                                        f" | Rate: {self.success_rate:.2f}"
+                                        f" | {progress_str}"
                                     )
-                                    progress_str = f"Time: {prog_val:.1f}%"
-                                else:
-                                    prog_val = len(self.y_) / effective_max_iter * 100
-                                    progress_str = f"Evals: {prog_val:.1f}%"
 
-                                print(
-                                    f"Iter {len(self.y_)}/{effective_max_iter} | "
-                                    f"Best: {self.best_y_:.6f} | "
-                                    f"Curr: {y_new:.6f} | "
-                                    f"Rate: {self.success_rate:.2f} | "
-                                    f"{progress_str}"
-                                )
-
-                            # Refit surrogate under the lock to prevent a concurrent
-                            # search thread from reading a partially-updated model.
-                            with _surrogate_lock:
-                                self._fit_scheduler()
+                                # Single surrogate refit for the whole batch —
+                                # held under the lock so in-flight search threads
+                                # do not read a partially-updated model.
+                                with _surrogate_lock:
+                                    self._fit_scheduler()
 
                     except Exception as e:
+                        _future_n_pts.pop(fut, None)
                         if self.verbose:
                             print(f"Error processing future: {e}")
 

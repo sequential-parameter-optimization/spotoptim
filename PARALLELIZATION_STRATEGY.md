@@ -2,7 +2,7 @@
 
 **Document version:** 2026-03-15
 **Applies to:** spotoptim ≥ 0.6.0
-**Implementation status:** Improvements E (0.7.0) and C (0.8.0) are complete.
+**Implementation status:** Improvements E (0.7.0), C (0.8.0), and F (0.9.0) are complete.
 
 ---
 
@@ -135,7 +135,7 @@ dependency and risk:
 |---|-------------|---------|------------|--------|
 | E | `n_jobs=-1` convention | 0.7.0 | — | ✅ Done |
 | C | ThreadPoolExecutor for `search` tasks | 0.8.0 | E | ✅ Done |
-| F | Batch evaluation API | 0.9.0 | C | Planned |
+| F | Batch evaluation API | 0.9.0 | C | ✅ Done |
 | D | Free-threaded (no-GIL) awareness | 0.10.0 | C | Planned |
 
 ---
@@ -266,7 +266,7 @@ completes, at which point no search task is in flight for the stale model).
 
 ---
 
-### Release 0.9.0 — Improvement F: Batch Evaluation API
+### Release 0.9.0 — Improvement F: Batch Evaluation API ✅
 
 **Current problem:** Each `eval` task evaluates a single point `x` in its own
 worker process.  For every evaluation:
@@ -377,7 +377,7 @@ spotoptim does not force users onto it; it merely exploits it when present.
 |---------|-------------|------------|------|--------|
 | **0.7.0** | E — `n_jobs=-1` | Resolve `-1` to `os.cpu_count()` | Minimal | ✅ Done |
 | **0.8.0** | C — Threads for search | `ThreadPoolExecutor` for `suggest_next_infill_point`; `ProcessPoolExecutor` kept for `eval`; `threading.Lock` guards surrogate | Low | ✅ Done |
-| **0.9.0** | F — Batch eval | Accumulate candidates; one `fun(X_batch)` call per batch | Low | Planned |
+| **0.9.0** | F — Batch eval | `eval_batch_size` param; accumulate candidates; single `remote_batch_eval_wrapper` call per batch; one surrogate refit per batch | Low | ✅ Done |
 | **0.10.0** | D — No-GIL | Detect `sys._is_gil_enabled()`; use threads for eval too | Low | Planned |
 
 Improvements A (shared memory) and B (SciPy `workers=`) are **not planned**
