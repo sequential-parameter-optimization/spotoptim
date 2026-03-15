@@ -1,3 +1,10 @@
+## [0.7.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.6.0...v0.7.0) (2026-03-15)
+
+
+### Features
+
+* parallel step 1 ([3632f58](https://github.com/sequential-parameter-optimization/spotoptim/commit/3632f58338fb84f959d27f560908d9d848336de2))
+
 ## [0.6.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.5.1...v0.6.0) (2026-03-15)
 
 
