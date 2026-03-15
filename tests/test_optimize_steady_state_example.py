@@ -9,7 +9,7 @@ import numpy as np
 from spotoptim import SpotOptim
 
 
-def test_optimize_steady_state_example():
+def testoptimize_steady_state_example():
     opt = SpotOptim(
         fun=lambda X: np.sum(X**2, axis=1),
         bounds=[(-5, 5), (-5, 5)],
@@ -20,7 +20,7 @@ def test_optimize_steady_state_example():
         verbose=True,
     )
 
-    status, result = opt._optimize_steady_state(timeout_start=time.time(), X0=None)
+    status, result = opt.optimize_steady_state(timeout_start=time.time(), X0=None)
 
     assert status == "FINISHED"
     assert result.message.splitlines()[0] == "Optimization finished (Steady State)"

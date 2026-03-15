@@ -2398,11 +2398,13 @@ class SpotOptim(BaseEstimator):
     # ====================
 
     def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
-        """Generate or process initial design points.
+        """Generate or process initial design points. Ensures that design points are in
+        internal (transformed and reduced) scale.
+        Calls `generate_initial_design()` if `X0` is None, otherwise processes user-provided `X0`.
         Handles three scenarios:
-            * X0 is None: Generate space-filling design using LHS
-            * X0 is None but x0 is provided: Generate LHS and include x0 as first point
-            * X0 is provided: Transform and prepare user-provided initial design
+            * `X0` is None: Generate space-filling design using LHS
+            * `X0` is None but starting point(s) `x0` is provided: Generate LHS and include `x0` as first point(s)
+            * `X0` is provided: Transform and prepare user-provided initial design
 
         Args:
             X0 (ndarray, optional): User-provided initial design points in original scale,
@@ -2418,6 +2420,7 @@ class SpotOptim(BaseEstimator):
             import numpy as np
             from spotoptim import SpotOptim
             from spotoptim.function import sphere
+            from spotoptim.plot.visualization import plot_design_points
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
@@ -2426,17 +2429,30 @@ class SpotOptim(BaseEstimator):
             # Generate default LHS design
             X0 = opt.get_initial_design()
             print(X0.shape)
-            # Provide custom initial design
-            X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
-            X0_processed = opt.get_initial_design(X0_custom)
-            print(X0_processed.shape)
+            plot_design_points(X0)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            from spotoptim.plot.visualization import plot_design_points
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10,
+                x0=np.array([0, 0])  # Starting point to include in initial design
+            )
+            X0 = opt.get_initial_design()
+            print(X0.shape)
+            plot_design_points(X0)
             ```
         """
         # Generate or use provided initial design
         if X0 is None:
             X0 = self.generate_initial_design()
 
-            # If starting point x0 was provided, include it in initial design
+            # If starting point(s) x0 was provided, include it/them in initial design
             if self.x0 is not None:
                 # x0 is already validated and in internal scale
                 # Check if x0 is 1D or 2D
@@ -2474,9 +2490,8 @@ class SpotOptim(BaseEstimator):
         """Generate initial space-filling design using Latin Hypercube Sampling.
         Used in the optimize() method to create the initial set of design points.
 
-
         Returns:
-            ndarray: Initial design points, shape (n_initial, n_features).
+            ndarray: Initial design points, shape (n_initial, n_features). Points are in the intervals defined by `self.bounds`.
 
         Examples:
             ```{python}
@@ -2484,7 +2499,9 @@ class SpotOptim(BaseEstimator):
             from spotoptim.function import sphere
             opt = SpotOptim(fun=sphere,
                             bounds=[(-5, 5), (-5, 5)],
-                            n_initial=10)
+                            n_initial=3,
+                            var_type=['float', 'int'],
+                            var_trans=['log10', None])
             X0 = opt.generate_initial_design()
             print(X0.shape)
             ```
@@ -4497,7 +4514,7 @@ class SpotOptim(BaseEstimator):
 
             # Execute one optimization run using the remaining budget; dispatcher
             # selects sequential vs parallel based on `n_jobs` and returns status/result.
-            status, result = self._execute_optimization_run(
+            status, result = self.execute_optimization_run(
                 timeout_start,
                 current_X0,
                 y0_known=y0_known_val,
@@ -4562,7 +4579,7 @@ class SpotOptim(BaseEstimator):
 
         return best_result
 
-    def _execute_optimization_run(
+    def execute_optimization_run(
         self,
         timeout_start: float,
         X0: Optional[np.ndarray] = None,
@@ -4572,7 +4589,7 @@ class SpotOptim(BaseEstimator):
         shared_lock=None,  # New arg
     ) -> Tuple[str, OptimizeResult]:
         """Dispatcher for optimization run (Sequential vs Steady-State Parallel).
-        Depending on n_jobs, calls _optimize_steady_state (n_jobs > 1) or _optimize_sequential_run (n_jobs == 1).
+        Depending on n_jobs, calls optimize_steady_state (n_jobs > 1) or optimize_sequential_run (n_jobs == 1).
 
         Args:
             timeout_start (float): Start time for timeout.
@@ -4590,9 +4607,7 @@ class SpotOptim(BaseEstimator):
             import time
             import numpy as np
             from spotoptim import SpotOptim
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
+            from spotoptim.function import sphere
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
@@ -4602,7 +4617,7 @@ class SpotOptim(BaseEstimator):
                 n_jobs=1,  # Use sequential optimization for deterministic output
                 verbose=True
             )
-            status, result = opt._execute_optimization_run(timeout_start=time.time())
+            status, result = opt.execute_optimization_run(timeout_start=time.time())
             print(status)
             print(result.message.splitlines()[0])
             ```
@@ -4610,14 +4625,14 @@ class SpotOptim(BaseEstimator):
 
         # Dispatch to steady-state optimizer if proper parallelization is requested
         if self.n_jobs > 1:
-            return self._optimize_steady_state(
+            return self.optimize_steady_state(
                 timeout_start,
                 X0,
                 y0_known=y0_known,
                 max_iter_override=max_iter_override,
             )
         else:
-            return self._optimize_sequential_run(
+            return self.optimize_sequential_run(
                 timeout_start,
                 X0,
                 y0_known=y0_known,
@@ -4626,7 +4641,7 @@ class SpotOptim(BaseEstimator):
                 shared_lock=shared_lock,
             )
 
-    def _optimize_sequential_run(
+    def optimize_sequential_run(
         self,
         timeout_start: float,
         X0: Optional[np.ndarray] = None,
@@ -4654,23 +4669,23 @@ class SpotOptim(BaseEstimator):
             ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
 
         Examples:
-            >>> import time
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     max_iter=10,
-            ...     seed=0,
-            ...     n_jobs=1,  # Use sequential optimization for deterministic output
-            ...     verbose=True
-            ... )
-            >>> status, result = opt._optimize_sequential_run(timeout_start=time.time())
-            >>> print(status)
-            FINISHED
-            >>> print(result.message.splitlines()[0])
-            Optimization terminated: maximum evaluations (20) reached
+            ```{python}
+            import time
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(fun=sphere,
+                            bounds=[(-5, 5), (-5, 5)],
+                            n_initial=5,
+                            max_iter=10,
+                            seed=0,
+                            n_jobs=1,  # Use sequential optimization for deterministic output
+                            verbose=True
+             )
+            status, result = opt.optimize_sequential_run(timeout_start=time.time())
+            print(status)
+            print(result.message.splitlines()[0])
+            ```
         """
 
         # Store shared variable if provided
@@ -4710,7 +4725,7 @@ class SpotOptim(BaseEstimator):
         self, X0: Optional[np.ndarray], y0_known: Optional[float]
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Initialize optimization run: seed, design generation, initial evaluation.
-        Called from _optimize_sequential_run.
+        Called from optimize_sequential_run (sequential path only).
 
         Args:
             X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
@@ -5037,7 +5052,7 @@ class SpotOptim(BaseEstimator):
         self.min_y = self.best_y_
         self.min_X = self.best_x_
 
-    def _optimize_steady_state(
+    def optimize_steady_state(
         self,
         timeout_start: float,
         X0: Optional[np.ndarray],
@@ -5045,10 +5060,8 @@ class SpotOptim(BaseEstimator):
         max_iter_override: Optional[int] = None,
     ) -> Tuple[str, OptimizeResult]:
         """Perform steady-state asynchronous optimization (n_jobs > 1).
-
         This method implements a hybrid steady-state parallelization strategy.
         The executor types are selected at runtime based on GIL availability:
-
         **Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):**
 
         * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
@@ -5103,39 +5116,52 @@ class SpotOptim(BaseEstimator):
         Args:
             timeout_start (float): Start time for timeout.
             X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
-            y0_known (Optional[float]): Known best value for initial design.
+            y0_known (Optional[float]): Known best objective value from a previous run.
+                When provided together with ``self.x0``, the matching point in the initial
+                design is pre-filled with this value and not re-submitted to the worker
+                pool, saving one evaluation per restart (restart injection).
             max_iter_override (Optional[int]): Override for maximum number of iterations.
 
         Raises:
-            RuntimeError: If all initial design evaluations fail, likely due to pickling issues or missing imports in the worker process.
-            The error message provides guidance on how to address this issue.
+            RuntimeError: If all initial design evaluations fail, likely due to pickling issues or missing imports in the worker process. The error message provides guidance on how to address this issue.
 
         Returns:
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
 
         Examples:
-            >>> import time
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     max_iter=10,
-            ...     seed=0,
-            ...     n_jobs=2,  # Use parallel optimization
-            ...     verbose=True
-            ... )
-            >>> status, result = opt._optimize_steady_state(timeout_start=time.time(), X0=None)
-            >>> print(status)
-            FINISHED
-            >>> print(result.message.splitlines()[0])
-            Optimization finished (Steady State)
+            ```{python}
+            import time
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                 fun=sphere,
+                 bounds=[(-5, 5), (-5, 5)],
+                 n_initial=5,
+                 max_iter=10,
+                 seed=0,
+                 n_jobs=2,
+            )
+            status, result = opt.optimize_steady_state(timeout_start=time.time(), X0=None)
+            print(status)
+            print(result.message.splitlines()[0])
+            ```
         """
         # Setup similar to _optimize_single_run
         self.set_seed()
         X0 = self.get_initial_design(X0)
         X0 = self.curate_initial_design(X0)
+
+        # Restart injection: if a known best value is provided, pre-fill the matching
+        # point in the initial design so it is not re-submitted to the worker pool.
+        # This mirrors the logic in _initialize_run() used by the sequential path.
+        y0_prefilled = np.full(len(X0), np.nan)
+        if y0_known is not None and self.x0 is not None:
+            dists = np.linalg.norm(X0 - self.x0, axis=1)
+            matches = dists < 1e-9
+            if np.any(matches):
+                if self.verbose:
+                    print("Skipping re-evaluation of injected best point.")
+                y0_prefilled[matches] = y0_known
 
         # We need to know how many evaluations to do
         effective_max_iter = (
@@ -5201,10 +5227,14 @@ class SpotOptim(BaseEstimator):
             futures = {}  # map future -> type ('eval', 'search')
 
             # --- Phase 1: Initial Design Evaluation ---
-            if self.verbose:
-                print(f"Submitted {len(X0)} initial points for parallel evaluation...")
-
+            # Pre-filled points (restart injection) are stored on the main thread;
+            # all remaining points are submitted to eval_pool concurrently.
+            n_to_submit = 0
             for i, x in enumerate(X0):
+                if np.isfinite(y0_prefilled[i]):
+                    # Known from restart injection — store directly, skip the pool.
+                    self._update_storage_steady(x, y0_prefilled[i])
+                    continue
                 if _no_gil:
                     # Free-threaded: call fun directly in a thread — no dill.
                     fut = eval_pool.submit(_thread_eval_task_single, x)
@@ -5218,10 +5248,22 @@ class SpotOptim(BaseEstimator):
                         self.tb_writer = _tb_writer_temp
                     fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
                 futures[fut] = "eval"
+                n_to_submit += 1
 
-            # Wait for all initial to complete
+            if self.verbose:
+                n_injected = int(np.sum(np.isfinite(y0_prefilled)))
+                suffix = (
+                    f" ({n_injected} injected from restart, skipped re-evaluation)."
+                    if n_injected
+                    else "."
+                )
+                print(
+                    f"Submitted {n_to_submit} initial points for parallel evaluation{suffix}"
+                )
+
+            # Wait for all submitted initial evaluations to complete.
             initial_done_count = 0
-            while initial_done_count < len(X0):
+            while initial_done_count < n_to_submit:
                 done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
                 for fut in done:
                     # Clean up

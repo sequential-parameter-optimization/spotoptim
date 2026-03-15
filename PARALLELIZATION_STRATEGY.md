@@ -15,8 +15,8 @@ using `concurrent.futures.ProcessPoolExecutor`.
 The entry point is the `n_jobs` constructor parameter (default `1`).
 
 ```
-n_jobs == 1  →  _optimize_sequential_run()   (single process, synchronous)
-n_jobs  > 1  →  _optimize_steady_state()     (multi-process, asynchronous)
+n_jobs == 1  →  optimize_sequential_run()   (single process, synchronous)
+n_jobs  > 1  →  optimize_steady_state()     (multi-process, asynchronous)
 ```
 
 ### 1.2 Steady-State Architecture
@@ -254,7 +254,7 @@ search tasks.  The surrogate model and all data are shared by reference.
 Memory footprint per active search task drops from O(surrogate size) to O(1).
 
 **Compatibility:** The public API (`n_jobs`, `optimize()`) does not change.
-The internal `_optimize_steady_state` method is refactored.
+The internal `optimize_steady_state` method is refactored.
 
 **Risk:** Low.  Thread safety must be verified for surrogate `predict()` calls
 made concurrently.  sklearn's `GaussianProcessRegressor.predict` is
@@ -333,7 +333,7 @@ computation inside `suggest_next_infill_point()` — no code change is required
 for that path.
 
 **Change:** Added GIL-status detection via a module-level helper and
-`contextlib.ExitStack`-based executor selection in `_optimize_steady_state`:
+`contextlib.ExitStack`-based executor selection in `optimize_steady_state`:
 
 ```python
 import sys
@@ -343,7 +343,7 @@ def _is_gil_disabled() -> bool:
     return not getattr(sys, "_is_gil_enabled", lambda: True)()
 ```
 
-Executor selection inside `_optimize_steady_state`:
+Executor selection inside `optimize_steady_state`:
 
 ```python
 from contextlib import ExitStack

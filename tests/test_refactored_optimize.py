@@ -31,10 +31,10 @@ class TestRefactoredOptimize:
         )
 
     def test_optimize_structure_sequential(self, spot_optim):
-        """Test that optimize calls _execute_optimization_run and loop works for sequential."""
+        """Test that optimize calls execute_optimization_run and loop works for sequential."""
         spot_optim.n_jobs = 1
 
-        # Mock _execute_optimization_run to return a finished result immediately
+        # Mock execute_optimization_run to return a finished result immediately
         mock_result = OptimizeResult(
             x=np.zeros(2),
             fun=0.0,
@@ -45,16 +45,16 @@ class TestRefactoredOptimize:
             X=np.zeros((10, 2)),
             y=np.zeros(10),
         )
-        spot_optim._execute_optimization_run = MagicMock(
+        spot_optim.execute_optimization_run = MagicMock(
             return_value=("FINISHED", mock_result)
         )
 
         result = spot_optim.optimize()
 
         assert result == mock_result
-        spot_optim._execute_optimization_run.assert_called_once()
+        spot_optim.execute_optimization_run.assert_called_once()
         # Verify arguments passed (checking structure)
-        call_args = spot_optim._execute_optimization_run.call_args
+        call_args = spot_optim.execute_optimization_run.call_args
         assert call_args[1]["y0_known"] is None
 
     def test_optimize_structure_restart(self, spot_optim):
@@ -83,7 +83,7 @@ class TestRefactoredOptimize:
         )
 
         # Side effect: First call returns RESTART, second returns FINISHED
-        spot_optim._execute_optimization_run = MagicMock(
+        spot_optim.execute_optimization_run = MagicMock(
             side_effect=[("RESTART", res1), ("FINISHED", res2)]
         )
 
@@ -92,39 +92,39 @@ class TestRefactoredOptimize:
 
         result = spot_optim.optimize()
 
-        assert spot_optim._execute_optimization_run.call_count == 2
+        assert spot_optim.execute_optimization_run.call_count == 2
         assert result.fun == 0.1
         assert len(spot_optim.restarts_results_) == 2
 
         # Check if second call received the best value from first run
-        args2 = spot_optim._execute_optimization_run.call_args_list[1]
+        args2 = spot_optim.execute_optimization_run.call_args_list[1]
         assert args2[1]["y0_known"] == 1.0
 
     def test_dispatch_sequential(self, spot_optim):
-        """Verify dispatch calls _optimize_sequential_run when n_jobs=1."""
+        """Verify dispatch calls optimize_sequential_run when n_jobs=1."""
         spot_optim.n_jobs = 1
-        spot_optim._optimize_sequential_run = MagicMock(
+        spot_optim.optimize_sequential_run = MagicMock(
             return_value=("FINISHED", MagicMock())
         )
-        spot_optim._optimize_steady_state = MagicMock()
+        spot_optim.optimize_steady_state = MagicMock()
 
-        spot_optim._execute_optimization_run(timeout_start=time.time())
+        spot_optim.execute_optimization_run(timeout_start=time.time())
 
-        spot_optim._optimize_sequential_run.assert_called_once()
-        spot_optim._optimize_steady_state.assert_not_called()
+        spot_optim.optimize_sequential_run.assert_called_once()
+        spot_optim.optimize_steady_state.assert_not_called()
 
     def test_dispatch_parallel(self, spot_optim):
-        """Verify dispatch calls _optimize_steady_state when n_jobs>1."""
+        """Verify dispatch calls optimize_steady_state when n_jobs>1."""
         spot_optim.n_jobs = 2
-        spot_optim._optimize_sequential_run = MagicMock()
-        spot_optim._optimize_steady_state = MagicMock(
+        spot_optim.optimize_sequential_run = MagicMock()
+        spot_optim.optimize_steady_state = MagicMock(
             return_value=("FINISHED", MagicMock())
         )
 
-        spot_optim._execute_optimization_run(timeout_start=time.time())
+        spot_optim.execute_optimization_run(timeout_start=time.time())
 
-        spot_optim._optimize_steady_state.assert_called_once()
-        spot_optim._optimize_sequential_run.assert_not_called()
+        spot_optim.optimize_steady_state.assert_called_once()
+        spot_optim.optimize_sequential_run.assert_not_called()
 
     def test_initialize_run_calls(self, spot_optim):
         """Verify _initialize_run calls necessary setup methods."""
@@ -142,8 +142,8 @@ class TestRefactoredOptimize:
         # _init_tensorboard should NOT be called here anymore
         spot_optim._init_tensorboard.assert_not_called()
 
-    def test_optimize_sequential_run_calls_init_tensorboard(self, spot_optim):
-        """Verify _optimize_sequential_run calls _init_tensorboard."""
+    def testoptimize_sequential_run_calls_init_tensorboard(self, spot_optim):
+        """Verify optimize_sequential_run calls _init_tensorboard."""
         spot_optim._initialize_run = MagicMock(
             return_value=(np.zeros((5, 2)), np.zeros(5))
         )
@@ -159,7 +159,7 @@ class TestRefactoredOptimize:
         )
         spot_optim._init_tensorboard = MagicMock()
 
-        spot_optim._optimize_sequential_run(timeout_start=time.time())
+        spot_optim.optimize_sequential_run(timeout_start=time.time())
 
         spot_optim._init_tensorboard.assert_called_once()
 

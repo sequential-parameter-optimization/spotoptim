@@ -9,7 +9,7 @@ import numpy as np
 from spotoptim import SpotOptim
 
 
-def test_optimize_sequential_run_example():
+def testoptimize_sequential_run_example():
     opt = SpotOptim(
         fun=lambda X: np.sum(X**2, axis=1),
         bounds=[(-5, 5), (-5, 5)],
@@ -20,7 +20,7 @@ def test_optimize_sequential_run_example():
         verbose=False,
     )
 
-    status, result = opt._optimize_sequential_run(timeout_start=time.time())
+    status, result = opt.optimize_sequential_run(timeout_start=time.time())
 
     assert status == "FINISHED"
     assert result.message.splitlines()[0] == (

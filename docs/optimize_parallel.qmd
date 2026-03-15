@@ -1,0 +1,725 @@
+---
+title: "SpotOptim: Parallel Optimization"
+description: "Step-by-step walkthrough of execute_optimization_run() and every method it calls along the parallel (steady-state) path, with executable examples validated by pytest."
+---
+
+This document traces every step executed by `SpotOptim.execute_optimization_run()` along
+the parallel code path (`n_jobs > 1`), in the order they occur.
+Each section describes one method or phase with a `{python}` code block that can be executed directly.
+
+The public entry point is `optimize()`, which manages the outer restart loop and delegates
+each cycle to `execute_optimization_run()`.
+When `n_jobs > 1`, that dispatcher routes to `optimize_steady_state()`,
+which implements a hybrid steady-state parallelisation strategy that overlaps surrogate
+search with objective function evaluation.
+This document covers that path in full.
+
+Run all related tests with:
+
+```bash
+uv run pytest tests/test_spotoptim_deep.py -v
+```
+
+---
+
+## Step 1 — Dispatch (`execute_optimization_run()`)
+
+```python
+if self.n_jobs > 1:
+    return self.optimize_steady_state(...)
+else:
+    return self.optimize_sequential_run(...)
+```
+
+`execute_optimization_run()` is the routing layer between the outer restart loop in
+`optimize()` and the actual optimisation engine.
+Its sole responsibility is to examine `n_jobs` and forward all arguments to either
+`optimize_steady_state()` (parallel) or `optimize_sequential_run()` (sequential).
+It returns a `(status, OptimizeResult)` tuple in both cases, which `optimize()` uses to
+decide whether to restart or terminate.
+The optional `shared_best_y` and `shared_lock` parameters support inter-worker
+coordination; they are unused in the current steady-state implementation and reserved
+for future multi-restart parallelism.
+
+```{python}
+import time
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0, n_jobs=2)
+status, result = opt.execute_optimization_run(timeout_start=time.time())
+print(f"status : {status}")
+print(f"best   : {result.fun:.6f}")
+assert status == "FINISHED"
+print("dispatch check passed.")
+```
+
+---
+
+## Step 2 — Parallel Run Orchestration (`optimize_steady_state()`)
+
+```python
+self.set_seed()
+X0 = self.get_initial_design(X0)
+X0 = self.curate_initial_design(X0)
+# Phase 1: parallel initial evaluation
+# Phase 2: steady-state loop
+return "FINISHED", OptimizeResult(...)
+```
+
+`optimize_steady_state()` is the parallel orchestrator.
+It follows the same preparatory sequence as its sequential counterpart — seeding the
+random number generator, generating and curating the initial design — before switching
+to a pool-based execution model.
+The method never returns `"RESTART"`: unlike the sequential loop, the steady-state engine
+does not implement a zero-success-rate restart criterion, and always exits with
+`"FINISHED"`.
+All worker pools are managed inside a single `contextlib.ExitStack` that guarantees
+orderly shutdown on success and on exception.
+
+```{python}
+import time
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0, n_jobs=2)
+status, result = opt.optimize_steady_state(timeout_start=time.time(), X0=None)
+print(f"status      : {status}")
+print(f"evaluations : {result.nfev}")
+print(f"best        : {result.fun:.6f}")
+assert status == "FINISHED"
+print("parallel orchestration check passed.")
+```
+
+---
+
+## Step 3 — Seed and Initial Design (`set_seed()`, `get_initial_design()`, `curate_initial_design()`)
+
+```python
+self.set_seed()
+X0 = self.get_initial_design(X0)
+X0 = self.curate_initial_design(X0)
+```
+
+The parallel path begins with the same three preparatory calls as the sequential path.
+`set_seed()` re-seeds Python's `random` module and NumPy's global generator to ensure
+reproducibility.
+`get_initial_design()` either processes the user-supplied `X0` or generates a Latin
+Hypercube sample in the transformed, reduced search space.
+`curate_initial_design()` removes duplicate points and generates replacements as needed.
+Because points are dispatched concurrently to worker processes or threads in the next
+phase, curation must be complete before submission: worker processes operate on a
+snapshot of the optimiser serialised with `dill` and cannot interact with the
+main-process state.
+Immediately after curation, restart injection is applied: a `y0_prefilled` array (all
+`NaN` by default) is populated with `y0_known` at the position of the matching `self.x0`
+point, using the same distance tolerance as `_initialize_run()` in the sequential path.
+This pre-filled array is consumed by Phase 1 to skip one pool submission per restart.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=5, seed=42, n_jobs=2)
+opt.set_seed()
+X0 = opt.get_initial_design(None)
+X0 = opt.curate_initial_design(X0)
+print(f"initial design shape : {X0.shape}")
+assert X0.shape == (5, 2)
+assert len(np.unique(X0, axis=0)) == 5
+print("seed and initial design check passed.")
+```
+
+---
+
+## Step 4 — GIL Detection and Executor Construction (`_is_gil_disabled()`)
+
+```python
+_no_gil = _is_gil_disabled()
+with ExitStack() as _stack:
+    eval_pool = _stack.enter_context(
+        ThreadPoolExecutor(max_workers=self.n_jobs) if _no_gil
+        else ProcessPoolExecutor(max_workers=self.n_jobs)
+    )
+    search_pool = _stack.enter_context(
+        ThreadPoolExecutor(max_workers=self.n_jobs)
+    )
+```
+
+`_is_gil_disabled()` queries `sys._is_gil_enabled()` (Python 3.13+) to detect whether
+the interpreter was built without the Global Interpreter Lock.
+On standard GIL builds — Python 3.12 or GIL-enabled 3.13 — objective evaluations are
+dispatched to a `ProcessPoolExecutor` so that each worker runs in a separate process,
+giving true CPU-level parallelism and safe isolation of arbitrary callables.
+Surrogate search tasks are always dispatched to a `ThreadPoolExecutor` because they
+share the main-process heap and require no serialisation.
+On free-threaded builds (`python3.13t`) both pools are `ThreadPoolExecutor` instances:
+threads achieve true parallelism without the GIL, `dill` serialisation is eliminated,
+and the objective function is called directly from the shared heap.
+The `_surrogate_lock` (a `threading.Lock`) is used in both configurations to serialise
+concurrent surrogate reads and refits.
+
+```{python}
+from spotoptim.SpotOptim import _is_gil_disabled
+
+result = _is_gil_disabled()
+print(f"GIL disabled: {result}")
+assert isinstance(result, bool)
+print("GIL detection check passed.")
+```
+
+---
+
+## Step 5 — Phase 1: Parallel Initial Submission
+
+```python
+n_to_submit = 0
+for i, x in enumerate(X0):
+    if np.isfinite(y0_prefilled[i]):
+        # Restart injection: store directly, skip the pool.
+        self._update_storage_steady(x, y0_prefilled[i])
+        continue
+    if _no_gil:
+        fut = eval_pool.submit(_thread_eval_task_single, x)
+    else:
+        pickled_args = dill.dumps((self, x))
+        fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
+    futures[fut] = "eval"
+    n_to_submit += 1
+```
+
+The initial design is partitioned into two groups before any worker is touched.
+Points that carry a pre-filled `y0_prefilled` value — set during Step 4 for the
+restart-injected best point — are stored on the main thread via
+`_update_storage_steady()` and skipped entirely.
+The remaining `n_to_submit` points are submitted to `eval_pool` concurrently.
+On GIL builds each point is serialised together with a snapshot of the optimiser using
+`dill.dumps()`; the TensorBoard writer is temporarily set to `None` before serialisation
+because `SummaryWriter` objects are not picklable.
+`remote_eval_wrapper()` unpickles the arguments in the worker process, reshapes the
+point to a `(1, d)` array, calls `evaluate_function()`, and returns the `(x, y)` pair.
+On free-threaded builds `_thread_eval_task_single()` calls `evaluate_function()` without
+any serialisation overhead.
+All submitted futures are tracked in a `futures` dictionary keyed by `Future` object
+with the string tag `"eval"`.
+When `y0_known` is `None` (no restart), `y0_prefilled` is all-NaN and `n_to_submit`
+equals `n_initial`, so behaviour is identical to a fresh run.
+
+```{python}
+import time
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# Fresh run — all n_initial points are submitted to the pool.
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=8, max_iter=8, seed=0, n_jobs=2)
+result = opt.optimize()
+assert result.nfev == 8
+print(f"evaluations (no injection): {result.nfev}")
+
+# Restart injection — the known best point is stored directly, not re-evaluated.
+x_inject = np.array([0.5, -0.5])
+opt2 = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                 n_initial=6, max_iter=6, seed=1, n_jobs=2,
+                 x0=x_inject)
+opt2.optimize_steady_state(
+    timeout_start=time.time(),
+    X0=None,
+    y0_known=float(np.sum(x_inject**2)),
+)
+assert float(np.sum(x_inject**2)) in opt2.y_
+print(f"injected value present in y_: {float(np.sum(x_inject**2)):.4f}")
+print("parallel initial submission check passed.")
+```
+
+---
+
+## Step 6 — Initial Design Collection (`_update_storage_steady()`)
+
+```python
+while initial_done_count < len(X0):
+    done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
+    for fut in done:
+        ftype = futures.pop(fut)
+        if ftype != "eval":
+            continue
+        x_done, y_done = fut.result()
+        if not isinstance(y_done, Exception):
+            self._update_storage_steady(x_done, y_done)
+        initial_done_count += 1
+```
+
+The main thread waits in a loop using `concurrent.futures.wait()` with
+`return_when=FIRST_COMPLETED`, processing each completed future as it arrives.
+Futures tagged `"eval"` are the only type active during Phase 1; any unexpected type
+is silently skipped.
+When a result is an `Exception` instance — indicating a worker-side failure — the point
+is dropped and, if `verbose=True`, the error is printed; the initial design count still
+advances so the loop terminates correctly.
+For valid results, `_update_storage_steady()` appends the point in original scale to
+`X_` and its objective value to `y_`, initialising both arrays on the first call.
+It also updates `best_x_`, `best_y_`, `min_y`, and `min_X` in-place whenever the new
+value improves on the current best.
+Because the main thread is the only writer during Phase 1, no locking is required here.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=5, seed=0, n_jobs=2)
+opt.optimize()
+print(f"X_ shape  : {opt.X_.shape}")
+print(f"y_        : {opt.y_}")
+assert opt.X_.shape[0] >= 1
+assert np.isfinite(opt.best_y_)
+print("_update_storage_steady check passed.")
+```
+
+---
+
+## Step 7 — Initial Postprocessing (`_init_tensorboard()`, `update_stats()`, `get_best_xy_initial_design()`)
+
+```python
+self._init_tensorboard()
+if self.y_ is None or len(self.y_) == 0:
+    raise RuntimeError(...)
+self.update_stats()
+self.get_best_xy_initial_design()
+```
+
+Once all initial evaluations have completed, three postprocessing steps are applied in
+fixed order.
+`_init_tensorboard()` logs each initial-design point to TensorBoard as a separate
+hyperparameter run; when `tensorboard_log=False` (the default) it is a no-op.
+A guard check follows: if `y_` is `None` or empty, every worker evaluation failed and
+a `RuntimeError` is raised with a diagnostic message pointing to likely causes such as
+unpicklable callables or missing imports inside the worker process.
+`update_stats()` refreshes `min_y`, `min_X`, `counter`, and, for noisy objectives,
+aggregated per-point means and variances.
+`get_best_xy_initial_design()` identifies the initial best solution and writes it to
+`best_x_` and `best_y_`; unlike the sequential path, these attributes are updated
+incrementally by `_update_storage_steady()` throughout the loop, so this call aligns
+the verbose best-solution display with the true running best after Phase 1.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)], tensorboard_log=False,
+                n_initial=5, max_iter=5, seed=0, n_jobs=2)
+opt.optimize()
+assert opt.tb_writer is None
+assert opt.counter == 5
+print(f"counter : {opt.counter}")
+print(f"min_y   : {opt.min_y:.6f}")
+print("initial postprocessing check passed.")
+```
+
+---
+
+## Step 8 — First Surrogate Fit (`_fit_scheduler()`)
+
+```python
+# No lock needed — no search threads active yet
+self._fit_scheduler()
+```
+
+After the initial postprocessing, the surrogate model is fitted to the complete initial
+design for the first time.
+No surrogate lock is acquired here because the `search_pool` has not yet been populated:
+this is the only point in the parallel path where `_fit_scheduler()` is called without
+holding `_surrogate_lock`.
+`_fit_scheduler()` selects the most recent `window_size` training points according to
+`selection_method`, fits the surrogate, and prepares it for acquisition-function
+queries.
+When a list of surrogates was specified at construction, one is chosen probabilistically
+according to `prob_surrogate` before fitting.
+
+```{python}
+import time
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, window_size=10, seed=0, n_jobs=2)
+result = opt.optimize()
+print(f"window_size : {opt.window_size}")
+print(f"evaluations : {result.nfev}")
+assert opt.window_size == 10
+print("first surrogate fit check passed.")
+```
+
+---
+
+## Step 9 — Steady-State Loop Overview (`optimize_steady_state()`)
+
+```python
+pending_cands: list = []
+_future_n_pts: dict = {}
+
+while (len(self.y_) < effective_max_iter) and (
+    time.time() < timeout_start + self.max_time * 60
+):
+    if _batch_ready():
+        _flush_batch()
+    # fill open slots with search tasks
+    # flush again if threshold crossed
+    # wait for any future to complete
+    # route result by ftype: "search" or "batch_eval"
+```
+
+The main iteration loop runs until either the evaluation budget `effective_max_iter` or
+the wall-clock limit `max_time` minutes is exhausted.
+Two data structures coordinate the flow: `pending_cands` accumulates candidates returned
+by completed search tasks, and `_future_n_pts` maps each in-flight batch-eval future to
+the number of points it carries.
+Both structures are required for accurate budget accounting: the reserved count is
+`len(y_) + n_in_flight + n_active_searches + len(pending_cands)`, ensuring the total
+never exceeds `effective_max_iter` regardless of concurrency.
+Each loop iteration performs four actions in order — batch flush, slot filling, second
+flush, and future wait — before routing completed results by their type tag.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=20, seed=0, n_jobs=2)
+result = opt.optimize()
+print(f"evaluations : {result.nfev}")
+print(f"best        : {result.fun:.6f}")
+assert result.nfev <= 20
+assert result.success
+print("steady-state loop check passed.")
+```
+
+---
+
+## Step 10 — Batch Readiness (`_batch_ready()`)
+
+```python
+def _batch_ready() -> bool:
+    if not pending_cands:
+        return False
+    if len(pending_cands) >= self.eval_batch_size:
+        return True
+    return not any(t == "search" for t in futures.values())
+```
+
+`_batch_ready()` determines whether the accumulated candidates in `pending_cands` should
+be dispatched as a batch evaluation.
+The primary condition is that the number of pending candidates meets or exceeds
+`eval_batch_size`.
+A secondary starvation-guard condition also triggers a flush when no search tasks remain
+in flight: without this guard, pending candidates would block indefinitely if the budget
+is nearly exhausted and no further search tasks can be submitted.
+With `eval_batch_size=1` (the default), `_batch_ready()` returns `True` whenever any
+candidate is pending, preserving the one-point-at-a-time behaviour of the sequential
+path.
+Larger values of `eval_batch_size` amortise process-spawn and inter-process
+communication overhead across multiple points, improving throughput for expensive
+objectives on GIL builds.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+# Default batch size = 1: each search result is dispatched immediately
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, seed=0, n_jobs=2, eval_batch_size=1)
+result = opt.optimize()
+assert opt.eval_batch_size == 1
+print(f"eval_batch_size : {opt.eval_batch_size}")
+print(f"evaluations     : {result.nfev}")
+print("_batch_ready check passed.")
+```
+
+---
+
+## Step 11 — Batch Dispatch (`_flush_batch()`)
+
+```python
+def _flush_batch() -> None:
+    X_batch = np.vstack(pending_cands)
+    n_in_batch = len(pending_cands)
+    pending_cands.clear()
+    if _no_gil:
+        fut_eval = eval_pool.submit(_thread_batch_eval_task, X_batch)
+    else:
+        pickled_args = dill.dumps((self, X_batch))
+        fut_eval = eval_pool.submit(remote_batch_eval_wrapper, pickled_args)
+    futures[fut_eval] = "batch_eval"
+    _future_n_pts[fut_eval] = n_in_batch
+```
+
+`_flush_batch()` stacks all pending candidates into a single `(n, d)` array `X_batch`,
+clears `pending_cands`, and dispatches the batch to `eval_pool` as one future.
+On GIL builds `remote_batch_eval_wrapper()` is used: it unpickles the optimiser and
+batch in the worker process, calls `evaluate_function(X_batch)` once, and returns
+`(X_batch, y_batch)`.
+Evaluating the whole batch in a single `fun()` call avoids repeated process-spawn
+overhead and allows vectorised objective implementations to exploit NumPy-level
+parallelism within the worker.
+On free-threaded builds `_thread_batch_eval_task()` performs the same operation
+directly in a thread without serialisation.
+The future is registered under the `"batch_eval"` tag and its point count is recorded in
+`_future_n_pts` so that budget accounting remains correct while the evaluation is
+in flight.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=20, seed=0, n_jobs=2, eval_batch_size=3)
+result = opt.optimize()
+assert opt.eval_batch_size == 3
+print(f"eval_batch_size : {opt.eval_batch_size}")
+print(f"evaluations     : {result.nfev}")
+print("_flush_batch check passed.")
+```
+
+---
+
+## Step 12 — Search Slot Management (`_thread_search_task()`)
+
+```python
+n_in_flight = sum(_future_n_pts.values())
+n_searches = sum(1 for t in futures.values() if t == "search")
+reserved = len(self.y_) + n_in_flight + n_searches + len(pending_cands)
+if reserved < effective_max_iter:
+    fut = search_pool.submit(_thread_search_task)
+    futures[fut] = "search"
+```
+
+At each loop iteration, the main thread fills any open slots in the search pool up to
+`n_jobs` concurrent tasks.
+Before submitting a new search task, the budget guard checks that adding one more
+in-flight search would not push the reserved count over `effective_max_iter`: if it
+would, no further search tasks are submitted and the loop drains existing futures until
+the budget is consumed.
+`_thread_search_task()` is a nested closure that acquires `_surrogate_lock` before
+calling `suggest_next_infill_point()` and releases it on return, so that a concurrent
+surrogate refit on the main thread cannot corrupt the model while a search thread reads
+it.
+Because search tasks are always submitted to a `ThreadPoolExecutor`, they share the main
+process heap and require no serialisation regardless of the GIL state.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=12, seed=0, n_jobs=3)
+result = opt.optimize()
+assert result.nfev <= 12
+print(f"n_jobs      : {opt.n_jobs}")
+print(f"evaluations : {result.nfev}")
+print("search slot management check passed.")
+```
+
+---
+
+## Step 13 — Candidate Generation (`suggest_next_infill_point()`)
+
+```python
+def _thread_search_task():
+    with _surrogate_lock:
+        return self.suggest_next_infill_point()
+```
+
+`suggest_next_infill_point()` runs the acquisition function to identify the most
+promising candidate for the next objective evaluation.
+The acquisition strategy is controlled by `acquisition` (default `"y"`, minimising the
+surrogate prediction directly).
+The acquisition optimiser (default `"differential_evolution"`) searches the transformed,
+reduced search space.
+When the optimiser fails, the fallback strategy selected by
+`acquisition_failure_strategy` applies; `"random"` (the default) draws a uniform random
+point.
+In the parallel path this method is always called inside `_thread_search_task()`, which
+holds `_surrogate_lock` for the duration of the call, preventing simultaneous surrogate
+access by multiple search threads or by the main-thread refit.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, acquisition="ei", seed=0, n_jobs=2)
+result = opt.optimize()
+assert opt.acquisition == "ei"
+print(f"acquisition : {opt.acquisition}")
+print(f"best        : {result.fun:.6f}")
+print("suggest_next_infill_point check passed.")
+```
+
+---
+
+## Step 14 — Future Completion and Routing
+
+```python
+done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
+for fut in done:
+    ftype = futures.pop(fut)
+    res = fut.result()
+    if ftype == "search":
+        x_cand = res
+        pending_cands.append(x_cand)
+        if _batch_ready():
+            _flush_batch()
+    elif ftype == "batch_eval":
+        _future_n_pts.pop(fut, None)
+        X_done, y_done = res
+        # process batch...
+```
+
+`concurrent.futures.wait()` with `return_when=FIRST_COMPLETED` blocks until at least
+one future finishes, then returns all futures that are done.
+Each completed future is popped from `futures` and routed by its type tag.
+For a `"search"` future the returned candidate is appended to `pending_cands`; if this
+pushes the list over the batch threshold, `_flush_batch()` is called immediately to
+avoid an unnecessary extra loop iteration.
+For a `"batch_eval"` future the corresponding entry in `_future_n_pts` is removed so
+that budget accounting is unblocked before the storage update begins.
+If a result is an `Exception` — indicating a remote failure — the error is optionally
+printed, the budget entry is removed, and the loop continues; failed search slots are
+refilled in the next iteration, and failed eval points are lost without charging the
+budget counter.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, seed=0, n_jobs=2)
+result = opt.optimize()
+assert len(opt.y_) <= 15
+assert np.all(np.isfinite(opt.y_))
+print(f"evaluations stored : {len(opt.y_)}")
+print("future routing check passed.")
+```
+
+---
+
+## Step 15 — Batch Evaluation Processing (`update_success_rate()`, `_update_storage_steady()`, `_fit_scheduler()`)
+
+```python
+for xi, yi in zip(X_done, y_done):
+    self.update_success_rate(np.array([yi]))
+    self._update_storage_steady(xi, yi)
+    self.n_iter_ += 1
+with _surrogate_lock:
+    self._fit_scheduler()
+```
+
+When a batch evaluation completes successfully, the main thread processes every point in
+the returned `(X_done, y_done)` pair before refitting the surrogate.
+For each point, `update_success_rate()` records whether the new value improves on
+`best_y_`, maintaining the rolling `success_rate` attribute.
+`_update_storage_steady()` appends the point to `X_` and `y_`, updates `best_x_` and
+`best_y_` if an improvement is found, and synchronises `min_y` and `min_X`.
+`n_iter_` is incremented once per point so that it reflects the total number of
+post-initial-design evaluations.
+After all points in the batch have been stored, `_fit_scheduler()` is called once under
+`_surrogate_lock`, refitting the surrogate on the updated training window.
+Batching the refit in this way — one call per batch rather than one call per point —
+improves efficiency when `eval_batch_size > 1` and ensures that in-flight search
+threads always read a self-consistent model.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, seed=0, n_jobs=2)
+opt.optimize()
+print(f"success_rate : {opt.success_rate:.4f}")
+print(f"X_ shape     : {opt.X_.shape}")
+print(f"y_ shape     : {opt.y_.shape}")
+assert 0.0 <= opt.success_rate <= 1.0
+assert opt.X_.shape[0] == opt.y_.shape[0]
+print("batch processing check passed.")
+```
+
+---
+
+## Step 16 — Termination and Result Assembly
+
+```python
+return "FINISHED", OptimizeResult(
+    x=self.best_x_,
+    fun=self.best_y_,
+    nfev=len(self.y_),
+    nit=self.n_iter_,
+    success=True,
+    message="Optimization finished (Steady State)",
+    X=self.X_,
+    y=self.y_,
+)
+```
+
+`optimize_steady_state()` exits the while loop when `len(y_) >= effective_max_iter` or
+the wall-clock limit is exceeded.
+It always returns `"FINISHED"` — there is no restart mechanism in the parallel path.
+The `OptimizeResult` object carries the best solution (`x`, `fun`), total evaluation
+count (`nfev`), iteration count (`nit`), the full evaluation history (`X`, `y`), and a
+fixed termination message that identifies the result as coming from the steady-state
+engine.
+The `success` flag is always `True` because partial results are still valid whenever at
+least one evaluation completed successfully; the guard at the end of Phase 1 ensures
+the method does not return an empty result.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0, n_jobs=2)
+result = opt.optimize()
+first_line = result.message.splitlines()[0]
+print(f"termination : {first_line}")
+assert "Steady State" in result.message
+assert result.success
+print("termination check passed.")
+```
+
+---
+
+## Complete Parallel Run Summary
+
+@tbl-par summarises every step executed along the parallel path in call order:
+
+| Step | Method / Phase | Purpose |
+|-----:|----------------|---------|
+| 1 | `execute_optimization_run()` | Dispatch to parallel path when `n_jobs > 1` |
+| 2 | `optimize_steady_state()` | Parallel orchestrator; manages pools and phases |
+| 3 | `set_seed()`, `get_initial_design()`, `curate_initial_design()` | Seed RNG, generate and curate initial design; pre-fill `y0_prefilled` for restart-injected point |
+| 4 | `_is_gil_disabled()` | Detect GIL state; select `ProcessPoolExecutor` or `ThreadPoolExecutor` for eval |
+| 5 | Phase 1 submission | Store injected points directly; submit remaining `n_to_submit` points to `eval_pool` |
+| 6 | `_update_storage_steady()` | Collect initial results; append each valid `(x, y)` to storage |
+| 7 | `_init_tensorboard()`, `update_stats()`, `get_best_xy_initial_design()` | Log initial design; compute statistics; identify initial best |
+| 8 | `_fit_scheduler()` | First surrogate fit (no lock needed, no search threads active) |
+| 9 | `optimize_steady_state()` while loop | Main loop: iterate until budget or time exhausted |
+| 10 | `_batch_ready()` | Check whether `pending_cands` should be flushed |
+| 11 | `_flush_batch()` | Dispatch all pending candidates as one batch eval to `eval_pool` |
+| 12 | `_thread_search_task()` slot fill | Submit up to `n_jobs` search tasks under budget guard |
+| 13 | `suggest_next_infill_point()` | Optimise acquisition under `_surrogate_lock` to propose candidate |
+| 14 | `wait(FIRST_COMPLETED)` routing | Block until any future completes; route by `"search"` or `"batch_eval"` tag |
+| 15 | `update_success_rate()`, `_update_storage_steady()`, `_fit_scheduler()` | Process batch result; update storage and best; refit surrogate under lock |
+| 16 | Return `"FINISHED"` + `OptimizeResult` | Assemble and return final result |
+
+: Complete Parallel Run Summary {#tbl-par}

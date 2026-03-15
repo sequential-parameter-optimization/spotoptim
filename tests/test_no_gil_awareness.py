@@ -102,7 +102,7 @@ class TestExecutorSelection:
     """Verify the correct executor types are chosen based on GIL status."""
 
     def test_gil_build_uses_process_pool_for_eval(self):
-        """On a GIL build _optimize_steady_state must use ProcessPoolExecutor
+        """On a GIL build optimize_steady_state must use ProcessPoolExecutor
         for eval.  We verify by checking that _is_gil_disabled() is False on
         this interpreter, which is the precondition for that path."""
         # If GIL is enabled (standard build), the eval pool is a Process pool.
@@ -218,7 +218,7 @@ class TestSimulatedNoGilPath:
     """Test the thread-based eval path by mocking _is_gil_disabled() to True.
 
     These tests exercise _thread_eval_task_single and _thread_batch_eval_task
-    on the current interpreter by making _optimize_steady_state believe it is
+    on the current interpreter by making optimize_steady_state believe it is
     running on a free-threaded build.
     """
 
