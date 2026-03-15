@@ -1,3 +1,10 @@
+## [0.10.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.0...v0.10.1) (2026-03-15)
+
+
+### Bug Fixes
+
+* **ci:** add custom CodeQL workflow for Python-only analysis ([25de631](https://github.com/sequential-parameter-optimization/spotoptim/commit/25de631908ab3f8a283d6fb732ae65066900e898))
+
 ## [0.10.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.9.0...v0.10.0) (2026-03-15)
 
 
