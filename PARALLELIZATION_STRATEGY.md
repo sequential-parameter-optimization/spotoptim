@@ -2,6 +2,7 @@
 
 **Document version:** 2026-03-15
 **Applies to:** spotoptim ≥ 0.6.0
+**Implementation status:** Improvements E (0.7.0) and C (0.8.0) are complete.
 
 ---
 
@@ -130,12 +131,12 @@ with existing features or are superseded by better alternatives — see
 Four compatible improvements are retained and ordered by
 dependency and risk:
 
-| # | Improvement | Release | Depends on |
-|---|-------------|---------|------------|
-| E | `n_jobs=-1` convention | 0.7.0 | — |
-| C | ThreadPoolExecutor for `search` tasks | 0.8.0 | E |
-| F | Batch evaluation API | 0.9.0 | C |
-| D | Free-threaded (no-GIL) awareness | 0.10.0 | C |
+| # | Improvement | Release | Depends on | Status |
+|---|-------------|---------|------------|--------|
+| E | `n_jobs=-1` convention | 0.7.0 | — | ✅ Done |
+| C | ThreadPoolExecutor for `search` tasks | 0.8.0 | E | ✅ Done |
+| F | Batch evaluation API | 0.9.0 | C | Planned |
+| D | Free-threaded (no-GIL) awareness | 0.10.0 | C | Planned |
 
 ---
 
@@ -168,7 +169,7 @@ is the outer objective evaluation, not the inner surrogate query.
 
 ## 5. Release Roadmap
 
-### Release 0.7.0 — Improvement E: `n_jobs=-1` Convention
+### Release 0.7.0 — Improvement E: `n_jobs=-1` Convention ✅
 
 **Current problem:** spotoptim does not follow the scikit-learn / SciPy
 convention that `n_jobs=-1` means "use all available CPU cores".  Users who
@@ -196,7 +197,7 @@ def _resolve_n_jobs(n_jobs: int) -> int:
 
 ---
 
-### Release 0.8.0 — Improvement C: ThreadPoolExecutor for `search` Tasks
+### Release 0.8.0 — Improvement C: ThreadPoolExecutor for `search` Tasks ✅
 
 **Current problem:** Every `search` task (optimizing the acquisition function)
 requires:
@@ -372,12 +373,12 @@ spotoptim does not force users onto it; it merely exploits it when present.
 
 ## 6. Summary
 
-| Release | Improvement | Key Change | Risk |
-|---------|-------------|------------|------|
-| **0.7.0** | E — `n_jobs=-1` | Resolve `-1` to `os.cpu_count()` | Minimal |
-| **0.8.0** | C — Threads for search | `ThreadPoolExecutor` for `suggest_next_infill_point`; `ProcessPoolExecutor` kept for `eval` | Low |
-| **0.9.0** | F — Batch eval | Accumulate candidates; one `fun(X_batch)` call per batch | Low |
-| **0.10.0** | D — No-GIL | Detect `sys._is_gil_enabled()`; use threads for eval too | Low |
+| Release | Improvement | Key Change | Risk | Status |
+|---------|-------------|------------|------|--------|
+| **0.7.0** | E — `n_jobs=-1` | Resolve `-1` to `os.cpu_count()` | Minimal | ✅ Done |
+| **0.8.0** | C — Threads for search | `ThreadPoolExecutor` for `suggest_next_infill_point`; `ProcessPoolExecutor` kept for `eval`; `threading.Lock` guards surrogate | Low | ✅ Done |
+| **0.9.0** | F — Batch eval | Accumulate candidates; one `fun(X_batch)` call per batch | Low | Planned |
+| **0.10.0** | D — No-GIL | Detect `sys._is_gil_enabled()`; use threads for eval too | Low | Planned |
 
 Improvements A (shared memory) and B (SciPy `workers=`) are **not planned**
 because A is superseded by C and B conflicts with the existing `vectorized=True`
