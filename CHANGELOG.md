@@ -1,3 +1,10 @@
+## [0.10.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.1...v0.10.2) (2026-03-15)
+
+
+### Bug Fixes
+
+* **security:** address Scorecard supply-chain findings ([4f76eae](https://github.com/sequential-parameter-optimization/spotoptim/commit/4f76eaed7308a76efaf62c06b4d4d76c2bb7dad0))
+
 ## [0.10.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.0...v0.10.1) (2026-03-15)
 
 
