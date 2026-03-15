@@ -2,7 +2,7 @@
 
 **Document version:** 2026-03-15
 **Applies to:** spotoptim ≥ 0.6.0
-**Implementation status:** Improvements E (0.7.0), C (0.8.0), and F (0.9.0) are complete.
+**Implementation status:** Improvements E (0.7.0), C (0.8.0), F (0.9.0), and D (0.10.0) are complete.
 
 ---
 
@@ -136,7 +136,7 @@ dependency and risk:
 | E | `n_jobs=-1` convention | 0.7.0 | — | ✅ Done |
 | C | ThreadPoolExecutor for `search` tasks | 0.8.0 | E | ✅ Done |
 | F | Batch evaluation API | 0.9.0 | C | ✅ Done |
-| D | Free-threaded (no-GIL) awareness | 0.10.0 | C | Planned |
+| D | Free-threaded (no-GIL) awareness | 0.10.0 | C | ✅ Done |
 
 ---
 
@@ -319,21 +319,21 @@ parameter lets users tune the trade-off.
 
 ---
 
-### Release 0.10.0 — Improvement D: Free-Threaded (No-GIL) Awareness
+### Release 0.10.0 — Improvement D: Free-Threaded (No-GIL) Awareness ✅
 
 **Background:** Python 3.13 introduced experimental free-threaded builds
 (`python3.13t`, compile flag `--disable-gil`).  When the GIL is disabled,
 `ThreadPoolExecutor` achieves true CPU-level parallelism for any Python code,
-not just GIL-releasing extensions.  By release 0.9.0, free-threaded Python
-is expected to be more mature and the default in some environments.
+not just GIL-releasing extensions.
 
 **Dependency:** This improvement extends Improvement C (ThreadPoolExecutor for
 search tasks).  With the GIL disabled, the `ThreadPoolExecutor` that already
-runs search tasks in 0.7.0 automatically gains full multi-core parallelism
-for any Python-level computation inside `suggest_next_infill_point()` — no
-code change is required for that path.
+runs search tasks gains full multi-core parallelism for any Python-level
+computation inside `suggest_next_infill_point()` — no code change is required
+for that path.
 
-**Change:** Add GIL-status detection to the executor selection logic:
+**Change:** Added GIL-status detection via a module-level helper and
+`contextlib.ExitStack`-based executor selection in `_optimize_steady_state`:
 
 ```python
 import sys
@@ -341,33 +341,39 @@ import sys
 def _is_gil_disabled() -> bool:
     """Return True if running on a free-threaded Python build."""
     return not getattr(sys, "_is_gil_enabled", lambda: True)()
-
-def _build_executors(n_jobs: int):
-    if _is_gil_disabled():
-        # Free-threaded: threads give true CPU parallelism; no process pool needed.
-        # Use threads for both search and eval (eval isolation provided by the GIL-free runtime).
-        search_pool = ThreadPoolExecutor(max_workers=n_jobs)
-        eval_pool   = ThreadPoolExecutor(max_workers=n_jobs)
-    else:
-        # Standard GIL build: keep hybrid design from 0.7.0.
-        search_pool = ThreadPoolExecutor(max_workers=n_jobs)
-        eval_pool   = ProcessPoolExecutor(max_workers=n_jobs)
-    return eval_pool, search_pool
 ```
 
-When the GIL is disabled and both pools are `ThreadPoolExecutor`, the `dill`
-serialization path for eval tasks can also be eliminated — `fun` is accessible
-directly from the shared heap.
+Executor selection inside `_optimize_steady_state`:
 
-**Additional documentation:** Update the user guide and docstring for `n_jobs`
-to note the recommended Python version and build type for maximum parallelism.
+```python
+from contextlib import ExitStack
 
-**Compatibility:** The detection is purely additive.  On standard GIL-enabled
-Python (the vast majority of deployments through at least 2026), behaviour is
-identical to 0.8.0.
+_no_gil = _is_gil_disabled()
+
+with ExitStack() as _stack:
+    eval_pool = _stack.enter_context(
+        ThreadPoolExecutor(max_workers=self.n_jobs)
+        if _no_gil
+        else ProcessPoolExecutor(max_workers=self.n_jobs)
+    )
+    search_pool = _stack.enter_context(
+        ThreadPoolExecutor(max_workers=self.n_jobs)
+    )
+```
+
+When `_no_gil` is `True`, the `dill` serialization path for eval tasks is
+eliminated.  Phase 1 (initial design) calls `fun` directly via
+`_thread_eval_task_single`; Phase 2 (batch eval) calls `fun` directly via
+`_thread_batch_eval_task` — both closures access `self.evaluate_function()`
+from the shared heap with no IPC.
+
+**Compatibility:** Purely additive.  On standard GIL-enabled Python the
+behavior is identical to 0.9.0 — `_no_gil` is `False` and the
+`ProcessPoolExecutor` + `dill` path is taken unchanged.
 
 **Risk:** Low.  The free-threaded build is opt-in at the Python level.
-spotoptim does not force users onto it; it merely exploits it when present.
+spotoptim does not force users onto it; it exploits it when present.
+The `_surrogate_lock` remains in use on both paths.
 
 ---
 
