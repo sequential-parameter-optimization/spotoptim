@@ -81,7 +81,11 @@ class SpotOptimConfig:
         window_size (Optional[int]): Size of the window for tricands.
         min_tol_metric (str): Metric for minimum tolerance.
         prob_surrogate (Optional[List[float]]): Probability of using surrogate.
-        n_jobs (int): Number of jobs.
+        n_jobs (int): Number of parallel workers. ``1`` runs sequentially.
+            Values ``> 1`` activate steady-state parallel optimization using
+            ``ProcessPoolExecutor``. ``-1`` resolves to ``os.cpu_count()``
+            (all available CPU cores). ``0`` and values ``< -1`` raise
+            ``ValueError``. Defaults to ``1``.
         acquisition_optimizer_kwargs (Optional[Dict[str, Any]]): Keyword arguments for the acquisition function optimizer.
         args (Tuple): Arguments for the objective function.
         kwargs (Optional[Dict[str, Any]]): Keyword arguments for the objective function.
@@ -607,6 +611,13 @@ class SpotOptim(BaseEstimator):
         prob_de_tricands (float, optional):
             Probability of using differential evolution as an optimizer
             on the surrogate model. 1 - prob_de_tricands is the probability of using tricands. Defaults to 0.8.
+        n_jobs (int, optional):
+            Number of parallel workers. ``1`` (default) runs sequentially.
+            Values ``> 1`` activate steady-state parallel optimization:
+            objective evaluations and acquisition searches are dispatched
+            across ``n_jobs`` processes. Pass ``-1`` to use all available
+            CPU cores (``os.cpu_count()``). ``0`` and values ``< -1`` raise
+            ``ValueError``. Defaults to ``1``.
         window_size (int, optional):
             Window size for success rate calculation.
         min_tol_metric (str, optional):
@@ -975,6 +986,14 @@ class SpotOptim(BaseEstimator):
             raise ValueError(
                 f"max_iter ({max_iter}) must be >= n_initial ({n_initial}). "
                 f"max_iter represents the total function evaluation budget including initial design."
+            )
+
+        # Resolve n_jobs: -1 means "use all available CPU cores" (scikit-learn convention).
+        if n_jobs == -1:
+            n_jobs = os.cpu_count() or 1
+        elif n_jobs == 0 or n_jobs < -1:
+            raise ValueError(
+                f"n_jobs must be a positive integer or -1 (all CPU cores), got {n_jobs}."
             )
 
         if acquisition_optimizer_kwargs is None:
