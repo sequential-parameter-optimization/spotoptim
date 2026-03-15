@@ -6,6 +6,7 @@ import numpy as np
 import random
 import dill
 import re
+import sys
 import threading
 import torch
 from functools import partial
@@ -83,13 +84,19 @@ class SpotOptimConfig:
         min_tol_metric (str): Metric for minimum tolerance.
         prob_surrogate (Optional[List[float]]): Probability of using surrogate.
         n_jobs (int): Number of parallel workers. ``1`` runs sequentially.
-            Values ``> 1`` activate steady-state parallel optimization using
-            a hybrid executor: ``ProcessPoolExecutor`` for objective evaluations
-            (process isolation; supports lambdas and closures via ``dill``) and
+            Values ``> 1`` activate steady-state parallel optimization.
+            On standard GIL builds a hybrid executor is used:
+            ``ProcessPoolExecutor`` for objective evaluations (process
+            isolation; supports lambdas and closures via ``dill``) and
             ``ThreadPoolExecutor`` for surrogate search tasks (shared heap;
-            zero serialization overhead). ``-1`` resolves to ``os.cpu_count()``
-            (all available CPU cores). ``0`` and values ``< -1`` raise
-            ``ValueError``. Defaults to ``1``.
+            zero serialization overhead).
+            On free-threaded Python builds (``python3.13t``,
+            ``--disable-gil``), both pools are ``ThreadPoolExecutor``
+            instances, achieving true CPU-level parallelism without ``dill``
+            for eval tasks.
+            ``-1`` resolves to ``os.cpu_count()`` (all available CPU cores).
+            ``0`` and values ``< -1`` raise ``ValueError``.
+            Defaults to ``1``.
         eval_batch_size (int): Number of candidate points to accumulate before
             dispatching a single ``fun(X_batch)`` call to the process pool.
             ``1`` (default) dispatches each candidate immediately, preserving
@@ -372,6 +379,26 @@ def gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
 
         res = minimize(obj_func, initial_theta, bounds=bounds, **minimize_kwargs)
     return res.x, res.fun
+
+
+def _is_gil_disabled() -> bool:
+    """Return True when running on a free-threaded (no-GIL) Python build.
+
+    Uses ``sys._is_gil_enabled()`` (Python 3.13+).  On older interpreters the
+    attribute is absent, so the lambda default returns ``True`` (GIL enabled),
+    which is the safe fallback.
+
+    Returns:
+        bool: ``True`` if the GIL is disabled, ``False`` otherwise.
+
+    Examples:
+        ```{python}
+        from spotoptim.SpotOptim import _is_gil_disabled
+        result = _is_gil_disabled()
+        print(isinstance(result, bool))  # True
+        ```
+    """
+    return not getattr(sys, "_is_gil_enabled", lambda: True)()
 
 
 def remote_eval_wrapper(pickled_args):
@@ -5019,17 +5046,26 @@ class SpotOptim(BaseEstimator):
     ) -> Tuple[str, OptimizeResult]:
         """Perform steady-state asynchronous optimization (n_jobs > 1).
 
-        This method implements a hybrid steady-state parallelization strategy
-        using two executor types:
+        This method implements a hybrid steady-state parallelization strategy.
+        The executor types are selected at runtime based on GIL availability:
+
+        **Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):**
 
         * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
-          Process isolation ensures that arbitrary callables (lambdas, closures)
+          Process isolation ensures arbitrary callables (lambdas, closures)
           serialized with ``dill`` run safely without touching shared state.
         * ``ThreadPoolExecutor`` (``search_pool``) — surrogate search tasks.
-          Threads share the main-process heap, so ``suggest_next_infill_point()``
-          runs without any ``dill`` serialization overhead.  A ``threading.Lock``
-          (``_surrogate_lock``) prevents a surrogate refit from racing with an
-          in-flight search thread.
+          Threads share the main-process heap; zero ``dill`` overhead.
+          A ``threading.Lock`` (``_surrogate_lock``) prevents a surrogate refit
+          from racing with an in-flight search thread.
+
+        **Free-threaded build (``python3.13t`` / ``--disable-gil``):**
+
+        * Both ``eval_pool`` and ``search_pool`` are ``ThreadPoolExecutor``
+          instances.  Threads achieve true CPU-level parallelism without the GIL.
+          The ``dill`` serialization step for eval tasks is eliminated — ``fun``
+          is called directly from the shared heap.  The ``_surrogate_lock`` is
+          still used to serialize surrogate reads and refits.
 
         Pipeline:
 
@@ -5050,8 +5086,9 @@ class SpotOptim(BaseEstimator):
             - Search completes → candidate appended to ``pending_cands``.
             - When ``len(pending_cands) >= eval_batch_size`` (or no search tasks
               remain), all pending candidates are stacked into ``X_batch`` and
-              dispatched as a **single** ``remote_batch_eval_wrapper`` call to
-              ``eval_pool``.  This amortizes process-spawn and IPC overhead.
+              dispatched as a single eval call to ``eval_pool``.
+              On GIL builds this calls ``remote_batch_eval_wrapper`` (dill);
+              on free-threaded builds it calls ``fun`` directly in a thread.
             - Batch eval completes → storage updated for every point, surrogate
               refit once under ``_surrogate_lock``, new search slots filled.
             - ``eval_batch_size=1`` (default) dispatches immediately on each
@@ -5108,12 +5145,18 @@ class SpotOptim(BaseEstimator):
         # Import dill locally (assuming installed)
         import dill
 
+        from contextlib import ExitStack
         from concurrent.futures import (
             ProcessPoolExecutor,
             ThreadPoolExecutor,
             wait,
             FIRST_COMPLETED,
         )
+
+        # Detect free-threaded (no-GIL) Python build (3.13+).
+        # On free-threaded builds ThreadPoolExecutor gives true CPU parallelism,
+        # so we can use threads for eval too and skip dill serialization entirely.
+        _no_gil = _is_gil_disabled()
 
         # Lock that serialises surrogate access:
         #   - search threads call suggest_next_infill_point() under the lock
@@ -5126,12 +5169,35 @@ class SpotOptim(BaseEstimator):
             with _surrogate_lock:
                 return self.suggest_next_infill_point()
 
-        # eval_pool  – ProcessPoolExecutor: isolates arbitrary user objective fun
-        # search_pool – ThreadPoolExecutor: shares heap, no dill serialization
-        with (
-            ProcessPoolExecutor(max_workers=self.n_jobs) as eval_pool,
-            ThreadPoolExecutor(max_workers=self.n_jobs) as search_pool,
-        ):
+        def _thread_eval_task_single(x):
+            """Thread-based single-point eval for free-threaded Python (no dill)."""
+            try:
+                x_2d = x.reshape(1, -1)
+                y_arr = self.evaluate_function(x_2d)
+                return x, y_arr[0]
+            except Exception as e:
+                return None, e
+
+        def _thread_batch_eval_task(X_batch):
+            """Thread-based batch eval for free-threaded Python (no dill)."""
+            try:
+                y_batch = self.evaluate_function(X_batch)
+                return X_batch, y_batch
+            except Exception as e:
+                return None, e
+
+        # Build executor pair:
+        #   GIL build     → eval: ProcessPoolExecutor, search: ThreadPoolExecutor
+        #   No-GIL build  → eval: ThreadPoolExecutor,  search: ThreadPoolExecutor
+        with ExitStack() as _stack:
+            eval_pool = _stack.enter_context(
+                ThreadPoolExecutor(max_workers=self.n_jobs)
+                if _no_gil
+                else ProcessPoolExecutor(max_workers=self.n_jobs)
+            )
+            search_pool = _stack.enter_context(
+                ThreadPoolExecutor(max_workers=self.n_jobs)
+            )
             futures = {}  # map future -> type ('eval', 'search')
 
             # --- Phase 1: Initial Design Evaluation ---
@@ -5139,15 +5205,18 @@ class SpotOptim(BaseEstimator):
                 print(f"Submitted {len(X0)} initial points for parallel evaluation...")
 
             for i, x in enumerate(X0):
-                # Temporarily remove tb_writer (not picklable)
-                _tb_writer_temp = self.tb_writer
-                self.tb_writer = None
-                try:
-                    pickled_args = dill.dumps((self, x))
-                finally:
-                    self.tb_writer = _tb_writer_temp
-
-                fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
+                if _no_gil:
+                    # Free-threaded: call fun directly in a thread — no dill.
+                    fut = eval_pool.submit(_thread_eval_task_single, x)
+                else:
+                    # GIL build: serialize with dill for process isolation.
+                    _tb_writer_temp = self.tb_writer
+                    self.tb_writer = None
+                    try:
+                        pickled_args = dill.dumps((self, x))
+                    finally:
+                        self.tb_writer = _tb_writer_temp
+                    fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
                 futures[fut] = "eval"
 
             # Wait for all initial to complete
@@ -5211,13 +5280,22 @@ class SpotOptim(BaseEstimator):
                 X_batch = np.vstack(pending_cands)
                 n_in_batch = len(pending_cands)
                 pending_cands = []
-                _tb_writer_temp = self.tb_writer
-                self.tb_writer = None
-                try:
-                    pickled_args = dill.dumps((self, X_batch))
-                finally:
-                    self.tb_writer = _tb_writer_temp
-                fut_eval = eval_pool.submit(remote_batch_eval_wrapper, pickled_args)
+                if _no_gil:
+                    # Free-threaded: call fun directly in a thread — no dill.
+                    fut_eval = eval_pool.submit(
+                        _thread_batch_eval_task, X_batch
+                    )
+                else:
+                    # GIL build: serialize with dill for process isolation.
+                    _tb_writer_temp = self.tb_writer
+                    self.tb_writer = None
+                    try:
+                        pickled_args = dill.dumps((self, X_batch))
+                    finally:
+                        self.tb_writer = _tb_writer_temp
+                    fut_eval = eval_pool.submit(
+                        remote_batch_eval_wrapper, pickled_args
+                    )
                 futures[fut_eval] = "batch_eval"
                 _future_n_pts[fut_eval] = n_in_batch
 
