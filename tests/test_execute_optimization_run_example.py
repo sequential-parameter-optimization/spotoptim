@@ -7,7 +7,7 @@ import numpy as np
 from spotoptim import SpotOptim
 
 
-def test_execute_optimization_run_example():
+def testexecute_optimization_run_example():
     opt = SpotOptim(
         fun=lambda X: np.sum(X**2, axis=1),
         bounds=[(-5, 5), (-5, 5)],
@@ -18,7 +18,7 @@ def test_execute_optimization_run_example():
         verbose=False,
     )
 
-    status, result = opt._execute_optimization_run(timeout_start=time.time())
+    status, result = opt.execute_optimization_run(timeout_start=time.time())
 
     assert status == "FINISHED"
     assert result.message.splitlines()[0] == (

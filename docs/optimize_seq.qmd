@@ -1,15 +1,15 @@
 ---
 title: "SpotOptim: Sequential Optimization"
-description: "Step-by-step walkthrough of _execute_optimization_run() and every method it calls along the sequential path, with executable examples validated by pytest."
+description: "Step-by-step walkthrough of execute_optimization_run() and every method it calls along the sequential path, with executable examples validated by pytest."
 ---
 
-This document traces every step executed by `SpotOptim._execute_optimization_run()` along
+This document traces every step executed by `SpotOptim.execute_optimization_run()` along
 the sequential code path (`n_jobs=1`), in the order they occur.
 Each section describes one method with a `{python}` code block that can be executed directly.
 
 The public entry point is `optimize()`, which manages the outer restart loop and delegates
-each cycle to `_execute_optimization_run()`.
-When `n_jobs == 1` (the default), that dispatcher routes to `_optimize_sequential_run()`,
+each cycle to `execute_optimization_run()`.
+When `n_jobs == 1` (the default), that dispatcher routes to `optimize_sequential_run()`,
 which coordinates initialisation, storage setup, and the main iteration loop.
 This document covers that path in full.
 
@@ -21,19 +21,19 @@ uv run pytest tests/test_spotoptim_deep.py -v
 
 ---
 
-## Step 1 — Dispatch (`_execute_optimization_run()`)
+## Step 1 — Dispatch (`execute_optimization_run()`)
 
 ```python
 if self.n_jobs > 1:
-    return self._optimize_steady_state(...)
+    return self.optimize_steady_state(...)
 else:
-    return self._optimize_sequential_run(...)
+    return self.optimize_sequential_run(...)
 ```
 
-`_execute_optimization_run()` is the routing layer between the outer restart loop in
+`execute_optimization_run()` is the routing layer between the outer restart loop in
 `optimize()` and the actual optimisation engine.
 Its sole responsibility is to examine `n_jobs` and forward all arguments to either
-`_optimize_steady_state()` (parallel) or `_optimize_sequential_run()` (sequential).
+`optimize_steady_state()` (parallel) or `optimize_sequential_run()` (sequential).
 It returns a `(status, OptimizeResult)` tuple in both cases, which `optimize()` uses to
 decide whether to restart or terminate.
 The optional `shared_best_y` and `shared_lock` parameters support inter-worker
@@ -47,7 +47,7 @@ from spotoptim.function import sphere
 
 opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
                 n_initial=5, max_iter=10, seed=0, n_jobs=1)
-status, result = opt._execute_optimization_run(timeout_start=time.time())
+status, result = opt.execute_optimization_run(timeout_start=time.time())
 print(f"status : {status}")
 print(f"best   : {result.fun:.6f}")
 assert status == "FINISHED"
@@ -56,7 +56,7 @@ print("dispatch check passed.")
 
 ---
 
-## Step 2 — Sequential Run Orchestration (`_optimize_sequential_run()`)
+## Step 2 — Sequential Run Orchestration (`optimize_sequential_run()`)
 
 ```python
 X0, y0 = self._initialize_run(X0, y0_known)
@@ -71,7 +71,7 @@ self.get_best_xy_initial_design()
 return self._run_sequential_loop(timeout_start, effective_max_iter)
 ```
 
-`_optimize_sequential_run()` is the sequential orchestrator.
+`optimize_sequential_run()` is the sequential orchestrator.
 It calls eight methods in fixed order to prepare internal state before handing off
 to `_run_sequential_loop()` for the iterative acquisition phase.
 The zero-success counter and success-history list are reset here so that each fresh
@@ -86,7 +86,7 @@ from spotoptim.function import sphere
 
 opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
                 n_initial=5, max_iter=10, seed=0)
-status, result = opt._optimize_sequential_run(timeout_start=time.time())
+status, result = opt.optimize_sequential_run(timeout_start=time.time())
 print(f"status      : {status}")
 print(f"evaluations : {result.nfev}")
 print(f"best        : {result.fun:.6f}")
@@ -702,8 +702,8 @@ print("determine_termination check passed.")
 
 | Step | Method | Purpose |
 |-----:|--------|---------|
-| 1 | `_execute_optimization_run()` | Dispatch to sequential or parallel path |
-| 2 | `_optimize_sequential_run()` | Sequential orchestrator |
+| 1 | `execute_optimization_run()` | Dispatch to sequential or parallel path |
+| 2 | `optimize_sequential_run()` | Sequential orchestrator |
 | 3 | `_initialize_run()` | Seed RNG, generate and evaluate initial design |
 | 4 | `rm_NA_values()` | Remove NaN/inf from initial evaluations |
 | 5 | `check_size_initial_design()` | Validate minimum initial design size |

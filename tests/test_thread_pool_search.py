@@ -5,7 +5,7 @@
 """Tests for Release 0.8.0 — Improvement C: ThreadPoolExecutor for search tasks.
 
 Verifies that:
-- _optimize_steady_state uses ThreadPoolExecutor for search and ProcessPoolExecutor
+- optimize_steady_state uses ThreadPoolExecutor for search and ProcessPoolExecutor
   for evaluation (hybrid executor design).
 - The surrogate lock prevents concurrent refit/search races.
 - End-to-end results are correct for n_jobs > 1 with various callable types.
