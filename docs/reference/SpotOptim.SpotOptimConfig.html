@@ -2245,7 +2245,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td>n_jobs</td>
 <td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
-<td>Number of parallel workers. <code>1</code> runs sequentially. Values <code>&gt; 1</code> activate steady-state parallel optimization using a hybrid executor: <code>ProcessPoolExecutor</code> for objective evaluations (process isolation; supports lambdas and closures via <code>dill</code>) and <code>ThreadPoolExecutor</code> for surrogate search tasks (shared heap; zero serialization overhead). <code>-1</code> resolves to <code>os.cpu_count()</code> (all available CPU cores). <code>0</code> and values <code>&lt; -1</code> raise <code>ValueError</code>. Defaults to <code>1</code>.</td>
+<td>Number of parallel workers. <code>1</code> runs sequentially. Values <code>&gt; 1</code> activate steady-state parallel optimization. On standard GIL builds a hybrid executor is used: <code>ProcessPoolExecutor</code> for objective evaluations (process isolation; supports lambdas and closures via <code>dill</code>) and <code>ThreadPoolExecutor</code> for surrogate search tasks (shared heap; zero serialization overhead). On free-threaded Python builds (<code>python3.13t</code>, <code>--disable-gil</code>), both pools are <code>ThreadPoolExecutor</code> instances, achieving true CPU-level parallelism without <code>dill</code> for eval tasks. <code>-1</code> resolves to <code>os.cpu_count()</code> (all available CPU cores). <code>0</code> and values <code>&lt; -1</code> raise <code>ValueError</code>. Defaults to <code>1</code>.</td>
 </tr>
 <tr class="odd">
 <td>eval_batch_size</td>
@@ -2272,7 +2272,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<div id="484be9b6" class="cell" data-execution_count="1">
+<div id="c504e145" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.SpotOptim <span class="im">import</span> SpotOptim</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
