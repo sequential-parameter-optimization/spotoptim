@@ -1,3 +1,15 @@
+## [0.10.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.2...v0.10.3) (2026-03-15)
+
+
+### Bug Fixes
+
+* y0eval can be passed to parallel ([d1be9dd](https://github.com/sequential-parameter-optimization/spotoptim/commit/d1be9dd8ed58e876555adefdf42c4386e868cebb))
+
+
+### Documentation
+
+* seq/parallel ([fc20db5](https://github.com/sequential-parameter-optimization/spotoptim/commit/fc20db55f3b6defa6b19034121e9e02f7f39dd5a))
+
 ## [0.10.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.1...v0.10.2) (2026-03-15)
 
 
