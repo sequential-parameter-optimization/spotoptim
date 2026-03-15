@@ -2398,11 +2398,13 @@ class SpotOptim(BaseEstimator):
     # ====================
 
     def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
-        """Generate or process initial design points.
+        """Generate or process initial design points. Ensures that design points are in
+        internal (transformed and reduced) scale.
+        Calls `generate_initial_design()` if `X0` is None, otherwise processes user-provided `X0`.
         Handles three scenarios:
-            * X0 is None: Generate space-filling design using LHS
-            * X0 is None but x0 is provided: Generate LHS and include x0 as first point
-            * X0 is provided: Transform and prepare user-provided initial design
+            * `X0` is None: Generate space-filling design using LHS
+            * `X0` is None but starting point(s) `x0` is provided: Generate LHS and include `x0` as first point(s)
+            * `X0` is provided: Transform and prepare user-provided initial design
 
         Args:
             X0 (ndarray, optional): User-provided initial design points in original scale,
@@ -2418,6 +2420,7 @@ class SpotOptim(BaseEstimator):
             import numpy as np
             from spotoptim import SpotOptim
             from spotoptim.function import sphere
+            from spotoptim.plot.visualization import plot_design_points
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
@@ -2426,17 +2429,30 @@ class SpotOptim(BaseEstimator):
             # Generate default LHS design
             X0 = opt.get_initial_design()
             print(X0.shape)
-            # Provide custom initial design
-            X0_custom = np.array([[0, 0], [1, 1], [2, 2]])
-            X0_processed = opt.get_initial_design(X0_custom)
-            print(X0_processed.shape)
+            plot_design_points(X0)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            from spotoptim.plot.visualization import plot_design_points
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10,
+                x0=np.array([0, 0])  # Starting point to include in initial design
+            )
+            X0 = opt.get_initial_design()
+            print(X0.shape)
+            plot_design_points(X0)
             ```
         """
         # Generate or use provided initial design
         if X0 is None:
             X0 = self.generate_initial_design()
 
-            # If starting point x0 was provided, include it in initial design
+            # If starting point(s) x0 was provided, include it/them in initial design
             if self.x0 is not None:
                 # x0 is already validated and in internal scale
                 # Check if x0 is 1D or 2D
@@ -2474,9 +2490,8 @@ class SpotOptim(BaseEstimator):
         """Generate initial space-filling design using Latin Hypercube Sampling.
         Used in the optimize() method to create the initial set of design points.
 
-
         Returns:
-            ndarray: Initial design points, shape (n_initial, n_features).
+            ndarray: Initial design points, shape (n_initial, n_features). Points are in the intervals defined by `self.bounds`.
 
         Examples:
             ```{python}
@@ -2484,7 +2499,9 @@ class SpotOptim(BaseEstimator):
             from spotoptim.function import sphere
             opt = SpotOptim(fun=sphere,
                             bounds=[(-5, 5), (-5, 5)],
-                            n_initial=10)
+                            n_initial=3,
+                            var_type=['float', 'int'],
+                            var_trans=['log10', None])
             X0 = opt.generate_initial_design()
             print(X0.shape)
             ```
@@ -4590,9 +4607,7 @@ class SpotOptim(BaseEstimator):
             import time
             import numpy as np
             from spotoptim import SpotOptim
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
+            from spotoptim.function import sphere
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
@@ -4654,23 +4669,23 @@ class SpotOptim(BaseEstimator):
             ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
 
         Examples:
-            >>> import time
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     max_iter=10,
-            ...     seed=0,
-            ...     n_jobs=1,  # Use sequential optimization for deterministic output
-            ...     verbose=True
-            ... )
-            >>> status, result = opt._optimize_sequential_run(timeout_start=time.time())
-            >>> print(status)
-            FINISHED
-            >>> print(result.message.splitlines()[0])
-            Optimization terminated: maximum evaluations (20) reached
+            ```{python}
+            import time
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(fun=sphere,
+                            bounds=[(-5, 5), (-5, 5)],
+                            n_initial=5,
+                            max_iter=10,
+                            seed=0,
+                            n_jobs=1,  # Use sequential optimization for deterministic output
+                            verbose=True
+             )
+            status, result = opt._optimize_sequential_run(timeout_start=time.time())
+            print(status)
+            print(result.message.splitlines()[0])
+            ```
         """
 
         # Store shared variable if provided
@@ -5045,10 +5060,8 @@ class SpotOptim(BaseEstimator):
         max_iter_override: Optional[int] = None,
     ) -> Tuple[str, OptimizeResult]:
         """Perform steady-state asynchronous optimization (n_jobs > 1).
-
         This method implements a hybrid steady-state parallelization strategy.
         The executor types are selected at runtime based on GIL availability:
-
         **Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):**
 
         * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
@@ -5114,23 +5127,23 @@ class SpotOptim(BaseEstimator):
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
 
         Examples:
-            >>> import time
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     max_iter=10,
-            ...     seed=0,
-            ...     n_jobs=2,  # Use parallel optimization
-            ...     verbose=True
-            ... )
-            >>> status, result = opt._optimize_steady_state(timeout_start=time.time(), X0=None)
-            >>> print(status)
-            FINISHED
-            >>> print(result.message.splitlines()[0])
-            Optimization finished (Steady State)
+            ```{python}
+            import time
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(
+                 fun=lambda X: np.sum(X**2, axis=1),
+                 bounds=[(-5, 5), (-5, 5)],
+                 n_initial=5,
+                 max_iter=10,
+                 seed=0,
+                 n_jobs=2,  # Use parallel optimization
+                 verbose=True
+            )
+            status, result = opt._optimize_steady_state(timeout_start=time.time(), X0=None)
+            print(status)
+            print(result.message.splitlines()[0])
+            ```
         """
         # Setup similar to _optimize_single_run
         self.set_seed()

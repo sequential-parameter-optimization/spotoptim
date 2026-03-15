@@ -109,14 +109,14 @@ if var_trans is None:
 Before any validation, `__init__` tries to read missing parameters directly
 from the callable `fun` using `getattr`.
 This allows self-describing objective functions to carry their own metadata:
+`fun.bounds` as a list of `(lower, upper)` tuples, `fun.var_type` as a
+per-dimension type string list, `fun.var_name` as human-readable parameter
+names, and `fun.var_trans` as a list of transformation strings.
 
-- `fun.bounds` — list of `(lower, upper)` tuples
-- `fun.var_type` — per-dimension type string list
-- `fun.var_name` — list of human-readable parameter names
-- `fun.var_trans` — list of transformation strings
-
-If neither the constructor argument nor the function attribute provide the
-value, it remains `None` and downstream steps apply their own defaults.
+`bounds` is the only mandatory parameter: if it is `None` after this
+inference step, `__init__` raises a `ValueError` immediately. The remaining
+three attributes (`var_type`, `var_name`, `var_trans`) are permitted to
+remain `None`; downstream steps supply their own defaults when needed.
 
 ```{python}
 import numpy as np
@@ -148,15 +148,28 @@ print("Parameter inference check passed.")
 ```python
 if max_iter < n_initial:
     raise ValueError(...)
+if n_jobs == -1:
+    n_jobs = os.cpu_count() or 1
+elif n_jobs == 0 or n_jobs < -1:
+    raise ValueError(...)
+if eval_batch_size < 1:
+    raise ValueError(...)
+if acquisition_optimizer_kwargs is None:
+    acquisition_optimizer_kwargs = {"maxiter": 10000, "gtol": 1e-9}
 ```
 
-`__init__` enforces that `max_iter >= n_initial`.
-`max_iter` is the total evaluation budget including the initial design,
-so it must accommodate at least `n_initial` points before any sequential
-iterations can begin.
+Four checks run before the configuration object is assembled. `max_iter`
+must be at least `n_initial` because the total budget must accommodate the
+initial design. `n_jobs` follows the scikit-learn convention: `-1` is
+resolved to `os.cpu_count()`, while `0` and values below `-1` are rejected.
+`eval_batch_size` controls how many candidate points accumulate before a
+single vectorised call is dispatched to the process pool and must be at
+least `1`. Finally, when `acquisition_optimizer_kwargs` is not supplied it
+is initialised to `{"maxiter": 10000, "gtol": 1e-9}`, providing tight
+convergence tolerances for the default differential-evolution run.
 
 ```{python}
-import pytest
+import os
 from spotoptim import SpotOptim
 from spotoptim.function import sphere
 
@@ -170,6 +183,23 @@ try:
     raise AssertionError("Expected ValueError was not raised")
 except ValueError as e:
     print(f"Caught expected error: {e}")
+
+# n_jobs=-1 resolves to all available CPU cores
+opt_p = SpotOptim(fun=sphere, bounds=[(-5, 5)], n_jobs=-1)
+assert opt_p.n_jobs == (os.cpu_count() or 1)
+print(f"n_jobs=-1 resolved to: {opt_p.n_jobs}")
+
+# n_jobs=0 is rejected
+try:
+    SpotOptim(fun=sphere, bounds=[(-5, 5)], n_jobs=0)
+    raise AssertionError("Expected ValueError was not raised")
+except ValueError as e:
+    print(f"Caught expected error: {e}")
+
+# acquisition_optimizer_kwargs default
+opt_aq = SpotOptim(fun=sphere, bounds=[(-5, 5)])
+assert opt_aq.acquisition_optimizer_kwargs == {"maxiter": 10000, "gtol": 1e-9}
+print(f"acquisition_optimizer_kwargs (default): {opt_aq.acquisition_optimizer_kwargs}")
 print("Validation check passed.")
 ```
 
@@ -863,25 +893,24 @@ print("TensorBoard no-op check passed.")
 | 2 | Machine epsilon | `self.eps` |
 | 3 | `tolerance_x` default | `tolerance_x` |
 | 4 | Parameter inference from `fun` | `bounds`, `var_type`, `var_name`, `var_trans` |
-| 5 | Validate `max_iter >= n_initial` | — |
+| 5 | Validate `max_iter`, `n_jobs`, `eval_batch_size`; default `acquisition_optimizer_kwargs` | — |
 | 6 | Create `SpotOptimConfig` | `self.config` |
 | 7 | Create `SpotOptimState` | `self.state` |
 | 8 | Store callable and `objective_names` | `self.fun`, `self.objective_names` |
 | 9 | Seed RNG | `self.rng` |
-| 10 | Factor maps and original bounds | `self._factor_maps`, `self._original_bounds` |
-| 11 | `process_factor_bounds()` | `self.bounds` (integer-encoded) |
-| 12 | Compute `n_dim` | `self.n_dim` |
-| 13 | `detect_var_type()` | `self.var_type` |
-| 14 | `modify_bounds_based_on_var_type()` | `self.bounds` |
-| 15 | Unpack bounds to arrays | `self.lower`, `self.upper` |
-| 16 | Default variable names | `self.var_name` |
-| 17 | `handle_default_var_trans()` | `self.var_trans` |
-| 18 | Snapshot bounds, `transform_bounds()` | `self._original_lower`, `self._original_upper`, `self.bounds` |
-| 19 | `setup_dimension_reduction()` | `self.ident`, `self.red_dim`, `all_*` attributes |
-| 20 | `validate_x0()` | `self.x0` (transformed, reduced) |
-| 21 | `init_surrogate()` | `self.surrogate`, `self._surrogates_list` |
-| 22 | Create `lhs_sampler` | `self.lhs_sampler` |
-| 23 | `window_size` default | `self.window_size` |
-| 24 | TensorBoard setup | `self.tb_writer` |
+| 10 | Factor maps, original bounds, `process_factor_bounds()` | `self._factor_maps`, `self._original_bounds`, `self.bounds` |
+| 11 | Compute `n_dim` | `self.n_dim` |
+| 12 | `detect_var_type()` | `self.var_type` |
+| 13 | `modify_bounds_based_on_var_type()` | `self.bounds` |
+| 14 | Unpack bounds to arrays | `self.lower`, `self.upper` |
+| 15 | Default variable names | `self.var_name` |
+| 16 | `handle_default_var_trans()` | `self.var_trans` |
+| 17 | Snapshot bounds, `transform_bounds()` | `self._original_lower`, `self._original_upper`, `self.bounds` |
+| 18 | `setup_dimension_reduction()` | `self.ident`, `self.red_dim`, `all_*` attributes |
+| 19 | `validate_x0()` | `self.x0` (transformed, reduced) |
+| 20 | `init_surrogate()` | `self.surrogate`, `self._surrogates_list` |
+| 21 | Create `lhs_sampler` | `self.lhs_sampler` |
+| 22 | `window_size` default | `self.window_size` |
+| 23 | TensorBoard setup | `self.tb_writer` |
 
 : Complete Initialization Sequence Summary {#tbl-init}

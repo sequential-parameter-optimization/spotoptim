@@ -1,0 +1,727 @@
+---
+title: "SpotOptim: Sequential Optimization"
+description: "Step-by-step walkthrough of _execute_optimization_run() and every method it calls along the sequential path, with executable examples validated by pytest."
+---
+
+This document traces every step executed by `SpotOptim._execute_optimization_run()` along
+the sequential code path (`n_jobs=1`), in the order they occur.
+Each section describes one method with a `{python}` code block that can be executed directly.
+
+The public entry point is `optimize()`, which manages the outer restart loop and delegates
+each cycle to `_execute_optimization_run()`.
+When `n_jobs == 1` (the default), that dispatcher routes to `_optimize_sequential_run()`,
+which coordinates initialisation, storage setup, and the main iteration loop.
+This document covers that path in full.
+
+Run all related tests with:
+
+```bash
+uv run pytest tests/test_spotoptim_deep.py -v
+```
+
+---
+
+## Step 1 — Dispatch (`_execute_optimization_run()`)
+
+```python
+if self.n_jobs > 1:
+    return self._optimize_steady_state(...)
+else:
+    return self._optimize_sequential_run(...)
+```
+
+`_execute_optimization_run()` is the routing layer between the outer restart loop in
+`optimize()` and the actual optimisation engine.
+Its sole responsibility is to examine `n_jobs` and forward all arguments to either
+`_optimize_steady_state()` (parallel) or `_optimize_sequential_run()` (sequential).
+It returns a `(status, OptimizeResult)` tuple in both cases, which `optimize()` uses to
+decide whether to restart or terminate.
+The optional `shared_best_y` and `shared_lock` parameters support inter-worker
+coordination in the parallel path; they are `None` in sequential mode.
+
+```{python}
+import time
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0, n_jobs=1)
+status, result = opt._execute_optimization_run(timeout_start=time.time())
+print(f"status : {status}")
+print(f"best   : {result.fun:.6f}")
+assert status == "FINISHED"
+print("dispatch check passed.")
+```
+
+---
+
+## Step 2 — Sequential Run Orchestration (`_optimize_sequential_run()`)
+
+```python
+X0, y0 = self._initialize_run(X0, y0_known)
+X0, y0, n_evaluated = self.rm_NA_values(X0, y0)
+self.check_size_initial_design(y0, n_evaluated)
+self.init_storage(X0, y0)
+self._zero_success_count = 0
+self._success_history = []
+self.update_stats()
+self._init_tensorboard()
+self.get_best_xy_initial_design()
+return self._run_sequential_loop(timeout_start, effective_max_iter)
+```
+
+`_optimize_sequential_run()` is the sequential orchestrator.
+It calls eight methods in fixed order to prepare internal state before handing off
+to `_run_sequential_loop()` for the iterative acquisition phase.
+The zero-success counter and success-history list are reset here so that each fresh
+run (including restarts) begins with a clean convergence record.
+When `max_iter_override` is supplied by `optimize()`, it replaces the configured
+`max_iter` as the effective evaluation budget for this run.
+
+```{python}
+import time
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0)
+status, result = opt._optimize_sequential_run(timeout_start=time.time())
+print(f"status      : {status}")
+print(f"evaluations : {result.nfev}")
+print(f"best        : {result.fun:.6f}")
+assert status == "FINISHED"
+assert result.nfev == 10
+print("sequential run check passed.")
+```
+
+---
+
+## Step 3 — Initialisation (`_initialize_run()`)
+
+```python
+self.set_seed()
+X0 = self.get_initial_design(X0)
+X0 = self.curate_initial_design(X0)
+y0 = self.evaluate_function(X0)
+return X0, y0
+```
+
+`_initialize_run()` performs three preparatory actions before the first surrogate can
+be fitted.
+`set_seed()` re-seeds Python's `random` module and NumPy's global generator to ensure
+reproducibility within the run.
+`get_initial_design()` either processes the user-supplied `X0` or generates a
+Latin Hypercube sample in the transformed, reduced search space.
+`curate_initial_design()` removes duplicate points and generates replacements as needed.
+The curated design is then evaluated in batch via `evaluate_function()`.
+
+When a best-known value `y0_known` is provided (restart injection), the point that
+matches `self.x0` is not re-evaluated; its objective value is taken directly from the
+previous run, saving one function call.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=5, seed=42)
+X0, y0 = opt._initialize_run(X0=None, y0_known=None)
+print(f"initial design shape : {X0.shape}")
+print(f"evaluations          : {len(y0)}")
+assert X0.shape == (5, 2)
+assert len(y0) == 5
+assert np.all(np.isfinite(y0))
+print("_initialize_run check passed.")
+```
+
+---
+
+## Step 4 — Filtering Invalid Evaluations (`rm_NA_values()`)
+
+```python
+finite_mask = np.isfinite(y0)
+X0 = X0[finite_mask]
+y0 = y0[finite_mask]
+return X0, y0, len(finite_mask)
+```
+
+Initial design points whose objective value is `NaN` or `±inf` are removed rather than
+penalised.
+This is the correct policy for the initial phase: a penalty value would corrupt the
+surrogate's training data, whereas removal simply reduces the effective initial design
+size.
+The method also converts object-dtype arrays (which may contain Python `None`) to
+`float` before applying the mask.
+The original count is returned as the third value so that `check_size_initial_design()`
+can report how many points were lost.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=5)
+X0 = np.array([[1.0, 2.0], [3.0, 4.0], [0.0, 0.0]])
+y0 = np.array([5.0, np.nan, 0.0])
+X0_clean, y0_clean, n_original = opt.rm_NA_values(X0, y0)
+assert X0_clean.shape == (2, 2)
+assert len(y0_clean) == 2
+assert n_original == 3
+assert np.all(np.isfinite(y0_clean))
+print(f"1 NaN removed; {len(y0_clean)} of {n_original} points retained.")
+print("rm_NA_values check passed.")
+```
+
+---
+
+## Step 5 — Size Validation (`check_size_initial_design()`)
+
+```python
+min_required = min(n_initial, 3 if n_dim > 1 else 2)
+if len(y0) < min_required:
+    raise ValueError(...)
+```
+
+Before fitting the first surrogate, the optimizer verifies that enough valid initial
+points remain.
+The minimum accepted count is the smaller of `n_initial` and the surrogate's structural
+minimum — 3 for multi-dimensional problems, 2 for one-dimensional ones.
+If the filtered design falls below this threshold, a `ValueError` is raised with a
+diagnostic message.
+The threshold adapts to the user's intent: when `n_initial` was set to 2, only 2 points
+are required; the structural minimum only applies when more points were requested than
+survived filtering.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=10)
+
+y0_ok = np.array([1.0, 2.0, 3.0, 4.0])
+opt.check_size_initial_design(y0_ok, n_evaluated=10)
+print("Sufficient points: OK")
+
+y0_tiny = np.array([1.0])
+try:
+    opt.check_size_initial_design(y0_tiny, n_evaluated=10)
+    raise AssertionError("Expected ValueError not raised")
+except ValueError as e:
+    print(f"Caught expected error: {e}")
+print("check_size_initial_design check passed.")
+```
+
+---
+
+## Step 6 — Storage Initialisation (`init_storage()`)
+
+```python
+self.X_ = self.inverse_transform_X(X0.copy())
+self.y_ = y0.copy()
+self.n_iter_ = 0
+```
+
+`init_storage()` populates the two primary data arrays that persist throughout the run.
+`X_` is stored in natural (original) scale by applying `inverse_transform_X()` to the
+internally scaled design; `y_` is stored as-is.
+The iteration counter `n_iter_` is reset to zero.
+All subsequent storage operations in the main loop append to these arrays rather than
+replacing them, so the complete evaluation history is available at the end of the run.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+
+opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)], n_initial=3)
+X0 = np.array([[1.0, 2.0], [0.0, 0.0], [3.0, -1.0]])
+y0 = np.array([5.0, 0.0, 10.0])
+opt.init_storage(X0, y0)
+print(f"X_ shape  : {opt.X_.shape}")
+print(f"y_        : {opt.y_}")
+print(f"n_iter_   : {opt.n_iter_}")
+assert opt.X_.shape == (3, 2)
+assert opt.n_iter_ == 0
+print("init_storage check passed.")
+```
+
+---
+
+## Step 7 — Statistics Update (`update_stats()`)
+
+```python
+self.min_y = np.min(self.y_)
+self.min_X = self.X_[np.argmin(self.y_)]
+self.counter = len(self.y_)
+```
+
+`update_stats()` refreshes the summary statistics derived from the current `X_` and
+`y_` arrays.
+It always sets `min_y`, `min_X`, and `counter`.
+When the problem is noisy (`repeats_initial > 1` or `repeats_surrogate > 1`), it
+additionally computes per-point means and variances via `aggregate_mean_var()`,
+populating `mean_X`, `mean_y`, `var_y`, `min_mean_X`, `min_mean_y`, and `min_var_y`.
+The method is called during setup — after `init_storage()` — and once per iteration
+inside the main loop after new points have been appended.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                max_iter=10, n_initial=5, seed=0)
+opt.optimize()
+print(f"counter : {opt.counter}")
+print(f"min_y   : {opt.min_y:.6f}")
+assert opt.counter == 10
+assert np.isclose(opt.min_y, np.min(opt.y_))
+print("update_stats check passed.")
+```
+
+---
+
+## Step 8 — TensorBoard Logging of the Initial Design (`_init_tensorboard()`)
+
+```python
+if self.tb_writer is not None:
+    for i in range(len(self.y_)):
+        self._write_tensorboard_hparams(self.X_[i], self.y_[i])
+    self._write_tensorboard_scalars()
+```
+
+`_init_tensorboard()` logs each point of the initial design to TensorBoard as a
+separate hyperparameter run, together with global scalar summaries.
+When `tensorboard_log=False` (the default), the writer is `None` and the method is a
+no-op with no runtime cost.
+When logging is enabled and no writer exists yet, `_init_tensorboard()` creates the
+`SummaryWriter`, choosing a timestamped directory if `tensorboard_path` was not
+specified.
+This lazy creation avoids producing stale log directories for runs that fail during
+initialisation.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)], tensorboard_log=False)
+opt.optimize()
+assert opt.tb_writer is None
+print("TensorBoard disabled: writer not created.")
+print("_init_tensorboard check passed.")
+```
+
+---
+
+## Step 9 — Initial Best (`get_best_xy_initial_design()`)
+
+```python
+best_idx = np.argmin(self.y_)
+self.best_x_ = self.X_[best_idx].copy()
+self.best_y_ = self.y_[best_idx]
+```
+
+After the initial design is stored and its statistics computed, the point with the
+minimum objective value is identified and written to `best_x_` and `best_y_`.
+These two attributes define the running best solution, updated by
+`_update_best_main_loop()` in every subsequent iteration.
+When `verbose=True`, the initial best is printed; for noisy problems the mean best
+(`min_mean_y`) is also reported alongside the raw minimum.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=5, verbose=False)
+opt.X_ = np.array([[1.0, 2.0], [0.0, 0.0], [2.0, 1.0]])
+opt.y_ = np.array([5.0, 0.0, 5.0])
+opt.get_best_xy_initial_design()
+assert np.array_equal(opt.best_x_, [0.0, 0.0])
+assert opt.best_y_ == 0.0
+print(f"best_x_ : {opt.best_x_}")
+print(f"best_y_ : {opt.best_y_}")
+print("get_best_xy_initial_design check passed.")
+```
+
+---
+
+## Step 10 — Main Iteration Loop (`_run_sequential_loop()`)
+
+```python
+while len(self.y_) < effective_max_iter and \
+      time.time() < timeout_start + max_time * 60:
+    self.n_iter_ += 1
+    self._fit_scheduler()
+    X_ocba = self.apply_ocba()
+    x_next = self.suggest_next_infill_point()
+    x_next_repeated = self.update_repeats_infill_points(x_next)
+    if X_ocba is not None:
+        x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
+    y_next = self.evaluate_function(x_next_repeated)
+    x_next_repeated, y_next = self._handle_NA_new_points(x_next_repeated, y_next)
+    self.update_success_rate(y_next)
+    # restart check
+    self.update_storage(x_next_repeated, y_next)
+    self.update_stats()
+    self._update_best_main_loop(x_next_repeated, y_next, start_time=timeout_start)
+```
+
+`_run_sequential_loop()` executes iterations until either the evaluation budget
+(`effective_max_iter`) or the wall-clock limit (`max_time` minutes) is exhausted.
+Each iteration increments `n_iter_`, fits the surrogate, selects and evaluates one or
+more candidate points, and updates internal state.
+A safety counter tracks consecutive failures: more than `max_iter` consecutive
+NaN/inf evaluations triggers an early exit with `success=False`.
+
+The loop returns `("RESTART", result)` when `success_rate` has been zero for
+`restart_after_n` consecutive iterations, signalling `optimize()` to begin a fresh run.
+It returns `("FINISHED", result)` when the budget or time limit is reached.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, seed=0)
+result = opt.optimize()
+print(f"iterations  : {result.nit}")
+print(f"evaluations : {result.nfev}")
+print(f"best        : {result.fun:.6f}")
+assert result.nfev == 15
+assert result.success
+print("_run_sequential_loop check passed.")
+```
+
+---
+
+## Step 11 — Surrogate Fitting (`_fit_scheduler()`)
+
+```python
+self._fit_scheduler()
+```
+
+At the start of each iteration, the surrogate model is refitted to the current training
+window.
+`_fit_scheduler()` selects the most recent `window_size` observations according to
+`selection_method` (default `"distant"`) and calls the surrogate's `fit()` method.
+When a list of surrogates was supplied at construction, one surrogate is chosen
+probabilistically according to `prob_surrogate` before fitting, and per-surrogate
+point caps from `_max_surrogate_points_list` are respected.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, window_size=10, seed=0)
+result = opt.optimize()
+print(f"window_size : {opt.window_size}")
+print(f"evaluations : {result.nfev}")
+assert opt.window_size == 10
+print("_fit_scheduler check passed.")
+```
+
+---
+
+## Step 12 — OCBA Re-evaluations (`apply_ocba()`)
+
+```python
+X_ocba = self.apply_ocba()
+```
+
+`apply_ocba()` implements Optimal Computing Budget Allocation for noisy objective
+functions.
+When `ocba_delta > 0`, it identifies the `ocba_delta` best-mean points and schedules
+additional evaluations at those locations, returning them as `X_ocba`.
+These points are concatenated with the acquisition candidate before the objective call,
+so that noisy regions near the current optimum receive extra replication.
+When `ocba_delta == 0` (the default), the method returns `None` and adds no overhead.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, ocba_delta=0, seed=0)
+result = opt.optimize()
+assert opt.ocba_delta == 0
+print(f"ocba_delta  : {opt.ocba_delta}  (no OCBA overhead)")
+print("apply_ocba check passed.")
+```
+
+---
+
+## Step 13 — Candidate Generation (`suggest_next_infill_point()`)
+
+```python
+x_next = self.suggest_next_infill_point()
+```
+
+`suggest_next_infill_point()` runs the acquisition function to identify the most
+promising candidate for the next objective evaluation.
+The acquisition strategy is controlled by `acquisition` (default `"y"`, minimising the
+surrogate prediction directly).
+The acquisition optimiser (default `"differential_evolution"`) searches the
+transformed, reduced search space using the bounds `[lower, upper]`.
+When the optimiser fails — no improvement found or a numerical issue — the strategy
+selected by `acquisition_failure_strategy` takes effect; `"random"` (the default)
+draws a point uniformly at random.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, acquisition="ei", seed=0)
+result = opt.optimize()
+assert opt.acquisition == "ei"
+print(f"acquisition : {opt.acquisition}")
+print(f"best        : {result.fun:.6f}")
+print("suggest_next_infill_point check passed.")
+```
+
+---
+
+## Step 14 — Repeat Infill Points (`update_repeats_infill_points()`)
+
+```python
+x_next_repeated = self.update_repeats_infill_points(x_next)
+```
+
+When `repeats_surrogate > 1`, each surrogate-suggested candidate is evaluated multiple
+times to reduce noise.
+`update_repeats_infill_points()` tiles the candidate point `repeats_surrogate` times,
+returning a 2-D array of shape `(repeats_surrogate, n_dim)`.
+When `repeats_surrogate == 1` (the default) the array is simply `x_next` reshaped to
+`(1, n_dim)`, adding no computational cost.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, repeats_surrogate=1, seed=0)
+result = opt.optimize()
+assert opt.repeats_surrogate == 1
+assert result.nfev == 10
+print(f"repeats_surrogate : {opt.repeats_surrogate}")
+print("update_repeats_infill_points check passed.")
+```
+
+---
+
+## Step 15 — Objective Evaluation (`evaluate_function()`)
+
+```python
+y_next = self.evaluate_function(x_next_repeated)
+```
+
+`evaluate_function()` calls the user-supplied objective `fun` on the batch of
+candidate points.
+The input is always in transformed, reduced internal scale;
+`evaluate_function()` applies `inverse_transform_X()` and `to_all_dim()` before the
+call, so `fun` always receives points in natural scale with all dimensions present.
+When `fun_mo2so` is set, the multi-objective output is first converted to a scalar
+using that aggregation function.
+The result is a 1-D array whose length equals the number of candidates evaluated.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0)
+result = opt.optimize()
+assert len(opt.y_) == 10
+assert np.all(np.isfinite(opt.y_))
+print(f"total evaluations : {len(opt.y_)}")
+print(f"best value        : {opt.min_y:.6f}")
+print("evaluate_function check passed.")
+```
+
+---
+
+## Step 16 — NaN Handling for Sequential Evaluations (`_handle_NA_new_points()`)
+
+```python
+x_next_repeated, y_next = self._handle_NA_new_points(x_next_repeated, y_next)
+```
+
+Unlike the initial design (where invalid points are removed), NaN or inf values
+returned during the sequential loop are replaced with a penalty derived from the worst
+finite value seen so far, scaled by a large factor.
+This preserves the storage structure — one row in `X_` per candidate — and prevents
+the surrogate from ignoring pathological regions.
+If every candidate in the batch is invalid, the method returns `(None, None)`, causing
+the iteration to be skipped and the consecutive-failure counter to increment.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=12, seed=0)
+opt.optimize()
+assert np.all(np.isfinite(opt.y_))
+print("All stored values are finite after NaN handling.")
+print("_handle_NA_new_points check passed.")
+```
+
+---
+
+## Step 17 — Success Rate (`update_success_rate()`)
+
+```python
+self.update_success_rate(y_next)
+```
+
+`update_success_rate()` measures whether the current iteration produced an improvement
+relative to `best_y_`.
+It records a binary outcome in `_success_history` and computes `success_rate` as the
+fraction of recent iterations that showed improvement.
+When `success_rate` remains at `0.0` for `restart_after_n` consecutive iterations,
+`_zero_success_count` reaches the threshold and the loop returns `"RESTART"` to the
+caller.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, seed=0)
+opt.optimize()
+print(f"success_rate : {opt.success_rate:.4f}")
+assert 0.0 <= opt.success_rate <= 1.0
+print("update_success_rate check passed.")
+```
+
+---
+
+## Step 18 — Storage Update (`update_storage()`)
+
+```python
+self.update_storage(x_next_repeated, y_next)
+```
+
+`update_storage()` appends newly evaluated candidates to `X_` and `y_`.
+Like `init_storage()`, it converts points to natural scale via `inverse_transform_X()`
+before storing.
+After each call `X_.shape[0]` increases by the number of candidates evaluated — usually
+1, but more when `repeats_surrogate > 1` or OCBA is active.
+The growing `X_` and `y_` arrays serve both as the surrogate training window and as
+the final output embedded in `OptimizeResult`.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0)
+opt.optimize()
+assert opt.X_.shape == (10, 2)
+assert opt.y_.shape == (10,)
+print(f"X_ shape : {opt.X_.shape}")
+print(f"y_ shape : {opt.y_.shape}")
+print("update_storage check passed.")
+```
+
+---
+
+## Step 19 — Best Solution Update (`_update_best_main_loop()`)
+
+```python
+self._update_best_main_loop(x_next_repeated, y_next, start_time=timeout_start)
+```
+
+At the end of each iteration, `_update_best_main_loop()` checks whether any of the
+newly evaluated points improves on `best_y_`.
+If so, `best_x_` and `best_y_` are updated in-place.
+When `verbose=True`, the improvement is printed together with elapsed time and the
+current evaluation count.
+For noisy problems, improvement is judged against `min_mean_y` rather than the raw
+minimum.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=15, seed=0)
+result = opt.optimize()
+assert np.isclose(opt.best_y_, result.fun)
+assert np.array_equal(opt.best_x_, result.x)
+print(f"best_x_ : {opt.best_x_}")
+print(f"best_y_ : {opt.best_y_:.6f}")
+print("_update_best_main_loop check passed.")
+```
+
+---
+
+## Step 20 — Termination (`determine_termination()`)
+
+```python
+status_message = self.determine_termination(timeout_start)
+```
+
+After the while condition fails, `determine_termination()` produces the human-readable
+termination message embedded in `OptimizeResult.message`.
+It distinguishes three cases: the evaluation budget was exhausted
+(`nfev >= effective_max_iter`), the wall-clock limit was exceeded (`max_time`), or the
+tolerance criterion was met — consecutive best-point improvements smaller than
+`tolerance_x` measured by `min_tol_metric`.
+The formatted message also includes the final function value, iteration count, and
+total evaluation count, matching the style of `scipy.optimize.minimize`.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
+                n_initial=5, max_iter=10, seed=0)
+result = opt.optimize()
+first_line = result.message.splitlines()[0]
+print(f"termination : {first_line}")
+assert "10" in result.message
+print("determine_termination check passed.")
+```
+
+---
+
+## Complete Sequential Run Summary
+
+@tbl-seq summarises every step executed along the sequential path in call order:
+
+| Step | Method | Purpose |
+|-----:|--------|---------|
+| 1 | `_execute_optimization_run()` | Dispatch to sequential or parallel path |
+| 2 | `_optimize_sequential_run()` | Sequential orchestrator |
+| 3 | `_initialize_run()` | Seed RNG, generate and evaluate initial design |
+| 4 | `rm_NA_values()` | Remove NaN/inf from initial evaluations |
+| 5 | `check_size_initial_design()` | Validate minimum initial design size |
+| 6 | `init_storage()` | Initialise `X_`, `y_`, `n_iter_` |
+| 7 | `update_stats()` | Compute `min_y`, `min_X`, `counter` |
+| 8 | `_init_tensorboard()` | Log initial design to TensorBoard |
+| 9 | `get_best_xy_initial_design()` | Identify initial `best_x_`, `best_y_` |
+| 10 | `_run_sequential_loop()` | Main iteration loop (Steps 11–20 per iteration) |
+| 11 | `_fit_scheduler()` | Fit surrogate to current training window |
+| 12 | `apply_ocba()` | Schedule OCBA re-evaluations (noisy problems only) |
+| 13 | `suggest_next_infill_point()` | Optimise acquisition to propose candidate |
+| 14 | `update_repeats_infill_points()` | Replicate candidate for noisy evaluation |
+| 15 | `evaluate_function()` | Call `fun` in natural scale |
+| 16 | `_handle_NA_new_points()` | Penalise or skip invalid evaluations |
+| 17 | `update_success_rate()` | Track improvement rate; trigger restart if stalled |
+| 18 | `update_storage()` | Append candidates to `X_`, `y_` |
+| 19 | `update_stats()` | Refresh statistics after new evaluations |
+| 20 | `_update_best_main_loop()` | Update `best_x_`, `best_y_` |
+| 21 | `determine_termination()` | Produce termination message and `OptimizeResult` |
+
+: Complete Sequential Run Summary {#tbl-seq}

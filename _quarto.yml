@@ -49,8 +49,12 @@ website:
         file: docs/examples.qmd
       - text: Download
         file: docs/download.qmd
-      - text: SpotOptim `__init__()` method
+      - text: Initialization
         file: docs/spotoptim_init.qmd
+      - text: Sequential Optimization
+        file: docs/optimize_seq.qmd
+      - text: Parallel Optimization
+        file: docs/optimize_parallel.qmd
       - section: API Reference
         contents:
           - text: Overview
