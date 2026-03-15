@@ -1031,6 +1031,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">plot_surrogate</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/plot.visualization.plot_design_points.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">plot_design_points</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -3567,7 +3573,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    n_repeats<span class="op">=</span><span class="dv">5</span>,</span>
 <span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    q<span class="op">=</span><span class="fl">2.0</span>,</span>
 <span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    p_norm<span class="op">=</span><span class="fl">2.0</span>,</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>),</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Plot the Corrected Morris-Mitchell Criterion versus the number of added points.</p>
 <p>For each point count in <code>range(p_min, p_max + 1, p_step)</code> a set of uniformly random points is appended to <code>X_base</code> and the corrected criterion <code>hat_Phi_q</code> is evaluated on the extended design. This is repeated <code>n_repeats</code> times per point count to capture stochastic variability. The resulting mean ± std curve is compared to the baseline criterion of <code>X_base</code> alone.</p>
 <p>Unlike <code>plot_mmphi_vs_points</code>, which uses the intensive criterion (normalized by <code>M = n(n-1)/2</code>), this function uses the corrected criterion (normalized by <code>n^{1+q/k}</code>), which is asymptotically size-invariant and therefore provides a more reliable comparison across designs of different sizes.</p>
@@ -3636,6 +3643,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
 <td>Distance norm p.&nbsp;Defaults to 2.0.</td>
 <td><code>2.0</code></td>
+</tr>
+<tr class="even">
+<td>figsize</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>Size of the plot (width, height). Defaults to (10, 6).</td>
+<td><code>(10, 6)</code></td>
 </tr>
 </tbody>
 </table>
@@ -3788,7 +3801,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    p_max<span class="op">=</span><span class="dv">100</span>,</span>
 <span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    p_step<span class="op">=</span><span class="dv">10</span>,</span>
 <span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>    n_repeats<span class="op">=</span><span class="dv">5</span>,</span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>),</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Plot the Morris-Mitchell criterion versus the number of added points.</p>
 <section id="parameters-18" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-18">Parameters</h4>
@@ -3843,6 +3857,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
 <td>Number of repetitions for each point count</td>
 <td><code>5</code></td>
+</tr>
+<tr class="even">
+<td>figsize</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a></td>
+<td>Size of the plot (width, height)</td>
+<td><code>(10, 6)</code></td>
 </tr>
 </tbody>
 </table>
