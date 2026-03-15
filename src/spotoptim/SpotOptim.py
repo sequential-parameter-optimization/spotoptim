@@ -6,6 +6,7 @@ import numpy as np
 import random
 import dill
 import re
+import threading
 import torch
 from functools import partial
 from dataclasses import dataclass, field
@@ -81,7 +82,14 @@ class SpotOptimConfig:
         window_size (Optional[int]): Size of the window for tricands.
         min_tol_metric (str): Metric for minimum tolerance.
         prob_surrogate (Optional[List[float]]): Probability of using surrogate.
-        n_jobs (int): Number of jobs.
+        n_jobs (int): Number of parallel workers. ``1`` runs sequentially.
+            Values ``> 1`` activate steady-state parallel optimization using
+            a hybrid executor: ``ProcessPoolExecutor`` for objective evaluations
+            (process isolation; supports lambdas and closures via ``dill``) and
+            ``ThreadPoolExecutor`` for surrogate search tasks (shared heap;
+            zero serialization overhead). ``-1`` resolves to ``os.cpu_count()``
+            (all available CPU cores). ``0`` and values ``< -1`` raise
+            ``ValueError``. Defaults to ``1``.
         acquisition_optimizer_kwargs (Optional[Dict[str, Any]]): Keyword arguments for the acquisition function optimizer.
         args (Tuple): Arguments for the objective function.
         kwargs (Optional[Dict[str, Any]]): Keyword arguments for the objective function.
@@ -607,6 +615,13 @@ class SpotOptim(BaseEstimator):
         prob_de_tricands (float, optional):
             Probability of using differential evolution as an optimizer
             on the surrogate model. 1 - prob_de_tricands is the probability of using tricands. Defaults to 0.8.
+        n_jobs (int, optional):
+            Number of parallel workers. ``1`` (default) runs sequentially.
+            Values ``> 1`` activate steady-state parallel optimization:
+            objective evaluations and acquisition searches are dispatched
+            across ``n_jobs`` processes. Pass ``-1`` to use all available
+            CPU cores (``os.cpu_count()``). ``0`` and values ``< -1`` raise
+            ``ValueError``. Defaults to ``1``.
         window_size (int, optional):
             Window size for success rate calculation.
         min_tol_metric (str, optional):
@@ -975,6 +990,14 @@ class SpotOptim(BaseEstimator):
             raise ValueError(
                 f"max_iter ({max_iter}) must be >= n_initial ({n_initial}). "
                 f"max_iter represents the total function evaluation budget including initial design."
+            )
+
+        # Resolve n_jobs: -1 means "use all available CPU cores" (scikit-learn convention).
+        if n_jobs == -1:
+            n_jobs = os.cpu_count() or 1
+        elif n_jobs == 0 or n_jobs < -1:
+            raise ValueError(
+                f"n_jobs must be a positive integer or -1 (all CPU cores), got {n_jobs}."
             )
 
         if acquisition_optimizer_kwargs is None:
@@ -4930,30 +4953,44 @@ class SpotOptim(BaseEstimator):
     ) -> Tuple[str, OptimizeResult]:
         """Perform steady-state asynchronous optimization (n_jobs > 1).
 
-        This method implements a steady-state parallelization strategy:
+        This method implements a hybrid steady-state parallelization strategy
+        using two executor types:
+
+        * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
+          Process isolation ensures that arbitrary callables (lambdas, closures)
+          serialized with ``dill`` run safely without touching shared state.
+        * ``ThreadPoolExecutor`` (``search_pool``) — surrogate search tasks.
+          Threads share the main-process heap, so ``suggest_next_infill_point()``
+          runs without any ``dill`` serialization overhead.  A ``threading.Lock``
+          (``_surrogate_lock``) prevents a surrogate refit from racing with an
+          in-flight search thread.
+
+        Pipeline:
 
         1.  Parallel Initial Design:
-            The first class of `n_initial * repeats_initial` runs are managed by the executor.
-            The first `n_jobs` are sent to separate processors. If the first job is ready,
-            its result is returned and the next of the initial design runs is dispatched.
-            This is continued until all `n_initial * repeats_initial` runs have returned their values.
+            ``n_initial`` points are dispatched to ``eval_pool``.  Results are
+            collected via ``FIRST_COMPLETED`` until all initial evaluations finish.
 
         2.  First Surrogate Fit:
-            The first surrogate model is built (fitted) using the `n_initial * repeats_initial` evaluations
-            collected in step 1.
+            Called on the main thread once all initial evaluations are in.
+            No lock is needed here because no search threads are active yet.
 
-        3.  Parallel Search:
-            `n_jobs` searches (optimizations) on this surrogate are initially performed in parallel.
+        3.  Parallel Search (Thread Pool):
+            Up to ``n_jobs`` search tasks are submitted to ``search_pool``.
+            Each acquires ``_surrogate_lock`` before calling
+            ``suggest_next_infill_point()``, serialising concurrent surrogate reads.
 
         4.  Steady-State Loop:
-            - If a Search task is ready, the candidate point `x_cand` is immediately sent to the evaluation function to get `y_new`.
-            - As soon as `y_new` is available, the surrogate is fitted again (including the new `x_cand`, `y_new`).
-            - A new Search task is dispatched with this continuously updated model.
-            - This cycle ensures the surrogate is continuously updated as new points are available.
+            - Search completes → candidate ``x_cand`` dispatched to ``eval_pool``
+              (dill-serialized for process isolation).
+            - Eval completes → surrogate refit under ``_surrogate_lock``,
+              then new search slots are filled.
+            - This cycle continues until ``max_iter`` evaluations or ``max_time``
+              minutes is reached.
 
         The optimization terminates when either:
-        - Total function evaluations reach `max_iter` (including initial design), OR
-        - Runtime exceeds `max_time` minutes
+        - Total function evaluations reach ``max_iter`` (including initial design), OR
+        - Runtime exceeds ``max_time`` minutes
 
         Args:
             timeout_start (float): Start time for timeout.
@@ -5000,9 +5037,30 @@ class SpotOptim(BaseEstimator):
         # Import dill locally (assuming installed)
         import dill
 
-        from concurrent.futures import ProcessPoolExecutor, wait, FIRST_COMPLETED
+        from concurrent.futures import (
+            ProcessPoolExecutor,
+            ThreadPoolExecutor,
+            wait,
+            FIRST_COMPLETED,
+        )
 
-        with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+        # Lock that serialises surrogate access:
+        #   - search threads call suggest_next_infill_point() under the lock
+        #   - the main thread calls _fit_scheduler() under the lock after each eval
+        # This prevents a surrogate refit from racing with an in-flight search.
+        _surrogate_lock = threading.Lock()
+
+        def _thread_search_task():
+            """Search task for ThreadPoolExecutor: direct call, no dill."""
+            with _surrogate_lock:
+                return self.suggest_next_infill_point()
+
+        # eval_pool  – ProcessPoolExecutor: isolates arbitrary user objective fun
+        # search_pool – ThreadPoolExecutor: shares heap, no dill serialization
+        with (
+            ProcessPoolExecutor(max_workers=self.n_jobs) as eval_pool,
+            ThreadPoolExecutor(max_workers=self.n_jobs) as search_pool,
+        ):
             futures = {}  # map future -> type ('eval', 'search')
 
             # --- Phase 1: Initial Design Evaluation ---
@@ -5010,7 +5068,6 @@ class SpotOptim(BaseEstimator):
                 print(f"Submitted {len(X0)} initial points for parallel evaluation...")
 
             for i, x in enumerate(X0):
-                # Dump args using dill
                 # Temporarily remove tb_writer (not picklable)
                 _tb_writer_temp = self.tb_writer
                 self.tb_writer = None
@@ -5019,7 +5076,7 @@ class SpotOptim(BaseEstimator):
                 finally:
                     self.tb_writer = _tb_writer_temp
 
-                fut = executor.submit(remote_eval_wrapper, pickled_args)
+                fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
                 futures[fut] = "eval"
 
             # Wait for all initial to complete
@@ -5058,7 +5115,7 @@ class SpotOptim(BaseEstimator):
             self.update_stats()
             self.get_best_xy_initial_design()
 
-            # Fit first surrogate
+            # Fit first surrogate (no lock needed — no search threads active yet)
             if self.verbose:
                 print(
                     f"Initial design evaluated. Fitting surrogate... (Data size: {len(self.y_)})"
@@ -5072,7 +5129,7 @@ class SpotOptim(BaseEstimator):
             while (len(self.y_) < effective_max_iter) and (
                 time.time() < timeout_start + self.max_time * 60
             ):
-                # 1. Fill slots - launch/dispatch
+                # 1. Fill slots - dispatch search tasks to thread pool
                 n_active = len(futures)
                 n_slots = self.n_jobs - n_active
 
@@ -5082,17 +5139,9 @@ class SpotOptim(BaseEstimator):
                             1 for t in futures.values() if t == "eval"
                         )
                         if len(self.y_) + n_pending_evals < effective_max_iter:
-                            # Dumpt optimizer (self) using dill
-                            # Note: self can be large, but it's the only way to send state reliably with dill
-                            # We must temporarily remove tb_writer as it is not picklable
-                            _tb_writer_temp = self.tb_writer
-                            self.tb_writer = None
-                            try:
-                                pickled_opt = dill.dumps(self)
-                            finally:
-                                self.tb_writer = _tb_writer_temp
-
-                            fut = executor.submit(remote_search_task, pickled_opt)
+                            # Search task runs in a thread — no dill serialization.
+                            # _thread_search_task acquires _surrogate_lock internally.
+                            fut = search_pool.submit(_thread_search_task)
                             futures[fut] = "search"
                         else:
                             break
@@ -5109,15 +5158,15 @@ class SpotOptim(BaseEstimator):
                         if isinstance(res, Exception):
                             if self.verbose:
                                 print(f"Remote {ftype} failed: {res}")
-                            # If search failed, we just retry loop (next iter will check slots)
-                            # If eval failed, we unfortunately lost a budget count unless we don't count it?
-                            # Current logic counts evaluations in self.y_ only if successful.
-                            # So failed eval means budget not consumed, will retry.
+                            # Failed search → slot freed, next iteration refills.
+                            # Failed eval → budget not consumed, will retry.
                             continue
 
                         if ftype == "search":
                             x_cand = res
-                            # Submit Eval immediately
+                            # Eval task runs in process pool for isolation.
+                            # dill serialization is still required here because
+                            # the user's objective fun may be a lambda/closure.
                             _tb_writer_temp = self.tb_writer
                             self.tb_writer = None
                             try:
@@ -5125,7 +5174,7 @@ class SpotOptim(BaseEstimator):
                             finally:
                                 self.tb_writer = _tb_writer_temp
 
-                            fut_eval = executor.submit(
+                            fut_eval = eval_pool.submit(
                                 remote_eval_wrapper, pickled_args
                             )
                             futures[fut_eval] = "eval"
@@ -5158,8 +5207,10 @@ class SpotOptim(BaseEstimator):
                                     f"{progress_str}"
                                 )
 
-                            # Refit surrogate
-                            self._fit_scheduler()
+                            # Refit surrogate under the lock to prevent a concurrent
+                            # search thread from reading a partially-updated model.
+                            with _surrogate_lock:
+                                self._fit_scheduler()
 
                     except Exception as e:
                         if self.verbose:
