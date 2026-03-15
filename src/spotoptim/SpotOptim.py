@@ -5282,9 +5282,7 @@ class SpotOptim(BaseEstimator):
                 pending_cands = []
                 if _no_gil:
                     # Free-threaded: call fun directly in a thread — no dill.
-                    fut_eval = eval_pool.submit(
-                        _thread_batch_eval_task, X_batch
-                    )
+                    fut_eval = eval_pool.submit(_thread_batch_eval_task, X_batch)
                 else:
                     # GIL build: serialize with dill for process isolation.
                     _tb_writer_temp = self.tb_writer
@@ -5293,9 +5291,7 @@ class SpotOptim(BaseEstimator):
                         pickled_args = dill.dumps((self, X_batch))
                     finally:
                         self.tb_writer = _tb_writer_temp
-                    fut_eval = eval_pool.submit(
-                        remote_batch_eval_wrapper, pickled_args
-                    )
+                    fut_eval = eval_pool.submit(remote_batch_eval_wrapper, pickled_args)
                 futures[fut_eval] = "batch_eval"
                 _future_n_pts[fut_eval] = n_in_batch
 

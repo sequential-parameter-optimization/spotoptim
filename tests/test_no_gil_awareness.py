@@ -20,17 +20,13 @@ Verifies that:
 
 import sys
 import importlib
-import types
 import unittest.mock as mock
 import numpy as np
-import pytest
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-
-# importlib bypasses the __init__.py class re-export and gives the module.
-_spotoptim_mod = importlib.import_module("spotoptim.SpotOptim")
 from spotoptim import SpotOptim
 from spotoptim.SpotOptim import _is_gil_disabled
 
+# importlib bypasses the __init__.py class re-export and gives the module.
+_spotoptim_mod = importlib.import_module("spotoptim.SpotOptim")
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
