@@ -1,3 +1,17 @@
+## [0.10.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.9.0...v0.10.0) (2026-03-15)
+
+
+### Features
+
+* GIL awareness ([82d4bc0](https://github.com/sequential-parameter-optimization/spotoptim/commit/82d4bc0f54e7879377c770d8efd32b922217497b))
+
+
+### Bug Fixes
+
+* 3.14 added ([57e4548](https://github.com/sequential-parameter-optimization/spotoptim/commit/57e4548699d51102a4fadb31a779ef527888572a))
+* cleanup ([d03fde8](https://github.com/sequential-parameter-optimization/spotoptim/commit/d03fde817c425b525b7b683f5620d71f5c37f391))
+* overshooting managed ([c0c6df1](https://github.com/sequential-parameter-optimization/spotoptim/commit/c0c6df1528b097ebbbf2bec56d26ab2a362c3650))
+
 ## [0.9.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.8.0...v0.9.0) (2026-03-15)
 
 
