@@ -1,3 +1,10 @@
+## [0.6.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.5.1...v0.6.0) (2026-03-15)
+
+
+### Features
+
+* plot_design_points ([c65c0c7](https://github.com/sequential-parameter-optimization/spotoptim/commit/c65c0c7e29d38d5374052081486e6e3a52421368))
+
 ## [0.5.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.5.0...v0.5.1) (2026-03-14)
 
 
