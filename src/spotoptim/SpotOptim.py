@@ -5320,9 +5320,13 @@ class SpotOptim(BaseEstimator):
                 if n_slots > 0:
                     for _ in range(n_slots):
                         # Budget: committed evals + in-flight eval points
+                        #         + in-flight search tasks (each yields 1 cand)
                         #         + candidates not yet dispatched.
                         n_in_flight = sum(_future_n_pts.values())
-                        reserved = len(self.y_) + n_in_flight + len(pending_cands)
+                        n_searches = sum(1 for t in futures.values() if t == "search")
+                        reserved = (
+                            len(self.y_) + n_in_flight + n_searches + len(pending_cands)
+                        )
                         if reserved < effective_max_iter:
                             # Search runs in a thread — no dill serialization;
                             # _thread_search_task holds _surrogate_lock.
