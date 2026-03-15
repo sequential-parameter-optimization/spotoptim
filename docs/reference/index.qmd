@@ -134,6 +134,7 @@
 | [plot.visualization.plot_important_hyperparameter_contour](plot.visualization.plot_important_hyperparameter_contour.qmd#spotoptim.plot.visualization.plot_important_hyperparameter_contour) | Plot surrogate contours for all combinations of the top max_imp important parameters. |
 | [plot.visualization.plot_progress](plot.visualization.plot_progress.qmd#spotoptim.plot.visualization.plot_progress) | Plot optimization progress showing all evaluations and best-so-far curve. |
 | [plot.visualization.plot_surrogate](plot.visualization.plot_surrogate.qmd#spotoptim.plot.visualization.plot_surrogate) | Plot the surrogate model for two dimensions. |
+| [plot.visualization.plot_design_points](plot.visualization.plot_design_points.qmd#spotoptim.plot.visualization.plot_design_points) | Plot design points projected onto two selected dimensions. |
 
 ## Utilities
 

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import numpy as np
-from typing import Optional, List, Tuple
+from typing import Callable, Optional, List, Tuple, Union
 
 try:
     import matplotlib.pyplot as plt
@@ -63,20 +63,20 @@ def plot_surrogate(
         ImportError: If matplotlib is not installed.
 
     Examples:
-        >>> import numpy as np
-        >>> from spotoptim import SpotOptim
-        >>> from spotoptim.plot.visualization import plot_surrogate
-        >>>
-        >>> def sphere(X):
-        ...     return np.sum(X**2, axis=1)
-        >>>
-        >>> # Initialize and run optimizer
-        >>> opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
-        ...                 max_iter=20, n_initial=10, var_name=['x1', 'x2'])
-        >>> result = opt.optimize()
-        >>>
-        >>> # Plot surrogate model for dimensions 0 and 1
-        >>> plot_surrogate(opt, i=0, j=1, show=False)
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from spotoptim.plot.visualization import plot_surrogate
+        from spotoptim.function import sphere
+        opt = SpotOptim(fun=sphere,
+                        bounds=[(-5, 5), (-5, 5)],
+                        max_iter=10,
+                        n_initial=5,
+                        var_name=['x1', 'x2'])
+        result = opt.optimize()
+        # Plot surrogate model for dimensions 0 and 1
+        plot_surrogate(opt, i=0, j=1, show=False)
+        ```
     """
     if plt is None:
         raise ImportError(
@@ -201,23 +201,19 @@ def plot_progress(
         ImportError: If matplotlib is not installed.
 
     Examples:
-        >>> import numpy as np
-        >>> from spotoptim import SpotOptim
-        >>> from spotoptim.plot.visualization import plot_progress
-        >>>
-        >>> def sphere(X):
-        ...     return np.sum(X**2, axis=1)
-        >>>
-        >>> # Initialize and run optimizer
-        >>> opt = SpotOptim(fun=sphere, bounds=[(-5, 5)]*2,
-        ...                 max_iter=20, n_initial=10, seed=42)
-        >>> result = opt.optimize()
-        >>>
-        >>> # Plot optimization progress (linear scale)
-        >>> plot_progress(opt, log_y=False, show=False)
-        >>>
-        >>> # Plot with log scale
-        >>> plot_progress(opt, log_y=True, show=False)
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from spotoptim.plot.visualization import plot_progress
+        from spotoptim.function import sphere
+        opt = SpotOptim(fun=sphere, bounds=[(-5, 5)]*2,
+                        max_iter=10, n_initial=5, seed=42)
+        result = opt.optimize()
+        # Plot optimization progress (linear scale)
+        plot_progress(opt, log_y=False, show=False)
+        # Plot with log scale
+        plot_progress(opt, log_y=True, show=False)
+        ```
     """
     if plt is None:
         raise ImportError(
@@ -370,21 +366,19 @@ def plot_important_hyperparameter_contour(
         ValueError: If optimization hasn't been run yet or max_imp is invalid.
 
     Examples:
-        >>> import numpy as np
-        >>> from spotoptim import SpotOptim
-        >>> from spotoptim.plot.visualization import plot_important_hyperparameter_contour
-        >>>
-        >>> def sphere(X):
-        ...     return np.sum(X**2, axis=1)
-        >>>
-        >>> # Initialize and run optimizer with enough dimensions
-        >>> opt = SpotOptim(fun=sphere, bounds=[(-5, 5)]*4,
-        ...                 max_iter=20, n_initial=10,
-        ...                 var_name=['x1', 'x2', 'x3', 'x4'])
-        >>> result = opt.optimize()
-        >>>
-        >>> # Plot contours for top 3 important hyperparameters
-        >>> plot_important_hyperparameter_contour(opt, max_imp=3, show=False)
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from spotoptim.plot.visualization import plot_important_hyperparameter_contour
+        from spotoptim.function import sphere
+        # Initialize and run optimizer with enough dimensions (here 4)
+        opt = SpotOptim(fun=sphere, bounds=[(-5, 5)]*4,
+                         max_iter=10, n_initial=5,
+                         var_name=['temp', 'pressure', 'velocity', 'acceleration'])
+        result = opt.optimize()
+        # Plot contours for top 3 important hyperparameters
+        plot_important_hyperparameter_contour(opt, max_imp=3, show=False)
+        ```
     """
     from itertools import combinations
 
@@ -457,7 +451,6 @@ def _plot_surrogate_with_factors(
     figsize: Tuple[int, int] = (12, 10),
 ) -> None:
     """Plot surrogate model handling factor variables by mapping to integers.
-
     For factor variables, creates discrete grids and displays factor level names.
 
     Args:
@@ -475,14 +468,8 @@ def _plot_surrogate_with_factors(
         contour_levels (int, optional): Number of contour levels. Defaults to 30.
         figsize (tuple of int, optional): Figure size in inches (width, height). Defaults to (12, 10).
 
-    Raises:
-        ImportError: If matplotlib is not installed.
-    """
-    if plt is None:
-        raise ImportError(
-            "matplotlib is required. Install with: pip install matplotlib"
-        )
 
+    """
     # Check if either dimension is a factor
     is_factor_i = optimizer.var_type and optimizer.var_type[i] == "factor"
     is_factor_j = optimizer.var_type and optimizer.var_type[j] == "factor"
@@ -610,6 +597,180 @@ def _plot_surrogate_with_factors(
 
     if show:
         plt.show()
+
+
+def plot_design_points(
+    X: np.ndarray,
+    i: int = 0,
+    j: int = 1,
+    agg: Union[str, Callable] = "mean",
+    show: bool = True,
+    **kwargs: object,
+) -> object:
+    """Plot design points projected onto two selected dimensions.
+
+    Displays a scatter plot of design points using dimensions ``i`` and ``j``
+    as the axes. When ``X`` has more than two dimensions, all remaining
+    dimensions (≠ ``i`` and ≠ ``j``) are aggregated per point using the
+    ``agg`` function, and the result is used to colour the markers.
+
+    Args:
+        X (np.ndarray): Design matrix of shape ``(n_samples, n_dim)``.
+            Each row is one design point.
+        i (int, optional): Index of the dimension to plot on the x-axis.
+            Defaults to ``0``.
+        j (int, optional): Index of the dimension to plot on the y-axis.
+            Defaults to ``1``. Must differ from ``i`` when ``n_dim > 1``.
+        agg (str or callable, optional): Aggregation applied to the dimensions
+            that are *not* plotted (i.e. every column except ``i`` and ``j``).
+            Supported strings: ``"mean"``, ``"median"``, ``"min"``, ``"max"``.
+            A callable ``f(arr, axis)`` is also accepted (e.g. ``np.std``).
+            The aggregated value is used as the colour of each marker so that
+            spread across the hidden dimensions is visible at a glance.
+            When ``n_dim == 2`` this parameter is ignored (no hidden dims).
+            Defaults to ``"mean"``.
+        show (bool, optional): If ``True``, call :func:`matplotlib.pyplot.show`
+            before returning. Set to ``False`` when running inside tests or
+            scripts that manage display manually. Defaults to ``True``.
+        **kwargs: Additional keyword arguments forwarded to
+            :func:`matplotlib.pyplot.subplots` (e.g. ``figsize``) and to
+            :func:`matplotlib.axes.Axes.scatter` (e.g. ``s``, ``cmap``,
+            ``alpha``).  ``figsize`` is intercepted and passed to
+            ``subplots``; all other keys go to ``scatter``.
+
+    Returns:
+        matplotlib.figure.Figure: The created figure object. Call
+        ``plt.show()`` or ``fig.savefig(...)`` on the returned object as
+        needed.
+
+    Raises:
+        ImportError: If *matplotlib* is not installed.
+        ValueError: If ``X`` is not a 2-D array, has fewer than two columns,
+            or if ``i`` / ``j`` are out of range or equal.
+
+    Examples:
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from spotoptim.function import sphere
+        from spotoptim.plot.visualization import plot_design_points
+
+        opt = SpotOptim(
+            fun=sphere,
+            bounds=[(-5, 5), (-5, 5)],
+            n_initial=10,
+            seed=42,
+        )
+        # Generate a Latin-hypercube initial design (in original scale)
+        X0 = opt.get_initial_design()
+
+        # 2-D design – simple scatter on both dimensions
+        fig = plot_design_points(X0, i=0, j=1, figsize=(5, 4))
+        ```
+
+        ```{python}
+        import numpy as np
+        from spotoptim import SpotOptim
+        from spotoptim.function import sphere
+        from spotoptim.plot.visualization import plot_design_points
+
+        opt = SpotOptim(
+            fun=sphere,
+            bounds=[(-5, 5)] * 4,
+            n_initial=20,
+            seed=42,
+        )
+        X0 = opt.get_initial_design()
+
+        # 4-D design – colour encodes the mean of the two hidden dimensions
+        fig = plot_design_points(X0, i=0, j=1, agg="mean", figsize=(6, 5), s=60)
+        ```
+    """
+    if plt is None:
+        raise ImportError(
+            "matplotlib is required for plot_design_points(). "
+            "Install it with: pip install matplotlib"
+        )
+
+    X = np.asarray(X)
+    if X.ndim != 2:
+        raise ValueError(f"X must be a 2-D array, got shape {X.shape}.")
+    _, n_dim = X.shape
+    if n_dim < 2:
+        raise ValueError(
+            f"X must have at least 2 columns to produce a 2-D scatter plot, "
+            f"got {n_dim}."
+        )
+    if not (0 <= i < n_dim):
+        raise ValueError(f"i={i} is out of range for X with {n_dim} columns.")
+    if not (0 <= j < n_dim):
+        raise ValueError(f"j={j} is out of range for X with {n_dim} columns.")
+    if i == j:
+        raise ValueError("i and j must refer to different dimensions.")
+
+    # --- resolve aggregation function ---
+    _agg_map: dict = {
+        "mean": np.mean,
+        "median": np.median,
+        "min": np.min,
+        "max": np.max,
+    }
+    if callable(agg):
+        agg_fn = agg
+    elif isinstance(agg, str):
+        if agg not in _agg_map:
+            raise ValueError(
+                f"Unsupported agg='{agg}'. "
+                f"Choose one of {list(_agg_map.keys())} or pass a callable."
+            )
+        agg_fn = _agg_map[agg]
+    else:
+        raise TypeError(f"agg must be a string or callable, got {type(agg)}.")
+
+    # --- split kwargs: figsize → subplots, rest → scatter ---
+    figsize = kwargs.pop("figsize", (6, 5))
+    scatter_kwargs = kwargs  # remaining keys go to scatter
+
+    # --- compute colour values for hidden dimensions ---
+    other_dims = [d for d in range(n_dim) if d != i and d != j]
+    use_colour = bool(other_dims)
+    c_values = None
+    if use_colour:
+        hidden = X[:, other_dims]
+        c_values = agg_fn(hidden, axis=1)
+
+    # --- build axis labels ---
+    xlabel = f"x{i}"
+    ylabel = f"x{j}"
+
+    # --- plot ---
+    fig, ax = plt.subplots(figsize=figsize)
+
+    if use_colour:
+        sc = ax.scatter(
+            X[:, i],
+            X[:, j],
+            c=c_values,
+            cmap=scatter_kwargs.pop("cmap", "viridis"),
+            **scatter_kwargs,
+        )
+        cbar = fig.colorbar(sc, ax=ax)
+        agg_label = agg if isinstance(agg, str) else agg.__name__
+        hidden_labels = ", ".join(f"x{d}" for d in other_dims)
+        cbar.set_label(f"{agg_label}({hidden_labels})", fontsize=10)
+    else:
+        ax.scatter(X[:, i], X[:, j], **scatter_kwargs)
+
+    ax.set_xlabel(xlabel, fontsize=11)
+    ax.set_ylabel(ylabel, fontsize=11)
+    ax.set_title(f"Design points: {xlabel} vs {ylabel}", fontsize=12)
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+
+    if show:
+        plt.show()
+
+    return fig
 
 
 def _generate_mesh_grid(
