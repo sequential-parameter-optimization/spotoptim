@@ -1537,8 +1537,12 @@ class SpotOptim(BaseEstimator):
         """Initialize or configure the surrogate model for optimization. Handles three surrogate configurations:
 
             * List of surrogates: sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
-            * None (default): creates a `GaussianProcessRegressor` with a `ConstantKernel * Matern(nu=2.5)` kernel, 100 optimizer restarts, and `normalize_y=True`.
-            * User-provided surrogate: accepted as-is; internal bookkeeping attributes (`_max_surrogate_points_list`, `_active_max_surrogate_points`) are still initialised.
+            * None (default): creates a `GaussianProcessRegressor` with a
+              `ConstantKernel * Matern(nu=2.5)` kernel, 100 optimizer restarts,
+              and `normalize_y=True`.
+            * User-provided surrogate: accepted as-is; internal bookkeeping
+              attributes (`_max_surrogate_points_list`,
+              `_active_max_surrogate_points`) are still initialised.
 
         After this method returns the following attributes are set:
 
@@ -2036,9 +2040,7 @@ class SpotOptim(BaseEstimator):
         Examples:
             ```{python}
             from spotoptim import SpotOptim
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
+            from spotoptim.function import sphere
             spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
             spot.inverse_transform_value(10, 'log10')
             spot.inverse_transform_value(100, 'log(x)')
@@ -2093,25 +2095,22 @@ class SpotOptim(BaseEstimator):
         raise ValueError(f"Unknown transformation: {trans}")
 
     def transform_X(self, X: np.ndarray) -> np.ndarray:
-        """Transform parameter array from original to internal scale.
-
-        Converts from **Natural Space** (Original) to **Transformed Space** (Full Dimension).
+        """Transform parameter array from original (natural) to internal scale.
+        Converts from natural space (Original) to transformed space (full dimension).
         Does NOT handle dimension reduction (mapping).
 
         Args:
-            X (ndarray): Array in **Natural Space**, shape (n_samples, n_features)
+            X (ndarray): Array in Natural Space, shape (n_samples, n_features)
 
         Returns:
-            ndarray: Array in **Transformed Space** (Full Dimension)
+            ndarray: Array in Transformed Space (Full Dimension)
 
         Examples:
             ```{python}
             from spotoptim import SpotOptim
             import numpy as np
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
-            spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
+            from spotoptim.function import sphere
+            spot = SpotOptim(fun=sphere, bounds=[(1, 10)], var_trans=['log10'])
             X_orig = np.array([[1], [10], [100]])
             spot.transform_X(X_orig)
             ```
@@ -2135,8 +2134,7 @@ class SpotOptim(BaseEstimator):
 
     def inverse_transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from internal to original scale.
-
-        Converts from Transformed Space (Full Dimension) to Natural Space (Original).
+        Converts from transformed space (full dimension) to natural space (original).
         Does NOT handle dimension expansion (un-mapping).
 
         Args:
@@ -2150,7 +2148,7 @@ class SpotOptim(BaseEstimator):
             from spotoptim import SpotOptim
             from spotoptim.function import sphere
             import numpy as np
-            spot = SpotOptim(fun=sphere, bounds=[(1, 10)])
+            spot = SpotOptim(fun=sphere, bounds=[(1, 10)], var_trans=['log10'])
             X_trans = np.array([[0], [1], [2]])
             spot.inverse_transform_X(X_trans)
             ```
@@ -2175,7 +2173,6 @@ class SpotOptim(BaseEstimator):
 
     def transform_bounds(self) -> None:
         """Transform bounds from original to internal scale.
-
         Updates `self.bounds` (and `self.lower`, `self.upper`) from Natural Space
         to Transformed Space. Calls `transform_value` for each bound and converts
         numpy types to Python native types (`int` or `float` based on `var_type`).
@@ -2197,7 +2194,7 @@ class SpotOptim(BaseEstimator):
             spot = SpotOptim(fun=sphere, bounds=[(1, 10), (0.1, 100)])
             spot.var_trans = ['log10', 'sqrt']
             spot.transform_bounds()
-            print(spot.bounds)
+            print(f"spot.bounds: {spot.bounds}")
             ```
         """
         for i, trans in enumerate(self.var_trans):
@@ -2286,11 +2283,10 @@ class SpotOptim(BaseEstimator):
 
     def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
         """Generate or process initial design points.
-
         Handles three scenarios:
-        1. X0 is None: Generate space-filling design using LHS
-        2. X0 is None but x0 is provided: Generate LHS and include x0 as first point
-        3. X0 is provided: Transform and prepare user-provided initial design
+            * X0 is None: Generate space-filling design using LHS
+            * X0 is None but x0 is provided: Generate LHS and include x0 as first point
+            * X0 is provided: Transform and prepare user-provided initial design
 
         Args:
             X0 (ndarray, optional): User-provided initial design points in original scale,
@@ -2305,9 +2301,7 @@ class SpotOptim(BaseEstimator):
             ```{python}
             import numpy as np
             from spotoptim import SpotOptim
-            def sphere(X):
-                X = np.atleast_2d(X)
-                return np.sum(X**2, axis=1)
+            from spotoptim.function import sphere
             opt = SpotOptim(
                 fun=sphere,
                 bounds=[(-5, 5), (-5, 5)],
@@ -3322,9 +3316,7 @@ class SpotOptim(BaseEstimator):
             # 0.0, triggering "Some entries in x0 lay outside the specified bounds".
             _lb = np.array([b[0] for b in self.bounds])
             _ub = np.array([b[1] for b in self.bounds])
-            best_x = np.clip(
-                best_x, np.nextafter(_lb, _ub), np.nextafter(_ub, _lb)
-            )
+            best_x = np.clip(best_x, np.nextafter(_lb, _ub), np.nextafter(_ub, _lb))
             best_X = best_x if self.rng.rand() < self.de_x0_prob else None
         else:
             best_X = None
