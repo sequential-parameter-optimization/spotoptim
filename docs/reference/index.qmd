@@ -198,8 +198,8 @@
 | --- | --- |
 | [eda](eda.qmd#spotoptim.eda) | Exploratory Data Analysis (EDA) module for spotoptim. |
 | [eda.plots](eda.plots.qmd#spotoptim.eda.plots) |  |
-| [eda.plots.plot_ip_boxplots](eda.plots.plot_ip_boxplots.qmd#spotoptim.eda.plots.plot_ip_boxplots) | Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid. |
-| [eda.plots.plot_ip_histograms](eda.plots.plot_ip_histograms.qmd#spotoptim.eda.plots.plot_ip_histograms) | Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure. |
+| [eda.plots.plot_ip_boxplots](eda.plots.plot_ip_boxplots.qmd#spotoptim.eda.plots.plot_ip_boxplots) | Generate infill-point boxplots for each numerical column in a DataFrame. |
+| [eda.plots.plot_ip_histograms](eda.plots.plot_ip_histograms.qmd#spotoptim.eda.plots.plot_ip_histograms) | Generate infill-point histograms for each numerical column in a DataFrame. |
 
 ## Multi-Objective
 
