@@ -78,9 +78,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-5e96725ad03142391c5bee3219fd5ffe.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-fa5f0704f09f6b86d933586a07d0a988.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-486456a1ea2d3ce1c2bc0ac6b5794661.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-474c494e1f8843c89f52d41127e24191.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-486456a1ea2d3ce1c2bc0ac6b5794661.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -1987,6 +1987,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#parameters" id="toc-parameters" class="nav-link active" data-scroll-target="#parameters">Parameters</a></li>
   <li><a href="#returns" id="toc-returns" class="nav-link" data-scroll-target="#returns">Returns</a></li>
+  <li><a href="#raises" id="toc-raises" class="nav-link" data-scroll-target="#raises">Raises</a></li>
   <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
@@ -2024,7 +2025,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    add_points<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    add_points_col<span class="op">=</span>[<span class="st">'red'</span>],</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure. The title of each histogram shows the total, unique values count, outliers, and standard deviation. If there are fewer unique values than the threshold thrs_unique, the ip-histogram is colored differently. Additional points can be added and highlighted in red.</p>
+<p>Generate infill-point histograms for each numerical column in a DataFrame.</p>
+<p>A separate histogram is created for each numerical column of df and arranged in a grid. The title of each subplot shows the total point count, the number of unique values, the number of outliers detected via the IQR method, and the standard deviation. Columns with fewer unique values than thrs_unique are coloured differently to draw attention to low-variability features.</p>
+<p>If add_points is provided and its numerical columns differ from those of df in name but agree in count, the column names of add_points are silently replaced by those of df before plotting. This ensures that infill points drawn from a differently named search space are always overlaid correctly.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
@@ -2058,25 +2061,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td>figwidth</td>
 <td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
-<td>Width of the entire figure. Defaults to 10.</td>
+<td>Width of the entire figure in inches. Defaults to 10.</td>
 <td><code>10</code></td>
 </tr>
 <tr class="odd">
 <td>thrs_unique</td>
 <td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
-<td>Threshold for unique values to change histogram color. Defaults to 5.</td>
+<td>Threshold for unique values below which the histogram bar colour switches from lightblue to lightcoral. Defaults to 5.</td>
 <td><code>5</code></td>
 </tr>
 <tr class="even">
 <td>add_points</td>
 <td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
-<td>DataFrame containing additional points to highlight. Defaults to None.</td>
+<td>DataFrame containing additional points to highlight with diamond markers at y = 0. Defaults to None.</td>
 <td><code>None</code></td>
 </tr>
 <tr class="odd">
 <td>add_points_col</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#list">list</a></td>
-<td>List of colors for the additional points. Defaults to [“red”].</td>
+<td>List of colours, one per row of add_points. Defaults to [“red”].</td>
 <td><code>['red']</code></td>
 </tr>
 </tbody>
@@ -2101,9 +2104,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
+<section id="raises" class="level2 doc-section doc-section-raises">
+<h2 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If the number of rows in add_points does not equal the length of add_points_col.</td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<div id="d2d2a6b3" class="cell" data-execution_count="1">
+<div id="2c6f445e" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.eda.plots <span class="im">import</span> plot_ip_histograms</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> {<span class="st">'A'</span>: [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">100</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>]}</span>
@@ -2111,7 +2133,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, bins<span class="op">=</span><span class="dv">5</span>, num_cols<span class="op">=</span><span class="dv">1</span>, thrs_unique<span class="op">=</span><span class="dv">3</span>)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Example with multiple added points and colors</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>add_points <span class="op">=</span> pd.DataFrame({<span class="st">'A'</span>: [<span class="fl">1.5</span>, <span class="fl">3.5</span>], <span class="st">'B'</span>: [<span class="dv">10</span>, <span class="dv">10</span>]})</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, add_points<span class="op">=</span>add_points, add_points_col<span class="op">=</span>[<span class="st">"red"</span>, <span class="st">"blue"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, add_points<span class="op">=</span>add_points, add_points_col<span class="op">=</span>[<span class="st">"red"</span>, <span class="st">"blue"</span>])</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: add_points with different column names are aligned automatically</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>add_points_renamed <span class="op">=</span> pd.DataFrame({<span class="st">'x'</span>: [<span class="fl">1.5</span>, <span class="fl">3.5</span>], <span class="st">'y'</span>: [<span class="dv">10</span>, <span class="dv">10</span>]})</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>plot_ip_histograms(df, add_points<span class="op">=</span>add_points_renamed, add_points_col<span class="op">=</span>[<span class="st">"green"</span>, <span class="st">"orange"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -2123,6 +2148,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div>
 <figure class="figure">
 <p><img src="eda.plots.plot_ip_histograms_files/figure-html/cell-2-output-2.png" width="950" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="eda.plots.plot_ip_histograms_files/figure-html/cell-2-output-3.png" width="950" height="470" class="figure-img"></p>
 </figure>
 </div>
 </div>
