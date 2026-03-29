@@ -5123,7 +5123,9 @@ class SpotOptim(BaseEstimator):
             max_iter_override (Optional[int]): Override for maximum number of iterations.
 
         Raises:
-            RuntimeError: If all initial design evaluations fail, likely due to pickling issues or missing imports in the worker process. The error message provides guidance on how to address this issue.
+            RuntimeError: If all initial design evaluations fail, likely due to
+                pickling issues or missing imports in the worker process.
+                The error message provides guidance on how to address this issue.
 
         Returns:
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.

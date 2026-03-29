@@ -8,32 +8,94 @@ import matplotlib.pyplot as plt
 from spotoptim.utils.stats import calculate_outliers
 
 
+def _align_add_points(
+    df: pd.DataFrame,
+    add_points: pd.DataFrame,
+) -> pd.DataFrame:
+    """Align the column names of add_points to those of df.
+
+    If add_points has the same number of numerical columns as df but different
+    names, the column names of add_points are replaced with those of df so that
+    both DataFrames can be plotted together without a key mismatch.
+
+    Non-numerical columns in add_points are left unchanged.
+
+    Args:
+        df: Reference DataFrame whose numerical column names are authoritative.
+        add_points: DataFrame of additional points to overlay on the plots.
+
+    Returns:
+        A copy of add_points with its numerical column names replaced by the
+        corresponding numerical column names of df when the counts match, or
+        the original add_points unchanged when the counts differ.
+
+    Raises:
+        TypeError: If df or add_points is not a pandas DataFrame.
+
+    Examples:
+        >>> import pandas as pd
+        >>> from spotoptim.eda.plots import _align_add_points
+        >>> df = pd.DataFrame({'x1': [1, 2], 'x2': [3, 4]})
+        >>> ap = pd.DataFrame({'a': [1.5], 'b': [3.5]})
+        >>> _align_add_points(df, ap).columns.tolist()
+        ['x1', 'x2']
+    """
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("df must be a pandas DataFrame.")
+    if not isinstance(add_points, pd.DataFrame):
+        raise TypeError("add_points must be a pandas DataFrame.")
+
+    df_num_cols = df.select_dtypes(include="number").columns.tolist()
+    ap_num_cols = add_points.select_dtypes(include="number").columns.tolist()
+
+    if len(df_num_cols) != len(ap_num_cols):
+        # Cannot align; caller must handle column-by-column matching
+        return add_points.copy()
+
+    rename_map = dict(zip(ap_num_cols, df_num_cols))
+    return add_points.rename(columns=rename_map)
+
+
 def plot_ip_histograms(
     df: pd.DataFrame,
-    bins=10,
-    num_cols=2,
-    figwidth=10,
-    thrs_unique=5,
+    bins: int = 10,
+    num_cols: int = 2,
+    figwidth: int = 10,
+    thrs_unique: int = 5,
     add_points: pd.DataFrame = None,
     add_points_col: list = ["red"],
 ) -> None:
-    """
-    Generate infill-point histograms (ip-histograms) for each numerical column in the DataFrame within a single figure.
-    The title of each histogram shows the total, unique values count, outliers, and standard deviation.
-    If there are fewer unique values than the threshold thrs_unique, the ip-histogram is colored differently.
-    Additional points can be added and highlighted in red.
+    """Generate infill-point histograms for each numerical column in a DataFrame.
+
+    A separate histogram is created for each numerical column of df and arranged
+    in a grid. The title of each subplot shows the total point count, the number
+    of unique values, the number of outliers detected via the IQR method, and
+    the standard deviation. Columns with fewer unique values than thrs_unique are
+    coloured differently to draw attention to low-variability features.
+
+    If add_points is provided and its numerical columns differ from those of df
+    in name but agree in count, the column names of add_points are silently
+    replaced by those of df before plotting. This ensures that infill points
+    drawn from a differently named search space are always overlaid correctly.
 
     Args:
-        df (pd.DataFrame): DataFrame containing the data to plot.
-        bins (int, optional): Number of bins for the histograms. Defaults to 10.
-        num_cols (int, optional): Number of columns in the subplot grid. Defaults to 2.
-        figwidth (int, optional): Width of the entire figure. Defaults to 10.
-        thrs_unique (int, optional): Threshold for unique values to change histogram color. Defaults to 5.
-        add_points (pd.DataFrame, optional): DataFrame containing additional points to highlight. Defaults to None.
-        add_points_col (list, optional): List of colors for the additional points. Defaults to ["red"].
+        df: DataFrame containing the data to plot.
+        bins: Number of bins for the histograms. Defaults to 10.
+        num_cols: Number of columns in the subplot grid. Defaults to 2.
+        figwidth: Width of the entire figure in inches. Defaults to 10.
+        thrs_unique: Threshold for unique values below which the histogram bar
+            colour switches from lightblue to lightcoral. Defaults to 5.
+        add_points: DataFrame containing additional points to highlight with
+            diamond markers at y = 0. Defaults to None.
+        add_points_col: List of colours, one per row of add_points. Defaults
+            to ["red"].
 
     Returns:
         None
+
+    Raises:
+        ValueError: If the number of rows in add_points does not equal the
+            length of add_points_col.
 
     Examples:
         ```{python}
@@ -45,6 +107,9 @@ def plot_ip_histograms(
         # Example with multiple added points and colors
         add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
         plot_ip_histograms(df, add_points=add_points, add_points_col=["red", "blue"])
+        # Example: add_points with different column names are aligned automatically
+        add_points_renamed = pd.DataFrame({'x': [1.5, 3.5], 'y': [10, 10]})
+        plot_ip_histograms(df, add_points=add_points_renamed, add_points_col=["green", "orange"])
         ```
 
     References:
@@ -52,6 +117,9 @@ def plot_ip_histograms(
         Tuning With Desirability Functions. arXiv preprint arXiv:2503.23595.
         https://arxiv.org/abs/2503.23595
     """
+    if add_points is not None:
+        add_points = _align_add_points(df, add_points)
+
     numerical_columns = df.select_dtypes(include="number").columns.tolist()
     num_plots = len(numerical_columns)
     num_rows = (num_plots + num_cols - 1) // num_cols
@@ -75,7 +143,8 @@ def plot_ip_histograms(
         if add_points is not None and col in add_points.columns:
             if len(add_points) != len(add_points_col):
                 raise ValueError(
-                    f"Length of add_points ({len(add_points)}) and add_points_col ({len(add_points_col)}) must be the same."
+                    f"Length of add_points ({len(add_points)}) and "
+                    f"add_points_col ({len(add_points_col)}) must be the same."
                 )
 
             points_data = add_points[[col]].copy()
@@ -95,7 +164,8 @@ def plot_ip_histograms(
                 edgecolor="k",
             )
         ax.set_title(
-            f"Total={total_points}, Unique={unique_values}, Outliers={num_outliers}, StdDev={std_dev:.2f}"
+            f"Total={total_points}, Unique={unique_values}, "
+            f"Outliers={num_outliers}, StdDev={std_dev:.2f}"
         )
         ax.set_xlabel(col)
         ax.set_ylabel("Frequency")
@@ -112,38 +182,46 @@ def plot_ip_boxplots(
     num_cols: int = 2,
     figwidth: int = 10,
     box_width: float = 0.2,
-    both_names=True,
+    both_names: bool = True,
     height_per_subplot: float = 2.0,
     add_points: pd.DataFrame = None,
     add_points_col: list = ["red"],
 ) -> None:
-    """
-    Generate infill-point boxplots (ip-boxplots). A separate ip-boxplot is generated for each numerical column in a DataFrame, arranged in a grid.
-    Each subplot has its own scale, similar to how histograms are shown in plot_histograms().
-    Additional points can be added and highlighted in red.
+    """Generate infill-point boxplots for each numerical column in a DataFrame.
+
+    A separate horizontal boxplot is created for each numerical column of df
+    and arranged in a grid. Each subplot uses its own axis scale, mirroring the
+    behaviour of plot_ip_histograms. An optional categorical grouping column
+    splits the data into one box per category level.
+
+    If add_points is provided and its numerical columns differ from those of df
+    in name but agree in count, the column names of add_points are silently
+    replaced by those of df before plotting. This ensures that infill points
+    drawn from a differently named search space are always overlaid correctly.
 
     Args:
-        df (pd.DataFrame):
-            DataFrame containing the data to plot.
-        category_column_name (str, optional):
-            Column name for categorical grouping. Defaults to None.
-        num_cols (int, optional):
-            Number of columns in the subplot grid. Defaults to 2.
-        figwidth (int, optional):
-            Width of the entire figure. Defaults to 10.
-        box_width (float, optional):
-            Width of the boxplots. Defaults to 0.2.
-        both_names (bool, optional):
-            Whether to show both variable names and categories in titles. Defaults to True.
-        height_per_subplot (float, optional):
-            Height per subplot row. Defaults to 2.0.
-        add_points (pd.DataFrame, optional):
-            DataFrame containing additional points to highlight. Defaults to None.
-        add_points_col (list, optional):
-            List of colors for the additional points. Defaults to ["red"].
+        df: DataFrame containing the data to plot.
+        category_column_name: Column name for categorical grouping. When
+            provided, one box is drawn per unique category. Defaults to None.
+        num_cols: Number of columns in the subplot grid. Defaults to 2.
+        figwidth: Width of the entire figure in inches. Defaults to 10.
+        box_width: Width of each boxplot. Defaults to 0.2.
+        both_names: When True, the subplot title shows both the variable name
+            and, if applicable, the category column name. When False, only the
+            variable name is shown. Defaults to True.
+        height_per_subplot: Height in inches allocated to each subplot row.
+            Defaults to 2.0.
+        add_points: DataFrame containing additional points to highlight with
+            diamond markers. Defaults to None.
+        add_points_col: List of colours, one per row of add_points. Defaults
+            to ["red"].
 
     Returns:
         None
+
+    Raises:
+        ValueError: If the number of rows in add_points does not equal the
+            length of add_points_col.
 
     Examples:
         ```{python}
@@ -155,6 +233,9 @@ def plot_ip_boxplots(
         # Example with multiple added points and colors
         add_points = pd.DataFrame({'A': [1.5, 3.5], 'B': [10, 10]})
         plot_ip_boxplots(df, add_points=add_points, add_points_col=["red", "blue"])
+        # Example: add_points with different column names are aligned automatically
+        add_points_renamed = pd.DataFrame({'x': [1.5, 3.5], 'y': [10, 10]})
+        plot_ip_boxplots(df, add_points=add_points_renamed, add_points_col=["green", "orange"])
         ```
 
     References:
@@ -164,6 +245,10 @@ def plot_ip_boxplots(
     """
     if df.ndim == 1:
         df = df.to_frame()
+
+    if add_points is not None:
+        add_points = _align_add_points(df, add_points)
+
     numerical_columns = df.select_dtypes(include="number").columns.tolist()
     num_plots = len(numerical_columns)
     num_rows = (num_plots + num_cols - 1) // num_cols
@@ -186,6 +271,7 @@ def plot_ip_boxplots(
                 for cat_value in unique_categories
             ]
         else:
+            unique_categories = None
             plot_data = [df[col].dropna()]
         ax.boxplot(
             plot_data,
@@ -201,7 +287,8 @@ def plot_ip_boxplots(
         if add_points is not None and col in add_points.columns:
             if len(add_points) != len(add_points_col):
                 raise ValueError(
-                    f"Length of add_points ({len(add_points)}) and add_points_col ({len(add_points_col)}) must be the same."
+                    f"Length of add_points ({len(add_points)}) and "
+                    f"add_points_col ({len(add_points_col)}) must be the same."
                 )
 
             points_data = add_points[[col]].copy()
@@ -220,12 +307,12 @@ def plot_ip_boxplots(
                 label="Additional Points",
                 zorder=3,
             )
-        if both_names:
-            ax.set_title(col)
+        if both_names and category_column_name and category_column_name in df.columns:
+            ax.set_title(f"{col} by {category_column_name}")
         else:
             ax.set_title(col)
         ax.set_xlabel("Value")
-        if category_column_name and category_column_name in df.columns:
+        if unique_categories is not None:
             ax.set_yticklabels(unique_categories)
             ax.set_ylabel(category_column_name)
         else:
