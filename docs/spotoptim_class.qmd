@@ -41,8 +41,6 @@ description: "Structure of the Methods"
 * generate_initial_design()
 * curate_initial_design()
 * validate_x0()
-* check_size_initial_design()
-* get_best_xy_initial_design()
 
 ### TASK_Surrogate:
 
@@ -60,6 +58,8 @@ description: "Structure of the Methods"
 * optimize()
 * execute_optimization_run()
 * evaluate_function()
+* get_best_xy_initial_design()
+
 * _optimize_acquisition_tricands()
 * _prepare_de_kwargs()
 * _optimize_acquisition_de()
@@ -77,13 +77,15 @@ description: "Structure of the Methods"
 * optimize_sequential_run()
 * _initialize_run()
 * rm_initial_design_NA_values()
+* check_size_initial_design()
+* _run_sequential_loop()
 
 * determine_termination()
 * apply_penalty_NA()
 * update_best_main_loop()
 * handle_NA_new_points()
 * update_repeats_infill_points()
-* _run_sequential_loop()
+
 
 
 ### TASK_OPTIM_PARALLEL:

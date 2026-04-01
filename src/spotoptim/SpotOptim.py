@@ -2253,144 +2253,6 @@ class SpotOptim(BaseEstimator):
 
         return x0_transformed
 
-    def check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
-        """Validate that initial design has sufficient points for surrogate fitting.
-
-        Checks if the number of valid initial design points meets the minimum
-        requirement for fitting a surrogate model. The minimum required is the
-        smaller of:
-            * (a) typical minimum for surrogate fitting (3 for multi-dimensional, 2 for 1D), or
-            * (b) what the user requested (`n_initial`).
-
-        Args:
-            y0 (ndarray): Function values at initial design points (after filtering),
-                shape (n_valid,).
-            n_evaluated (int): Original number of points evaluated before filtering.
-
-        Returns:
-            None
-
-        Raises:
-            ValueError: If the number of valid points is less than the minimum required.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=10
-            )
-            # Sufficient points - no error
-            y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-            opt.check_size_initial_design(y0, n_evaluated=10)
-
-            # Insufficient points - raises ValueError
-            y0_small = np.array([1.0])
-            try:
-                opt.check_size_initial_design(y0_small, n_evaluated=10)
-            except ValueError as e:
-                print(f"Error: {e}")
-
-            # With verbose output
-            opt_verbose = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=10,
-                verbose=True
-            )
-            y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
-            opt_verbose.check_size_initial_design(y0_reduced, n_evaluated=10)
-            ```
-        """
-        # Check if we have enough points to continue
-        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
-        min_points_typical = 3 if self.n_dim > 1 else 2
-        min_points_required = min(min_points_typical, self.n_initial)
-
-        if len(y0) < min_points_required:
-            error_msg = (
-                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
-                f"out of {n_evaluated} evaluated. Need at least {min_points_required} "
-                f"points to fit surrogate model. Please check your objective function or increase n_initial."
-            )
-            raise ValueError(error_msg)
-
-        if len(y0) < self.n_initial and self.verbose:
-            print(
-                f"Note: Initial design size ({len(y0)}) is smaller than requested "
-                f"({self.n_initial}) due to NaN/inf values"
-            )
-
-    def get_best_xy_initial_design(self) -> None:
-        """Determine and store the best point from initial design.
-        Finds the best (minimum) function value in the initial design,
-        stores the corresponding point and value in instance attributes,
-        and optionally prints the results if verbose mode is enabled.
-        For noisy functions, also reports the mean best value.
-
-        Note:
-            This method assumes self.X_ and self.y_ have been initialized
-            with the initial design evaluations.
-
-        Returns:
-            None
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                verbose=True
-            )
-            # Simulate initial design (normally done in optimize())
-            opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            opt.y_ = np.array([5.0, 0.0, 5.0])
-            opt.get_best_xy_initial_design()
-            print(f"Best x: {opt.best_x_}")
-            print(f"Best y: {opt.best_y_}")
-            ```
-
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import noisy_sphere
-            # With noisy function
-            opt_noise = SpotOptim(
-                fun=noisy_sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                repeats_surrogate=2,
-                verbose=True
-            )
-            opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            opt_noise.y_ = np.array([5.0, 0.0, 5.0])
-            opt_noise.min_mean_y = 0.5  # Simulated mean best
-            opt_noise.get_best_xy_initial_design()
-            print(f"Best x: {opt_noise.best_x_}")
-            print(f"Best y: {opt_noise.best_y_}")
-            ```
-        """
-        # Initial best
-        best_idx = np.argmin(self.y_)
-        self.best_x_ = self.X_[best_idx].copy()
-        self.best_y_ = self.y_[best_idx]
-
-        if self.verbose:
-            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-                print(
-                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
-                )
-            else:
-                print(f"Initial best: f(x) = {self.best_y_:.6f}")
-
 
     # ====================
     # TASK_Surrogate:
@@ -2641,9 +2503,6 @@ class SpotOptim(BaseEstimator):
             self.surrogate = self._surrogates_list[idx]
             # Update active max surrogate points
             self._active_max_surrogate_points = self._max_surrogate_points_list[idx]
-            if self.verbose:
-                # Optional: print selected surrogate? separate from verbose maybe
-                pass
 
         if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
             X_for_surrogate = self.transform_X(self.mean_X)
@@ -3093,6 +2952,75 @@ class SpotOptim(BaseEstimator):
             y = y.ravel()
 
         return y
+
+
+    def get_best_xy_initial_design(self) -> None:
+        """Determine and store the best point from initial design.
+        Finds the best (minimum) function value in the initial design,
+        stores the corresponding point and value in instance attributes,
+        and optionally prints the results if verbose mode is enabled.
+        For noisy functions, also reports the mean best value.
+
+        Note:
+            This method assumes self.X_ and self.y_ have been initialized
+            with the initial design evaluations.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                verbose=True
+            )
+            # Simulate initial design (normally done in optimize())
+            opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            opt.y_ = np.array([5.0, 0.0, 5.0])
+            opt.get_best_xy_initial_design()
+            print(f"Best x: {opt.best_x_}")
+            print(f"Best y: {opt.best_y_}")
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import noisy_sphere
+            # With noisy function
+            opt_noise = SpotOptim(
+                fun=noisy_sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                repeats_surrogate=2,
+                verbose=True
+            )
+            opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            opt_noise.y_ = np.array([5.0, 0.0, 5.0])
+            opt_noise.min_mean_y = 0.5  # Simulated mean best
+            opt_noise.get_best_xy_initial_design()
+            print(f"Best x: {opt_noise.best_x_}")
+            print(f"Best y: {opt_noise.best_y_}")
+            ```
+        """
+        # Initial best
+        best_idx = np.argmin(self.y_)
+        self.best_x_ = self.X_[best_idx].copy()
+        self.best_y_ = self.y_[best_idx]
+
+        if self.verbose:
+            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
+                print(
+                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
+                )
+            else:
+                print(f"Initial best: f(x) = {self.best_y_:.6f}")
+
+
 
     def _optimize_acquisition_tricands(self) -> np.ndarray:
         """Optimize using geometric infill strategy via triangulation candidates.
@@ -3979,6 +3907,281 @@ class SpotOptim(BaseEstimator):
 
         return X0, y0, len(finite_mask)
 
+
+    def check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
+        """Validate that initial design has sufficient points for surrogate fitting.
+
+        Checks if the number of valid initial design points meets the minimum
+        requirement for fitting a surrogate model. The minimum required is the
+        smaller of:
+            * (a) typical minimum for surrogate fitting (3 for multi-dimensional, 2 for 1D), or
+            * (b) what the user requested (`n_initial`).
+
+        Args:
+            y0 (ndarray): Function values at initial design points (after filtering),
+                shape (n_valid,).
+            n_evaluated (int): Original number of points evaluated before filtering.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the number of valid points is less than the minimum required.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10
+            )
+            # Sufficient points - no error
+            y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+            opt.check_size_initial_design(y0, n_evaluated=10)
+
+            # Insufficient points - raises ValueError
+            y0_small = np.array([1.0])
+            try:
+                opt.check_size_initial_design(y0_small, n_evaluated=10)
+            except ValueError as e:
+                print(f"Error: {e}")
+
+            # With verbose output
+            opt_verbose = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10,
+                verbose=True
+            )
+            y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
+            opt_verbose.check_size_initial_design(y0_reduced, n_evaluated=10)
+            ```
+        """
+        # Check if we have enough points to continue
+        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
+        min_points_typical = 3 if self.n_dim > 1 else 2
+        min_points_required = min(min_points_typical, self.n_initial)
+
+        if len(y0) < min_points_required:
+            error_msg = (
+                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
+                f"out of {n_evaluated} evaluated. Need at least {min_points_required} "
+                f"points to fit surrogate model. Please check your objective function or increase n_initial."
+            )
+            raise ValueError(error_msg)
+
+        if len(y0) < self.n_initial and self.verbose:
+            print(
+                f"Note: Initial design size ({len(y0)}) is smaller than requested "
+                f"({self.n_initial}) due to NaN/inf values"
+            )
+
+
+    def _run_sequential_loop(
+        self, timeout_start: float, effective_max_iter: int
+    ) -> Tuple[str, OptimizeResult]:
+        """Execute the main sequential optimization loop.
+
+        Args:
+             timeout_start (float): Start time for timeout.
+             effective_max_iter (int): Maximum number of iterations for this run (may be overridden for restarts).
+
+         Returns:
+             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+         Raises:
+             ValueError:
+                If excessive consecutive failures occur (e.g., due to NaN/inf values in evaluations), indicating a potential issue with the objective function.
+
+         Examples:
+             >>> import time
+             >>> import numpy as np
+             >>> from spotoptim import SpotOptim
+             >>> opt = SpotOptim(
+             ...     fun=lambda X: np.sum(X**2, axis=1),
+             ...     bounds=[(-5, 5), (-5, 5)],
+             ...     n_initial=5,
+             ...     max_iter=10,
+             ...     seed=0,
+             ...     n_jobs=1,  # Use sequential optimization for deterministic output
+             ...     verbose=True
+             ... )
+             >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
+             >>> X0, y0, n_evaluated = opt.rm_initial_design_NA_values(X0, y0)
+             >>> opt.check_size_initial_design(y0, n_evaluated)
+             >>> opt.init_storage(X0, y0)
+             >>> opt._zero_success_count = 0
+             >>> opt._success_history = []
+             >>> opt.update_stats()
+             >>> opt.get_best_xy_initial_design()
+             >>> status, result = opt._run_sequential_loop(timeout_start=time.time(), effective_max_iter=10)
+             >>> print(status)
+             FINISHED
+             >>> print(result.message.splitlines()[0])
+             Optimization terminated: maximum evaluations (10) reached
+        """
+        consecutive_failures = 0
+
+        while (len(self.y_) < effective_max_iter) and (
+            time.time() < timeout_start + self.max_time * 60
+        ):
+            # Check for excessive consecutive failures (infinite loop prevention)
+            if consecutive_failures > self.max_iter:
+                msg = (
+                    f"Optimization stopped due to {consecutive_failures} consecutive "
+                    "invalid evaluations (NaN/inf). Check your objective function."
+                )
+                if self.verbose:
+                    print(f"Warning: {msg}")
+                return "FINISHED", OptimizeResult(
+                    x=self.best_x_,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=msg,
+                    X=self.X_,
+                    y=self.y_,
+                )
+
+            # Increment iteration counter. This is not the same as number of function evaluations.
+            self.n_iter_ += 1
+
+            # Fit surrogate (use mean_y if noise, otherwise y_)
+            self._fit_scheduler()
+
+            # Apply OCBA for noisy functions
+            X_ocba = self.apply_ocba()
+
+            # Suggest next point
+            x_next = self.suggest_next_infill_point()
+
+            # Repeat next point if repeats_surrogate > 1
+            x_next_repeated = self.update_repeats_infill_points(x_next)
+
+            # Append OCBA points to new design points (if applicable)
+            if X_ocba is not None:
+                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
+
+            # Evaluate next point(s) including OCBA points
+            y_next = self.evaluate_function(x_next_repeated)
+
+            # Handle NaN/inf values in new evaluations
+            x_next_repeated, y_next = self._handle_NA_new_points(
+                x_next_repeated, y_next
+            )
+            if x_next_repeated is None:
+                consecutive_failures += 1
+                continue  # Skip iteration if all evaluations were invalid
+
+            # Reset failure counter if we got valid points
+            consecutive_failures = 0
+
+            # Update success rate BEFORE updating storage (so it compares against previous best)
+            self.update_success_rate(y_next)
+
+            # Check for restart
+            if self.success_rate == 0.0:
+                self._zero_success_count += 1
+            else:
+                self._zero_success_count = 0
+
+            if self._zero_success_count >= self.restart_after_n:
+                if self.verbose:
+                    print(
+                        f"Restarting optimization: success_rate 0 for {self._zero_success_count} iterations."
+                    )
+
+                status_message = "Restart triggered due to lack of improvement."
+
+                # Expand results to full dimensions if needed
+                best_x_full = (
+                    self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+                    if self.red_dim
+                    else self.best_x_
+                )
+                X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+
+                # Map factor variables back to original strings
+                best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
+                X_result = (
+                    self.map_to_factor_values(X_full) if self._factor_maps else X_full
+                )
+
+                res = OptimizeResult(
+                    x=best_x_result,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=status_message,
+                    X=X_result,
+                    y=self.y_,
+                )
+                return "RESTART", res
+
+            # Update storage
+            self.update_storage(x_next_repeated, y_next)
+
+            # Update stats
+            self.update_stats()
+
+            # Log to TensorBoard
+            if self.tb_writer is not None:
+                # Log each new evaluation
+                for i in range(len(y_next)):
+                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
+                self._write_tensorboard_scalars()
+
+            # Update best solution
+            self._update_best_main_loop(
+                x_next_repeated, y_next, start_time=timeout_start
+            )
+
+        # Expand results to full dimensions if needed
+        # Note: best_x_ and X_ are already in original scale (stored that way)
+        best_x_full = (
+            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+            if self.red_dim
+            else self.best_x_
+        )
+        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+
+        # Determine termination reason
+        status_message = self.determine_termination(timeout_start)
+
+        # Append statistics to match scipy.optimize.minimize format
+        message = (
+            f"{status_message}\n"
+            f"         Current function value: {float(self.best_y_):.6f}\n"
+            f"         Iterations: {self.n_iter_}\n"
+            f"         Function evaluations: {len(self.y_)}"
+        )
+
+        # Close TensorBoard writer
+        self._close_tensorboard_writer()
+
+        # Map factor variables back to original strings for results
+        best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        X_result = self.map_to_factor_values(X_full) if self._factor_maps else X_full
+
+        # Return scipy-style result
+        return "FINISHED", OptimizeResult(
+            x=best_x_result,
+            fun=self.best_y_,
+            nfev=len(self.y_),
+            nit=self.n_iter_,
+            success=True,
+            message=message,
+            X=X_result,
+            y=self.y_,
+        )
+
+
     def determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.
         Checks the termination conditions and returns an appropriate message
@@ -4458,206 +4661,6 @@ class SpotOptim(BaseEstimator):
             x_next_repeated = x_next
         return x_next_repeated
 
-
-    def _run_sequential_loop(
-        self, timeout_start: float, effective_max_iter: int
-    ) -> Tuple[str, OptimizeResult]:
-        """Execute the main sequential optimization loop.
-
-        Args:
-             timeout_start (float): Start time for timeout.
-             effective_max_iter (int): Maximum number of iterations for this run (may be overridden for restarts).
-
-         Returns:
-             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
-
-         Raises:
-             ValueError:
-                If excessive consecutive failures occur (e.g., due to NaN/inf values in evaluations), indicating a potential issue with the objective function.
-
-         Examples:
-             >>> import time
-             >>> import numpy as np
-             >>> from spotoptim import SpotOptim
-             >>> opt = SpotOptim(
-             ...     fun=lambda X: np.sum(X**2, axis=1),
-             ...     bounds=[(-5, 5), (-5, 5)],
-             ...     n_initial=5,
-             ...     max_iter=10,
-             ...     seed=0,
-             ...     n_jobs=1,  # Use sequential optimization for deterministic output
-             ...     verbose=True
-             ... )
-             >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
-             >>> X0, y0, n_evaluated = opt.rm_initial_design_NA_values(X0, y0)
-             >>> opt.check_size_initial_design(y0, n_evaluated)
-             >>> opt.init_storage(X0, y0)
-             >>> opt._zero_success_count = 0
-             >>> opt._success_history = []
-             >>> opt.update_stats()
-             >>> opt.get_best_xy_initial_design()
-             >>> status, result = opt._run_sequential_loop(timeout_start=time.time(), effective_max_iter=10)
-             >>> print(status)
-             FINISHED
-             >>> print(result.message.splitlines()[0])
-             Optimization terminated: maximum evaluations (10) reached
-        """
-        consecutive_failures = 0
-
-        while (len(self.y_) < effective_max_iter) and (
-            time.time() < timeout_start + self.max_time * 60
-        ):
-            # Check for excessive consecutive failures (infinite loop prevention)
-            if consecutive_failures > self.max_iter:
-                msg = (
-                    f"Optimization stopped due to {consecutive_failures} consecutive "
-                    "invalid evaluations (NaN/inf). Check your objective function."
-                )
-                if self.verbose:
-                    print(f"Warning: {msg}")
-                return "FINISHED", OptimizeResult(
-                    x=self.best_x_,
-                    fun=self.best_y_,
-                    nfev=len(self.y_),
-                    nit=self.n_iter_,
-                    success=False,
-                    message=msg,
-                    X=self.X_,
-                    y=self.y_,
-                )
-
-            # Increment iteration counter. This is not the same as number of function evaluations.
-            self.n_iter_ += 1
-
-            # Fit surrogate (use mean_y if noise, otherwise y_)
-            self._fit_scheduler()
-
-            # Apply OCBA for noisy functions
-            X_ocba = self.apply_ocba()
-
-            # Suggest next point
-            x_next = self.suggest_next_infill_point()
-
-            # Repeat next point if repeats_surrogate > 1
-            x_next_repeated = self.update_repeats_infill_points(x_next)
-
-            # Append OCBA points to new design points (if applicable)
-            if X_ocba is not None:
-                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
-
-            # Evaluate next point(s) including OCBA points
-            y_next = self.evaluate_function(x_next_repeated)
-
-            # Handle NaN/inf values in new evaluations
-            x_next_repeated, y_next = self._handle_NA_new_points(
-                x_next_repeated, y_next
-            )
-            if x_next_repeated is None:
-                consecutive_failures += 1
-                continue  # Skip iteration if all evaluations were invalid
-
-            # Reset failure counter if we got valid points
-            consecutive_failures = 0
-
-            # Update success rate BEFORE updating storage (so it compares against previous best)
-            self.update_success_rate(y_next)
-
-            # Check for restart
-            if self.success_rate == 0.0:
-                self._zero_success_count += 1
-            else:
-                self._zero_success_count = 0
-
-            if self._zero_success_count >= self.restart_after_n:
-                if self.verbose:
-                    print(
-                        f"Restarting optimization: success_rate 0 for {self._zero_success_count} iterations."
-                    )
-
-                status_message = "Restart triggered due to lack of improvement."
-
-                # Expand results to full dimensions if needed
-                best_x_full = (
-                    self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-                    if self.red_dim
-                    else self.best_x_
-                )
-                X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
-
-                # Map factor variables back to original strings
-                best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
-                X_result = (
-                    self.map_to_factor_values(X_full) if self._factor_maps else X_full
-                )
-
-                res = OptimizeResult(
-                    x=best_x_result,
-                    fun=self.best_y_,
-                    nfev=len(self.y_),
-                    nit=self.n_iter_,
-                    success=False,
-                    message=status_message,
-                    X=X_result,
-                    y=self.y_,
-                )
-                return "RESTART", res
-
-            # Update storage
-            self.update_storage(x_next_repeated, y_next)
-
-            # Update stats
-            self.update_stats()
-
-            # Log to TensorBoard
-            if self.tb_writer is not None:
-                # Log each new evaluation
-                for i in range(len(y_next)):
-                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
-                self._write_tensorboard_scalars()
-
-            # Update best solution
-            self._update_best_main_loop(
-                x_next_repeated, y_next, start_time=timeout_start
-            )
-
-        # Expand results to full dimensions if needed
-        # Note: best_x_ and X_ are already in original scale (stored that way)
-        best_x_full = (
-            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-            if self.red_dim
-            else self.best_x_
-        )
-        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
-
-        # Determine termination reason
-        status_message = self.determine_termination(timeout_start)
-
-        # Append statistics to match scipy.optimize.minimize format
-        message = (
-            f"{status_message}\n"
-            f"         Current function value: {float(self.best_y_):.6f}\n"
-            f"         Iterations: {self.n_iter_}\n"
-            f"         Function evaluations: {len(self.y_)}"
-        )
-
-        # Close TensorBoard writer
-        self._close_tensorboard_writer()
-
-        # Map factor variables back to original strings for results
-        best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
-        X_result = self.map_to_factor_values(X_full) if self._factor_maps else X_full
-
-        # Return scipy-style result
-        return "FINISHED", OptimizeResult(
-            x=best_x_result,
-            fun=self.best_y_,
-            nfev=len(self.y_),
-            nit=self.n_iter_,
-            success=True,
-            message=message,
-            X=X_result,
-            y=self.y_,
-        )
 
     # ====================
     # TASK_OPTIM_PARALLEL:
