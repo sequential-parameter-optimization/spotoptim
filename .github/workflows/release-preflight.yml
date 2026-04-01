@@ -55,15 +55,21 @@ jobs:
             exit 1
           fi
 
-      - name: Configure authenticated Git remote
+      - name: Configure Git credentials
         env:
           RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
-          git remote set-url origin https://x-access-token:${RELEASE_TOKEN}@github.com/${{ github.repository }}.git
+          set -euo pipefail
+          # Disable any credential helpers the runner may have configured
+          # (gh CLI, credential-manager, etc.) that can intercept push auth.
+          git config --local --unset-all credential.helper || true
+          git config --local credential.helper ''
+          # Use the extraheader method — the same mechanism actions/checkout
+          # uses internally. Works reliably for both fetch and push.
+          BASIC=$(echo -n "x-access-token:${RELEASE_TOKEN}" | base64)
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${BASIC}"
 
       - name: Preflight token and push checks
-        env:
-          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
           set -euo pipefail
 
@@ -73,9 +79,9 @@ jobs:
           echo "Checking write access via dry-run push to unprotected ref..."
           test_ref="refs/preflight/sr-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           if ! git push --dry-run origin "HEAD:${test_ref}" 2>&1; then
-            echo "::error::SEMANTIC_RELEASE_TOKEN exists but cannot push to ${GITHUB_REPOSITORY}."
+            echo "::error::SEMANTIC_RELEASE_TOKEN cannot push to ${GITHUB_REPOSITORY}."
             echo "::error::Ensure the PAT has Contents: Read and write (fine-grained) or 'repo' scope (classic)."
-            echo "::error::For org repos, also verify the fine-grained PAT was approved in org settings."
+            echo "::error::For org repos, verify the fine-grained PAT was approved in org settings."
             exit 1
           fi
 
