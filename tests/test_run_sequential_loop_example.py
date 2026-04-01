@@ -21,7 +21,7 @@ def test_run_sequential_loop_example():
     )
 
     X0, y0 = opt._initialize_run(X0=None, y0_known=None)
-    X0, y0, n_evaluated = opt.rm_NA_values(X0, y0)
+    X0, y0, n_evaluated = opt.rm_initial_design_NA_values(X0, y0)
     opt.check_size_initial_design(y0, n_evaluated)
     opt.init_storage(X0, y0)
     opt._zero_success_count = 0

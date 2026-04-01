@@ -156,7 +156,7 @@ class TestHandleNAInitialDesign:
         X0 = np.array([[1, 2], [3, 4], [5, 6]])
         y0 = np.array([5.0, np.nan, 61.0])
 
-        X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
+        X0_clean, y0_clean, n_eval = opt.rm_initial_design_NA_values(X0, y0)
 
         assert X0_clean.shape == (2, 2)
         assert len(y0_clean) == 2
@@ -174,7 +174,7 @@ class TestHandleNAInitialDesign:
         X0 = np.array([[1, 2], [3, 4], [5, 6]])
         y0 = np.array([5.0, np.inf, 61.0])
 
-        X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
+        X0_clean, y0_clean, n_eval = opt.rm_initial_design_NA_values(X0, y0)
 
         assert X0_clean.shape == (2, 2)
         assert len(y0_clean) == 2
@@ -191,7 +191,7 @@ class TestHandleNAInitialDesign:
         X0 = np.array([[1, 2], [3, 4], [5, 6]])
         y0 = np.array([5.0, 25.0, 61.0])
 
-        X0_clean, y0_clean, n_eval = opt.rm_NA_values(X0, y0)
+        X0_clean, y0_clean, n_eval = opt.rm_initial_design_NA_values(X0, y0)
 
         assert X0_clean.shape == (3, 2)
         assert len(y0_clean) == 3
