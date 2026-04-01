@@ -2716,12 +2716,12 @@ class SpotOptim(BaseEstimator):
         return X[finite_mask], y[finite_mask]
 
     # ====================
-    # Surrogate & Acquisition
+    # Surrogate Fitting
     # ====================
 
     def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data.
-        Used in optimize() to fit the surrogate model.
+        Used by _fit_scheduler() to fit the surrogate model.
         If the number of points exceeds `self.max_surrogate_points`,
         a subset of points is selected using the selection dispatcher.
 
@@ -2831,6 +2831,10 @@ class SpotOptim(BaseEstimator):
         else:
             X_for_surrogate = self.transform_X(self.X_)
             self._fit_surrogate(X_for_surrogate, self.y_)
+
+    # ====================
+    # Prediction
+    # ====================
 
     def _predict_with_uncertainty(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """Predict with uncertainty estimates, handling surrogates without return_std.
