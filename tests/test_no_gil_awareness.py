@@ -5,17 +5,17 @@
 """Tests for Release 0.10.0 — Improvement D: Free-Threaded (No-GIL) Awareness.
 
 Verifies that:
-- _is_gil_disabled() returns a bool and reflects the actual GIL status.
-- _is_gil_disabled() returns False on standard (GIL-enabled) Python builds,
+- is_gil_disabled() returns a bool and reflects the actual GIL status.
+- is_gil_disabled() returns False on standard (GIL-enabled) Python builds,
   which is expected in all current CI environments.
-- _is_gil_disabled() handles the absence of sys._is_gil_enabled gracefully
+- is_gil_disabled() handles the absence of sys.is_gil_enabled gracefully
   (Python < 3.13 compatibility).
 - The executor selection logic branches correctly based on GIL status:
   GIL build  → ProcessPoolExecutor for eval, ThreadPoolExecutor for search
   No-GIL     → ThreadPoolExecutor for both eval and search
 - End-to-end optimization works correctly on the standard GIL build
   (this is the path exercised in CI; no-GIL requires python3.13t).
-- The _is_gil_disabled() helper is importable from spotoptim.SpotOptim.
+- The is_gil_disabled() helper is importable from spotoptim.SpotOptim.
 """
 
 import sys
@@ -23,7 +23,7 @@ import importlib
 import unittest.mock as mock
 import numpy as np
 from spotoptim import SpotOptim
-from spotoptim.SpotOptim import _is_gil_disabled
+from spotoptim.utils.parallel import is_gil_disabled
 
 # importlib bypasses the __init__.py class re-export and gives the module.
 _spotoptim_mod = importlib.import_module("spotoptim.SpotOptim")
@@ -41,56 +41,56 @@ def sphere(X):
 
 
 # ---------------------------------------------------------------------------
-# Unit: _is_gil_disabled()
+# Unit: is_gil_disabled()
 # ---------------------------------------------------------------------------
 
 
 class TestIsGilDisabled:
-    """Unit tests for the _is_gil_disabled() helper."""
+    """Unit tests for the is_gil_disabled() helper."""
 
     def test_returns_bool(self):
-        result = _is_gil_disabled()
+        result = is_gil_disabled()
         assert isinstance(result, bool)
 
     def test_false_on_standard_build(self):
         """On a standard GIL-enabled Python the function must return False."""
         # All current CI environments run standard GIL builds.
-        # _is_gil_enabled() exists on CPython 3.13+ and returns True when GIL
+        # is_gil_enabled() exists on CPython 3.13+ and returns True when GIL
         # is active.  On older Python the attribute is absent and the lambda
-        # default returns True — either way _is_gil_disabled() is False.
-        result = _is_gil_disabled()
-        if hasattr(sys, "_is_gil_enabled"):
-            assert result == (not sys._is_gil_enabled())
+        # default returns True — either way is_gil_disabled() is False.
+        result = is_gil_disabled()
+        if hasattr(sys, "is_gil_enabled"):
+            assert result == (not sys.is_gil_enabled())
         else:
             # Python < 3.13: attribute absent → GIL assumed enabled → False
             assert result is False
 
     def test_consistent_across_calls(self):
         """GIL status does not change within a running process."""
-        assert _is_gil_disabled() == _is_gil_disabled()
+        assert is_gil_disabled() == is_gil_disabled()
 
     def test_mocked_gil_disabled(self):
-        """Simulate a no-GIL build by mocking sys._is_gil_enabled."""
-        with mock.patch.object(sys, "_is_gil_enabled", return_value=False, create=True):
-            assert _is_gil_disabled() is True
+        """Simulate a no-GIL build by mocking sys.is_gil_enabled."""
+        with mock.patch.object(sys, "is_gil_enabled", return_value=False, create=True):
+            assert is_gil_disabled() is True
 
     def test_mocked_gil_enabled(self):
-        """Simulate a standard GIL build by mocking sys._is_gil_enabled."""
-        with mock.patch.object(sys, "_is_gil_enabled", return_value=True, create=True):
-            assert _is_gil_disabled() is False
+        """Simulate a standard GIL build by mocking sys.is_gil_enabled."""
+        with mock.patch.object(sys, "is_gil_enabled", return_value=True, create=True):
+            assert is_gil_disabled() is False
 
     def test_no_attribute_fallback(self):
-        """When sys._is_gil_enabled is absent the helper returns False."""
+        """When sys.is_gil_enabled is absent the helper returns False."""
         # Remove attribute if it exists, then call the helper
-        original = getattr(sys, "_is_gil_enabled", None)
-        if hasattr(sys, "_is_gil_enabled"):
-            delattr(sys, "_is_gil_enabled")
+        original = getattr(sys, "is_gil_enabled", None)
+        if hasattr(sys, "is_gil_enabled"):
+            delattr(sys, "is_gil_enabled")
         try:
-            result = _is_gil_disabled()
+            result = is_gil_disabled()
             assert result is False
         finally:
             if original is not None:
-                sys._is_gil_enabled = original
+                sys.is_gil_enabled = original
 
 
 # ---------------------------------------------------------------------------
@@ -103,19 +103,19 @@ class TestExecutorSelection:
 
     def test_gil_build_uses_process_pool_for_eval(self):
         """On a GIL build optimize_steady_state must use ProcessPoolExecutor
-        for eval.  We verify by checking that _is_gil_disabled() is False on
+        for eval.  We verify by checking that is_gil_disabled() is False on
         this interpreter, which is the precondition for that path."""
         # If GIL is enabled (standard build), the eval pool is a Process pool.
-        assert not _is_gil_disabled(), (
+        assert not is_gil_disabled(), (
             "This test must run on a standard GIL build; "
             "skip it on free-threaded Python."
         )
 
     def test_no_gil_mock_uses_thread_pool_for_eval(self, monkeypatch):
-        """When GIL is mocked as disabled, _is_gil_disabled() returns True,
+        """When GIL is mocked as disabled, is_gil_disabled() returns True,
         signalling the thread-pool eval path."""
-        monkeypatch.setattr(sys, "_is_gil_enabled", lambda: False, raising=False)
-        assert _is_gil_disabled() is True
+        monkeypatch.setattr(sys, "is_gil_enabled", lambda: False, raising=False)
+        assert is_gil_disabled() is True
 
     def test_process_pool_executor_importable(self):
         """ProcessPoolExecutor must be importable (GIL-build eval path)."""
@@ -215,7 +215,7 @@ class TestGilBuildEndToEnd:
 
 
 class TestSimulatedNoGilPath:
-    """Test the thread-based eval path by mocking _is_gil_disabled() to True.
+    """Test the thread-based eval path by mocking is_gil_disabled() to True.
 
     These tests exercise _thread_eval_task_single and _thread_batch_eval_task
     on the current interpreter by making optimize_steady_state believe it is
@@ -224,7 +224,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_sphere(self, monkeypatch):
         """Optimization succeeds when both pools are ThreadPoolExecutor."""
-        monkeypatch.setattr(_spotoptim_mod, "_is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=sphere,
             bounds=BOUNDS,
@@ -239,7 +239,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_lambda(self, monkeypatch):
         """Lambda objectives work in the thread-based eval path."""
-        monkeypatch.setattr(_spotoptim_mod, "_is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=BOUNDS,
@@ -253,7 +253,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_with_batch_size(self, monkeypatch):
         """Batch eval + no-GIL path: _thread_batch_eval_task is used."""
-        monkeypatch.setattr(_spotoptim_mod, "_is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=sphere,
             bounds=BOUNDS,
@@ -268,7 +268,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_4d(self, monkeypatch):
         """Thread-based eval path handles higher-dimensional problems."""
-        monkeypatch.setattr(_spotoptim_mod, "_is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=sphere,
             bounds=[(-3, 3)] * 4,
@@ -293,7 +293,7 @@ class TestSimulatedNoGilPath:
         )
         r_gil = opt_gil.optimize()
 
-        monkeypatch.setattr(_spotoptim_mod, "_is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
         opt_no_gil = SpotOptim(
             fun=sphere,
             bounds=BOUNDS,
