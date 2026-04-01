@@ -40,34 +40,43 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7.5.0
 
+      - name: Verify SEMANTIC_RELEASE_TOKEN is configured
+        env:
+          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RELEASE_TOKEN:-}" ]; then
+            echo "::error title=Missing secret::SEMANTIC_RELEASE_TOKEN is not set."
+            echo "::error::Create a fine-grained PAT (or classic PAT with 'repo' scope) and add it"
+            echo "::error::as a repository secret named SEMANTIC_RELEASE_TOKEN:"
+            echo "::error::  Settings → Secrets and variables → Actions → New repository secret"
+            echo "::error::The token needs Contents: Read and write on this repository."
+            echo "::error::github.token cannot be used here — org-level Actions permissions restrict it to read-only."
+            exit 1
+          fi
+
       - name: Configure authenticated Git remote
         env:
-          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
+          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
           git remote set-url origin https://x-access-token:${RELEASE_TOKEN}@github.com/${{ github.repository }}.git
 
       - name: Preflight token and push checks
         env:
-          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
-          GH_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
+          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: |
           set -euo pipefail
-
-          if [ -z "${RELEASE_TOKEN:-}" ]; then
-            echo "::error::No release token available (SEMANTIC_RELEASE_TOKEN or github.token)."
-            exit 1
-          fi
 
           echo "Checking authenticated read access to ${GITHUB_REPOSITORY}..."
           git ls-remote --exit-code origin HEAD >/dev/null
 
-          echo "Checking push permission via GitHub API..."
-          push_perm=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.permissions.push' 2>/dev/null || echo "false")
-          if [ "${push_perm}" != "true" ]; then
-            echo "::error::Token does not have push permission to ${GITHUB_REPOSITORY}. Set SEMANTIC_RELEASE_TOKEN to a PAT with repo write access."
+          echo "Checking write access via dry-run push to unprotected ref..."
+          test_ref="refs/preflight/sr-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          if ! git push --dry-run origin "HEAD:${test_ref}" 2>&1; then
+            echo "::error::SEMANTIC_RELEASE_TOKEN exists but cannot push to ${GITHUB_REPOSITORY}."
+            echo "::error::Ensure the PAT has Contents: Read and write (fine-grained) or 'repo' scope (classic)."
+            echo "::error::For org repos, also verify the fine-grained PAT was approved in org settings."
             exit 1
           fi
-
-          echo "Checking tag push permission (same as push)... already verified above."
 
           echo "Preflight passed: token and push permissions are sufficient for semantic-release."
