@@ -212,13 +212,13 @@ class TestRemoteSearchTaskBackwardCompat:
     """remote_search_task (dill-based) must remain importable and functional."""
 
     def test_import_remote_search_task(self):
-        from spotoptim.SpotOptim import remote_search_task  # noqa: F401
+        from spotoptim.utils.parallel import remote_search_task  # noqa: F401
 
         assert callable(remote_search_task)
 
     def test_remote_search_task_returns_array(self):
         import dill
-        from spotoptim.SpotOptim import remote_search_task
+        from spotoptim.utils.parallel import remote_search_task
 
         opt = SpotOptim(
             fun=sphere,

@@ -9,7 +9,7 @@ These tests validate the parallel search functionality with dill serialization.
 
 import numpy as np
 import dill
-from spotoptim.SpotOptim import remote_search_task
+from spotoptim.utils.parallel import remote_search_task
 from spotoptim import SpotOptim
 
 

@@ -6,7 +6,6 @@ import numpy as np
 import random
 import dill
 import re
-import sys
 import threading
 import torch
 from functools import partial
@@ -39,7 +38,8 @@ from spotoptim.plot.visualization import (
     _generate_mesh_grid,
     _generate_mesh_grid_with_factors,
 )
-
+from spotoptim.utils.parallel import (remote_eval_wrapper, remote_batch_eval_wrapper, is_gil_disabled)
+from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 @dataclass
 class SpotOptimConfig:
@@ -269,287 +269,6 @@ class SpotOptimState:
     # Restart history
     restarts_results_: List = field(default_factory=list)
 
-
-def gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
-    """
-    Wrapper for scipy.optimize.minimize to be used with sklearn GaussianProcessRegressor.
-
-    This function allows passing additional options (kwargs) to the optimizer.
-    It automatically handles the `jac` parameter and objective function wrapping
-    based on the specified optimization method.
-
-    Args:
-        obj_func (callable): The objective function to minimize. It should accept the
-            parameter vector as its first argument and return the scalar function value
-            and its gradient (tuple).
-        initial_theta (np.ndarray): Initial guess for the hyperparameters (theta).
-        bounds (list of tuple): Bounds for the hyperparameters.
-        **kwargs: Arbitrary keyword arguments passed directly to `scipy.optimize.minimize`.
-            Examples:
-                method="Nelder-Mead"
-                options={'maxiter': 100}
-
-    Returns:
-        tuple: A tuple containing:
-            * theta_opt (np.ndarray): The optimized hyperparameters.
-            * func_min (float): The value of the objective function at the minimum.
-
-    Raises:
-        ValueError: If an unsupported optimization method is specified.
-
-    Examples:
-        ```{python}
-        import numpy as np
-        from spotoptim.SpotOptim import gpr_minimize_wrapper
-        def obj_func(theta):
-            value = np.sum(theta**2)
-            grad = 2 * theta
-            return value, grad
-        initial_theta = np.array([1.0, 1.0])
-        bounds = [(-5, 5), (-5, 5)]
-        theta_opt, func_min = gpr_minimize_wrapper(
-            obj_func,
-            initial_theta,
-            bounds,
-            method="L-BFGS-B",
-            options={'maxiter': 100}
-        )
-        print(np.allclose(theta_opt, [0.0, 0.0], atol=1e-6))
-        print(np.isclose(func_min, 0.0, atol=1e-10))
-        ```
-    """
-    # Default parameters if not specified
-    if "method" not in kwargs:
-        kwargs["method"] = "L-BFGS-B"
-
-    # Clean kwargs for minimize
-    # 'minimize' only accepts specific top-level arguments.
-    # If users pass DE arguments (like maxiter, popsize) in acquisition_optimizer_kwargs,
-    # they might end up here. We should move known option-like args to 'options' or ignore them
-    # if they are specialized for another optimizer (like popsize for DE).
-    # However, 'maxiter' is a valid option for almost all minimize methods, so we move it to options.
-
-    valid_minimize_args = {
-        "fun",
-        "x0",
-        "args",
-        "method",
-        "jac",
-        "hess",
-        "hessp",
-        "bounds",
-        "constraints",
-        "tol",
-        "callback",
-        "options",
-    }
-
-    minimize_kwargs = {}
-    options = kwargs.get("options", {}).copy()
-
-    for k, v in kwargs.items():
-        if k in valid_minimize_args:
-            minimize_kwargs[k] = v
-        else:
-            # Assume unknown kwargs are options (e.g. maxiter, disp, ftol)
-            # This allows sharing kwargs like {'maxiter': 100} between DE and L-BFGS-B
-            options[k] = v
-
-    minimize_kwargs["options"] = options
-    method = minimize_kwargs["method"]
-
-    # Methods that do NOT optimize based on gradients (gradient-free)
-    # These methods cannot handle the (val, grad) tuple return from obj_func.
-    gradient_free_methods = ["Nelder-Mead", "Powell", "COBYLA"]
-
-    if method in gradient_free_methods:
-        # Wrap obj_func to return only the scalar value
-        def obj_func_wrapper(theta):
-            return obj_func(theta)[0]
-
-        # Call minimize without jac=True
-        res = minimize(
-            obj_func_wrapper, initial_theta, bounds=bounds, **minimize_kwargs
-        )
-    else:
-        # Gradient-based methods (L-BFGS-B, BFGS, etc.)
-        # Default behavior: use gradients provided by obj_func
-        if "jac" not in minimize_kwargs:
-            minimize_kwargs["jac"] = True
-
-        res = minimize(obj_func, initial_theta, bounds=bounds, **minimize_kwargs)
-    return res.x, res.fun
-
-
-def _is_gil_disabled() -> bool:
-    """Return True when running on a free-threaded (no-GIL) Python build.
-
-    Uses ``sys._is_gil_enabled()`` (Python 3.13+).  On older interpreters the
-    attribute is absent, so the lambda default returns ``True`` (GIL enabled),
-    which is the safe fallback.
-
-    Returns:
-        bool: ``True`` if the GIL is disabled, ``False`` otherwise.
-
-    Examples:
-        ```{python}
-        from spotoptim.SpotOptim import _is_gil_disabled
-        result = _is_gil_disabled()
-        print(isinstance(result, bool))  # True
-        ```
-    """
-    return not getattr(sys, "_is_gil_enabled", lambda: True)()
-
-
-def remote_eval_wrapper(pickled_args):
-    """
-    Helper function for parallel evaluation with dill.
-    Accepts a single argument (pickled tuple) to bypass standard pickling limitations.
-
-    Args:
-        pickled_args (bytes): A pickled tuple containing (optimizer, x) where:
-            * optimizer: The SpotOptim instance (or surrogate model) to use for evaluation.
-            * x: The point at which to evaluate the objective function.
-
-    Returns:
-        tuple: A tuple containing:
-            * x (ndarray): The input point at which the function was evaluated.
-            * y (ndarray or Exception): The function value(s) at x, or an Exception if evaluation failed.
-
-    Raises:
-        Exception: Any exception raised during the evaluation of the objective function is caught and returned as part of the output tuple.
-        This allows the optimization process to continue even if some evaluations fail, and provides information about the failure for debugging.
-
-    Examples:
-        ```{python}
-        import numpy as np
-        from spotoptim.SpotOptim import remote_eval_wrapper
-        class DummyOptimizer:
-            def evaluate_function(self, X):
-                return np.sum(X**2, axis=1)
-        optimizer = DummyOptimizer()
-        x = np.array([1.0, 2.0])
-        import dill
-        pickled_args = dill.dumps((optimizer, x))
-        x_eval, y_eval = remote_eval_wrapper(pickled_args)
-        print(np.allclose(x_eval, x))
-        print(np.isclose(y_eval, 5.0))
-        ```
-    """
-    try:
-        # Import dill locally to ensure it's available in workers
-        import dill
-
-        optimizer, x = dill.loads(pickled_args)
-
-        # Recast to 2D for evaluate_function
-        x_2d = x.reshape(1, -1)
-        y_arr = optimizer.evaluate_function(x_2d)
-        return x, y_arr[0]
-    except Exception as e:
-        return None, e
-
-
-def remote_batch_eval_wrapper(pickled_args):
-    """Helper for parallel batch evaluation with dill.
-
-    Evaluates a batch of candidate points in a single call to ``fun(X_batch)``,
-    spreading process-spawn and IPC overhead across the whole batch.
-
-    Args:
-        pickled_args (bytes): A pickled tuple ``(optimizer, X_batch)`` where
-            ``X_batch`` has shape ``(n, d)`` — ``n`` candidate points, ``d``
-            dimensions each.
-
-    Returns:
-        tuple: ``(X_batch, y_batch)`` on success where ``y_batch`` has shape
-            ``(n,)``, or ``(None, Exception)`` on failure.
-
-    Examples:
-        ```{python}
-        import numpy as np
-        from spotoptim.SpotOptim import remote_batch_eval_wrapper
-        from spotoptim import SpotOptim
-        import dill
-
-        opt = SpotOptim(
-            fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[(-5, 5), (-5, 5)],
-            n_initial=5,
-            max_iter=10,
-        )
-        X_batch = np.array([[1.0, 2.0], [0.5, -0.5]])
-        pickled_args = dill.dumps((opt, X_batch))
-        X_out, y_out = remote_batch_eval_wrapper(pickled_args)
-        print(X_out.shape)   # (2, 2)
-        print(y_out.shape)   # (2,)
-        print(np.allclose(y_out, [5.0, 0.5]))
-        ```
-    """
-    try:
-        import dill
-
-        optimizer, X_batch = dill.loads(pickled_args)
-        y_batch = optimizer.evaluate_function(X_batch)
-        return X_batch, y_batch
-    except Exception as e:
-        return None, e
-
-
-def remote_search_task(pickled_optimizer):
-    """
-    Helper function for parallel search with dill.
-
-    Args:
-        pickled_optimizer (bytes): A pickled SpotOptim instance that has been initialized with data
-            and a fitted surrogate model (via X_, y_, and _fit_surrogate).
-
-    Returns:
-        ndarray or Exception: The suggested next infill point(s) as an array of shape (n_infill_points, n_features),
-            or an Exception if the operation failed. When n_infill_points=1 (default), shape is (1, n_features).
-
-    Raises:
-        Exception: Any exception raised during the operation is caught and returned rather than raised,
-            allowing parallel execution to continue. The calling code can check if the return value is an
-            Exception instance and handle it appropriately.
-
-    Examples:
-        ```{python}
-        import numpy as np
-        from spotoptim.SpotOptim import remote_search_task
-        from spotoptim import SpotOptim
-        import dill
-
-        # Create and initialize an optimizer
-        opt = SpotOptim(
-            fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[(-5, 5), (-5, 5)],
-            n_initial=5,
-            max_iter=10,
-        )
-        # Initialize with some data
-        np.random.seed(0)
-        opt.X_ = np.random.rand(10, 2) * 10 - 5
-        opt.y_ = np.sum(opt.X_**2, axis=1)
-        opt._fit_surrogate(opt.X_, opt.y_)
-
-        # Use the function
-        pickled_optimizer = dill.dumps(opt)
-        x_next = remote_search_task(pickled_optimizer)
-        isinstance(x_next, np.ndarray)
-        x_next.shape
-        # Verify the point is within bounds
-        (-5 <= x_next[0, 0] <= 5) and (-5 <= x_next[0, 1] <= 5)
-        ```
-    """
-    try:
-        import dill
-
-        optimizer = dill.loads(pickled_optimizer)
-        x_new = optimizer.suggest_next_infill_point()
-        return x_new
-    except Exception as e:
-        return e
 
 
 class SpotOptim(BaseEstimator):
@@ -1293,14 +1012,11 @@ class SpotOptim(BaseEstimator):
 
     def set_seed(self) -> None:
         """Set global random seeds for reproducibility.
-
         Sets seeds for:
             * random
             * numpy.random
             * torch (cpu and cuda)
-
         Only performs actions if self.seed is not None.
-
 
         Returns:
             None
@@ -1321,6 +1037,10 @@ class SpotOptim(BaseEstimator):
             if torch.cuda.is_available():
                 torch.cuda.manual_seed(self.seed)
                 torch.cuda.manual_seed_all(self.seed)
+
+    # ====================
+    # var_type and bounds related methods
+    # ====================
 
     def detect_var_type(self) -> list:
         """Auto-detect variable types based on factor mappings.
@@ -1350,7 +1070,6 @@ class SpotOptim(BaseEstimator):
 
     def modify_bounds_based_on_var_type(self) -> None:
         """Modify bounds based on variable types.
-
         Adjusts bounds for each dimension according to its var_type:
             * 'int': Ensures bounds are integers (ceiling for lower, floor for upper)
             * 'factor': Bounds already set to (0, n_levels-1) by process_factor_bounds
@@ -1400,6 +1119,38 @@ class SpotOptim(BaseEstimator):
                     f"Supported types are 'float', 'int', 'factor'."
                 )
 
+    def repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
+        """Round non-numeric values to integers based on variable type.
+        This method applies rounding to variables that are not continuous:
+            * 'float': No rounding (continuous values)
+            * 'int': Rounded to integers
+            * 'factor': Rounded to integers (representing categorical values)
+
+        Args:
+            X (ndarray): X array with values to potentially round.
+            var_type (list of str): List with type information for each dimension.
+
+        Returns:
+            ndarray: X array with non-continuous values rounded to integers.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                             bounds=[(-5, 5), (-5, 5)],
+                             var_type=['int', 'float'])
+            X = np.array([[1.2, 2.5], [3.7, 4.1], [5.9, 6.8]])
+            X_repaired = opt.repair_non_numeric(X, opt.var_type)
+            print(X_repaired)
+            ```
+        """
+        # Don't round float or num types (continuous values)
+        mask = np.isin(var_type, ["float", "float"], invert=True)
+        X[:, mask] = np.around(X[:, mask])
+        return X
+
+
     def handle_default_var_trans(self) -> None:
         """Handle default variable transformations. Does not perform any transformations,
         only sets `var_trans` to a list of `None` values if not specified, or normalizes
@@ -1446,7 +1197,6 @@ class SpotOptim(BaseEstimator):
 
     def process_factor_bounds(self) -> None:
         """Process `bounds` to handle factor variables.
-
         For dimensions with tuple bounds (factor variables), creates internal
         integer mappings and replaces bounds with (0, n_levels-1).
         Stores mappings in `self._factor_maps`: {dim_idx: {int_val: str_val}}
@@ -1514,12 +1264,15 @@ class SpotOptim(BaseEstimator):
         # Update bounds with processed values
         self.bounds = processed_bounds
 
+    # ====================
+    # Statistics and Results: best hyperparameters
+    # ====================
+
     def get_best_hyperparameters(
         self, as_dict: bool = True
     ) -> Union[Dict[str, Any], np.ndarray, None]:
         """
         Get the best hyperparameter configuration found during optimization.
-
         If noise handling is active (repeats_initial > 1 or OCBA), this returns the parameter
         configuration associated with the best *mean* objective value. Otherwise, it returns
         the configuration associated with the absolute best observed value.
@@ -1584,41 +1337,85 @@ class SpotOptim(BaseEstimator):
 
         return params
 
-    def repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
-        """Round non-numeric values to integers based on variable type.
+    # ====================
+    # Save, Load, and Reinitialization of Components (Pickling)
+    # ====================
 
-        This method applies rounding to variables that are not continuous:
-            * 'float': No rounding (continuous values)
-            * 'int': Rounded to integers
-            * 'factor': Rounded to integers (representing categorical values)
+    def get_pickle_safe_optimizer(
+        self, unpickleables: str = "file_io", verbosity: int = 0
+    ) -> "SpotOptim":
+        """Create a pickle-safe copy of the optimizer.
+        This method creates a copy of the optimizer instance with unpickleable components removed
+        or set to None to enable safe serialization.
 
         Args:
-            X (ndarray): X array with values to potentially round.
-            var_type (list of str): List with type information for each dimension.
+            unpickleables (str): Type of unpickleable components to exclude.
+                * "file_io": Excludes only file I/O components (tb_writer) and fun
+                * "all": Excludes file I/O, fun, surrogate, and lhs_sampler
+                Defaults to "file_io".
+            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
 
         Returns:
-            ndarray: X array with non-continuous values rounded to integers.
+            SpotOptim: A copy of the optimizer with unpickleable components removed.
 
         Examples:
             ```{python}
             import numpy as np
             from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-                             bounds=[(-5, 5), (-5, 5)],
-                             var_type=['int', 'float'])
-            X = np.array([[1.2, 2.5], [3.7, 4.1], [5.9, 6.8]])
-            X_repaired = opt.repair_non_numeric(X, opt.var_type)
-            print(X_repaired)
+            opt = SpotOptim(
+                 fun=lambda X: np.sum(X**2, axis=1),
+                 bounds=[(-5, 5), (-5, 5)],
+                 max_iter=10,
+                 n_initial=5,
+                 seed=42
+            )
+            # Create pickle-safe copy excluding all unpickleables
+            opt_safe = opt.get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
             ```
         """
-        # Don't round float or num types (continuous values)
-        mask = np.isin(var_type, ["float", "float"], invert=True)
-        X[:, mask] = np.around(X[:, mask])
-        return X
+        # Always exclude tb_writer (can't reliably pickle file handles)
+        # Determine which additional attributes to exclude
+        if unpickleables == "file_io":
+            unpickleable_attrs = ["tb_writer"]
+        else:
+            # "all" or specific exclusions
+            unpickleable_attrs = ["tb_writer", "surrogate", "lhs_sampler"]
+
+        # Prepare picklable state dictionary
+        picklable_state = {}
+
+        for key, value in self.__dict__.items():
+            if key not in unpickleable_attrs:
+                try:
+                    # Test if attribute can be pickled
+                    dill.dumps(value, protocol=dill.HIGHEST_PROTOCOL)
+                    picklable_state[key] = value
+                    if verbosity > 1:
+                        print(f"Attribute '{key}' is picklable and will be included.")
+                except Exception as e:
+                    if verbosity > 0:
+                        print(
+                            f"Attribute '{key}' is not picklable and will be excluded: {e}"
+                        )
+                    continue
+            else:
+                if verbosity > 1:
+                    print(f"Attribute '{key}' explicitly excluded from pickling.")
+
+        # Create new instance with picklable state
+        picklable_instance = self.__class__.__new__(self.__class__)
+        picklable_instance.__dict__.update(picklable_state)
+
+        # Set excluded attributes to None
+        for attr in unpickleable_attrs:
+            if not hasattr(picklable_instance, attr):
+                setattr(picklable_instance, attr, None)
+
+        return picklable_instance
+
 
     def reinitialize_components(self) -> None:
         """Reinitialize components that were excluded during pickling.
-
         This method recreates the surrogate model and LHS sampler that were
         excluded when saving an experiment or result.
 
@@ -1649,9 +1446,12 @@ class SpotOptim(BaseEstimator):
         if not hasattr(self, "surrogate") or self.surrogate is None:
             self.init_surrogate()
 
+    # ====================
+    # Surrogate
+    # ====================
+
     def init_surrogate(self) -> None:
         """Initialize or configure the surrogate model for optimization. Handles three surrogate configurations:
-
             * List of surrogates: sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
             * None (default): creates a `GaussianProcessRegressor` with a
               `ConstantKernel * Matern(nu=2.5)` kernel, 100 optimizer restarts,
@@ -1659,9 +1459,7 @@ class SpotOptim(BaseEstimator):
             * User-provided surrogate: accepted as-is; internal bookkeeping
               attributes (`_max_surrogate_points_list`,
               `_active_max_surrogate_points`) are still initialised.
-
         After this method returns the following attributes are set:
-
             * `self.surrogate` — the active surrogate model.
             * `self._surrogates_list` — `list | None`.
             * `self._prob_surrogate` — normalised selection probabilities or `None`.
@@ -1792,78 +1590,6 @@ class SpotOptim(BaseEstimator):
                 optimizer=optimizer,
             )
 
-    def get_pickle_safe_optimizer(
-        self, unpickleables: str = "file_io", verbosity: int = 0
-    ) -> "SpotOptim":
-        """Create a pickle-safe copy of the optimizer.
-
-        This method creates a copy of the optimizer instance with unpickleable components removed
-        or set to None to enable safe serialization.
-
-        Args:
-            unpickleables (str): Type of unpickleable components to exclude.
-                * "file_io": Excludes only file I/O components (tb_writer) and fun
-                * "all": Excludes file I/O, fun, surrogate, and lhs_sampler
-                Defaults to "file_io".
-            verbosity (int): Verbosity level (0=silent, 1=basic, 2=detailed). Defaults to 0.
-
-        Returns:
-            SpotOptim: A copy of the optimizer with unpickleable components removed.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(
-                 fun=lambda X: np.sum(X**2, axis=1),
-                 bounds=[(-5, 5), (-5, 5)],
-                 max_iter=10,
-                 n_initial=5,
-                 seed=42
-            )
-            # Create pickle-safe copy excluding all unpickleables
-            opt_safe = opt.get_pickle_safe_optimizer(unpickleables="all", verbosity=1)
-            ```
-        """
-        # Always exclude tb_writer (can't reliably pickle file handles)
-        # Determine which additional attributes to exclude
-        if unpickleables == "file_io":
-            unpickleable_attrs = ["tb_writer"]
-        else:
-            # "all" or specific exclusions
-            unpickleable_attrs = ["tb_writer", "surrogate", "lhs_sampler"]
-
-        # Prepare picklable state dictionary
-        picklable_state = {}
-
-        for key, value in self.__dict__.items():
-            if key not in unpickleable_attrs:
-                try:
-                    # Test if attribute can be pickled
-                    dill.dumps(value, protocol=dill.HIGHEST_PROTOCOL)
-                    picklable_state[key] = value
-                    if verbosity > 1:
-                        print(f"Attribute '{key}' is picklable and will be included.")
-                except Exception as e:
-                    if verbosity > 0:
-                        print(
-                            f"Attribute '{key}' is not picklable and will be excluded: {e}"
-                        )
-                    continue
-            else:
-                if verbosity > 1:
-                    print(f"Attribute '{key}' explicitly excluded from pickling.")
-
-        # Create new instance with picklable state
-        picklable_instance = self.__class__.__new__(self.__class__)
-        picklable_instance.__dict__.update(picklable_state)
-
-        # Set excluded attributes to None
-        for attr in unpickleable_attrs:
-            if not hasattr(picklable_instance, attr):
-                setattr(picklable_instance, attr, None)
-
-        return picklable_instance
 
     # ====================
     # Dimension Reduction
@@ -1871,17 +1597,13 @@ class SpotOptim(BaseEstimator):
 
     def setup_dimension_reduction(self) -> None:
         """Set up dimension reduction by identifying fixed dimensions.
-
-        identifies dimensions where lower and upper bounds are equal in Transformed Space.
+        Identifies dimensions where lower and upper bounds are equal in Transformed Space.
         Reduces `self.bounds`, `self.lower`, `self.upper`, etc., to the Mapped Space
         (active variables only).
-
         The resulting `self.bounds` defines the Transformed and Mapped Space used
         for optimization.
-
         This method identifies variables that are fixed (constant) and excludes them
         from the optimization process. It stores:
-
             * Original bounds and metadata in `all_*` attributes
             * Boolean mask of fixed dimensions in `ident`
             * Reduced bounds, types, and names for optimization
@@ -1960,7 +1682,6 @@ class SpotOptim(BaseEstimator):
 
     def to_red_dim(self, X_full: np.ndarray) -> np.ndarray:
         """Reduce full-dimensional points to optimization space.
-
         This method removes fixed dimensions from full-dimensional points,
         extracting only the varying dimensions used in optimization.
 
@@ -2003,7 +1724,6 @@ class SpotOptim(BaseEstimator):
 
     def to_all_dim(self, X_red: np.ndarray) -> np.ndarray:
         """Expand reduced-dimensional points to full-dimensional representation.
-
         This method restores points from the reduced optimization space to the
         full-dimensional space by inserting fixed values for constant dimensions.
 
@@ -2060,7 +1780,7 @@ class SpotOptim(BaseEstimator):
         return X_full
 
     # ====================
-    # Variable Transformation
+    # Variable Transformation and Mapping
     # ====================
 
     def transform_value(self, x: float, trans: Optional[str]) -> float:
@@ -2338,7 +2058,6 @@ class SpotOptim(BaseEstimator):
 
     def map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
         """Map internal integer factor values back to string labels.
-
         For factor variables, converts integer indices back to original string values.
         Other variable types remain unchanged.
 
@@ -2616,7 +2335,6 @@ class SpotOptim(BaseEstimator):
         self, X0: np.ndarray, y0: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, int]:
         """Remove NaN/inf values from initial design evaluations.
-
         This method filters out design points that returned NaN or inf values
         during initial evaluation. Unlike the sequential optimization phase where
         penalties are applied, initial design points with invalid values are
@@ -2883,11 +2601,9 @@ class SpotOptim(BaseEstimator):
 
     def get_best_xy_initial_design(self) -> None:
         """Determine and store the best point from initial design.
-
         Finds the best (minimum) function value in the initial design,
         stores the corresponding point and value in instance attributes,
         and optionally prints the results if verbose mode is enabled.
-
         For noisy functions, also reports the mean best value.
 
         Note:
@@ -2949,59 +2665,6 @@ class SpotOptim(BaseEstimator):
             else:
                 print(f"Initial best: f(x) = {self.best_y_:.6f}")
 
-    def update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
-        """Repeat infill point for noisy function evaluation.
-
-        For noisy objective functions (repeats_surrogate > 1), creates multiple
-        copies of the suggested point for repeated evaluation. Otherwise, returns
-        the point in 2D array format.
-
-        Args:
-            x_next (ndarray): Next point to evaluate, shape (n_features,).
-
-        Returns:
-            ndarray: Points to evaluate, shape (repeats_surrogate, n_features)
-                or (1, n_features) if repeats_surrogate == 1.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere, noisy_sphere
-            # Without repeats
-
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                repeats_surrogate=1
-            )
-            x_next = np.array([1.0, 2.0])
-            x_repeated = opt.update_repeats_infill_points(x_next)
-            print(x_repeated.shape)
-
-            # With repeats for noisy function
-            opt_noisy = SpotOptim(
-                fun=noisy_sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                repeats_surrogate=3
-            )
-            x_next = np.array([1.0, 2.0])
-            x_repeated = opt_noisy.update_repeats_infill_points(x_next)
-            print(x_repeated.shape)
-            # All three copies should be identical
-            np.all(x_repeated[0] == x_repeated[1])
-            ```
-        """
-        if x_next.ndim == 1:
-            x_next = x_next.reshape(1, -1)
-
-        if self.repeats_surrogate > 1:
-            # Repeat each row repeats_surrogate times
-            # Note: np.repeat with axis=0 repeats rows [r1, r1, r2, r2...]
-            x_next_repeated = np.repeat(x_next, self.repeats_surrogate, axis=0)
-        else:
-            x_next_repeated = x_next
-        return x_next_repeated
 
     def remove_nan(
         self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
@@ -3059,7 +2722,6 @@ class SpotOptim(BaseEstimator):
     def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data.
         Used in optimize() to fit the surrogate model.
-
         If the number of points exceeds `self.max_surrogate_points`,
         a subset of points is selected using the selection dispatcher.
 
@@ -3105,11 +2767,9 @@ class SpotOptim(BaseEstimator):
 
     def _fit_scheduler(self) -> None:
         """Fit surrogate model using appropriate data based on noise handling.
-
         This method selects the appropriate training data for surrogate fitting:
-        - For noisy functions (repeats_surrogate > 1): Uses mean_X and mean_y (aggregated values)
-        - For deterministic functions: Uses X_ and y_ (all evaluated points)
-
+            * For noisy functions (repeats_surrogate > 1): Uses mean_X and mean_y (aggregated values)
+            * For deterministic functions: Uses X_ and y_ (all evaluated points)
         The data is transformed to internal scale before fitting the surrogate.
 
         Returns:
@@ -3218,20 +2878,17 @@ class SpotOptim(BaseEstimator):
     def _acquisition_function(self, x: np.ndarray) -> np.ndarray:
         """Compute acquisition function value(s), supporting vectorised evaluation.
         Used in the suggest_next_infill_point() method.
-
         This implements "Infill Criteria" as described in Forrester et al. (2008),
         Section 3 "Exploring and Exploiting".
-
         Supports two calling conventions so it works both as a plain callable and
         as the ``func`` argument to ``differential_evolution(vectorized=True)``:
-
-        * **Single-point** (x.ndim == 1, shape ``(n_dim,)``):
-          returns a scalar float.
-        * **Vectorised batch** (x.ndim == 2, shape ``(n_dim, n_population)``):
-          scipy passes the whole DE population at once; each *column* is one
-          candidate.  Returns an array of shape ``(n_population,)``.
-          A single batched surrogate call replaces ``n_population`` serial calls,
-          cutting per-generation overhead by ~``popsize``× (typically 30–150×).
+            * Single-point (x.ndim == 1, shape ``(n_dim,)``):
+            returns a scalar float.
+            * Vectorised batch (x.ndim == 2, shape ``(n_dim, n_population)``):
+            scipy passes the whole DE population at once; each *column* is one
+            candidate.  Returns an array of shape ``(n_population,)``.
+            A single batched surrogate call replaces ``n_population`` serial calls,
+            cutting per-generation overhead by ~``popsize``× (typically 30–150×).
 
         Args:
             x (ndarray): Single point ``(n_dim,)`` or population matrix
@@ -3679,7 +3336,6 @@ class SpotOptim(BaseEstimator):
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
         Used in the suggest_next_infill_point() method.
-
         This method is called when no new design points can be suggested
         by the surrogate model (e.g., when the proposed point is too close
         to existing points). It proposes a random space-filling design as a fallback.
@@ -3807,7 +3463,6 @@ class SpotOptim(BaseEstimator):
 
     def store_mo(self, y_mo: np.ndarray) -> None:
         """Store multi-objective values in self.y_mo.
-
         If multi-objective values are present (ndim==2), they are stored in self.y_mo.
         New values are appended to existing ones. For single-objective problems,
         self.y_mo remains None.
@@ -3845,7 +3500,6 @@ class SpotOptim(BaseEstimator):
 
     def mo2so(self, y_mo: np.ndarray) -> np.ndarray:
         """Convert multi-objective values to single-objective.
-
         Converts multi-objective values to a single-objective value by applying a user-defined
         function from `fun_mo2so`. If no user-defined function is given, the
         values in the first objective column are used.
@@ -3947,7 +3601,6 @@ class SpotOptim(BaseEstimator):
         self, means: np.ndarray, vars: np.ndarray, delta: int, verbose: bool = False
     ) -> np.ndarray:
         """Optimal Computing Budget Allocation (OCBA).
-
         Calculates budget recommendations for given means, variances, and incremental
         budget using the OCBA algorithm.
 
@@ -4154,7 +3807,6 @@ class SpotOptim(BaseEstimator):
         self, X: np.ndarray, y: np.ndarray, k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Selects k points that are distant from each other using K-means clustering.
-
         This method performs K-means clustering to find k clusters, then selects
         the point closest to each cluster center. This ensures a space-filling
         subset of points for surrogate model training.
@@ -4199,7 +3851,6 @@ class SpotOptim(BaseEstimator):
         self, X: np.ndarray, y: np.ndarray, k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Selects all points from the cluster with the smallest mean y value.
-
         This method performs K-means clustering and selects all points from the
         cluster whose center corresponds to the best (smallest) mean objective
         function value.
@@ -4253,7 +3904,6 @@ class SpotOptim(BaseEstimator):
         self, X: np.ndarray, y: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Dispatcher for selection methods.
-
         Depending on the value of `self.selection_method`, this method calls
         the appropriate selection function to choose a subset of points for
         surrogate model training when the total number of points exceeds
@@ -4641,6 +4291,10 @@ class SpotOptim(BaseEstimator):
                 shared_lock=shared_lock,
             )
 
+    # ====================
+    # Sequential Optimization Loop
+    # ====================
+
     def optimize_sequential_run(
         self,
         timeout_start: float,
@@ -4793,6 +4447,63 @@ class SpotOptim(BaseEstimator):
             y0 = self.evaluate_function(X0)
 
         return X0, y0
+
+
+
+
+    def update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
+        """Repeat infill point for noisy function evaluation. Used in the sequential_loop.
+        For noisy objective functions (repeats_surrogate > 1), creates multiple
+        copies of the suggested point for repeated evaluation. Otherwise, returns
+        the point in 2D array format.
+
+        Args:
+            x_next (ndarray): Next point to evaluate, shape (n_features,).
+
+        Returns:
+            ndarray: Points to evaluate, shape (repeats_surrogate, n_features)
+                or (1, n_features) if repeats_surrogate == 1.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere, noisy_sphere
+            # Without repeats
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                repeats_surrogate=1
+            )
+            x_next = np.array([1.0, 2.0])
+            x_repeated = opt.update_repeats_infill_points(x_next)
+            print(x_repeated.shape)
+
+            # With repeats for noisy function
+            opt_noisy = SpotOptim(
+                fun=noisy_sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                repeats_surrogate=3
+            )
+            x_next = np.array([1.0, 2.0])
+            x_repeated = opt_noisy.update_repeats_infill_points(x_next)
+            print(x_repeated.shape)
+            # All three copies should be identical
+            np.all(x_repeated[0] == x_repeated[1])
+            ```
+        """
+        if x_next.ndim == 1:
+            x_next = x_next.reshape(1, -1)
+
+        if self.repeats_surrogate > 1:
+            # Repeat each row repeats_surrogate times
+            # Note: np.repeat with axis=0 repeats rows [r1, r1, r2, r2...]
+            x_next_repeated = np.repeat(x_next, self.repeats_surrogate, axis=0)
+        else:
+            x_next_repeated = x_next
+        return x_next_repeated
+
 
     def _run_sequential_loop(
         self, timeout_start: float, effective_max_iter: int
@@ -4996,7 +4707,6 @@ class SpotOptim(BaseEstimator):
 
     def _update_storage_steady(self, x, y):
         """Helper to safely append single point (for steady state).
-
             This method is designed for the steady-state parallel optimization scenario, where new points are evaluated and returned asynchronously.
             It safely appends new points to the existing storage of evaluated points and their function values,
             while also updating the current best solution if the new point is better.
@@ -5062,53 +4772,44 @@ class SpotOptim(BaseEstimator):
         """Perform steady-state asynchronous optimization (n_jobs > 1).
         This method implements a hybrid steady-state parallelization strategy.
         The executor types are selected at runtime based on GIL availability:
-        **Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):**
-
-        * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
-          Process isolation ensures arbitrary callables (lambdas, closures)
-          serialized with ``dill`` run safely without touching shared state.
-        * ``ThreadPoolExecutor`` (``search_pool``) — surrogate search tasks.
-          Threads share the main-process heap; zero ``dill`` overhead.
-          A ``threading.Lock`` (``_surrogate_lock``) prevents a surrogate refit
-          from racing with an in-flight search thread.
-
-        **Free-threaded build (``python3.13t`` / ``--disable-gil``):**
-
-        * Both ``eval_pool`` and ``search_pool`` are ``ThreadPoolExecutor``
-          instances.  Threads achieve true CPU-level parallelism without the GIL.
-          The ``dill`` serialization step for eval tasks is eliminated — ``fun``
-          is called directly from the shared heap.  The ``_surrogate_lock`` is
-          still used to serialize surrogate reads and refits.
-
+        Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):
+            * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
+            Process isolation ensures arbitrary callables (lambdas, closures)
+            serialized with ``dill`` run safely without touching shared state.
+            * ``ThreadPoolExecutor`` (``search_pool``) — surrogate search tasks.
+            Threads share the main-process heap; zero ``dill`` overhead.
+            A ``threading.Lock`` (``_surrogate_lock``) prevents a surrogate refit
+            from racing with an in-flight search thread.
+        Free-threaded build (``python3.13t`` / ``--disable-gil``):
+            * Both ``eval_pool`` and ``search_pool`` are ``ThreadPoolExecutor``
+                instances.  Threads achieve true CPU-level parallelism without the GIL.
+                The ``dill`` serialization step for eval tasks is eliminated — ``fun``
+                is called directly from the shared heap.  The ``_surrogate_lock`` is
+                still used to serialize surrogate reads and refits.
         Pipeline:
-
-        1.  Parallel Initial Design:
-            ``n_initial`` points are dispatched to ``eval_pool``.  Results are
-            collected via ``FIRST_COMPLETED`` until all initial evaluations finish.
-
-        2.  First Surrogate Fit:
-            Called on the main thread once all initial evaluations are in.
-            No lock is needed here because no search threads are active yet.
-
-        3.  Parallel Search (Thread Pool):
-            Up to ``n_jobs`` search tasks are submitted to ``search_pool``.
-            Each acquires ``_surrogate_lock`` before calling
-            ``suggest_next_infill_point()``, serializing concurrent surrogate reads.
-
-        4.  Steady-State Loop with Batch Dispatch:
-            - Search completes → candidate appended to ``pending_cands``.
-            - When ``len(pending_cands) >= eval_batch_size`` (or no search tasks
-              remain), all pending candidates are stacked into ``X_batch`` and
-              dispatched as a single eval call to ``eval_pool``.
-              On GIL builds this calls ``remote_batch_eval_wrapper`` (dill);
-              on free-threaded builds it calls ``fun`` directly in a thread.
-            - Batch eval completes → storage updated for every point, surrogate
-              refit once under ``_surrogate_lock``, new search slots filled.
-            - ``eval_batch_size=1`` (default) dispatches immediately on each
-              search completion, preserving the original one-point behavior.
-            - This cycle continues until ``max_iter`` evaluations or ``max_time``
-              minutes is reached.
-
+            1.  Parallel Initial Design:
+                ``n_initial`` points are dispatched to ``eval_pool``.  Results are
+                collected via ``FIRST_COMPLETED`` until all initial evaluations finish.
+            2.  First Surrogate Fit:
+                Called on the main thread once all initial evaluations are in.
+                No lock is needed here because no search threads are active yet.
+            3.  Parallel Search (Thread Pool):
+                Up to ``n_jobs`` search tasks are submitted to ``search_pool``.
+                Each acquires ``_surrogate_lock`` before calling
+                ``suggest_next_infill_point()``, serializing concurrent surrogate reads.
+            4.  Steady-State Loop with Batch Dispatch:
+                - Search completes → candidate appended to ``pending_cands``.
+                - When ``len(pending_cands) >= eval_batch_size`` (or no search tasks
+                remain), all pending candidates are stacked into ``X_batch`` and
+                dispatched as a single eval call to ``eval_pool``.
+                On GIL builds this calls ``remote_batch_eval_wrapper`` (dill);
+                on free-threaded builds it calls ``fun`` directly in a thread.
+                - Batch eval completes → storage updated for every point, surrogate
+                refit once under ``_surrogate_lock``, new search slots filled.
+                - ``eval_batch_size=1`` (default) dispatches immediately on each
+                search completion, preserving the original one-point behavior.
+                - This cycle continues until ``max_iter`` evaluations or ``max_time``
+                minutes is reached.
         The optimization terminates when either:
         - Total function evaluations reach ``max_iter`` (including initial design), OR
         - Runtime exceeds ``max_time`` minutes
@@ -5184,7 +4885,7 @@ class SpotOptim(BaseEstimator):
         # Detect free-threaded (no-GIL) Python build (3.13+).
         # On free-threaded builds ThreadPoolExecutor gives true CPU parallelism,
         # so we can use threads for eval too and skip dill serialization entirely.
-        _no_gil = _is_gil_disabled()
+        _no_gil = is_gil_disabled()
 
         # Lock that serialises surrogate access:
         #   - search threads call suggest_next_infill_point() under the lock
@@ -5472,20 +5173,18 @@ class SpotOptim(BaseEstimator):
 
     def suggest_next_infill_point(self) -> np.ndarray:
         """Suggest next point to evaluate (dispatcher).
-
-        The returned point is in the **Transformed and Mapped Space** (Internal Optimization Space).
+        The returned point is in the Transformed and Mapped Space (Internal Optimization Space).
         This means:
-        1. Transformations (e.g., log, sqrt) have been applied.
-        2. Dimension reduction has been applied (fixed variables removed).
-
+            1. Transformations (e.g., log, sqrt) have been applied.
+            2. Dimension reduction has been applied (fixed variables removed).
         Process:
-        1. Try candidates from acquisition function optimizer.
-        2. Handle acquisition failure (fallback).
-        3. Return last attempt if all fails.
+            1. Try candidates from acquisition function optimizer.
+            2. Handle acquisition failure (fallback).
+            3. Return last attempt if all fails.
 
 
         Returns:
-            ndarray: Next point(s) to evaluate in **Transformed and Mapped Space**.
+            ndarray: Next point(s) to evaluate in Transformed and Mapped Space.
             Shape is (n_infill_points, n_features).
 
         Examples:
@@ -5575,7 +5274,6 @@ class SpotOptim(BaseEstimator):
         self, x_next: np.ndarray, y_next: np.ndarray
     ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
         """Handle NaN/inf values in new evaluation points.
-
         Applies penalties to NaN/inf values and removes any remaining invalid points.
         If all evaluations are invalid, returns None for both arrays to signal that
         the iteration should be skipped.
@@ -5695,7 +5393,6 @@ class SpotOptim(BaseEstimator):
         start_time: Optional[float] = None,
     ) -> None:
         """Update best solution found during main optimization loop.
-
         Checks if any new evaluations improve upon the current best solution.
         If improvement is found, updates best_x_ and best_y_ attributes and
         prints progress if verbose mode is enabled.
@@ -5819,7 +5516,6 @@ class SpotOptim(BaseEstimator):
 
     def determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.
-
         Checks the termination conditions and returns an appropriate message
         indicating why the optimization stopped. Three possible termination
         conditions are checked in order of priority:
@@ -5886,7 +5582,6 @@ class SpotOptim(BaseEstimator):
 
     def apply_ocba(self) -> Optional[np.ndarray]:
         """Apply Optimal Computing Budget Allocation for noisy functions.
-
         Determines which existing design points should be re-evaluated based on
         OCBA algorithm. This method computes optimal budget allocation to improve
         the quality of the estimated best design.
@@ -5978,7 +5673,6 @@ class SpotOptim(BaseEstimator):
     ) -> np.ndarray:
         """Replace NaN and infinite values with penalty plus random noise.
         Used in the optimize() method after function evaluations.
-
         This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
         replacing NaN/inf values with a penalty value plus random noise to avoid
         identical penalty values.
@@ -6087,12 +5781,10 @@ class SpotOptim(BaseEstimator):
 
     def init_storage(self, X0: np.ndarray, y0: np.ndarray) -> None:
         """Initialize storage for optimization.
-
         Sets up the initial data structures needed for optimization tracking:
             * X_: Evaluated design points (in original scale)
             * y_: Function values at evaluated points
             * n_iter_: Iteration counter
-
         Then updates statistics by calling `update_stats()`.
 
         Args:
@@ -6125,7 +5817,6 @@ class SpotOptim(BaseEstimator):
 
     def update_storage(self, X_new: np.ndarray, y_new: np.ndarray) -> None:
         """Update storage (`X_`, `y_`) with new evaluation points.
-
         Appends new design points and their function values to the storage arrays.
         Points are converted from internal scale to original scale before storage.
 
@@ -6164,14 +5855,13 @@ class SpotOptim(BaseEstimator):
 
     def update_stats(self) -> None:
         """Update optimization statistics.
-
         Updates various statistics related to the optimization progress:
             * `min_y`: Minimum y value found so far
             * `min_X`: X value corresponding to minimum y
             * `counter`: Total number of function evaluations
 
-        Note: `success_rate` is updated separately via `update_success_rate()` method,
-        which is called after each batch of function evaluations.
+        Notes:
+            `success_rate` is updated separately via `update_success_rate()` method, which is called after each batch of function evaluations.
 
         If "noise" is True (`repeats_initial > 1` or `repeats_surrogate > 1`), additionally computes:
             * `mean_X`: Unique design points (aggregated from repeated evaluations)
@@ -6251,11 +5941,9 @@ class SpotOptim(BaseEstimator):
 
     def update_success_rate(self, y_new: np.ndarray) -> None:
         """Update the rolling success rate of the optimization process.
-
         A success is counted only if the new value is better (smaller) than the best
         found y value so far. The success rate is calculated based on the last
         `window_size` successes.
-
         Important: This method should be called BEFORE updating self.y_ to correctly
         track improvements against the previous best value.
 
@@ -6401,11 +6089,9 @@ class SpotOptim(BaseEstimator):
         verbosity: int = 0,
     ) -> None:
         """Save the complete optimization results to a pickle file.
-
         A result contains all information from a completed optimization run, including
         the experiment configuration and all evaluation results. This is useful for
         saving completed runs for later analysis.
-
         The result includes everything in an experiment plus:
             * All evaluated points (X_)
             * All function values (y_)
@@ -6553,17 +6239,14 @@ class SpotOptim(BaseEstimator):
         verbosity: int = 0,
     ) -> None:
         """Save the experiment configuration to a pickle file (suffix '_exp.pkl') .
-
         An experiment contains the optimizer configuration needed to run optimization,
         but excludes the results. This is useful for defining experiments locally and
         executing them on remote machines.
-
         The experiment includes:
             * Bounds, variable types, variable names
             * Optimization parameters (max_iter, n_initial, etc.)
             * Surrogate and acquisition settings
             * Random seed
-
         The experiment excludes:
             * Function evaluations (X_, y_)
             * Optimization results
@@ -6649,10 +6332,8 @@ class SpotOptim(BaseEstimator):
     @staticmethod
     def load_experiment(filename: str) -> "SpotOptim":
         """Load an experiment configuration from a pickle file ('*_exp.pkl').
-
         Loads an experiment that was saved with save_experiment(). The loaded optimizer
         will have the configuration and the objective function (thanks to dill).
-
 
         Args:
             filename (str): Path to the experiment pickle file.
@@ -6762,7 +6443,6 @@ class SpotOptim(BaseEstimator):
         precision: int = 4,
     ) -> None:
         """Print the best solution found during optimization.
-
         This method displays the best hyperparameters and objective value in a
         formatted table. It supports custom transformations for parameters
         (e.g., converting log-scale values back to original scale).
@@ -6876,7 +6556,6 @@ class SpotOptim(BaseEstimator):
         show_importance: bool = False,
     ) -> str:
         """Get a comprehensive table string of optimization results.
-
         This method generates a formatted table of the search space configuration,
         best values found, and optionally variable importance scores.
 
@@ -7028,7 +6707,6 @@ class SpotOptim(BaseEstimator):
         precision: int = 4,
     ) -> str:
         """Get a table string showing the search space design before optimization.
-
         This method generates a table displaying the variable names, types, bounds,
         and defaults without requiring an optimization run. Useful for inspecting
         and documenting the search space configuration.
@@ -7134,7 +6812,6 @@ class SpotOptim(BaseEstimator):
 
     def gen_design_table(self, precision: int = 4, tablefmt: str = "github") -> str:
         """Generate a table of the design or results.
-
         If optimization has been run (results available), returns the results table.
         Otherwise, returns the design table (search space configuration).
 
@@ -7174,11 +6851,9 @@ class SpotOptim(BaseEstimator):
 
     def get_importance(self) -> List[float]:
         """Calculate variable importance scores.
-
         Importance is computed as the normalized sensitivity of each parameter
         based on the variation in objective values across the evaluated points.
         Higher scores indicate parameters that have more influence on the objective.
-
         The importance is calculated as:
             1. For each dimension, compute the correlation between parameter values
                and objective values
@@ -7275,17 +6950,14 @@ class SpotOptim(BaseEstimator):
 
     def sensitivity_spearman(self) -> None:
         """Compute and print Spearman correlation between parameters and objective values.
-
         This method analyzes the sensitivity of the objective function to each
         hyperparameter by computing Spearman rank correlations. For categorical
         (factor) variables, correlation is not computed as they require visual
         inspection instead.
-
         The method automatically handles different parameter types:
             * Integer/float parameters: Direct correlation with objective values
             * Log-transformed parameters (log10, log, ln): Correlation in log-space
             * Factor (categorical) parameters: Skipped with informative message
-
         Significance levels:
             * ***: p < 0.001 (highly significant)
             * **: p < 0.01 (significant)
@@ -7397,7 +7069,6 @@ class SpotOptim(BaseEstimator):
 
     def get_stars(self, input_list: list) -> list:
         """Converts a list of values to a list of stars.
-
         Used to visualize the importance of a variable.
         Thresholds: >99: ***, >75: **, >50: *, >10: .
 
@@ -7447,7 +7118,6 @@ class SpotOptim(BaseEstimator):
 
     def _clean_tensorboard_logs(self) -> None:
         """Clean old TensorBoard log directories from the runs folder.
-
         Removes all subdirectories in the 'runs' directory if tensorboard_clean is True.
         This is useful for removing old logs before starting a new optimization run.
 
@@ -7498,10 +7168,8 @@ class SpotOptim(BaseEstimator):
 
     def _init_tensorboard_writer(self) -> None:
         """Initialize TensorBoard SummaryWriter if logging is enabled.
-
         Creates a unique log directory based on timestamp if tensorboard_log is True.
         The log directory will be in the format: runs/spotoptim_YYYYMMDD_HHMMSS
-
 
         Returns:
             None
@@ -7536,12 +7204,11 @@ class SpotOptim(BaseEstimator):
 
     def _write_tensorboard_scalars(self) -> None:
         """Write scalar metrics to TensorBoard.
-
         Logs the following metrics:
-        - Best y value found so far (min_y)
-        - Last y value evaluated
-        - Best X coordinates (for each dimension)
-        - If repeats_surrogate > 1: also logs mean values and variance
+            * Best y value found so far (min_y)
+            * Last y value evaluated
+            * Best X coordinates (for each dimension)
+            * If repeats_surrogate > 1: also logs mean values and variance
         """
         if self.tb_writer is None or self.y_ is None or len(self.y_) == 0:
             return
@@ -7611,7 +7278,6 @@ class SpotOptim(BaseEstimator):
 
     def _init_tensorboard(self) -> None:
         """Log initial design to TensorBoard.
-
         Logs all initial design points (hyperparameters and function values)
         and scalar metrics to TensorBoard. Only executes if TensorBoard logging
         is enabled (tb_writer is not None).
@@ -7746,7 +7412,6 @@ class SpotOptim(BaseEstimator):
         figsize: Tuple[int, int] = (12, 10),
     ) -> None:
         """Plot the surrogate model for two dimensions.
-
         Delegates to spotoptim.plot.visualization.plot_surrogate.
 
         Args:
@@ -7963,12 +7628,10 @@ class SpotOptim(BaseEstimator):
         log_y: bool = False,
     ) -> None:
         """Plot parameter distributions showing relationship between each parameter and objective.
-
         Creates a grid of scatter plots, one for each parameter dimension, showing how
         the objective function value varies with each parameter. The best configuration
         is marked with a red star. Parameters with log-scale transformations (var_trans)
         are automatically displayed on a log x-axis.
-
         Optionally displays Spearman correlation coefficients in plot titles for
         sensitivity analysis. For factor (categorical) variables, correlation is not
         computed and they are displayed with discrete positions on the x-axis.
