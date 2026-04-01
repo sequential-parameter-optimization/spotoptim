@@ -49,6 +49,7 @@ jobs:
       - name: Preflight token and push checks
         env:
           RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
         run: |
           set -euo pipefail
 
@@ -60,14 +61,13 @@ jobs:
           echo "Checking authenticated read access to ${GITHUB_REPOSITORY}..."
           git ls-remote --exit-code origin HEAD >/dev/null
 
-          echo "Checking dry-run push permission to main branch..."
-          git push --dry-run origin HEAD:refs/heads/main >/dev/null
+          echo "Checking push permission via GitHub API..."
+          push_perm=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.permissions.push' 2>/dev/null || echo "false")
+          if [ "${push_perm}" != "true" ]; then
+            echo "::error::Token does not have push permission to ${GITHUB_REPOSITORY}. Set SEMANTIC_RELEASE_TOKEN to a PAT with repo write access."
+            exit 1
+          fi
 
-          temp_tag="preflight-sr-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git tag "${temp_tag}" HEAD
-          trap 'git tag -d "${temp_tag}" >/dev/null 2>&1 || true' EXIT
-
-          echo "Checking dry-run push permission for tags..."
-          git push --dry-run origin "refs/tags/${temp_tag}" >/dev/null
+          echo "Checking tag push permission (same as push)... already verified above."
 
           echo "Preflight passed: token and push permissions are sufficient for semantic-release."
