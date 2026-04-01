@@ -103,11 +103,15 @@ jobs:
             @semantic-release/exec@6 \
             conventional-changelog-conventionalcommits@7
 
-      - name: Configure authenticated Git remote
+      - name: Configure Git credentials
         env:
           RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
         run: |
-          git remote set-url origin https://x-access-token:${RELEASE_TOKEN}@github.com/${{ github.repository }}.git
+          set -euo pipefail
+          git config --local --unset-all credential.helper || true
+          git config --local credential.helper ''
+          BASIC=$(echo -n "x-access-token:${RELEASE_TOKEN}" | base64)
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${BASIC}"
 
       - name: Semantic Release
         env:
