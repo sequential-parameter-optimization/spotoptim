@@ -5497,12 +5497,10 @@ class SpotOptim(BaseEstimator):
             return None
 
     # ====================
-    # TASK_SELECT:
+    # TASK_SUBSET:
     # * select_distant_points()
     # * select_best_cluster()
     # * _selection_dispatcher()
-    # * select_new()
-    # * suggest_next_infill_point()
     # ====================
 
     def select_distant_points(
@@ -5646,6 +5644,13 @@ class SpotOptim(BaseEstimator):
         else:
             # If no valid selection method, return all points
             return X, y
+
+    # ====================
+    # TASK_SELECT:
+    # * select_new()
+    # * suggest_next_infill_point()
+    # ====================
+
 
     def select_new(
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
