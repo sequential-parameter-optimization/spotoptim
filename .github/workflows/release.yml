@@ -110,7 +110,7 @@ jobs:
           set -euo pipefail
           git config --local --unset-all credential.helper || true
           git config --local credential.helper ''
-          BASIC=$(echo -n "x-access-token:${RELEASE_TOKEN}" | base64)
+          BASIC=$(echo -n "x-access-token:${RELEASE_TOKEN}" | base64 -w 0)
           git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${BASIC}"
 
       - name: Semantic Release

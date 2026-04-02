@@ -6,7 +6,7 @@ description: "Structure of the Methods"
 
 ## Overview
 
-# TASK_VARS:
+### TASK_VARS:
 
 * detect_var_type
 * modify_bounds_based_on_var_type
@@ -15,18 +15,18 @@ description: "Structure of the Methods"
 * process_factor_bounds
 
 
-# TASK_SAVE_LOAD:
+### TASK_SAVE_LOAD:
 
 * get_pickle_safe_optimizer
 * reinitialize_components
 
-# TASK_DIM:
+### TASK_DIM:
 
 * setup_dimension_reduction()
 * to_red_dim()
 * to_all_dim()
 
-# TASK_TRANSFORM:
+### TASK_TRANSFORM:
 
 * transform_value()
 * inverse_transform_value()
@@ -35,30 +35,31 @@ description: "Structure of the Methods"
 * transform_bounds()
 * map_to_factor_values()
 
-# TASK_INIT_DESIGN:
+### TASK_INIT_DESIGN:
 
 * get_initial_design()
 * generate_initial_design()
 * curate_initial_design()
-* rm_initial_design_NA_values()
 * validate_x0()
-* check_size_initial_design()
-* get_best_xy_initial_design()
 
-# TASK_Surrogate:
+### TASK_Surrogate:
 
 * init_surrogate()
 * _fit_surrogate()
-*_fit_scheduler()
+* _fit_scheduler()
 
-# TASK_PREDICT:
+### TASK_PREDICT:
 
 * _predict_with_uncertainty()
 * _acquisition_function()
 
-# TASK_OPTIM:
+### TASK_OPTIM:
 
+* optimize()
+* execute_optimization_run()
 * evaluate_function()
+* get_best_xy_initial_design()
+
 * _optimize_acquisition_tricands()
 * _prepare_de_kwargs()
 * _optimize_acquisition_de()
@@ -70,22 +71,42 @@ description: "Structure of the Methods"
 * get_shape()
 * optimize_acquisition_func()
 * _optimize_run_task()
-* optimize()
-* execute_optimization_run()
 
-# TASK_MO:
+### TASK_OPTIM_SEQ:
+
+* optimize_sequential_run()
+* _initialize_run()
+* rm_initial_design_NA_values()
+* check_size_initial_design()
+* _run_sequential_loop()
+
+* determine_termination()
+* apply_penalty_NA()
+* update_best_main_loop()
+* handle_NA_new_points()
+* update_repeats_infill_points()
+
+
+
+### TASK_OPTIM_PARALLEL:
+
+* _update_storage_steady()
+* optimize_steady_state()
+
+
+### TASK_MO:
 
 * store_mo()
 * mo2so()
 
-# TASK_OCBA:
+### TASK_OCBA:
 
 * apply_ocba()
 * get_ranks()
 * get_ocba()
 * get_ocba_X()
 
-# TASK_SELECT:
+### TASK_SELECT:
 
 * select_distant_points()
 * select_best_cluster()
@@ -93,23 +114,7 @@ description: "Structure of the Methods"
 * select_new()
 * suggest_next_infill_point()
 
-# TASK_OPTIM_SEQ:
-
-* determine_termination()
-* apply_penalty_NA()
-* update_best_main_loop()
-* handle_NA_new_points()
-* optimize_sequential_run()
-* _initialize_run()
-* update_repeats_infill_points()
-* _run_sequential_loop()
-
-# TASK_OPTIM_PARALLEL:
-
-* _update_storage_steady()
-* optimize_steady_state()
-
-# TASK_STATS:
+### TASK_STATS:
 
 * init_storage()
 * update_storage()
@@ -119,7 +124,7 @@ description: "Structure of the Methods"
 * aggregate_mean_var()
 * get_best_hyperparameters
 
-# TASK_RESULTS:
+### TASK_RESULTS:
 
 * save_result()
 * load_result()
@@ -135,3 +140,6 @@ description: "Structure of the Methods"
 * get_importance()
 * sensitivity_spearman()
 * get_stars()
+
+
+## The Surrogate-model-based Optimization Process

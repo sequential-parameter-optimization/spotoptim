@@ -66,7 +66,7 @@ jobs:
           git config --local credential.helper ''
           # Use the extraheader method — the same mechanism actions/checkout
           # uses internally. Works reliably for both fetch and push.
-          BASIC=$(echo -n "x-access-token:${RELEASE_TOKEN}" | base64)
+          BASIC=$(echo -n "x-access-token:${RELEASE_TOKEN}" | base64 -w 0)
           git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${BASIC}"
 
       - name: Preflight token and push checks

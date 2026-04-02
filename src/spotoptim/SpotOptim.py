@@ -2133,82 +2133,6 @@ class SpotOptim(BaseEstimator):
 
         return X0
 
-    def rm_initial_design_NA_values(
-        self, X0: np.ndarray, y0: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, int]:
-        """Remove NaN/inf values from initial design evaluations.
-        This method filters out design points that returned NaN or inf values
-        during initial evaluation. Unlike the sequential optimization phase where
-        penalties are applied, initial design points with invalid values are
-        simply removed.
-
-        Args:
-            X0 (ndarray): Initial design points in internal scale,
-                shape (n_samples, n_features).
-            y0 (ndarray): Function values at X0, shape (n_samples,).
-
-        Returns:
-            Tuple[ndarray, ndarray, int]: Filtered (X0, y0) with only finite values
-                and the original count before filtering. X0 has shape (n_valid, n_features),
-                y0 has shape (n_valid,), and the int is the original size.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=10
-            )
-            X0 = np.array([[1, 2], [3, 4], [5, 6]])
-            y0 = np.array([5.0, np.nan, np.inf])
-            X0_clean, y0_clean, n_eval = opt.rm_initial_design_NA_values(X0, y0)
-            print(X0_clean.shape) # (1, 2)
-            print(y0_clean) # array([5.])
-            print(n_eval) # 3
-            # All valid values - no filtering
-            X0 = np.array([[1, 2], [3, 4]])
-            y0 = np.array([5.0, 25.0])
-            X0_clean, y0_clean, n_eval = opt.rm_initial_design_NA_values(X0, y0)
-            print(X0_clean.shape) # (2, 2)
-            print(n_eval) # 2
-            ```
-        """
-        # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
-
-        # If y0 contains None (object dtype), convert None to NaN and ensure float dtype
-        if y0.dtype == object:
-            # Create a float array, replacing None with NaN
-            # Use list comprehension for safe conversion of None
-            y0 = np.array([np.nan if v is None else v for v in y0], dtype=float)
-
-        finite_mask = np.isfinite(y0)
-        n_non_finite = np.sum(~finite_mask)
-
-        if n_non_finite > 0:
-            if self.verbose:
-                print(
-                    f"Warning: {n_non_finite} initial design point(s) returned NaN/inf "
-                    f"and will be ignored (reduced from {len(y0)} to {np.sum(finite_mask)} points)"
-                )
-            X0 = X0[finite_mask]
-            y0 = y0[finite_mask]
-
-            # Also filter y_mo if it exists (must match y0 size)
-            if self.y_mo is not None:
-                if len(self.y_mo) == len(finite_mask):  # Safety check
-                    self.y_mo = self.y_mo[finite_mask]
-                else:
-                    # Fallback or warning if sizes already mismatched (shouldn't happen here normally)
-                    if self.verbose:
-                        print(
-                            f"Warning: y_mo size ({len(self.y_mo)}) != mask size ({len(finite_mask)}) in initial design filtering"
-                        )
-                    # Try to filter only if sizes match, otherwise we might be in inconsistent state
-
-        return X0, y0, len(finite_mask)
 
     def validate_x0(self, x0: np.ndarray) -> np.ndarray:
         """Validate and process starting point x0. Called in `__init__` and `optimize`.
@@ -2328,144 +2252,6 @@ class SpotOptim(BaseEstimator):
             print(f"  Internal scale: {x0_transformed}")
 
         return x0_transformed
-
-    def check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
-        """Validate that initial design has sufficient points for surrogate fitting.
-
-        Checks if the number of valid initial design points meets the minimum
-        requirement for fitting a surrogate model. The minimum required is the
-        smaller of:
-            * (a) typical minimum for surrogate fitting (3 for multi-dimensional, 2 for 1D), or
-            * (b) what the user requested (`n_initial`).
-
-        Args:
-            y0 (ndarray): Function values at initial design points (after filtering),
-                shape (n_valid,).
-            n_evaluated (int): Original number of points evaluated before filtering.
-
-        Returns:
-            None
-
-        Raises:
-            ValueError: If the number of valid points is less than the minimum required.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=10
-            )
-            # Sufficient points - no error
-            y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-            opt.check_size_initial_design(y0, n_evaluated=10)
-
-            # Insufficient points - raises ValueError
-            y0_small = np.array([1.0])
-            try:
-                opt.check_size_initial_design(y0_small, n_evaluated=10)
-            except ValueError as e:
-                print(f"Error: {e}")
-
-            # With verbose output
-            opt_verbose = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=10,
-                verbose=True
-            )
-            y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
-            opt_verbose.check_size_initial_design(y0_reduced, n_evaluated=10)
-            ```
-        """
-        # Check if we have enough points to continue
-        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
-        min_points_typical = 3 if self.n_dim > 1 else 2
-        min_points_required = min(min_points_typical, self.n_initial)
-
-        if len(y0) < min_points_required:
-            error_msg = (
-                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
-                f"out of {n_evaluated} evaluated. Need at least {min_points_required} "
-                f"points to fit surrogate model. Please check your objective function or increase n_initial."
-            )
-            raise ValueError(error_msg)
-
-        if len(y0) < self.n_initial and self.verbose:
-            print(
-                f"Note: Initial design size ({len(y0)}) is smaller than requested "
-                f"({self.n_initial}) due to NaN/inf values"
-            )
-
-    def get_best_xy_initial_design(self) -> None:
-        """Determine and store the best point from initial design.
-        Finds the best (minimum) function value in the initial design,
-        stores the corresponding point and value in instance attributes,
-        and optionally prints the results if verbose mode is enabled.
-        For noisy functions, also reports the mean best value.
-
-        Note:
-            This method assumes self.X_ and self.y_ have been initialized
-            with the initial design evaluations.
-
-        Returns:
-            None
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                verbose=True
-            )
-            # Simulate initial design (normally done in optimize())
-            opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            opt.y_ = np.array([5.0, 0.0, 5.0])
-            opt.get_best_xy_initial_design()
-            print(f"Best x: {opt.best_x_}")
-            print(f"Best y: {opt.best_y_}")
-            ```
-
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import noisy_sphere
-            # With noisy function
-            opt_noise = SpotOptim(
-                fun=noisy_sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                repeats_surrogate=2,
-                verbose=True
-            )
-            opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            opt_noise.y_ = np.array([5.0, 0.0, 5.0])
-            opt_noise.min_mean_y = 0.5  # Simulated mean best
-            opt_noise.get_best_xy_initial_design()
-            print(f"Best x: {opt_noise.best_x_}")
-            print(f"Best y: {opt_noise.best_y_}")
-            ```
-        """
-        # Initial best
-        best_idx = np.argmin(self.y_)
-        self.best_x_ = self.X_[best_idx].copy()
-        self.best_y_ = self.y_[best_idx]
-
-        if self.verbose:
-            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-                print(
-                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
-                )
-            else:
-                print(f"Initial best: f(x) = {self.best_y_:.6f}")
 
 
     # ====================
@@ -2717,9 +2503,6 @@ class SpotOptim(BaseEstimator):
             self.surrogate = self._surrogates_list[idx]
             # Update active max surrogate points
             self._active_max_surrogate_points = self._max_surrogate_points_list[idx]
-            if self.verbose:
-                # Optional: print selected surrogate? separate from verbose maybe
-                pass
 
         if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
             X_for_surrogate = self.transform_X(self.mean_X)
@@ -2858,6 +2641,7 @@ class SpotOptim(BaseEstimator):
 
     # ====================
     # TASK_OPTIM:
+    # * optimize()
     # * evaluate_function()
     # * _optimize_acquisition_tricands()
     # * _prepare_de_kwargs()
@@ -2870,9 +2654,222 @@ class SpotOptim(BaseEstimator):
     # * get_shape()
     # * optimize_acquisition_func()
     # * _optimize_run_task()
-    # * optimize()
     # * execute_optimization_run()
     # ====================
+
+    def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
+        """Run the optimization process. The optimization terminates when either the total function evaluations reach
+            `max_iter` (including initial design), or the runtime exceeds max_time minutes. Input/Output spaces are
+                * Input `X0`: Expected in Natural Space (original scale, physical units).
+                * Output `result.x`: Returned in Natural Space.
+                * Output `result.X`: Returned in Natural Space.
+                * Internal Optimization: Performed in Transformed and Mapped Space.
+
+        Args:
+            X0 (ndarray, optional): Initial design points in Natural Space, shape (n_initial, n_features).
+                If None, generates space-filling design. Defaults to None.
+
+        Returns:
+            OptimizeResult: Optimization result with fields:
+                * x: best point found in Natural Space
+                * fun: best function value
+                * nfev: number of function evaluations (including initial design)
+                * nit: number of sequential optimization iterations (after initial design)
+                * success: whether optimization succeeded
+                * message: termination message indicating reason for stopping, including statistics (function value, iterations, evaluations)
+                * X: all evaluated points in Natural Space
+                * y: all function values
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                max_iter=10,
+                seed=0,
+                x0=np.array([0.1, -0.1]),
+                verbose=True
+            )
+            result = opt.optimize()
+            print(result.message.splitlines()[0])
+            print("Best point:", result.x)
+            print("Best value:", result.fun)
+            ```
+        """
+        # Track results across restarts for final aggregation.
+        self.restarts_results_ = []
+        # Capture start time for timeout enforcement.
+        timeout_start = time.time()
+
+        # Initial run state.
+        current_X0 = X0
+        status = "START"
+
+        while True:
+            # Get best result so far if we have results
+            best_res = (
+                min(self.restarts_results_, key=lambda x: x.fun)
+                if self.restarts_results_
+                else None
+            )
+
+            # Compute injected best value for restarts, then run one optimization cycle.
+            # y0_known_val carries the current global best objective so the next
+            # run can skip re-evaluating that known point when restart injection is on.
+            y0_known_val = (
+                best_res.fun
+                if (
+                    status == "RESTART"
+                    and self.restart_inject_best
+                    and self.restarts_results_
+                )
+                else None
+            )
+
+            # Calculate remaining budget
+            total_evals_so_far = sum(len(r.y) for r in self.restarts_results_)
+            remaining_iter = self.max_iter - total_evals_so_far
+
+            # If we don't have enough budget for at least initial design (or some minimal amount), stop
+            if remaining_iter < self.n_initial:
+                if self.verbose:
+                    print("Global budget exhausted. Stopping restarts.")
+                break
+
+            # Execute one optimization run using the remaining budget; dispatcher
+            # selects sequential vs parallel based on `n_jobs` and returns status/result.
+            status, result = self.execute_optimization_run(
+                timeout_start,
+                current_X0,
+                y0_known=y0_known_val,
+                max_iter_override=remaining_iter,
+            )
+            self.restarts_results_.append(result)
+
+            if status == "FINISHED":
+                break
+            elif status == "RESTART":
+                # Prepare for a clean restart: let get_initial_design() regenerate the full design.
+                current_X0 = None
+
+                # Find the global best result across completed restarts.
+                if self.restarts_results_:
+                    best_res = min(self.restarts_results_, key=lambda r: r.fun)
+
+                    if self.restart_inject_best:
+                        # Inject the current global best into the next run's initial design.
+                        # best_res.x is in natural scale; validate_x0 converts to internal scale
+                        # so the injected point can be mixed with LHS samples.
+                        self.x0 = self.validate_x0(best_res.x)
+                        # Keep current_X0 unset so the initial design is rebuilt around the injected x0.
+                        current_X0 = None
+
+                        if self.verbose:
+                            print(
+                                f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f})."
+                            )
+
+                if self.seed is not None and self.n_jobs == 1:
+                    # In sequential mode we advance the seed between restarts to diversify the LHS.
+                    # Parallel mode increments seeds per worker during dispatch.
+                    self.seed += 1
+                # Continue loop
+            else:
+                # Should not happen
+                break
+
+        # Return best result
+        if not self.restarts_results_:
+            return result  # Fallback
+
+        # Find best result based on 'fun'
+        best_result = min(self.restarts_results_, key=lambda r: r.fun)
+
+        # Merge results from all parallel runs (and sequential runs if any)
+        X_all_list = [res.X for res in self.restarts_results_]
+        y_all_list = [res.y for res in self.restarts_results_]
+
+        # Concatenate all evaluations
+        self.X_ = np.vstack(X_all_list)
+        self.y_ = np.concatenate(y_all_list)
+        self.counter = len(self.y_)
+
+        # Aggregated iterations (sum of all runs)
+        self.n_iter_ = sum(getattr(res, "nit", 0) for res in self.restarts_results_)
+
+        # Update best solution found
+        self.best_x_ = best_result.x
+        self.best_y_ = best_result.fun
+
+        return best_result
+
+
+    def execute_optimization_run(
+        self,
+        timeout_start: float,
+        X0: Optional[np.ndarray] = None,
+        y0_known: Optional[float] = None,
+        max_iter_override: Optional[int] = None,
+        shared_best_y=None,  # New arg
+        shared_lock=None,  # New arg
+    ) -> Tuple[str, OptimizeResult]:
+        """Dispatcher for optimization run (Sequential vs Steady-State Parallel).
+        Depending on n_jobs, calls optimize_steady_state (n_jobs > 1) or optimize_sequential_run (n_jobs == 1).
+
+        Args:
+            timeout_start (float): Start time for timeout.
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known (Optional[float]): Known best value for initial design.
+            max_iter_override (Optional[int]): Override for maximum number of iterations.
+            shared_best_y (Optional[float]): Shared best value for parallel runs.
+            shared_lock (Optional[Lock]): Shared lock for parallel runs.
+
+        Returns:
+            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+        Examples:
+            ```{python}
+            import time
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                max_iter=10,
+                seed=0,
+                n_jobs=1,  # Use sequential optimization for deterministic output
+                verbose=True
+            )
+            status, result = opt.execute_optimization_run(timeout_start=time.time())
+            print(status)
+            print(result.message.splitlines()[0])
+            ```
+        """
+
+        # Dispatch to steady-state optimizer if proper parallelization is requested
+        if self.n_jobs > 1:
+            return self.optimize_steady_state(
+                timeout_start,
+                X0,
+                y0_known=y0_known,
+                max_iter_override=max_iter_override,
+            )
+        else:
+            return self.optimize_sequential_run(
+                timeout_start,
+                X0,
+                y0_known=y0_known,
+                max_iter_override=max_iter_override,
+                shared_best_y=shared_best_y,
+                shared_lock=shared_lock,
+            )
+
 
     def evaluate_function(self, X: np.ndarray) -> np.ndarray:
         """Evaluate objective function at points X.
@@ -2955,6 +2952,75 @@ class SpotOptim(BaseEstimator):
             y = y.ravel()
 
         return y
+
+
+    def get_best_xy_initial_design(self) -> None:
+        """Determine and store the best point from initial design.
+        Finds the best (minimum) function value in the initial design,
+        stores the corresponding point and value in instance attributes,
+        and optionally prints the results if verbose mode is enabled.
+        For noisy functions, also reports the mean best value.
+
+        Note:
+            This method assumes self.X_ and self.y_ have been initialized
+            with the initial design evaluations.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                verbose=True
+            )
+            # Simulate initial design (normally done in optimize())
+            opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            opt.y_ = np.array([5.0, 0.0, 5.0])
+            opt.get_best_xy_initial_design()
+            print(f"Best x: {opt.best_x_}")
+            print(f"Best y: {opt.best_y_}")
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import noisy_sphere
+            # With noisy function
+            opt_noise = SpotOptim(
+                fun=noisy_sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                repeats_surrogate=2,
+                verbose=True
+            )
+            opt_noise.X_ = np.array([[1, 2], [0, 0], [2, 1]])
+            opt_noise.y_ = np.array([5.0, 0.0, 5.0])
+            opt_noise.min_mean_y = 0.5  # Simulated mean best
+            opt_noise.get_best_xy_initial_design()
+            print(f"Best x: {opt_noise.best_x_}")
+            print(f"Best y: {opt_noise.best_y_}")
+            ```
+        """
+        # Initial best
+        best_idx = np.argmin(self.y_)
+        self.best_x_ = self.X_[best_idx].copy()
+        self.best_y_ = self.y_[best_idx]
+
+        if self.verbose:
+            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
+                print(
+                    f"Initial best: f(x) = {self.best_y_:.6f}, mean best: f(x) = {self.min_mean_y:.6f}"
+                )
+            else:
+                print(f"Initial best: f(x) = {self.best_y_:.6f}")
+
+
 
     def _optimize_acquisition_tricands(self) -> np.ndarray:
         """Optimize using geometric infill strategy via triangulation candidates.
@@ -3597,167 +3663,30 @@ class SpotOptim(BaseEstimator):
             shared_lock=shared_lock,
         )
 
-    def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
-        """Run the optimization process. The optimization terminates when either the total function evaluations reach
-            `max_iter` (including initial design), or the runtime exceeds max_time minutes. Input/Output spaces are
-                * Input `X0`: Expected in Natural Space (original scale, physical units).
-                * Output `result.x`: Returned in Natural Space.
-                * Output `result.X`: Returned in Natural Space.
-                * Internal Optimization: Performed in Transformed and Mapped Space.
 
-        Args:
-            X0 (ndarray, optional): Initial design points in Natural Space, shape (n_initial, n_features).
-                If None, generates space-filling design. Defaults to None.
+    # ====================
+    # TASK_OPTIM_SEQ:
+    # * determine_termination()
+    # * apply_penalty_NA()
+    # * update_best_main_loop()
+    # * handle_NA_new_points()
+    # * optimize_sequential_run()
+    # * _initialize_run()
+    # * update_repeats_infill_points()
+    # * _run_sequential_loop()
+    # ====================
 
-        Returns:
-            OptimizeResult: Optimization result with fields:
-                * x: best point found in Natural Space
-                * fun: best function value
-                * nfev: number of function evaluations (including initial design)
-                * nit: number of sequential optimization iterations (after initial design)
-                * success: whether optimization succeeded
-                * message: termination message indicating reason for stopping, including statistics (function value, iterations, evaluations)
-                * X: all evaluated points in Natural Space
-                * y: all function values
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                max_iter=10,
-                seed=0,
-                x0=np.array([0.1, -0.1]),
-                verbose=True
-            )
-            result = opt.optimize()
-            print(result.message.splitlines()[0])
-            print("Best point:", result.x)
-            print("Best value:", result.fun)
-            ```
-        """
-        # Track results across restarts for final aggregation.
-        self.restarts_results_ = []
-        # Capture start time for timeout enforcement.
-        timeout_start = time.time()
-
-        # Initial run state.
-        current_X0 = X0
-        status = "START"
-
-        while True:
-            # Get best result so far if we have results
-            best_res = (
-                min(self.restarts_results_, key=lambda x: x.fun)
-                if self.restarts_results_
-                else None
-            )
-
-            # Compute injected best value for restarts, then run one optimization cycle.
-            # y0_known_val carries the current global best objective so the next
-            # run can skip re-evaluating that known point when restart injection is on.
-            y0_known_val = (
-                best_res.fun
-                if (
-                    status == "RESTART"
-                    and self.restart_inject_best
-                    and self.restarts_results_
-                )
-                else None
-            )
-
-            # Calculate remaining budget
-            total_evals_so_far = sum(len(r.y) for r in self.restarts_results_)
-            remaining_iter = self.max_iter - total_evals_so_far
-
-            # If we don't have enough budget for at least initial design (or some minimal amount), stop
-            if remaining_iter < self.n_initial:
-                if self.verbose:
-                    print("Global budget exhausted. Stopping restarts.")
-                break
-
-            # Execute one optimization run using the remaining budget; dispatcher
-            # selects sequential vs parallel based on `n_jobs` and returns status/result.
-            status, result = self.execute_optimization_run(
-                timeout_start,
-                current_X0,
-                y0_known=y0_known_val,
-                max_iter_override=remaining_iter,
-            )
-            self.restarts_results_.append(result)
-
-            if status == "FINISHED":
-                break
-            elif status == "RESTART":
-                # Prepare for a clean restart: let get_initial_design() regenerate the full design.
-                current_X0 = None
-
-                # Find the global best result across completed restarts.
-                if self.restarts_results_:
-                    best_res = min(self.restarts_results_, key=lambda r: r.fun)
-
-                    if self.restart_inject_best:
-                        # Inject the current global best into the next run's initial design.
-                        # best_res.x is in natural scale; validate_x0 converts to internal scale
-                        # so the injected point can be mixed with LHS samples.
-                        self.x0 = self.validate_x0(best_res.x)
-                        # Keep current_X0 unset so the initial design is rebuilt around the injected x0.
-                        current_X0 = None
-
-                        if self.verbose:
-                            print(
-                                f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f})."
-                            )
-
-                if self.seed is not None and self.n_jobs == 1:
-                    # In sequential mode we advance the seed between restarts to diversify the LHS.
-                    # Parallel mode increments seeds per worker during dispatch.
-                    self.seed += 1
-                # Continue loop
-            else:
-                # Should not happen
-                break
-
-        # Return best result
-        if not self.restarts_results_:
-            return result  # Fallback
-
-        # Find best result based on 'fun'
-        best_result = min(self.restarts_results_, key=lambda r: r.fun)
-
-        # Merge results from all parallel runs (and sequential runs if any)
-        X_all_list = [res.X for res in self.restarts_results_]
-        y_all_list = [res.y for res in self.restarts_results_]
-
-        # Concatenate all evaluations
-        self.X_ = np.vstack(X_all_list)
-        self.y_ = np.concatenate(y_all_list)
-        self.counter = len(self.y_)
-
-        # Aggregated iterations (sum of all runs)
-        self.n_iter_ = sum(getattr(res, "nit", 0) for res in self.restarts_results_)
-
-        # Update best solution found
-        self.best_x_ = best_result.x
-        self.best_y_ = best_result.fun
-
-        return best_result
-
-    def execute_optimization_run(
+    def optimize_sequential_run(
         self,
         timeout_start: float,
         X0: Optional[np.ndarray] = None,
         y0_known: Optional[float] = None,
         max_iter_override: Optional[int] = None,
-        shared_best_y=None,  # New arg
-        shared_lock=None,  # New arg
+        shared_best_y=None,
+        shared_lock=None,
     ) -> Tuple[str, OptimizeResult]:
-        """Dispatcher for optimization run (Sequential vs Steady-State Parallel).
-        Depending on n_jobs, calls optimize_steady_state (n_jobs > 1) or optimize_sequential_run (n_jobs == 1).
+        """Perform a single sequential optimization run.
+        Calls _initialize_run, rm_initial_design_NA_values, check_size_initial_design, init_storage, get_best_xy_initial_design, and _run_sequential_loop.
 
         Args:
             timeout_start (float): Start time for timeout.
@@ -3770,44 +3699,1441 @@ class SpotOptim(BaseEstimator):
         Returns:
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
 
+        Raises:
+            ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
+
         Examples:
             ```{python}
             import time
             import numpy as np
             from spotoptim import SpotOptim
             from spotoptim.function import sphere
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                max_iter=10,
-                seed=0,
-                n_jobs=1,  # Use sequential optimization for deterministic output
-                verbose=True
-            )
-            status, result = opt.execute_optimization_run(timeout_start=time.time())
+            opt = SpotOptim(fun=sphere,
+                            bounds=[(-5, 5), (-5, 5)],
+                            n_initial=5,
+                            max_iter=10,
+                            seed=0,
+                            n_jobs=1,  # Use sequential optimization for deterministic output
+                            verbose=True
+             )
+            status, result = opt.optimize_sequential_run(timeout_start=time.time())
             print(status)
             print(result.message.splitlines()[0])
             ```
         """
 
-        # Dispatch to steady-state optimizer if proper parallelization is requested
-        if self.n_jobs > 1:
-            return self.optimize_steady_state(
-                timeout_start,
-                X0,
-                y0_known=y0_known,
-                max_iter_override=max_iter_override,
+        # Store shared variable if provided
+        self.shared_best_y = shared_best_y
+        self.shared_lock = shared_lock
+
+        # Initialize: Set seed, Design, Evaluate Initial Design, Init Storage & TensorBoard
+        X0, y0 = self._initialize_run(X0, y0_known)
+
+        # Handle NaN/inf values in initial design (remove invalid points)
+        X0, y0, n_evaluated = self.rm_initial_design_NA_values(X0, y0)
+
+        # Check if we have enough valid points to continue
+        self.check_size_initial_design(y0, n_evaluated)
+
+        # Initialize storage and statistics
+        self.init_storage(X0, y0)
+        self._zero_success_count = 0
+        self._success_history = []  # Clear success history for new run
+
+        # Update stats after initial design
+        self.update_stats()
+
+        # Log initial design to TensorBoard
+        self._init_tensorboard()
+
+        # Determine and report initial best
+        self.get_best_xy_initial_design()
+
+        # Run the main sequential optimization loop
+        effective_max_iter = (
+            max_iter_override if max_iter_override is not None else self.max_iter
+        )
+        return self._run_sequential_loop(timeout_start, effective_max_iter)
+
+
+    def _initialize_run(
+        self, X0: Optional[np.ndarray], y0_known: Optional[float]
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Initialize optimization run: seed, design generation, initial evaluation.
+        Called from optimize_sequential_run (sequential path only).
+
+        Args:
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known (Optional[float]): Known best value for initial design.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: Tuple containing initial design and corresponding objective values.
+
+        Raises:
+            ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     seed=0,
+            ...     x0=np.array([0.0, 0.0]),
+            ...     verbose=True
+            ... )
+            >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
+            >>> X0.shape
+            (5, 2)
+            >>> np.allclose(y0, np.sum(X0**2, axis=1))
+            True
+        """
+        # Set seed for reproducibility
+        self.set_seed()
+
+        # Set initial design (generate or process user-provided points)
+        X0 = self.get_initial_design(X0)
+
+        # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
+        X0 = self.curate_initial_design(X0)
+
+        # Evaluate initial design
+        if y0_known is not None and self.x0 is not None:
+            # Identify injected point to skip evaluation
+            dists = np.linalg.norm(X0 - self.x0, axis=1)
+            # Use a small tolerance for matching
+            matches = dists < 1e-9
+
+            if np.any(matches):
+                if self.verbose:
+                    print("Skipping re-evaluation of injected best point.")
+
+                # Initialize y0
+                y0 = np.empty(len(X0))
+                y0[:] = np.nan
+
+                # Set known values
+                y0[matches] = y0_known
+
+                # Evaluate others
+                not_matches = ~matches
+                if np.any(not_matches):
+                    y0_others = self.evaluate_function(X0[not_matches])
+                    y0[not_matches] = y0_others
+            else:
+                # Injected point lost during curation? Should not happen if it was unique
+                y0 = self.evaluate_function(X0)
+        else:
+            y0 = self.evaluate_function(X0)
+
+        return X0, y0
+
+
+    def rm_initial_design_NA_values(
+        self, X0: np.ndarray, y0: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, int]:
+        """Remove NaN/inf values from initial design evaluations.
+        This method filters out design points that returned NaN or inf values
+        during initial evaluation. Unlike the sequential optimization phase where
+        penalties are applied, initial design points with invalid values are
+        simply removed.
+
+        Args:
+            X0 (ndarray): Initial design points in internal scale,
+                shape (n_samples, n_features).
+            y0 (ndarray): Function values at X0, shape (n_samples,).
+
+        Returns:
+            Tuple[ndarray, ndarray, int]: Filtered (X0, y0) with only finite values
+                and the original count before filtering. X0 has shape (n_valid, n_features),
+                y0 has shape (n_valid,), and the int is the original size.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10
+            )
+            X0 = np.array([[1, 2], [3, 4], [5, 6]])
+            y0 = np.array([5.0, np.nan, np.inf])
+            X0_clean, y0_clean, n_eval = opt.rm_initial_design_NA_values(X0, y0)
+            print(X0_clean.shape) # (1, 2)
+            print(y0_clean) # array([5.])
+            print(n_eval) # 3
+            # All valid values - no filtering
+            X0 = np.array([[1, 2], [3, 4]])
+            y0 = np.array([5.0, 25.0])
+            X0_clean, y0_clean, n_eval = opt.rm_initial_design_NA_values(X0, y0)
+            print(X0_clean.shape) # (2, 2)
+            print(n_eval) # 2
+            ```
+        """
+        # Handle NaN/inf values in initial design - REMOVE them instead of applying penalty
+
+        # If y0 contains None (object dtype), convert None to NaN and ensure float dtype
+        if y0.dtype == object:
+            # Create a float array, replacing None with NaN
+            # Use list comprehension for safe conversion of None
+            y0 = np.array([np.nan if v is None else v for v in y0], dtype=float)
+
+        finite_mask = np.isfinite(y0)
+        n_non_finite = np.sum(~finite_mask)
+
+        if n_non_finite > 0:
+            if self.verbose:
+                print(
+                    f"Warning: {n_non_finite} initial design point(s) returned NaN/inf "
+                    f"and will be ignored (reduced from {len(y0)} to {np.sum(finite_mask)} points)"
+                )
+            X0 = X0[finite_mask]
+            y0 = y0[finite_mask]
+
+            # Also filter y_mo if it exists (must match y0 size)
+            if self.y_mo is not None:
+                if len(self.y_mo) == len(finite_mask):  # Safety check
+                    self.y_mo = self.y_mo[finite_mask]
+                else:
+                    # Fallback or warning if sizes already mismatched (shouldn't happen here normally)
+                    if self.verbose:
+                        print(
+                            f"Warning: y_mo size ({len(self.y_mo)}) != mask size ({len(finite_mask)}) in initial design filtering"
+                        )
+                    # Try to filter only if sizes match, otherwise we might be in inconsistent state
+
+        return X0, y0, len(finite_mask)
+
+
+    def check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
+        """Validate that initial design has sufficient points for surrogate fitting.
+
+        Checks if the number of valid initial design points meets the minimum
+        requirement for fitting a surrogate model. The minimum required is the
+        smaller of:
+            * (a) typical minimum for surrogate fitting (3 for multi-dimensional, 2 for 1D), or
+            * (b) what the user requested (`n_initial`).
+
+        Args:
+            y0 (ndarray): Function values at initial design points (after filtering),
+                shape (n_valid,).
+            n_evaluated (int): Original number of points evaluated before filtering.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the number of valid points is less than the minimum required.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10
+            )
+            # Sufficient points - no error
+            y0 = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
+            opt.check_size_initial_design(y0, n_evaluated=10)
+
+            # Insufficient points - raises ValueError
+            y0_small = np.array([1.0])
+            try:
+                opt.check_size_initial_design(y0_small, n_evaluated=10)
+            except ValueError as e:
+                print(f"Error: {e}")
+
+            # With verbose output
+            opt_verbose = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=10,
+                verbose=True
+            )
+            y0_reduced = np.array([1.0, 2.0, 3.0])  # Less than n_initial but valid
+            opt_verbose.check_size_initial_design(y0_reduced, n_evaluated=10)
+            ```
+        """
+        # Check if we have enough points to continue
+        # Use the smaller of: (a) typical minimum for surrogate fitting, or (b) what user requested
+        min_points_typical = 3 if self.n_dim > 1 else 2
+        min_points_required = min(min_points_typical, self.n_initial)
+
+        if len(y0) < min_points_required:
+            error_msg = (
+                f"Insufficient valid initial design points: only {len(y0)} finite value(s) "
+                f"out of {n_evaluated} evaluated. Need at least {min_points_required} "
+                f"points to fit surrogate model. Please check your objective function or increase n_initial."
+            )
+            raise ValueError(error_msg)
+
+        if len(y0) < self.n_initial and self.verbose:
+            print(
+                f"Note: Initial design size ({len(y0)}) is smaller than requested "
+                f"({self.n_initial}) due to NaN/inf values"
+            )
+
+
+    def _run_sequential_loop(
+        self, timeout_start: float, effective_max_iter: int
+    ) -> Tuple[str, OptimizeResult]:
+        """Execute the main sequential optimization loop.
+
+        Args:
+             timeout_start (float): Start time for timeout.
+             effective_max_iter (int): Maximum number of iterations for this run (may be overridden for restarts).
+
+         Returns:
+             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+         Raises:
+             ValueError:
+                If excessive consecutive failures occur (e.g., due to NaN/inf values in evaluations), indicating a potential issue with the objective function.
+
+         Examples:
+             >>> import time
+             >>> import numpy as np
+             >>> from spotoptim import SpotOptim
+             >>> opt = SpotOptim(
+             ...     fun=lambda X: np.sum(X**2, axis=1),
+             ...     bounds=[(-5, 5), (-5, 5)],
+             ...     n_initial=5,
+             ...     max_iter=10,
+             ...     seed=0,
+             ...     n_jobs=1,  # Use sequential optimization for deterministic output
+             ...     verbose=True
+             ... )
+             >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
+             >>> X0, y0, n_evaluated = opt.rm_initial_design_NA_values(X0, y0)
+             >>> opt.check_size_initial_design(y0, n_evaluated)
+             >>> opt.init_storage(X0, y0)
+             >>> opt._zero_success_count = 0
+             >>> opt._success_history = []
+             >>> opt.update_stats()
+             >>> opt.get_best_xy_initial_design()
+             >>> status, result = opt._run_sequential_loop(timeout_start=time.time(), effective_max_iter=10)
+             >>> print(status)
+             FINISHED
+             >>> print(result.message.splitlines()[0])
+             Optimization terminated: maximum evaluations (10) reached
+        """
+        consecutive_failures = 0
+
+        while (len(self.y_) < effective_max_iter) and (
+            time.time() < timeout_start + self.max_time * 60
+        ):
+            # Check for excessive consecutive failures (infinite loop prevention)
+            if consecutive_failures > self.max_iter:
+                msg = (
+                    f"Optimization stopped due to {consecutive_failures} consecutive "
+                    "invalid evaluations (NaN/inf). Check your objective function."
+                )
+                if self.verbose:
+                    print(f"Warning: {msg}")
+                return "FINISHED", OptimizeResult(
+                    x=self.best_x_,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=msg,
+                    X=self.X_,
+                    y=self.y_,
+                )
+
+            # Increment iteration counter. This is not the same as number of function evaluations.
+            self.n_iter_ += 1
+
+            # Fit surrogate (use mean_y if noise, otherwise y_)
+            self._fit_scheduler()
+
+            # Apply OCBA for noisy functions
+            X_ocba = self.apply_ocba()
+
+            # Suggest next point
+            x_next = self.suggest_next_infill_point()
+
+            # Repeat next point if repeats_surrogate > 1
+            x_next_repeated = self.update_repeats_infill_points(x_next)
+
+            # Append OCBA points to new design points (if applicable)
+            if X_ocba is not None:
+                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
+
+            # Evaluate next point(s) including OCBA points
+            y_next = self.evaluate_function(x_next_repeated)
+
+            # Handle NaN/inf values in new evaluations
+            x_next_repeated, y_next = self._handle_NA_new_points(
+                x_next_repeated, y_next
+            )
+            if x_next_repeated is None:
+                consecutive_failures += 1
+                continue  # Skip iteration if all evaluations were invalid
+
+            # Reset failure counter if we got valid points
+            consecutive_failures = 0
+
+            # Update success rate BEFORE updating storage (so it compares against previous best)
+            self.update_success_rate(y_next)
+
+            # Check for restart
+            if self.success_rate == 0.0:
+                self._zero_success_count += 1
+            else:
+                self._zero_success_count = 0
+
+            if self._zero_success_count >= self.restart_after_n:
+                if self.verbose:
+                    print(
+                        f"Restarting optimization: success_rate 0 for {self._zero_success_count} iterations."
+                    )
+
+                status_message = "Restart triggered due to lack of improvement."
+
+                # Expand results to full dimensions if needed
+                best_x_full = (
+                    self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+                    if self.red_dim
+                    else self.best_x_
+                )
+                X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+
+                # Map factor variables back to original strings
+                best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
+                X_result = (
+                    self.map_to_factor_values(X_full) if self._factor_maps else X_full
+                )
+
+                res = OptimizeResult(
+                    x=best_x_result,
+                    fun=self.best_y_,
+                    nfev=len(self.y_),
+                    nit=self.n_iter_,
+                    success=False,
+                    message=status_message,
+                    X=X_result,
+                    y=self.y_,
+                )
+                return "RESTART", res
+
+            # Update storage
+            self.update_storage(x_next_repeated, y_next)
+
+            # Update stats
+            self.update_stats()
+
+            # Log to TensorBoard
+            if self.tb_writer is not None:
+                # Log each new evaluation
+                for i in range(len(y_next)):
+                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
+                self._write_tensorboard_scalars()
+
+            # Update best solution
+            self._update_best_main_loop(
+                x_next_repeated, y_next, start_time=timeout_start
+            )
+
+        # Expand results to full dimensions if needed
+        # Note: best_x_ and X_ are already in original scale (stored that way)
+        best_x_full = (
+            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
+            if self.red_dim
+            else self.best_x_
+        )
+        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
+
+        # Determine termination reason
+        status_message = self.determine_termination(timeout_start)
+
+        # Append statistics to match scipy.optimize.minimize format
+        message = (
+            f"{status_message}\n"
+            f"         Current function value: {float(self.best_y_):.6f}\n"
+            f"         Iterations: {self.n_iter_}\n"
+            f"         Function evaluations: {len(self.y_)}"
+        )
+
+        # Close TensorBoard writer
+        self._close_tensorboard_writer()
+
+        # Map factor variables back to original strings for results
+        best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
+        X_result = self.map_to_factor_values(X_full) if self._factor_maps else X_full
+
+        # Return scipy-style result
+        return "FINISHED", OptimizeResult(
+            x=best_x_result,
+            fun=self.best_y_,
+            nfev=len(self.y_),
+            nit=self.n_iter_,
+            success=True,
+            message=message,
+            X=X_result,
+            y=self.y_,
+        )
+
+
+    def determine_termination(self, timeout_start: float) -> str:
+        """Determine termination reason for optimization.
+        Checks the termination conditions and returns an appropriate message
+        indicating why the optimization stopped. Three possible termination
+        conditions are checked in order of priority:
+            1. Maximum number of evaluations reached
+            2. Maximum time limit exceeded
+            3. Successful completion (neither limit reached)
+
+        Args:
+            timeout_start (float): Start time of optimization (from time.time()).
+
+        Returns:
+            str: Message describing the termination reason.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            import time
+            from spotoptim import SpotOptim
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                max_time=10.0
+            )
+            # Case 1: Maximum evaluations reached
+            opt.y_ = np.zeros(20)  # Simulate 20 evaluations
+            start_time = time.time()
+            msg = opt.determine_termination(start_time)
+            print(msg)
+            ```
+            ```{python}
+            # Case 2: Time limit exceeded
+            import numpy as np
+            import time
+            from spotoptim import SpotOptim
+            opt.y_ = np.zeros(10)  # Only 10 evaluations
+            start_time = time.time() - 700  # Simulate 11.67 minutes elapsed
+            msg = opt.determine_termination(start_time)
+            print(msg)
+            ```
+            ```{python}
+            # Case 3: Successful completion
+            import numpy as np
+            import time
+            from spotoptim import SpotOptim
+            opt.y_ = np.zeros(10)  # Under max_iter
+            start_time = time.time()  # Just started
+            msg = opt.determine_termination(start_time)
+            print(msg)
+            ```
+        """
+        # Determine termination reason
+        elapsed_time = time.time() - timeout_start
+        if len(self.y_) >= self.max_iter:
+            message = f"Optimization terminated: maximum evaluations ({self.max_iter}) reached"
+        elif elapsed_time >= self.max_time * 60:
+            message = (
+                f"Optimization terminated: time limit ({self.max_time:.2f} min) reached"
             )
         else:
-            return self.optimize_sequential_run(
-                timeout_start,
-                X0,
-                y0_known=y0_known,
-                max_iter_override=max_iter_override,
-                shared_best_y=shared_best_y,
-                shared_lock=shared_lock,
+            message = "Optimization finished successfully"
+
+        return message
+
+
+
+    def apply_penalty_NA(
+        self,
+        y: np.ndarray,
+        y_history: Optional[np.ndarray] = None,
+        penalty_value: Optional[float] = None,
+        sd: float = 0.1,
+    ) -> np.ndarray:
+        """Replace NaN and infinite values with penalty plus random noise.
+        Used in the optimize() method after function evaluations.
+        This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
+        replacing NaN/inf values with a penalty value plus random noise to avoid
+        identical penalty values.
+
+        Args:
+            y (ndarray): Array of objective function values to be repaired.
+            y_history (ndarray, optional): Historical objective function values used for
+                computing penalty statistics. If None, uses y itself. Default is None.
+            penalty_value (float, optional): Value to replace NaN/inf with.
+                If None, computes penalty as: max(finite_y_history) + 3 * std(finite_y_history).
+                If all values are NaN/inf or only one finite value exists, falls back
+                to self.penalty_val. Default is None.
+            sd (float): Standard deviation for normal distributed random noise added to penalty.
+                Default is 0.1.
+
+        Returns:
+            ndarray:
+                Array with NaN/inf replaced by penalty_value + random noise
+                (normal distributed with mean 0 and standard deviation sd).
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
+            y_hist = np.array([1.0, 2.0, 3.0, 5.0])
+            y_new = np.array([4.0, np.nan, np.inf])
+            y_clean = opt.apply_penalty_NA(y_new, y_history=y_hist)
+            print(f"np.all(np.isfinite(y_clean)): {np.all(np.isfinite(y_clean))}")
+            print(f"y_clean: {y_clean}")
+            # NaN/inf replaced with worst value from history + 3*std + noise
+            print(f"y_clean[1] > 5.0: {y_clean[1] > 5.0}")  # Should be larger than max finite value in history
+            ```
+        """
+
+        # Ensure y is a float array (maps non-convertible values like "error" or None to nan)
+        def _safe_float(v):
+            try:
+                return float(v)
+            except (ValueError, TypeError):
+                return np.nan
+
+        y_flat = np.array(y).flatten()
+        y = np.array([_safe_float(v) for v in y_flat])
+        # Identify NaN and inf values in y
+        mask = ~np.isfinite(y)
+
+        if np.any(mask):
+            n_bad = np.sum(mask)
+
+            # Compute penalty_value if not provided
+            if penalty_value is None:
+                # Get finite values from history for statistics
+                # Use y_history if provided, otherwise fall back to y itself
+                if y_history is not None:
+                    finite_values = y_history[np.isfinite(y_history)]
+                else:
+                    # Use current y values
+                    finite_values = y[~mask]
+
+                # If we have at least 2 finite values, compute adaptive penalty
+                if len(finite_values) >= 2:
+                    max_y = np.max(finite_values)
+                    std_y = np.std(finite_values, ddof=1)
+                    penalty_value = max_y + 3.0 * std_y
+
+                    if self.verbose:
+                        print(
+                            f"Warning: Found {n_bad} NaN/inf value(s), replacing with "
+                            f"adaptive penalty (max + 3*std = {penalty_value:.4f})"
+                        )
+                else:
+                    # Fallback to self.penalty if insufficient finite values
+                    if self.penalty_val is not None:
+                        penalty_value = self.penalty_val
+                    elif len(finite_values) == 1:
+                        # Use the single finite value + a large constant
+                        penalty_value = finite_values[0] + 1000.0
+                    else:
+                        # All values are NaN/inf, use a large default
+                        penalty_value = 1e10
+
+                    if self.verbose:
+                        print(
+                            f"Warning: Found {n_bad} NaN/inf value(s), insufficient finite values "
+                            f"for adaptive penalty. Using penalty_value = {penalty_value}"
+                        )
+            else:
+                if self.verbose:
+                    print(
+                        f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise"
+                    )
+
+            # Generate random noise and add to penalty
+            random_noise = self.rng.normal(0, sd, y.shape)
+            penalty_values = penalty_value + random_noise
+
+            # Replace NaN/inf with penalty + noise
+            y[mask] = penalty_values[mask]
+
+        return y
+
+
+    def _update_best_main_loop(
+        self,
+        x_next_repeated: np.ndarray,
+        y_next: np.ndarray,
+        start_time: Optional[float] = None,
+    ) -> None:
+        """Update best solution found during main optimization loop.
+        Checks if any new evaluations improve upon the current best solution.
+        If improvement is found, updates best_x_ and best_y_ attributes and
+        prints progress if verbose mode is enabled.
+
+        Args:
+            x_next_repeated (ndarray): Design points that were evaluated in transformed space,
+                shape (n_eval, n_features).
+            y_next (ndarray): Function values at x_next_repeated, shape (n_eval,).
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     verbose=True
+            ... )
+            >>> # Simulate optimization state
+            >>> opt.n_iter_ = 1
+            >>> opt.best_x_ = np.array([1.0, 1.0])
+            >>> opt.best_y_ = 2.0
+            >>>
+            >>> # Case 1: New best found
+            >>> x_new = np.array([[0.1, 0.1], [0.5, 0.5]])
+            >>> y_new = np.array([0.02, 0.5])
+            >>> opt._update_best_main_loop(x_new, y_new)
+            Iteration 1: New best f(x) = 0.020000
+            >>> opt.best_y_
+            0.02
+            >>>
+            >>> # Case 2: No improvement
+            >>> opt.n_iter_ = 2
+            >>> x_no_improve = np.array([[1.5, 1.5]])
+            >>> y_no_improve = np.array([4.5])
+            >>> opt._update_best_main_loop(x_no_improve, y_no_improve)
+            Iteration 2: f(x) = 4.500000
+            >>>
+            >>> # Case 3: With noisy function
+            >>> opt_noise = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     repeats_surrogate=2,
+            ...     verbose=True
+            ... )
+            >>> opt_noise.n_iter_ = 1
+            >>> opt_noise.best_y_ = 2.0
+            >>> opt_noise.min_mean_y = 1.5
+            >>> y_noise = np.array([0.5])
+            >>> x_noise = np.array([[0.5, 0.5]])
+            >>> opt_noise._update_best_main_loop(x_noise, y_noise)
+            Iteration 1: New best f(x) = 0.500000, mean best: f(x) = 1.500000
+        """
+        # Update best
+        # Determine global best value for printing if shared variable exists
+        global_best_val = None
+        if hasattr(self, "shared_best_y") and self.shared_best_y is not None:
+            # Sync with global shared value
+            lock_obj = getattr(self, "shared_lock", None)
+            if lock_obj is not None:
+                with lock_obj:
+                    if (
+                        self.best_y_ is not None
+                        and self.best_y_ < self.shared_best_y.value
+                    ):
+                        self.shared_best_y.value = self.best_y_
+
+                    min_y_next = np.min(y_next)
+                    if min_y_next < self.shared_best_y.value:
+                        self.shared_best_y.value = min_y_next
+
+                    global_best_val = self.shared_best_y.value
+
+        current_best = np.min(y_next)
+        if current_best < self.best_y_:
+            best_idx_in_new = np.argmin(y_next)
+            # x_next_repeated is in transformed space, convert to original for storage
+            self.best_x_ = self.inverse_transform_X(
+                x_next_repeated[best_idx_in_new].reshape(1, -1)
+            )[0]
+            self.best_y_ = current_best
+
+            if self.verbose:
+                # Calculate progress
+                if self.max_time != np.inf and start_time is not None:
+                    progress = (time.time() - start_time) / (self.max_time * 60) * 100
+                    progress_str = f"Time: {progress:.1f}%"
+                else:
+                    prev_evals = sum(res.nfev for res in self.restarts_results_)
+                    progress = (prev_evals + self.counter) / self.max_iter * 100
+                    progress_str = f"Evals: {progress:.1f}%"
+
+                msg = f"Iter {self.n_iter_}"
+                if global_best_val is not None:
+                    msg += f" | GlobalBest: {global_best_val:.6f}"
+                msg += f" | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
+
+                if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
+                    msg += f" | Mean Best: {self.min_mean_y:.6f}"
+
+                print(msg)
+        elif self.verbose:
+            if self.max_time != np.inf and start_time is not None:
+                progress = (time.time() - start_time) / (self.max_time * 60) * 100
+                progress_str = f"Time: {progress:.1f}%"
+            else:
+                prev_evals = sum(res.nfev for res in self.restarts_results_)
+                progress = (prev_evals + self.counter) / self.max_iter * 100
+                progress_str = f"Evals: {progress:.1f}%"
+
+            current_val = np.min(y_next)
+            msg = f"Iter {self.n_iter_}"
+            if global_best_val is not None:
+                msg += f" | GlobalBest: {global_best_val:.6f}"
+            msg += f" | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
+
+            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
+                mean_y_new = np.mean(y_next)
+                msg += f" | Mean Curr: {mean_y_new:.6f}"
+            print(msg)
+
+    def _handle_NA_new_points(
+        self, x_next: np.ndarray, y_next: np.ndarray
+    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+        """Handle NaN/inf values in new evaluation points.
+        Applies penalties to NaN/inf values and removes any remaining invalid points.
+        If all evaluations are invalid, returns None for both arrays to signal that
+        the iteration should be skipped.
+
+        Args:
+            x_next (ndarray): Design points that were evaluated, shape (n_eval, n_features).
+            y_next (ndarray): Function values at x_next, shape (n_eval,).
+
+        Returns:
+            Tuple[Optional[ndarray], Optional[ndarray]]: Tuple of (x_clean, y_clean).
+                Both are None if all evaluations were NaN/inf (iteration should be skipped).
+                Otherwise returns filtered arrays with only finite values.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_initial=5,
+            ...     verbose=True
+            ... )
+            >>> # Simulate optimization state
+            >>> opt.y_ = np.array([1.0, 2.0, 3.0])  # Historical values
+            >>> opt.n_iter_ = 1
+            >>>
+            >>> # Case 1: Some valid values
+            >>> x_next = np.array([[1, 2], [3, 4], [5, 6]])
+            >>> y_next = np.array([5.0, np.nan, 10.0])
+            >>> x_clean, y_clean = opt._handle_NA_new_points(x_next, y_next)
+            >>> x_clean.shape
+            (2, 2)
+            >>> y_clean.shape
+            (2,)
+            >>>
+            >>> # Case 2: All NaN/inf - should skip iteration
+            >>> x_all_bad = np.array([[1, 2], [3, 4]])
+            >>> y_all_bad = np.array([np.nan, np.inf])
+            >>> x_clean, y_clean = opt._handle_NA_new_points(x_all_bad, y_all_bad)
+            Warning: All new evaluations were NaN/inf, skipping iteration 1
+            >>> x_clean is None
+            True
+            >>> y_clean is None
+            True
+        """
+        # Handle NaN/inf values in new evaluations
+        # Use historical y values (self.y_) for computing penalty statistics
+        if self.penalty:
+            y_next = self.apply_penalty_NA(y_next, y_history=self.y_)
+
+        # Identify which points are valid (finite) BEFORE removing them
+        # Note: remove_nan filters based on y_next finite values
+
+        # Ensure y_next is a float array (maps non-convertible values like "error" or None to nan)
+        # This is critical if the objective function returns non-numeric values and penalty=False
+        if y_next.dtype == object:
+            # Use safe float conversion similar to apply_penalty_NA
+            def _safe_float(v):
+                try:
+                    return float(v)
+                except (ValueError, TypeError):
+                    return np.nan
+
+            # Reconstruct as float array
+            y_flat = np.array(y_next).flatten()
+            y_next = np.array([_safe_float(v) for v in y_flat])
+
+        finite_mask = np.isfinite(y_next)
+
+        X_next_clean, y_next_clean = self.remove_nan(
+            x_next, y_next, stop_on_zero_return=False
+        )
+
+        # If we have multi-objective values, we need to filter them too
+        # The new MO values were appended to self.y_mo in evaluate_function -> mo2so -> store_mo
+        # So self.y_mo currently contains the INVALID points at the end.
+        if self.y_mo is not None:
+            n_new = len(y_next)
+            # Check if y_mo has the new points appended
+            if len(self.y_mo) >= n_new:
+                # The new points are at the end of y_mo
+                y_mo_new = self.y_mo[-n_new:]
+                y_mo_old = self.y_mo[:-n_new]
+
+                # Filter the new MO points using the mask from y_next
+                y_mo_new_clean = y_mo_new[finite_mask]
+
+                # Reconstruct y_mo
+                if len(y_mo_old) > 0:
+                    self.y_mo = (
+                        np.vstack([y_mo_old, y_mo_new_clean])
+                        if len(y_mo_new_clean) > 0
+                        else y_mo_old
+                    )
+                else:
+                    self.y_mo = y_mo_new_clean
+            else:
+                if self.verbose:
+                    print(
+                        "Warning: y_mo size inconsistent with new points in _handle_NA_new_points"
+                    )
+
+        # Skip this iteration if all new points were NaN/inf
+        if len(y_next_clean) == 0:
+            if self.verbose:
+                print(
+                    f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}"
+                )
+            return None, None
+
+        return X_next_clean, y_next_clean
+
+
+
+    def update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
+        """Repeat infill point for noisy function evaluation. Used in the sequential_loop.
+        For noisy objective functions (repeats_surrogate > 1), creates multiple
+        copies of the suggested point for repeated evaluation. Otherwise, returns
+        the point in 2D array format.
+
+        Args:
+            x_next (ndarray): Next point to evaluate, shape (n_features,).
+
+        Returns:
+            ndarray: Points to evaluate, shape (repeats_surrogate, n_features)
+                or (1, n_features) if repeats_surrogate == 1.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere, noisy_sphere
+            # Without repeats
+
+            opt = SpotOptim(
+                fun=sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                repeats_surrogate=1
             )
+            x_next = np.array([1.0, 2.0])
+            x_repeated = opt.update_repeats_infill_points(x_next)
+            print(x_repeated.shape)
+
+            # With repeats for noisy function
+            opt_noisy = SpotOptim(
+                fun=noisy_sphere,
+                bounds=[(-5, 5), (-5, 5)],
+                repeats_surrogate=3
+            )
+            x_next = np.array([1.0, 2.0])
+            x_repeated = opt_noisy.update_repeats_infill_points(x_next)
+            print(x_repeated.shape)
+            # All three copies should be identical
+            np.all(x_repeated[0] == x_repeated[1])
+            ```
+        """
+        if x_next.ndim == 1:
+            x_next = x_next.reshape(1, -1)
+
+        if self.repeats_surrogate > 1:
+            # Repeat each row repeats_surrogate times
+            # Note: np.repeat with axis=0 repeats rows [r1, r1, r2, r2...]
+            x_next_repeated = np.repeat(x_next, self.repeats_surrogate, axis=0)
+        else:
+            x_next_repeated = x_next
+        return x_next_repeated
+
+
+    # ====================
+    # TASK_OPTIM_PARALLEL:
+    # * _update_storage_steady()
+    # * optimize_steady_state()
+    # ====================
+
+    def _update_storage_steady(self, x, y):
+        """Helper to safely append single point (for steady state).
+            This method is designed for the steady-state parallel optimization scenario, where new points are evaluated and returned asynchronously.
+            It safely appends new points to the existing storage of evaluated points and their function values,
+            while also updating the current best solution if the new point is better.
+
+        Args:
+            x (ndarray):
+                New point(s) in original scale, shape (n_features,) or (N, n_features).
+            y (float or ndarray):
+                Corresponding function value(s).
+
+        Returns:
+            None. This method updates the internal state of the optimizer.
+
+        Note:
+           - This method assumes that the caller handles any necessary synchronization if used in a parallel context
+           (e.g., using locks when updating shared state).
+
+        Raises:
+            ValueError: If the input shapes are inconsistent or if y is not a scalar when x is a single point.
+
+        Examples:
+            >>> import numpy as np
+            >>> from spotoptim import SpotOptim
+            >>> opt = SpotOptim(
+            ...     fun=lambda X: np.sum(X**2, axis=1),
+            ...     bounds=[(-5, 5), (-5, 5)],
+            ...     n_jobs=2
+            ... )
+            >>> opt._update_storage_steady(np.array([1.0, 2.0]), 5.0)
+            >>> print(opt.X_)
+            [[1. 2.]]
+            >>> print(opt.y_)
+            [5.]
+            >>> print(opt.best_x_)
+            [1. 2.]
+            >>> print(opt.best_y_)
+            5.0
+
+        """
+        x = np.atleast_2d(x)
+        if self.X_ is None:
+            self.X_ = x
+            self.y_ = np.array([y])
+        else:
+            self.X_ = np.vstack([self.X_, x])
+            self.y_ = np.append(self.y_, y)
+
+        # Update best
+        if self.best_y_ is None or y < self.best_y_:
+            self.best_y_ = y
+            self.best_x_ = x.flatten()
+
+        self.min_y = self.best_y_
+        self.min_X = self.best_x_
+
+    def optimize_steady_state(
+        self,
+        timeout_start: float,
+        X0: Optional[np.ndarray],
+        y0_known: Optional[float] = None,
+        max_iter_override: Optional[int] = None,
+    ) -> Tuple[str, OptimizeResult]:
+        """Perform steady-state asynchronous optimization (n_jobs > 1).
+        This method implements a hybrid steady-state parallelization strategy.
+        The executor types are selected at runtime based on GIL availability:
+        Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):
+            * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
+            Process isolation ensures arbitrary callables (lambdas, closures)
+            serialized with ``dill`` run safely without touching shared state.
+            * ``ThreadPoolExecutor`` (``search_pool``) — surrogate search tasks.
+            Threads share the main-process heap; zero ``dill`` overhead.
+            A ``threading.Lock`` (``_surrogate_lock``) prevents a surrogate refit
+            from racing with an in-flight search thread.
+        Free-threaded build (``python3.13t`` / ``--disable-gil``):
+            * Both ``eval_pool`` and ``search_pool`` are ``ThreadPoolExecutor``
+                instances.  Threads achieve true CPU-level parallelism without the GIL.
+                The ``dill`` serialization step for eval tasks is eliminated — ``fun``
+                is called directly from the shared heap.  The ``_surrogate_lock`` is
+                still used to serialize surrogate reads and refits.
+        Pipeline:
+            1.  Parallel Initial Design:
+                ``n_initial`` points are dispatched to ``eval_pool``.  Results are
+                collected via ``FIRST_COMPLETED`` until all initial evaluations finish.
+            2.  First Surrogate Fit:
+                Called on the main thread once all initial evaluations are in.
+                No lock is needed here because no search threads are active yet.
+            3.  Parallel Search (Thread Pool):
+                Up to ``n_jobs`` search tasks are submitted to ``search_pool``.
+                Each acquires ``_surrogate_lock`` before calling
+                ``suggest_next_infill_point()``, serializing concurrent surrogate reads.
+            4.  Steady-State Loop with Batch Dispatch:
+                - Search completes → candidate appended to ``pending_cands``.
+                - When ``len(pending_cands) >= eval_batch_size`` (or no search tasks
+                remain), all pending candidates are stacked into ``X_batch`` and
+                dispatched as a single eval call to ``eval_pool``.
+                On GIL builds this calls ``remote_batch_eval_wrapper`` (dill);
+                on free-threaded builds it calls ``fun`` directly in a thread.
+                - Batch eval completes → storage updated for every point, surrogate
+                refit once under ``_surrogate_lock``, new search slots filled.
+                - ``eval_batch_size=1`` (default) dispatches immediately on each
+                search completion, preserving the original one-point behavior.
+                - This cycle continues until ``max_iter`` evaluations or ``max_time``
+                minutes is reached.
+        The optimization terminates when either:
+        - Total function evaluations reach ``max_iter`` (including initial design), OR
+        - Runtime exceeds ``max_time`` minutes
+
+        Args:
+            timeout_start (float): Start time for timeout.
+            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
+            y0_known (Optional[float]): Known best objective value from a previous run.
+                When provided together with ``self.x0``, the matching point in the initial
+                design is pre-filled with this value and not re-submitted to the worker
+                pool, saving one evaluation per restart (restart injection).
+            max_iter_override (Optional[int]): Override for maximum number of iterations.
+
+        Raises:
+            RuntimeError: If all initial design evaluations fail, likely due to
+                pickling issues or missing imports in the worker process.
+                The error message provides guidance on how to address this issue.
+
+        Returns:
+            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
+
+        Examples:
+            ```{python}
+            import time
+            from spotoptim import SpotOptim
+            from spotoptim.function import sphere
+            opt = SpotOptim(
+                 fun=sphere,
+                 bounds=[(-5, 5), (-5, 5)],
+                 n_initial=5,
+                 max_iter=10,
+                 seed=0,
+                 n_jobs=2,
+            )
+            status, result = opt.optimize_steady_state(timeout_start=time.time(), X0=None)
+            print(status)
+            print(result.message.splitlines()[0])
+            ```
+        """
+        # Setup similar to _optimize_single_run
+        self.set_seed()
+        X0 = self.get_initial_design(X0)
+        X0 = self.curate_initial_design(X0)
+
+        # Restart injection: if a known best value is provided, pre-fill the matching
+        # point in the initial design so it is not re-submitted to the worker pool.
+        # This mirrors the logic in _initialize_run() used by the sequential path.
+        y0_prefilled = np.full(len(X0), np.nan)
+        if y0_known is not None and self.x0 is not None:
+            dists = np.linalg.norm(X0 - self.x0, axis=1)
+            matches = dists < 1e-9
+            if np.any(matches):
+                if self.verbose:
+                    print("Skipping re-evaluation of injected best point.")
+                y0_prefilled[matches] = y0_known
+
+        # We need to know how many evaluations to do
+        effective_max_iter = (
+            max_iter_override if max_iter_override is not None else self.max_iter
+        )
+
+        # Import dill locally (assuming installed)
+        import dill
+
+        from contextlib import ExitStack
+        from concurrent.futures import (
+            ProcessPoolExecutor,
+            ThreadPoolExecutor,
+            wait,
+            FIRST_COMPLETED,
+        )
+
+        # Detect free-threaded (no-GIL) Python build (3.13+).
+        # On free-threaded builds ThreadPoolExecutor gives true CPU parallelism,
+        # so we can use threads for eval too and skip dill serialization entirely.
+        _no_gil = is_gil_disabled()
+
+        # Lock that serialises surrogate access:
+        #   - search threads call suggest_next_infill_point() under the lock
+        #   - the main thread calls _fit_scheduler() under the lock after each eval
+        # This prevents a surrogate refit from racing with an in-flight search.
+        _surrogate_lock = threading.Lock()
+
+        def _thread_search_task():
+            """Search task for ThreadPoolExecutor: direct call, no dill."""
+            with _surrogate_lock:
+                return self.suggest_next_infill_point()
+
+        def _thread_eval_task_single(x):
+            """Thread-based single-point eval for free-threaded Python (no dill)."""
+            try:
+                x_2d = x.reshape(1, -1)
+                y_arr = self.evaluate_function(x_2d)
+                return x, y_arr[0]
+            except Exception as e:
+                return None, e
+
+        def _thread_batch_eval_task(X_batch):
+            """Thread-based batch eval for free-threaded Python (no dill)."""
+            try:
+                y_batch = self.evaluate_function(X_batch)
+                return X_batch, y_batch
+            except Exception as e:
+                return None, e
+
+        # Build executor pair:
+        #   GIL build     → eval: ProcessPoolExecutor, search: ThreadPoolExecutor
+        #   No-GIL build  → eval: ThreadPoolExecutor,  search: ThreadPoolExecutor
+        with ExitStack() as _stack:
+            eval_pool = _stack.enter_context(
+                ThreadPoolExecutor(max_workers=self.n_jobs)
+                if _no_gil
+                else ProcessPoolExecutor(max_workers=self.n_jobs)
+            )
+            search_pool = _stack.enter_context(
+                ThreadPoolExecutor(max_workers=self.n_jobs)
+            )
+            futures = {}  # map future -> type ('eval', 'search')
+
+            # --- Phase 1: Initial Design Evaluation ---
+            # Pre-filled points (restart injection) are stored on the main thread;
+            # all remaining points are submitted to eval_pool concurrently.
+            n_to_submit = 0
+            for i, x in enumerate(X0):
+                if np.isfinite(y0_prefilled[i]):
+                    # Known from restart injection — store directly, skip the pool.
+                    self._update_storage_steady(x, y0_prefilled[i])
+                    continue
+                if _no_gil:
+                    # Free-threaded: call fun directly in a thread — no dill.
+                    fut = eval_pool.submit(_thread_eval_task_single, x)
+                else:
+                    # GIL build: serialize with dill for process isolation.
+                    _tb_writer_temp = self.tb_writer
+                    self.tb_writer = None
+                    try:
+                        pickled_args = dill.dumps((self, x))
+                    finally:
+                        self.tb_writer = _tb_writer_temp
+                    fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
+                futures[fut] = "eval"
+                n_to_submit += 1
+
+            if self.verbose:
+                n_injected = int(np.sum(np.isfinite(y0_prefilled)))
+                suffix = (
+                    f" ({n_injected} injected from restart, skipped re-evaluation)."
+                    if n_injected
+                    else "."
+                )
+                print(
+                    f"Submitted {n_to_submit} initial points for parallel evaluation{suffix}"
+                )
+
+            # Wait for all submitted initial evaluations to complete.
+            initial_done_count = 0
+            while initial_done_count < n_to_submit:
+                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    # Clean up
+                    ftype = futures.pop(fut)
+                    if ftype != "eval":
+                        continue
+
+                    try:
+                        x_done, y_done = fut.result()
+                        if isinstance(y_done, Exception):
+                            if self.verbose:
+                                print(f"Eval failed: {y_done}")
+                        else:
+                            self._update_storage_steady(x_done, y_done)
+                    except Exception as e:
+                        if self.verbose:
+                            print(f"Task failed: {e}")
+
+                    initial_done_count += 1
+
+            # Init tensorboard and stats
+            self._init_tensorboard()
+
+            if self.y_ is None or len(self.y_) == 0:
+                raise RuntimeError(
+                    "All initial design evaluations failed. "
+                    "Check your objective function for pickling issues or missing imports (e.g. numpy) in the worker process. "
+                    "If defining functions in a notebook/script, ensure imports are inside the function."
+                )
+
+            self.update_stats()
+            self.get_best_xy_initial_design()
+
+            # Fit first surrogate (no lock needed — no search threads active yet)
+            if self.verbose:
+                print(
+                    f"Initial design evaluated. Fitting surrogate... (Data size: {len(self.y_)})"
+                )
+            self._fit_scheduler()
+
+            # --- Phase 2: Steady State Loop ---
+            if self.verbose:
+                print("Starting steady-state optimization loop...")
+
+            # Candidates returned by search tasks, waiting to form the next batch.
+            pending_cands: list = []
+
+            # Maps each in-flight batch_eval future → number of points it carries.
+            # Used for accurate budget accounting: reserved = committed + in_flight
+            # + pending, so we never over-dispatch search tasks.
+            _future_n_pts: dict = {}
+
+            def _flush_batch() -> None:
+                """Dispatch all pending_cands as a single batch eval task."""
+                nonlocal pending_cands
+                X_batch = np.vstack(pending_cands)
+                n_in_batch = len(pending_cands)
+                pending_cands = []
+                if _no_gil:
+                    # Free-threaded: call fun directly in a thread — no dill.
+                    fut_eval = eval_pool.submit(_thread_batch_eval_task, X_batch)
+                else:
+                    # GIL build: serialize with dill for process isolation.
+                    _tb_writer_temp = self.tb_writer
+                    self.tb_writer = None
+                    try:
+                        pickled_args = dill.dumps((self, X_batch))
+                    finally:
+                        self.tb_writer = _tb_writer_temp
+                    fut_eval = eval_pool.submit(remote_batch_eval_wrapper, pickled_args)
+                futures[fut_eval] = "batch_eval"
+                _future_n_pts[fut_eval] = n_in_batch
+
+            def _batch_ready() -> bool:
+                """True when pending_cands should be flushed to eval_pool."""
+                if not pending_cands:
+                    return False
+                if len(pending_cands) >= self.eval_batch_size:
+                    return True
+                # Flush early if no search tasks remain — prevents starvation
+                # when budget is nearly exhausted and no new searches will run.
+                return not any(t == "search" for t in futures.values())
+
+            while (len(self.y_) < effective_max_iter) and (
+                time.time() < timeout_start + self.max_time * 60
+            ):
+                # 1. Flush pending candidates if the batch threshold is reached
+                #    or if no search tasks are in flight (starvation guard).
+                if _batch_ready():
+                    _flush_batch()
+
+                # 2. Fill open slots with search tasks (thread pool).
+                n_active = len(futures)
+                n_slots = self.n_jobs - n_active
+
+                if n_slots > 0:
+                    for _ in range(n_slots):
+                        # Budget: committed evals + in-flight eval points
+                        #         + in-flight search tasks (each yields 1 cand)
+                        #         + candidates not yet dispatched.
+                        n_in_flight = sum(_future_n_pts.values())
+                        n_searches = sum(1 for t in futures.values() if t == "search")
+                        reserved = (
+                            len(self.y_) + n_in_flight + n_searches + len(pending_cands)
+                        )
+                        if reserved < effective_max_iter:
+                            # Search runs in a thread — no dill serialization;
+                            # _thread_search_task holds _surrogate_lock.
+                            fut = search_pool.submit(_thread_search_task)
+                            futures[fut] = "search"
+                        else:
+                            break
+
+                # 3. Flush again — new slot-filling may have pushed batch over
+                #    the threshold (e.g. no budget left for more searches).
+                if _batch_ready():
+                    _flush_batch()
+
+                if not futures and not pending_cands:
+                    break  # Nothing left to do
+
+                if not futures:
+                    # Pending candidates but no in-flight futures — flush now.
+                    _flush_batch()
+                    continue
+
+                # 4. Wait for any future to complete.
+                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    ftype = futures.pop(fut)
+                    try:
+                        res = fut.result()
+                        if isinstance(res, Exception):
+                            if self.verbose:
+                                print(f"Remote {ftype} failed: {res}")
+                            # Failed search → slot freed; loop refills next iter.
+                            # Failed batch_eval → points lost (budget not charged).
+                            _future_n_pts.pop(fut, None)
+                            continue
+
+                        if ftype == "search":
+                            x_cand = res
+                            pending_cands.append(x_cand)
+                            # Flush immediately if batch threshold reached —
+                            # avoids an extra loop iteration for batch_size=1.
+                            if _batch_ready():
+                                _flush_batch()
+
+                        elif ftype == "batch_eval":
+                            _future_n_pts.pop(fut, None)
+                            X_done, y_done = res
+                            if isinstance(y_done, Exception):
+                                if self.verbose:
+                                    print(f"Batch eval failed: {y_done}")
+                            else:
+                                # Update storage for every point in the batch.
+                                for xi, yi in zip(X_done, y_done):
+                                    self.update_success_rate(np.array([yi]))
+                                    self._update_storage_steady(xi, yi)
+                                    self.n_iter_ += 1
+
+                                if self.verbose:
+                                    if self.max_time != np.inf:
+                                        prog_val = (
+                                            (time.time() - timeout_start)
+                                            / (self.max_time * 60)
+                                            * 100
+                                        )
+                                        progress_str = f"Time: {prog_val:.1f}%"
+                                    else:
+                                        prog_val = (
+                                            len(self.y_) / effective_max_iter * 100
+                                        )
+                                        progress_str = f"Evals: {prog_val:.1f}%"
+
+                                    print(
+                                        f"Iter {len(self.y_)}/{effective_max_iter}"
+                                        f" | Best: {self.best_y_:.6f}"
+                                        f" | Rate: {self.success_rate:.2f}"
+                                        f" | {progress_str}"
+                                    )
+
+                                # Single surrogate refit for the whole batch —
+                                # held under the lock so in-flight search threads
+                                # do not read a partially-updated model.
+                                with _surrogate_lock:
+                                    self._fit_scheduler()
+
+                    except Exception as e:
+                        _future_n_pts.pop(fut, None)
+                        if self.verbose:
+                            print(f"Error processing future: {e}")
+
+        return "FINISHED", OptimizeResult(
+            x=self.best_x_,
+            fun=self.best_y_,
+            nfev=len(self.y_),
+            nit=self.n_iter_,
+            success=True,
+            message="Optimization finished (Steady State)",
+            X=self.X_,
+            y=self.y_,
+        )
+
 
     # ====================
     # TASK_MO:
@@ -4470,1323 +5796,6 @@ class SpotOptim(BaseEstimator):
         # If user asked for n_infill_points, maybe we should just return what we have (1 duplicated).
 
         return x_last.reshape(1, -1)
-
-
-    # ====================
-    # TASK_OPTIM_SEQ:
-    # * determine_termination()
-    # * apply_penalty_NA()
-    # * update_best_main_loop()
-    # * handle_NA_new_points()
-    # * optimize_sequential_run()
-    # * _initialize_run()
-    # * update_repeats_infill_points()
-    # * _run_sequential_loop()
-    # ====================
-
-    def determine_termination(self, timeout_start: float) -> str:
-        """Determine termination reason for optimization.
-        Checks the termination conditions and returns an appropriate message
-        indicating why the optimization stopped. Three possible termination
-        conditions are checked in order of priority:
-            1. Maximum number of evaluations reached
-            2. Maximum time limit exceeded
-            3. Successful completion (neither limit reached)
-
-        Args:
-            timeout_start (float): Start time of optimization (from time.time()).
-
-        Returns:
-            str: Message describing the termination reason.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            import time
-            from spotoptim import SpotOptim
-            opt = SpotOptim(
-                fun=lambda X: np.sum(X**2, axis=1),
-                bounds=[(-5, 5), (-5, 5)],
-                max_iter=10,
-                max_time=10.0
-            )
-            # Case 1: Maximum evaluations reached
-            opt.y_ = np.zeros(20)  # Simulate 20 evaluations
-            start_time = time.time()
-            msg = opt.determine_termination(start_time)
-            print(msg)
-            ```
-            ```{python}
-            # Case 2: Time limit exceeded
-            import numpy as np
-            import time
-            from spotoptim import SpotOptim
-            opt.y_ = np.zeros(10)  # Only 10 evaluations
-            start_time = time.time() - 700  # Simulate 11.67 minutes elapsed
-            msg = opt.determine_termination(start_time)
-            print(msg)
-            ```
-            ```{python}
-            # Case 3: Successful completion
-            import numpy as np
-            import time
-            from spotoptim import SpotOptim
-            opt.y_ = np.zeros(10)  # Under max_iter
-            start_time = time.time()  # Just started
-            msg = opt.determine_termination(start_time)
-            print(msg)
-            ```
-        """
-        # Determine termination reason
-        elapsed_time = time.time() - timeout_start
-        if len(self.y_) >= self.max_iter:
-            message = f"Optimization terminated: maximum evaluations ({self.max_iter}) reached"
-        elif elapsed_time >= self.max_time * 60:
-            message = (
-                f"Optimization terminated: time limit ({self.max_time:.2f} min) reached"
-            )
-        else:
-            message = "Optimization finished successfully"
-
-        return message
-
-
-
-    def apply_penalty_NA(
-        self,
-        y: np.ndarray,
-        y_history: Optional[np.ndarray] = None,
-        penalty_value: Optional[float] = None,
-        sd: float = 0.1,
-    ) -> np.ndarray:
-        """Replace NaN and infinite values with penalty plus random noise.
-        Used in the optimize() method after function evaluations.
-        This method follows the approach from spotpython.utils.repair.apply_penalty_NA,
-        replacing NaN/inf values with a penalty value plus random noise to avoid
-        identical penalty values.
-
-        Args:
-            y (ndarray): Array of objective function values to be repaired.
-            y_history (ndarray, optional): Historical objective function values used for
-                computing penalty statistics. If None, uses y itself. Default is None.
-            penalty_value (float, optional): Value to replace NaN/inf with.
-                If None, computes penalty as: max(finite_y_history) + 3 * std(finite_y_history).
-                If all values are NaN/inf or only one finite value exists, falls back
-                to self.penalty_val. Default is None.
-            sd (float): Standard deviation for normal distributed random noise added to penalty.
-                Default is 0.1.
-
-        Returns:
-            ndarray:
-                Array with NaN/inf replaced by penalty_value + random noise
-                (normal distributed with mean 0 and standard deviation sd).
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            y_hist = np.array([1.0, 2.0, 3.0, 5.0])
-            y_new = np.array([4.0, np.nan, np.inf])
-            y_clean = opt.apply_penalty_NA(y_new, y_history=y_hist)
-            print(f"np.all(np.isfinite(y_clean)): {np.all(np.isfinite(y_clean))}")
-            print(f"y_clean: {y_clean}")
-            # NaN/inf replaced with worst value from history + 3*std + noise
-            print(f"y_clean[1] > 5.0: {y_clean[1] > 5.0}")  # Should be larger than max finite value in history
-            ```
-        """
-
-        # Ensure y is a float array (maps non-convertible values like "error" or None to nan)
-        def _safe_float(v):
-            try:
-                return float(v)
-            except (ValueError, TypeError):
-                return np.nan
-
-        y_flat = np.array(y).flatten()
-        y = np.array([_safe_float(v) for v in y_flat])
-        # Identify NaN and inf values in y
-        mask = ~np.isfinite(y)
-
-        if np.any(mask):
-            n_bad = np.sum(mask)
-
-            # Compute penalty_value if not provided
-            if penalty_value is None:
-                # Get finite values from history for statistics
-                # Use y_history if provided, otherwise fall back to y itself
-                if y_history is not None:
-                    finite_values = y_history[np.isfinite(y_history)]
-                else:
-                    # Use current y values
-                    finite_values = y[~mask]
-
-                # If we have at least 2 finite values, compute adaptive penalty
-                if len(finite_values) >= 2:
-                    max_y = np.max(finite_values)
-                    std_y = np.std(finite_values, ddof=1)
-                    penalty_value = max_y + 3.0 * std_y
-
-                    if self.verbose:
-                        print(
-                            f"Warning: Found {n_bad} NaN/inf value(s), replacing with "
-                            f"adaptive penalty (max + 3*std = {penalty_value:.4f})"
-                        )
-                else:
-                    # Fallback to self.penalty if insufficient finite values
-                    if self.penalty_val is not None:
-                        penalty_value = self.penalty_val
-                    elif len(finite_values) == 1:
-                        # Use the single finite value + a large constant
-                        penalty_value = finite_values[0] + 1000.0
-                    else:
-                        # All values are NaN/inf, use a large default
-                        penalty_value = 1e10
-
-                    if self.verbose:
-                        print(
-                            f"Warning: Found {n_bad} NaN/inf value(s), insufficient finite values "
-                            f"for adaptive penalty. Using penalty_value = {penalty_value}"
-                        )
-            else:
-                if self.verbose:
-                    print(
-                        f"Warning: Found {n_bad} NaN/inf value(s), replacing with {penalty_value} + noise"
-                    )
-
-            # Generate random noise and add to penalty
-            random_noise = self.rng.normal(0, sd, y.shape)
-            penalty_values = penalty_value + random_noise
-
-            # Replace NaN/inf with penalty + noise
-            y[mask] = penalty_values[mask]
-
-        return y
-
-
-    def _update_best_main_loop(
-        self,
-        x_next_repeated: np.ndarray,
-        y_next: np.ndarray,
-        start_time: Optional[float] = None,
-    ) -> None:
-        """Update best solution found during main optimization loop.
-        Checks if any new evaluations improve upon the current best solution.
-        If improvement is found, updates best_x_ and best_y_ attributes and
-        prints progress if verbose mode is enabled.
-
-        Args:
-            x_next_repeated (ndarray): Design points that were evaluated in transformed space,
-                shape (n_eval, n_features).
-            y_next (ndarray): Function values at x_next_repeated, shape (n_eval,).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     verbose=True
-            ... )
-            >>> # Simulate optimization state
-            >>> opt.n_iter_ = 1
-            >>> opt.best_x_ = np.array([1.0, 1.0])
-            >>> opt.best_y_ = 2.0
-            >>>
-            >>> # Case 1: New best found
-            >>> x_new = np.array([[0.1, 0.1], [0.5, 0.5]])
-            >>> y_new = np.array([0.02, 0.5])
-            >>> opt._update_best_main_loop(x_new, y_new)
-            Iteration 1: New best f(x) = 0.020000
-            >>> opt.best_y_
-            0.02
-            >>>
-            >>> # Case 2: No improvement
-            >>> opt.n_iter_ = 2
-            >>> x_no_improve = np.array([[1.5, 1.5]])
-            >>> y_no_improve = np.array([4.5])
-            >>> opt._update_best_main_loop(x_no_improve, y_no_improve)
-            Iteration 2: f(x) = 4.500000
-            >>>
-            >>> # Case 3: With noisy function
-            >>> opt_noise = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     repeats_surrogate=2,
-            ...     verbose=True
-            ... )
-            >>> opt_noise.n_iter_ = 1
-            >>> opt_noise.best_y_ = 2.0
-            >>> opt_noise.min_mean_y = 1.5
-            >>> y_noise = np.array([0.5])
-            >>> x_noise = np.array([[0.5, 0.5]])
-            >>> opt_noise._update_best_main_loop(x_noise, y_noise)
-            Iteration 1: New best f(x) = 0.500000, mean best: f(x) = 1.500000
-        """
-        # Update best
-        # Determine global best value for printing if shared variable exists
-        global_best_val = None
-        if hasattr(self, "shared_best_y") and self.shared_best_y is not None:
-            # Sync with global shared value
-            lock_obj = getattr(self, "shared_lock", None)
-            if lock_obj is not None:
-                with lock_obj:
-                    if (
-                        self.best_y_ is not None
-                        and self.best_y_ < self.shared_best_y.value
-                    ):
-                        self.shared_best_y.value = self.best_y_
-
-                    min_y_next = np.min(y_next)
-                    if min_y_next < self.shared_best_y.value:
-                        self.shared_best_y.value = min_y_next
-
-                    global_best_val = self.shared_best_y.value
-
-        current_best = np.min(y_next)
-        if current_best < self.best_y_:
-            best_idx_in_new = np.argmin(y_next)
-            # x_next_repeated is in transformed space, convert to original for storage
-            self.best_x_ = self.inverse_transform_X(
-                x_next_repeated[best_idx_in_new].reshape(1, -1)
-            )[0]
-            self.best_y_ = current_best
-
-            if self.verbose:
-                # Calculate progress
-                if self.max_time != np.inf and start_time is not None:
-                    progress = (time.time() - start_time) / (self.max_time * 60) * 100
-                    progress_str = f"Time: {progress:.1f}%"
-                else:
-                    prev_evals = sum(res.nfev for res in self.restarts_results_)
-                    progress = (prev_evals + self.counter) / self.max_iter * 100
-                    progress_str = f"Evals: {progress:.1f}%"
-
-                msg = f"Iter {self.n_iter_}"
-                if global_best_val is not None:
-                    msg += f" | GlobalBest: {global_best_val:.6f}"
-                msg += f" | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
-
-                if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-                    msg += f" | Mean Best: {self.min_mean_y:.6f}"
-
-                print(msg)
-        elif self.verbose:
-            if self.max_time != np.inf and start_time is not None:
-                progress = (time.time() - start_time) / (self.max_time * 60) * 100
-                progress_str = f"Time: {progress:.1f}%"
-            else:
-                prev_evals = sum(res.nfev for res in self.restarts_results_)
-                progress = (prev_evals + self.counter) / self.max_iter * 100
-                progress_str = f"Evals: {progress:.1f}%"
-
-            current_val = np.min(y_next)
-            msg = f"Iter {self.n_iter_}"
-            if global_best_val is not None:
-                msg += f" | GlobalBest: {global_best_val:.6f}"
-            msg += f" | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
-
-            if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-                mean_y_new = np.mean(y_next)
-                msg += f" | Mean Curr: {mean_y_new:.6f}"
-            print(msg)
-
-    def _handle_NA_new_points(
-        self, x_next: np.ndarray, y_next: np.ndarray
-    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
-        """Handle NaN/inf values in new evaluation points.
-        Applies penalties to NaN/inf values and removes any remaining invalid points.
-        If all evaluations are invalid, returns None for both arrays to signal that
-        the iteration should be skipped.
-
-        Args:
-            x_next (ndarray): Design points that were evaluated, shape (n_eval, n_features).
-            y_next (ndarray): Function values at x_next, shape (n_eval,).
-
-        Returns:
-            Tuple[Optional[ndarray], Optional[ndarray]]: Tuple of (x_clean, y_clean).
-                Both are None if all evaluations were NaN/inf (iteration should be skipped).
-                Otherwise returns filtered arrays with only finite values.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     verbose=True
-            ... )
-            >>> # Simulate optimization state
-            >>> opt.y_ = np.array([1.0, 2.0, 3.0])  # Historical values
-            >>> opt.n_iter_ = 1
-            >>>
-            >>> # Case 1: Some valid values
-            >>> x_next = np.array([[1, 2], [3, 4], [5, 6]])
-            >>> y_next = np.array([5.0, np.nan, 10.0])
-            >>> x_clean, y_clean = opt._handle_NA_new_points(x_next, y_next)
-            >>> x_clean.shape
-            (2, 2)
-            >>> y_clean.shape
-            (2,)
-            >>>
-            >>> # Case 2: All NaN/inf - should skip iteration
-            >>> x_all_bad = np.array([[1, 2], [3, 4]])
-            >>> y_all_bad = np.array([np.nan, np.inf])
-            >>> x_clean, y_clean = opt._handle_NA_new_points(x_all_bad, y_all_bad)
-            Warning: All new evaluations were NaN/inf, skipping iteration 1
-            >>> x_clean is None
-            True
-            >>> y_clean is None
-            True
-        """
-        # Handle NaN/inf values in new evaluations
-        # Use historical y values (self.y_) for computing penalty statistics
-        if self.penalty:
-            y_next = self.apply_penalty_NA(y_next, y_history=self.y_)
-
-        # Identify which points are valid (finite) BEFORE removing them
-        # Note: remove_nan filters based on y_next finite values
-
-        # Ensure y_next is a float array (maps non-convertible values like "error" or None to nan)
-        # This is critical if the objective function returns non-numeric values and penalty=False
-        if y_next.dtype == object:
-            # Use safe float conversion similar to apply_penalty_NA
-            def _safe_float(v):
-                try:
-                    return float(v)
-                except (ValueError, TypeError):
-                    return np.nan
-
-            # Reconstruct as float array
-            y_flat = np.array(y_next).flatten()
-            y_next = np.array([_safe_float(v) for v in y_flat])
-
-        finite_mask = np.isfinite(y_next)
-
-        X_next_clean, y_next_clean = self.remove_nan(
-            x_next, y_next, stop_on_zero_return=False
-        )
-
-        # If we have multi-objective values, we need to filter them too
-        # The new MO values were appended to self.y_mo in evaluate_function -> mo2so -> store_mo
-        # So self.y_mo currently contains the INVALID points at the end.
-        if self.y_mo is not None:
-            n_new = len(y_next)
-            # Check if y_mo has the new points appended
-            if len(self.y_mo) >= n_new:
-                # The new points are at the end of y_mo
-                y_mo_new = self.y_mo[-n_new:]
-                y_mo_old = self.y_mo[:-n_new]
-
-                # Filter the new MO points using the mask from y_next
-                y_mo_new_clean = y_mo_new[finite_mask]
-
-                # Reconstruct y_mo
-                if len(y_mo_old) > 0:
-                    self.y_mo = (
-                        np.vstack([y_mo_old, y_mo_new_clean])
-                        if len(y_mo_new_clean) > 0
-                        else y_mo_old
-                    )
-                else:
-                    self.y_mo = y_mo_new_clean
-            else:
-                if self.verbose:
-                    print(
-                        "Warning: y_mo size inconsistent with new points in _handle_NA_new_points"
-                    )
-
-        # Skip this iteration if all new points were NaN/inf
-        if len(y_next_clean) == 0:
-            if self.verbose:
-                print(
-                    f"Warning: All new evaluations were NaN/inf, skipping iteration {self.n_iter_}"
-                )
-            return None, None
-
-        return X_next_clean, y_next_clean
-
-    def optimize_sequential_run(
-        self,
-        timeout_start: float,
-        X0: Optional[np.ndarray] = None,
-        y0_known: Optional[float] = None,
-        max_iter_override: Optional[int] = None,
-        shared_best_y=None,
-        shared_lock=None,
-    ) -> Tuple[str, OptimizeResult]:
-        """Perform a single sequential optimization run.
-        Calls _initialize_run, rm_initial_design_NA_values, check_size_initial_design, init_storage, get_best_xy_initial_design, and _run_sequential_loop.
-
-
-        Args:
-            timeout_start (float): Start time for timeout.
-            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
-            y0_known (Optional[float]): Known best value for initial design.
-            max_iter_override (Optional[int]): Override for maximum number of iterations.
-            shared_best_y (Optional[float]): Shared best value for parallel runs.
-            shared_lock (Optional[Lock]): Shared lock for parallel runs.
-
-        Returns:
-            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
-
-        Raises:
-            ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
-
-        Examples:
-            ```{python}
-            import time
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-            opt = SpotOptim(fun=sphere,
-                            bounds=[(-5, 5), (-5, 5)],
-                            n_initial=5,
-                            max_iter=10,
-                            seed=0,
-                            n_jobs=1,  # Use sequential optimization for deterministic output
-                            verbose=True
-             )
-            status, result = opt.optimize_sequential_run(timeout_start=time.time())
-            print(status)
-            print(result.message.splitlines()[0])
-            ```
-        """
-
-        # Store shared variable if provided
-        self.shared_best_y = shared_best_y
-        self.shared_lock = shared_lock
-
-        # Initialize: Set seed, Design, Evaluate Initial Design, Init Storage & TensorBoard
-        X0, y0 = self._initialize_run(X0, y0_known)
-
-        # Handle NaN/inf values in initial design (remove invalid points)
-        X0, y0, n_evaluated = self.rm_initial_design_NA_values(X0, y0)
-
-        # Check if we have enough valid points to continue
-        self.check_size_initial_design(y0, n_evaluated)
-
-        # Initialize storage and statistics
-        self.init_storage(X0, y0)
-        self._zero_success_count = 0
-        self._success_history = []  # Clear success history for new run
-
-        # Update stats after initial design
-        self.update_stats()
-
-        # Log initial design to TensorBoard
-        self._init_tensorboard()
-
-        # Determine and report initial best
-        self.get_best_xy_initial_design()
-
-        # Run the main sequential optimization loop
-        effective_max_iter = (
-            max_iter_override if max_iter_override is not None else self.max_iter
-        )
-        return self._run_sequential_loop(timeout_start, effective_max_iter)
-
-    def _initialize_run(
-        self, X0: Optional[np.ndarray], y0_known: Optional[float]
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Initialize optimization run: seed, design generation, initial evaluation.
-        Called from optimize_sequential_run (sequential path only).
-
-        Args:
-            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
-            y0_known (Optional[float]): Known best value for initial design.
-
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: Tuple containing initial design and corresponding objective values.
-
-        Raises:
-            ValueError: If the initial design has no valid points after removing NaN/inf values, or if the initial design is too small to proceed.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     seed=0,
-            ...     x0=np.array([0.0, 0.0]),
-            ...     verbose=True
-            ... )
-            >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
-            >>> X0.shape
-            (5, 2)
-            >>> np.allclose(y0, np.sum(X0**2, axis=1))
-            True
-        """
-        # Set seed for reproducibility
-        self.set_seed()
-
-        # Set initial design (generate or process user-provided points)
-        X0 = self.get_initial_design(X0)
-
-        # Curate initial design (remove duplicates, generate additional points if needed, repeat if necessary)
-        X0 = self.curate_initial_design(X0)
-
-        # Evaluate initial design
-        if y0_known is not None and self.x0 is not None:
-            # Identify injected point to skip evaluation
-            dists = np.linalg.norm(X0 - self.x0, axis=1)
-            # Use a small tolerance for matching
-            matches = dists < 1e-9
-
-            if np.any(matches):
-                if self.verbose:
-                    print("Skipping re-evaluation of injected best point.")
-
-                # Initialize y0
-                y0 = np.empty(len(X0))
-                y0[:] = np.nan
-
-                # Set known values
-                y0[matches] = y0_known
-
-                # Evaluate others
-                not_matches = ~matches
-                if np.any(not_matches):
-                    y0_others = self.evaluate_function(X0[not_matches])
-                    y0[not_matches] = y0_others
-            else:
-                # Injected point lost during curation? Should not happen if it was unique
-                y0 = self.evaluate_function(X0)
-        else:
-            y0 = self.evaluate_function(X0)
-
-        return X0, y0
-
-
-    def update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
-        """Repeat infill point for noisy function evaluation. Used in the sequential_loop.
-        For noisy objective functions (repeats_surrogate > 1), creates multiple
-        copies of the suggested point for repeated evaluation. Otherwise, returns
-        the point in 2D array format.
-
-        Args:
-            x_next (ndarray): Next point to evaluate, shape (n_features,).
-
-        Returns:
-            ndarray: Points to evaluate, shape (repeats_surrogate, n_features)
-                or (1, n_features) if repeats_surrogate == 1.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere, noisy_sphere
-            # Without repeats
-
-            opt = SpotOptim(
-                fun=sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                repeats_surrogate=1
-            )
-            x_next = np.array([1.0, 2.0])
-            x_repeated = opt.update_repeats_infill_points(x_next)
-            print(x_repeated.shape)
-
-            # With repeats for noisy function
-            opt_noisy = SpotOptim(
-                fun=noisy_sphere,
-                bounds=[(-5, 5), (-5, 5)],
-                repeats_surrogate=3
-            )
-            x_next = np.array([1.0, 2.0])
-            x_repeated = opt_noisy.update_repeats_infill_points(x_next)
-            print(x_repeated.shape)
-            # All three copies should be identical
-            np.all(x_repeated[0] == x_repeated[1])
-            ```
-        """
-        if x_next.ndim == 1:
-            x_next = x_next.reshape(1, -1)
-
-        if self.repeats_surrogate > 1:
-            # Repeat each row repeats_surrogate times
-            # Note: np.repeat with axis=0 repeats rows [r1, r1, r2, r2...]
-            x_next_repeated = np.repeat(x_next, self.repeats_surrogate, axis=0)
-        else:
-            x_next_repeated = x_next
-        return x_next_repeated
-
-
-    def _run_sequential_loop(
-        self, timeout_start: float, effective_max_iter: int
-    ) -> Tuple[str, OptimizeResult]:
-        """Execute the main sequential optimization loop.
-
-        Args:
-             timeout_start (float): Start time for timeout.
-             effective_max_iter (int): Maximum number of iterations for this run (may be overridden for restarts).
-
-         Returns:
-             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
-
-         Raises:
-             ValueError:
-                If excessive consecutive failures occur (e.g., due to NaN/inf values in evaluations), indicating a potential issue with the objective function.
-
-         Examples:
-             >>> import time
-             >>> import numpy as np
-             >>> from spotoptim import SpotOptim
-             >>> opt = SpotOptim(
-             ...     fun=lambda X: np.sum(X**2, axis=1),
-             ...     bounds=[(-5, 5), (-5, 5)],
-             ...     n_initial=5,
-             ...     max_iter=10,
-             ...     seed=0,
-             ...     n_jobs=1,  # Use sequential optimization for deterministic output
-             ...     verbose=True
-             ... )
-             >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
-             >>> X0, y0, n_evaluated = opt.rm_initial_design_NA_values(X0, y0)
-             >>> opt.check_size_initial_design(y0, n_evaluated)
-             >>> opt.init_storage(X0, y0)
-             >>> opt._zero_success_count = 0
-             >>> opt._success_history = []
-             >>> opt.update_stats()
-             >>> opt.get_best_xy_initial_design()
-             >>> status, result = opt._run_sequential_loop(timeout_start=time.time(), effective_max_iter=10)
-             >>> print(status)
-             FINISHED
-             >>> print(result.message.splitlines()[0])
-             Optimization terminated: maximum evaluations (10) reached
-        """
-        consecutive_failures = 0
-
-        while (len(self.y_) < effective_max_iter) and (
-            time.time() < timeout_start + self.max_time * 60
-        ):
-            # Check for excessive consecutive failures (infinite loop prevention)
-            if consecutive_failures > self.max_iter:
-                msg = (
-                    f"Optimization stopped due to {consecutive_failures} consecutive "
-                    "invalid evaluations (NaN/inf). Check your objective function."
-                )
-                if self.verbose:
-                    print(f"Warning: {msg}")
-                return "FINISHED", OptimizeResult(
-                    x=self.best_x_,
-                    fun=self.best_y_,
-                    nfev=len(self.y_),
-                    nit=self.n_iter_,
-                    success=False,
-                    message=msg,
-                    X=self.X_,
-                    y=self.y_,
-                )
-
-            # Increment iteration counter. This is not the same as number of function evaluations.
-            self.n_iter_ += 1
-
-            # Fit surrogate (use mean_y if noise, otherwise y_)
-            self._fit_scheduler()
-
-            # Apply OCBA for noisy functions
-            X_ocba = self.apply_ocba()
-
-            # Suggest next point
-            x_next = self.suggest_next_infill_point()
-
-            # Repeat next point if repeats_surrogate > 1
-            x_next_repeated = self.update_repeats_infill_points(x_next)
-
-            # Append OCBA points to new design points (if applicable)
-            if X_ocba is not None:
-                x_next_repeated = append(X_ocba, x_next_repeated, axis=0)
-
-            # Evaluate next point(s) including OCBA points
-            y_next = self.evaluate_function(x_next_repeated)
-
-            # Handle NaN/inf values in new evaluations
-            x_next_repeated, y_next = self._handle_NA_new_points(
-                x_next_repeated, y_next
-            )
-            if x_next_repeated is None:
-                consecutive_failures += 1
-                continue  # Skip iteration if all evaluations were invalid
-
-            # Reset failure counter if we got valid points
-            consecutive_failures = 0
-
-            # Update success rate BEFORE updating storage (so it compares against previous best)
-            self.update_success_rate(y_next)
-
-            # Check for restart
-            if self.success_rate == 0.0:
-                self._zero_success_count += 1
-            else:
-                self._zero_success_count = 0
-
-            if self._zero_success_count >= self.restart_after_n:
-                if self.verbose:
-                    print(
-                        f"Restarting optimization: success_rate 0 for {self._zero_success_count} iterations."
-                    )
-
-                status_message = "Restart triggered due to lack of improvement."
-
-                # Expand results to full dimensions if needed
-                best_x_full = (
-                    self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-                    if self.red_dim
-                    else self.best_x_
-                )
-                X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
-
-                # Map factor variables back to original strings
-                best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
-                X_result = (
-                    self.map_to_factor_values(X_full) if self._factor_maps else X_full
-                )
-
-                res = OptimizeResult(
-                    x=best_x_result,
-                    fun=self.best_y_,
-                    nfev=len(self.y_),
-                    nit=self.n_iter_,
-                    success=False,
-                    message=status_message,
-                    X=X_result,
-                    y=self.y_,
-                )
-                return "RESTART", res
-
-            # Update storage
-            self.update_storage(x_next_repeated, y_next)
-
-            # Update stats
-            self.update_stats()
-
-            # Log to TensorBoard
-            if self.tb_writer is not None:
-                # Log each new evaluation
-                for i in range(len(y_next)):
-                    self._write_tensorboard_hparams(x_next_repeated[i], y_next[i])
-                self._write_tensorboard_scalars()
-
-            # Update best solution
-            self._update_best_main_loop(
-                x_next_repeated, y_next, start_time=timeout_start
-            )
-
-        # Expand results to full dimensions if needed
-        # Note: best_x_ and X_ are already in original scale (stored that way)
-        best_x_full = (
-            self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-            if self.red_dim
-            else self.best_x_
-        )
-        X_full = self.to_all_dim(self.X_) if self.red_dim else self.X_
-
-        # Determine termination reason
-        status_message = self.determine_termination(timeout_start)
-
-        # Append statistics to match scipy.optimize.minimize format
-        message = (
-            f"{status_message}\n"
-            f"         Current function value: {float(self.best_y_):.6f}\n"
-            f"         Iterations: {self.n_iter_}\n"
-            f"         Function evaluations: {len(self.y_)}"
-        )
-
-        # Close TensorBoard writer
-        self._close_tensorboard_writer()
-
-        # Map factor variables back to original strings for results
-        best_x_result = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
-        X_result = self.map_to_factor_values(X_full) if self._factor_maps else X_full
-
-        # Return scipy-style result
-        return "FINISHED", OptimizeResult(
-            x=best_x_result,
-            fun=self.best_y_,
-            nfev=len(self.y_),
-            nit=self.n_iter_,
-            success=True,
-            message=message,
-            X=X_result,
-            y=self.y_,
-        )
-
-    # ====================
-    # TASK_OPTIM_PARALLEL:
-    # * _update_storage_steady()
-    # * optimize_steady_state()
-    # ====================
-
-    def _update_storage_steady(self, x, y):
-        """Helper to safely append single point (for steady state).
-            This method is designed for the steady-state parallel optimization scenario, where new points are evaluated and returned asynchronously.
-            It safely appends new points to the existing storage of evaluated points and their function values,
-            while also updating the current best solution if the new point is better.
-
-        Args:
-            x (ndarray):
-                New point(s) in original scale, shape (n_features,) or (N, n_features).
-            y (float or ndarray):
-                Corresponding function value(s).
-
-        Returns:
-            None. This method updates the internal state of the optimizer.
-
-        Note:
-           - This method assumes that the caller handles any necessary synchronization if used in a parallel context
-           (e.g., using locks when updating shared state).
-
-        Raises:
-            ValueError: If the input shapes are inconsistent or if y is not a scalar when x is a single point.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_jobs=2
-            ... )
-            >>> opt._update_storage_steady(np.array([1.0, 2.0]), 5.0)
-            >>> print(opt.X_)
-            [[1. 2.]]
-            >>> print(opt.y_)
-            [5.]
-            >>> print(opt.best_x_)
-            [1. 2.]
-            >>> print(opt.best_y_)
-            5.0
-
-        """
-        x = np.atleast_2d(x)
-        if self.X_ is None:
-            self.X_ = x
-            self.y_ = np.array([y])
-        else:
-            self.X_ = np.vstack([self.X_, x])
-            self.y_ = np.append(self.y_, y)
-
-        # Update best
-        if self.best_y_ is None or y < self.best_y_:
-            self.best_y_ = y
-            self.best_x_ = x.flatten()
-
-        self.min_y = self.best_y_
-        self.min_X = self.best_x_
-
-    def optimize_steady_state(
-        self,
-        timeout_start: float,
-        X0: Optional[np.ndarray],
-        y0_known: Optional[float] = None,
-        max_iter_override: Optional[int] = None,
-    ) -> Tuple[str, OptimizeResult]:
-        """Perform steady-state asynchronous optimization (n_jobs > 1).
-        This method implements a hybrid steady-state parallelization strategy.
-        The executor types are selected at runtime based on GIL availability:
-        Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):
-            * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
-            Process isolation ensures arbitrary callables (lambdas, closures)
-            serialized with ``dill`` run safely without touching shared state.
-            * ``ThreadPoolExecutor`` (``search_pool``) — surrogate search tasks.
-            Threads share the main-process heap; zero ``dill`` overhead.
-            A ``threading.Lock`` (``_surrogate_lock``) prevents a surrogate refit
-            from racing with an in-flight search thread.
-        Free-threaded build (``python3.13t`` / ``--disable-gil``):
-            * Both ``eval_pool`` and ``search_pool`` are ``ThreadPoolExecutor``
-                instances.  Threads achieve true CPU-level parallelism without the GIL.
-                The ``dill`` serialization step for eval tasks is eliminated — ``fun``
-                is called directly from the shared heap.  The ``_surrogate_lock`` is
-                still used to serialize surrogate reads and refits.
-        Pipeline:
-            1.  Parallel Initial Design:
-                ``n_initial`` points are dispatched to ``eval_pool``.  Results are
-                collected via ``FIRST_COMPLETED`` until all initial evaluations finish.
-            2.  First Surrogate Fit:
-                Called on the main thread once all initial evaluations are in.
-                No lock is needed here because no search threads are active yet.
-            3.  Parallel Search (Thread Pool):
-                Up to ``n_jobs`` search tasks are submitted to ``search_pool``.
-                Each acquires ``_surrogate_lock`` before calling
-                ``suggest_next_infill_point()``, serializing concurrent surrogate reads.
-            4.  Steady-State Loop with Batch Dispatch:
-                - Search completes → candidate appended to ``pending_cands``.
-                - When ``len(pending_cands) >= eval_batch_size`` (or no search tasks
-                remain), all pending candidates are stacked into ``X_batch`` and
-                dispatched as a single eval call to ``eval_pool``.
-                On GIL builds this calls ``remote_batch_eval_wrapper`` (dill);
-                on free-threaded builds it calls ``fun`` directly in a thread.
-                - Batch eval completes → storage updated for every point, surrogate
-                refit once under ``_surrogate_lock``, new search slots filled.
-                - ``eval_batch_size=1`` (default) dispatches immediately on each
-                search completion, preserving the original one-point behavior.
-                - This cycle continues until ``max_iter`` evaluations or ``max_time``
-                minutes is reached.
-        The optimization terminates when either:
-        - Total function evaluations reach ``max_iter`` (including initial design), OR
-        - Runtime exceeds ``max_time`` minutes
-
-        Args:
-            timeout_start (float): Start time for timeout.
-            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
-            y0_known (Optional[float]): Known best objective value from a previous run.
-                When provided together with ``self.x0``, the matching point in the initial
-                design is pre-filled with this value and not re-submitted to the worker
-                pool, saving one evaluation per restart (restart injection).
-            max_iter_override (Optional[int]): Override for maximum number of iterations.
-
-        Raises:
-            RuntimeError: If all initial design evaluations fail, likely due to
-                pickling issues or missing imports in the worker process.
-                The error message provides guidance on how to address this issue.
-
-        Returns:
-            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
-
-        Examples:
-            ```{python}
-            import time
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-            opt = SpotOptim(
-                 fun=sphere,
-                 bounds=[(-5, 5), (-5, 5)],
-                 n_initial=5,
-                 max_iter=10,
-                 seed=0,
-                 n_jobs=2,
-            )
-            status, result = opt.optimize_steady_state(timeout_start=time.time(), X0=None)
-            print(status)
-            print(result.message.splitlines()[0])
-            ```
-        """
-        # Setup similar to _optimize_single_run
-        self.set_seed()
-        X0 = self.get_initial_design(X0)
-        X0 = self.curate_initial_design(X0)
-
-        # Restart injection: if a known best value is provided, pre-fill the matching
-        # point in the initial design so it is not re-submitted to the worker pool.
-        # This mirrors the logic in _initialize_run() used by the sequential path.
-        y0_prefilled = np.full(len(X0), np.nan)
-        if y0_known is not None and self.x0 is not None:
-            dists = np.linalg.norm(X0 - self.x0, axis=1)
-            matches = dists < 1e-9
-            if np.any(matches):
-                if self.verbose:
-                    print("Skipping re-evaluation of injected best point.")
-                y0_prefilled[matches] = y0_known
-
-        # We need to know how many evaluations to do
-        effective_max_iter = (
-            max_iter_override if max_iter_override is not None else self.max_iter
-        )
-
-        # Import dill locally (assuming installed)
-        import dill
-
-        from contextlib import ExitStack
-        from concurrent.futures import (
-            ProcessPoolExecutor,
-            ThreadPoolExecutor,
-            wait,
-            FIRST_COMPLETED,
-        )
-
-        # Detect free-threaded (no-GIL) Python build (3.13+).
-        # On free-threaded builds ThreadPoolExecutor gives true CPU parallelism,
-        # so we can use threads for eval too and skip dill serialization entirely.
-        _no_gil = is_gil_disabled()
-
-        # Lock that serialises surrogate access:
-        #   - search threads call suggest_next_infill_point() under the lock
-        #   - the main thread calls _fit_scheduler() under the lock after each eval
-        # This prevents a surrogate refit from racing with an in-flight search.
-        _surrogate_lock = threading.Lock()
-
-        def _thread_search_task():
-            """Search task for ThreadPoolExecutor: direct call, no dill."""
-            with _surrogate_lock:
-                return self.suggest_next_infill_point()
-
-        def _thread_eval_task_single(x):
-            """Thread-based single-point eval for free-threaded Python (no dill)."""
-            try:
-                x_2d = x.reshape(1, -1)
-                y_arr = self.evaluate_function(x_2d)
-                return x, y_arr[0]
-            except Exception as e:
-                return None, e
-
-        def _thread_batch_eval_task(X_batch):
-            """Thread-based batch eval for free-threaded Python (no dill)."""
-            try:
-                y_batch = self.evaluate_function(X_batch)
-                return X_batch, y_batch
-            except Exception as e:
-                return None, e
-
-        # Build executor pair:
-        #   GIL build     → eval: ProcessPoolExecutor, search: ThreadPoolExecutor
-        #   No-GIL build  → eval: ThreadPoolExecutor,  search: ThreadPoolExecutor
-        with ExitStack() as _stack:
-            eval_pool = _stack.enter_context(
-                ThreadPoolExecutor(max_workers=self.n_jobs)
-                if _no_gil
-                else ProcessPoolExecutor(max_workers=self.n_jobs)
-            )
-            search_pool = _stack.enter_context(
-                ThreadPoolExecutor(max_workers=self.n_jobs)
-            )
-            futures = {}  # map future -> type ('eval', 'search')
-
-            # --- Phase 1: Initial Design Evaluation ---
-            # Pre-filled points (restart injection) are stored on the main thread;
-            # all remaining points are submitted to eval_pool concurrently.
-            n_to_submit = 0
-            for i, x in enumerate(X0):
-                if np.isfinite(y0_prefilled[i]):
-                    # Known from restart injection — store directly, skip the pool.
-                    self._update_storage_steady(x, y0_prefilled[i])
-                    continue
-                if _no_gil:
-                    # Free-threaded: call fun directly in a thread — no dill.
-                    fut = eval_pool.submit(_thread_eval_task_single, x)
-                else:
-                    # GIL build: serialize with dill for process isolation.
-                    _tb_writer_temp = self.tb_writer
-                    self.tb_writer = None
-                    try:
-                        pickled_args = dill.dumps((self, x))
-                    finally:
-                        self.tb_writer = _tb_writer_temp
-                    fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
-                futures[fut] = "eval"
-                n_to_submit += 1
-
-            if self.verbose:
-                n_injected = int(np.sum(np.isfinite(y0_prefilled)))
-                suffix = (
-                    f" ({n_injected} injected from restart, skipped re-evaluation)."
-                    if n_injected
-                    else "."
-                )
-                print(
-                    f"Submitted {n_to_submit} initial points for parallel evaluation{suffix}"
-                )
-
-            # Wait for all submitted initial evaluations to complete.
-            initial_done_count = 0
-            while initial_done_count < n_to_submit:
-                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
-                for fut in done:
-                    # Clean up
-                    ftype = futures.pop(fut)
-                    if ftype != "eval":
-                        continue
-
-                    try:
-                        x_done, y_done = fut.result()
-                        if isinstance(y_done, Exception):
-                            if self.verbose:
-                                print(f"Eval failed: {y_done}")
-                        else:
-                            self._update_storage_steady(x_done, y_done)
-                    except Exception as e:
-                        if self.verbose:
-                            print(f"Task failed: {e}")
-
-                    initial_done_count += 1
-
-            # Init tensorboard and stats
-            self._init_tensorboard()
-
-            if self.y_ is None or len(self.y_) == 0:
-                raise RuntimeError(
-                    "All initial design evaluations failed. "
-                    "Check your objective function for pickling issues or missing imports (e.g. numpy) in the worker process. "
-                    "If defining functions in a notebook/script, ensure imports are inside the function."
-                )
-
-            self.update_stats()
-            self.get_best_xy_initial_design()
-
-            # Fit first surrogate (no lock needed — no search threads active yet)
-            if self.verbose:
-                print(
-                    f"Initial design evaluated. Fitting surrogate... (Data size: {len(self.y_)})"
-                )
-            self._fit_scheduler()
-
-            # --- Phase 2: Steady State Loop ---
-            if self.verbose:
-                print("Starting steady-state optimization loop...")
-
-            # Candidates returned by search tasks, waiting to form the next batch.
-            pending_cands: list = []
-
-            # Maps each in-flight batch_eval future → number of points it carries.
-            # Used for accurate budget accounting: reserved = committed + in_flight
-            # + pending, so we never over-dispatch search tasks.
-            _future_n_pts: dict = {}
-
-            def _flush_batch() -> None:
-                """Dispatch all pending_cands as a single batch eval task."""
-                nonlocal pending_cands
-                X_batch = np.vstack(pending_cands)
-                n_in_batch = len(pending_cands)
-                pending_cands = []
-                if _no_gil:
-                    # Free-threaded: call fun directly in a thread — no dill.
-                    fut_eval = eval_pool.submit(_thread_batch_eval_task, X_batch)
-                else:
-                    # GIL build: serialize with dill for process isolation.
-                    _tb_writer_temp = self.tb_writer
-                    self.tb_writer = None
-                    try:
-                        pickled_args = dill.dumps((self, X_batch))
-                    finally:
-                        self.tb_writer = _tb_writer_temp
-                    fut_eval = eval_pool.submit(remote_batch_eval_wrapper, pickled_args)
-                futures[fut_eval] = "batch_eval"
-                _future_n_pts[fut_eval] = n_in_batch
-
-            def _batch_ready() -> bool:
-                """True when pending_cands should be flushed to eval_pool."""
-                if not pending_cands:
-                    return False
-                if len(pending_cands) >= self.eval_batch_size:
-                    return True
-                # Flush early if no search tasks remain — prevents starvation
-                # when budget is nearly exhausted and no new searches will run.
-                return not any(t == "search" for t in futures.values())
-
-            while (len(self.y_) < effective_max_iter) and (
-                time.time() < timeout_start + self.max_time * 60
-            ):
-                # 1. Flush pending candidates if the batch threshold is reached
-                #    or if no search tasks are in flight (starvation guard).
-                if _batch_ready():
-                    _flush_batch()
-
-                # 2. Fill open slots with search tasks (thread pool).
-                n_active = len(futures)
-                n_slots = self.n_jobs - n_active
-
-                if n_slots > 0:
-                    for _ in range(n_slots):
-                        # Budget: committed evals + in-flight eval points
-                        #         + in-flight search tasks (each yields 1 cand)
-                        #         + candidates not yet dispatched.
-                        n_in_flight = sum(_future_n_pts.values())
-                        n_searches = sum(1 for t in futures.values() if t == "search")
-                        reserved = (
-                            len(self.y_) + n_in_flight + n_searches + len(pending_cands)
-                        )
-                        if reserved < effective_max_iter:
-                            # Search runs in a thread — no dill serialization;
-                            # _thread_search_task holds _surrogate_lock.
-                            fut = search_pool.submit(_thread_search_task)
-                            futures[fut] = "search"
-                        else:
-                            break
-
-                # 3. Flush again — new slot-filling may have pushed batch over
-                #    the threshold (e.g. no budget left for more searches).
-                if _batch_ready():
-                    _flush_batch()
-
-                if not futures and not pending_cands:
-                    break  # Nothing left to do
-
-                if not futures:
-                    # Pending candidates but no in-flight futures — flush now.
-                    _flush_batch()
-                    continue
-
-                # 4. Wait for any future to complete.
-                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
-                for fut in done:
-                    ftype = futures.pop(fut)
-                    try:
-                        res = fut.result()
-                        if isinstance(res, Exception):
-                            if self.verbose:
-                                print(f"Remote {ftype} failed: {res}")
-                            # Failed search → slot freed; loop refills next iter.
-                            # Failed batch_eval → points lost (budget not charged).
-                            _future_n_pts.pop(fut, None)
-                            continue
-
-                        if ftype == "search":
-                            x_cand = res
-                            pending_cands.append(x_cand)
-                            # Flush immediately if batch threshold reached —
-                            # avoids an extra loop iteration for batch_size=1.
-                            if _batch_ready():
-                                _flush_batch()
-
-                        elif ftype == "batch_eval":
-                            _future_n_pts.pop(fut, None)
-                            X_done, y_done = res
-                            if isinstance(y_done, Exception):
-                                if self.verbose:
-                                    print(f"Batch eval failed: {y_done}")
-                            else:
-                                # Update storage for every point in the batch.
-                                for xi, yi in zip(X_done, y_done):
-                                    self.update_success_rate(np.array([yi]))
-                                    self._update_storage_steady(xi, yi)
-                                    self.n_iter_ += 1
-
-                                if self.verbose:
-                                    if self.max_time != np.inf:
-                                        prog_val = (
-                                            (time.time() - timeout_start)
-                                            / (self.max_time * 60)
-                                            * 100
-                                        )
-                                        progress_str = f"Time: {prog_val:.1f}%"
-                                    else:
-                                        prog_val = (
-                                            len(self.y_) / effective_max_iter * 100
-                                        )
-                                        progress_str = f"Evals: {prog_val:.1f}%"
-
-                                    print(
-                                        f"Iter {len(self.y_)}/{effective_max_iter}"
-                                        f" | Best: {self.best_y_:.6f}"
-                                        f" | Rate: {self.success_rate:.2f}"
-                                        f" | {progress_str}"
-                                    )
-
-                                # Single surrogate refit for the whole batch —
-                                # held under the lock so in-flight search threads
-                                # do not read a partially-updated model.
-                                with _surrogate_lock:
-                                    self._fit_scheduler()
-
-                    except Exception as e:
-                        _future_n_pts.pop(fut, None)
-                        if self.verbose:
-                            print(f"Error processing future: {e}")
-
-        return "FINISHED", OptimizeResult(
-            x=self.best_x_,
-            fun=self.best_y_,
-            nfev=len(self.y_),
-            nit=self.n_iter_,
-            success=True,
-            message="Optimization finished (Steady State)",
-            X=self.X_,
-            y=self.y_,
-        )
 
 
     # ====================
