@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv pip install --system build
-          uv pip install --system -e ".[dev]"
+          uv pip install --system -e ".[dev,docs]"
 
       - name: Run tests
         run: |

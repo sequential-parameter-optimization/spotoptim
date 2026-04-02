@@ -2805,7 +2805,6 @@ class SpotOptim(BaseEstimator):
     # * _try_fallback_strategy()
     # * get_shape()
     # * optimize_acquisition_func()
-    # * _optimize_run_task()
     # ====================
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
@@ -3771,49 +3770,6 @@ class SpotOptim(BaseEstimator):
                 return self._optimize_acquisition_tricands()
         else:
             return self._optimize_acquisition_scipy()
-
-
-    def _optimize_run_task(
-        self,
-        seed: int,
-        timeout_start: float,
-        X0: Optional[np.ndarray],
-        y0_known_val: Optional[float],
-        max_iter_override: Optional[int],
-        shared_best_y=None,  # Accept shared value
-        shared_lock=None,  # Accept shared lock
-    ) -> Tuple[str, OptimizeResult]:
-        """Helper to run a single optimization task with a specific seed. Calls _optimize_single_run.
-
-        Args:
-            seed (int): Seed for this run.
-            timeout_start (float): Start time for timeout.
-            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
-            y0_known_val (Optional[float]): Known best value for initial design.
-            max_iter_override (Optional[int]): Override for maximum number of iterations.
-            shared_best_y (Optional[float]): Shared best value for parallel runs.
-            shared_lock (Optional[Lock]): Shared lock for parallel runs.
-
-        Returns:
-            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
-        """
-        # Set the seed for this run
-        self.seed = seed
-        self.set_seed()
-
-        # Re-initialize LHS sampler with new seed to ensure diversity in initial design
-        if hasattr(self, "n_dim"):
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
-
-        return self._optimize_single_run(
-            timeout_start,
-            X0,
-            y0_known=y0_known_val,
-            max_iter_override=max_iter_override,
-            shared_best_y=shared_best_y,
-            shared_lock=shared_lock,
-        )
-
 
     # ====================
     # TASK_OPTIM_SEQ:

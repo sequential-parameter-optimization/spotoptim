@@ -63,8 +63,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          # Use pyproject.toml [dev] dependencies to install quartodoc safely
-          uv sync --group dev
+          # Use pyproject.toml [dev] and docs extras to install quartodoc safely
+          uv sync --group dev --extra docs
 
       - name: Install Quarto CLI ${{ env.QUARTO_VERSION }}
         uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.1.2

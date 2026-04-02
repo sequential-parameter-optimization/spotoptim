@@ -75,7 +75,6 @@ description: "Structure of the Methods"
 * _try_fallback_strategy()
 * get_shape()
 * optimize_acquisition_func()
-* _optimize_run_task()
 
 ### TASK_OPTIM_SEQ:
 
