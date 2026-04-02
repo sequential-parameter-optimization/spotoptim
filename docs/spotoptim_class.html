@@ -1951,7 +1951,8 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
   <li><a href="#task_vars" id="toc-task_vars" class="nav-link" data-scroll-target="#task_vars">TASK_VARS:</a></li>
   <li><a href="#task_save_load" id="toc-task_save_load" class="nav-link" data-scroll-target="#task_save_load">TASK_SAVE_LOAD:</a></li>
   <li><a href="#task_dim" id="toc-task_dim" class="nav-link" data-scroll-target="#task_dim">TASK_DIM:</a></li>
@@ -1960,13 +1961,15 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#task_surrogate" id="toc-task_surrogate" class="nav-link" data-scroll-target="#task_surrogate">TASK_Surrogate:</a></li>
   <li><a href="#task_predict" id="toc-task_predict" class="nav-link" data-scroll-target="#task_predict">TASK_PREDICT:</a></li>
   <li><a href="#task_optim" id="toc-task_optim" class="nav-link" data-scroll-target="#task_optim">TASK_OPTIM:</a></li>
+  <li><a href="#task_optim_seq" id="toc-task_optim_seq" class="nav-link" data-scroll-target="#task_optim_seq">TASK_OPTIM_SEQ:</a></li>
+  <li><a href="#task_optim_parallel" id="toc-task_optim_parallel" class="nav-link" data-scroll-target="#task_optim_parallel">TASK_OPTIM_PARALLEL:</a></li>
   <li><a href="#task_mo" id="toc-task_mo" class="nav-link" data-scroll-target="#task_mo">TASK_MO:</a></li>
   <li><a href="#task_ocba" id="toc-task_ocba" class="nav-link" data-scroll-target="#task_ocba">TASK_OCBA:</a></li>
   <li><a href="#task_select" id="toc-task_select" class="nav-link" data-scroll-target="#task_select">TASK_SELECT:</a></li>
-  <li><a href="#task_optim_seq" id="toc-task_optim_seq" class="nav-link" data-scroll-target="#task_optim_seq">TASK_OPTIM_SEQ:</a></li>
-  <li><a href="#task_optim_parallel" id="toc-task_optim_parallel" class="nav-link" data-scroll-target="#task_optim_parallel">TASK_OPTIM_PARALLEL:</a></li>
   <li><a href="#task_stats" id="toc-task_stats" class="nav-link" data-scroll-target="#task_stats">TASK_STATS:</a></li>
   <li><a href="#task_results" id="toc-task_results" class="nav-link" data-scroll-target="#task_results">TASK_RESULTS:</a></li>
+  </ul></li>
+  <li><a href="#the-surrogate-model-based-optimization-process" id="toc-the-surrogate-model-based-optimization-process" class="nav-link" data-scroll-target="#the-surrogate-model-based-optimization-process">The Surrogate-model-based Optimization Process</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/spotoptim_class.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -2000,9 +2003,8 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
-</section>
-<section id="task_vars" class="level1">
-<h1>TASK_VARS:</h1>
+<section id="task_vars" class="level3">
+<h3 class="anchored" data-anchor-id="task_vars">TASK_VARS:</h3>
 <ul>
 <li>detect_var_type</li>
 <li>modify_bounds_based_on_var_type</li>
@@ -2011,23 +2013,23 @@ ul.task-list li input[type="checkbox"] {
 <li>process_factor_bounds</li>
 </ul>
 </section>
-<section id="task_save_load" class="level1">
-<h1>TASK_SAVE_LOAD:</h1>
+<section id="task_save_load" class="level3">
+<h3 class="anchored" data-anchor-id="task_save_load">TASK_SAVE_LOAD:</h3>
 <ul>
 <li>get_pickle_safe_optimizer</li>
 <li>reinitialize_components</li>
 </ul>
 </section>
-<section id="task_dim" class="level1">
-<h1>TASK_DIM:</h1>
+<section id="task_dim" class="level3">
+<h3 class="anchored" data-anchor-id="task_dim">TASK_DIM:</h3>
 <ul>
 <li>setup_dimension_reduction()</li>
 <li>to_red_dim()</li>
 <li>to_all_dim()</li>
 </ul>
 </section>
-<section id="task_transform" class="level1">
-<h1>TASK_TRANSFORM:</h1>
+<section id="task_transform" class="level3">
+<h3 class="anchored" data-anchor-id="task_transform">TASK_TRANSFORM:</h3>
 <ul>
 <li>transform_value()</li>
 <li>inverse_transform_value()</li>
@@ -2037,60 +2039,81 @@ ul.task-list li input[type="checkbox"] {
 <li>map_to_factor_values()</li>
 </ul>
 </section>
-<section id="task_init_design" class="level1">
-<h1>TASK_INIT_DESIGN:</h1>
+<section id="task_init_design" class="level3">
+<h3 class="anchored" data-anchor-id="task_init_design">TASK_INIT_DESIGN:</h3>
 <ul>
 <li>get_initial_design()</li>
 <li>generate_initial_design()</li>
 <li>curate_initial_design()</li>
-<li>rm_initial_design_NA_values()</li>
 <li>validate_x0()</li>
-<li>check_size_initial_design()</li>
-<li>get_best_xy_initial_design()</li>
 </ul>
 </section>
-<section id="task_surrogate" class="level1">
-<h1>TASK_Surrogate:</h1>
+<section id="task_surrogate" class="level3">
+<h3 class="anchored" data-anchor-id="task_surrogate">TASK_Surrogate:</h3>
 <ul>
 <li>init_surrogate()</li>
-<li>_fit_surrogate() *_fit_scheduler()</li>
+<li>_fit_surrogate()</li>
+<li>_fit_scheduler()</li>
 </ul>
 </section>
-<section id="task_predict" class="level1">
-<h1>TASK_PREDICT:</h1>
+<section id="task_predict" class="level3">
+<h3 class="anchored" data-anchor-id="task_predict">TASK_PREDICT:</h3>
 <ul>
 <li>_predict_with_uncertainty()</li>
 <li>_acquisition_function()</li>
 </ul>
 </section>
-<section id="task_optim" class="level1">
-<h1>TASK_OPTIM:</h1>
+<section id="task_optim" class="level3">
+<h3 class="anchored" data-anchor-id="task_optim">TASK_OPTIM:</h3>
 <ul>
-<li>evaluate_function()</li>
-<li>_optimize_acquisition_tricands()</li>
-<li>_prepare_de_kwargs()</li>
-<li>_optimize_acquisition_de()</li>
-<li>_optimize_acquisition_scipy()</li>
-<li>_try_optimizer_candidates()</li>
-<li>remove_nan()</li>
-<li>_handle_acquisition_failure()</li>
-<li>_try_fallback_strategy()</li>
-<li>get_shape()</li>
-<li>optimize_acquisition_func()</li>
-<li>_optimize_run_task()</li>
-<li>optimize()</li>
-<li>execute_optimization_run()</li>
+<li><p>optimize()</p></li>
+<li><p>execute_optimization_run()</p></li>
+<li><p>evaluate_function()</p></li>
+<li><p>get_best_xy_initial_design()</p></li>
+<li><p>_optimize_acquisition_tricands()</p></li>
+<li><p>_prepare_de_kwargs()</p></li>
+<li><p>_optimize_acquisition_de()</p></li>
+<li><p>_optimize_acquisition_scipy()</p></li>
+<li><p>_try_optimizer_candidates()</p></li>
+<li><p>remove_nan()</p></li>
+<li><p>_handle_acquisition_failure()</p></li>
+<li><p>_try_fallback_strategy()</p></li>
+<li><p>get_shape()</p></li>
+<li><p>optimize_acquisition_func()</p></li>
+<li><p>_optimize_run_task()</p></li>
 </ul>
 </section>
-<section id="task_mo" class="level1">
-<h1>TASK_MO:</h1>
+<section id="task_optim_seq" class="level3">
+<h3 class="anchored" data-anchor-id="task_optim_seq">TASK_OPTIM_SEQ:</h3>
+<ul>
+<li><p>optimize_sequential_run()</p></li>
+<li><p>_initialize_run()</p></li>
+<li><p>rm_initial_design_NA_values()</p></li>
+<li><p>check_size_initial_design()</p></li>
+<li><p>_run_sequential_loop()</p></li>
+<li><p>determine_termination()</p></li>
+<li><p>apply_penalty_NA()</p></li>
+<li><p>update_best_main_loop()</p></li>
+<li><p>handle_NA_new_points()</p></li>
+<li><p>update_repeats_infill_points()</p></li>
+</ul>
+</section>
+<section id="task_optim_parallel" class="level3">
+<h3 class="anchored" data-anchor-id="task_optim_parallel">TASK_OPTIM_PARALLEL:</h3>
+<ul>
+<li>_update_storage_steady()</li>
+<li>optimize_steady_state()</li>
+</ul>
+</section>
+<section id="task_mo" class="level3">
+<h3 class="anchored" data-anchor-id="task_mo">TASK_MO:</h3>
 <ul>
 <li>store_mo()</li>
 <li>mo2so()</li>
 </ul>
 </section>
-<section id="task_ocba" class="level1">
-<h1>TASK_OCBA:</h1>
+<section id="task_ocba" class="level3">
+<h3 class="anchored" data-anchor-id="task_ocba">TASK_OCBA:</h3>
 <ul>
 <li>apply_ocba()</li>
 <li>get_ranks()</li>
@@ -2098,8 +2121,8 @@ ul.task-list li input[type="checkbox"] {
 <li>get_ocba_X()</li>
 </ul>
 </section>
-<section id="task_select" class="level1">
-<h1>TASK_SELECT:</h1>
+<section id="task_select" class="level3">
+<h3 class="anchored" data-anchor-id="task_select">TASK_SELECT:</h3>
 <ul>
 <li>select_distant_points()</li>
 <li>select_best_cluster()</li>
@@ -2108,28 +2131,8 @@ ul.task-list li input[type="checkbox"] {
 <li>suggest_next_infill_point()</li>
 </ul>
 </section>
-<section id="task_optim_seq" class="level1">
-<h1>TASK_OPTIM_SEQ:</h1>
-<ul>
-<li>determine_termination()</li>
-<li>apply_penalty_NA()</li>
-<li>update_best_main_loop()</li>
-<li>handle_NA_new_points()</li>
-<li>optimize_sequential_run()</li>
-<li>_initialize_run()</li>
-<li>update_repeats_infill_points()</li>
-<li>_run_sequential_loop()</li>
-</ul>
-</section>
-<section id="task_optim_parallel" class="level1">
-<h1>TASK_OPTIM_PARALLEL:</h1>
-<ul>
-<li>_update_storage_steady()</li>
-<li>optimize_steady_state()</li>
-</ul>
-</section>
-<section id="task_stats" class="level1">
-<h1>TASK_STATS:</h1>
+<section id="task_stats" class="level3">
+<h3 class="anchored" data-anchor-id="task_stats">TASK_STATS:</h3>
 <ul>
 <li>init_storage()</li>
 <li>update_storage()</li>
@@ -2140,8 +2143,8 @@ ul.task-list li input[type="checkbox"] {
 <li>get_best_hyperparameters</li>
 </ul>
 </section>
-<section id="task_results" class="level1">
-<h1>TASK_RESULTS:</h1>
+<section id="task_results" class="level3">
+<h3 class="anchored" data-anchor-id="task_results">TASK_RESULTS:</h3>
 <ul>
 <li>save_result()</li>
 <li>load_result()</li>
@@ -2158,6 +2161,10 @@ ul.task-list li input[type="checkbox"] {
 <li>sensitivity_spearman()</li>
 <li>get_stars()</li>
 </ul>
+</section>
+</section>
+<section id="the-surrogate-model-based-optimization-process" class="level2">
+<h2 class="anchored" data-anchor-id="the-surrogate-model-based-optimization-process">The Surrogate-model-based Optimization Process</h2>
 
 
 </section>
