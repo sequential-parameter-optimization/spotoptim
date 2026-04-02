@@ -102,7 +102,7 @@ def test_selection_logic_deterministic():
     # Also verify s1 was never fitted? (Well, SpotOptim fits self.surrogate.
     # If s1 was never selected, it might not be fitted unless initially fitted?)
     # SpotOptim init sets self.surrogate = list[0]. But first fit happens in loop?
-    # Actually, `optimize()` does `_fit_scheduler()` inside loop.
+    # Actually, `optimize()` does `fit_scheduler()` inside loop.
     # Initial design evaluation doesn't trigger fit. First fit is after N_initial.
     # So s1 (idx 0) might be set initially but if first selection picks s2, s1.fit is never called.
 
@@ -127,16 +127,16 @@ def test_reproducibility_of_sequence():
     )
 
     # Collect sequence of surrogates used
-    # We can mock _fit_surrogate to record selection
+    # We can mock fit_surrogate to record selection
     sequence1 = []
 
-    original_fit = opt1._fit_surrogate
+    original_fit = opt1.fit_surrogate
 
     def fit_hook(X, y):
         sequence1.append(opt1.surrogate.name)
         return original_fit(X, y)
 
-    opt1._fit_surrogate = fit_hook
+    opt1.fit_surrogate = fit_hook
     opt1.optimize()
 
     # Run 2
@@ -150,13 +150,13 @@ def test_reproducibility_of_sequence():
     )
 
     sequence2 = []
-    original_fit2 = opt2._fit_surrogate
+    original_fit2 = opt2.fit_surrogate
 
     def fit_hook2(X, y):
         sequence2.append(opt2.surrogate.name)
         return original_fit2(X, y)
 
-    opt2._fit_surrogate = fit_hook2
+    opt2.fit_surrogate = fit_hook2
     opt2.optimize()
 
     assert sequence1 == sequence2
@@ -178,13 +178,13 @@ def test_integration_loop_alternating():
     )
 
     names = set()
-    original_fit = opt._fit_surrogate
+    original_fit = opt.fit_surrogate
 
     def fit_hook(X, y):
         names.add(opt.surrogate.name)
         return original_fit(X, y)
 
-    opt._fit_surrogate = fit_hook
+    opt.fit_surrogate = fit_hook
     opt.optimize()
 
     # With enough iterations and 50/50, both should be selected

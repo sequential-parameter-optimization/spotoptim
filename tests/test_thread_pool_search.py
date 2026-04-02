@@ -230,7 +230,7 @@ class TestRemoteSearchTaskBackwardCompat:
         np.random.seed(0)
         opt.X_ = np.random.uniform(-5, 5, (8, 2))
         opt.y_ = sphere(opt.X_)
-        opt._fit_surrogate(opt.X_, opt.y_)
+        opt.fit_surrogate(opt.X_, opt.y_)
 
         pickled = dill.dumps(opt)
         result = remote_search_task(pickled)
@@ -262,7 +262,7 @@ class TestThreadSafety:
         X_init = np.random.default_rng(0).uniform(-5, 5, (8, 2))
         opt.X_ = X_init
         opt.y_ = sphere(X_init)
-        opt._fit_surrogate(opt.X_, opt.y_)
+        opt.fit_surrogate(opt.X_, opt.y_)
 
         lock = threading.Lock()
         errors = []

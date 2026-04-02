@@ -16,8 +16,8 @@ def sphere(X):
     return np.sum(X**2, axis=1)
 
 
-def test_select_distant_points_basic():
-    """Test basic functionality of select_distant_points method."""
+def test_fit_select_distant_points_basic():
+    """Test basic functionality of fit_select_distant_points method."""
     optimizer = SpotOptim(
         fun=sphere,
         bounds=[(-5, 5), (-5, 5)],
@@ -31,7 +31,7 @@ def test_select_distant_points_basic():
     y = np.array([1, 2, 3, 4, 5])
     k = 3
 
-    selected_X, selected_y = optimizer.select_distant_points(X, y, k)
+    selected_X, selected_y = optimizer.fit_select_distant_points(X, y, k)
 
     # Check shapes
     assert selected_X.shape == (
@@ -47,8 +47,8 @@ def test_select_distant_points_basic():
         ), "Selected point not in original set"
 
 
-def test_select_best_cluster_basic():
-    """Test basic functionality of select_best_cluster method."""
+def test_fit_select_best_cluster_basic():
+    """Test basic functionality of fit_select_best_cluster method."""
     optimizer = SpotOptim(
         fun=sphere,
         bounds=[(-5, 5), (-5, 5)],
@@ -62,7 +62,7 @@ def test_select_best_cluster_basic():
     y = np.array([1, 1.1, 1.2, 10, 10.1])
     k = 2
 
-    selected_X, selected_y = optimizer.select_best_cluster(X, y, k)
+    selected_X, selected_y = optimizer.fit_select_best_cluster(X, y, k)
 
     # Check that we got points back
     assert selected_X.shape[0] > 0, "No points selected"
@@ -78,7 +78,7 @@ def test_select_best_cluster_basic():
     assert np.mean(selected_y) < 5, "Expected best cluster with smaller y values"
 
 
-def test_selection_dispatcher_distant():
+def test_fit_selection_dispatcher_distant():
     """Test selection dispatcher with 'distant' method."""
     optimizer = SpotOptim(
         fun=sphere,
@@ -91,13 +91,13 @@ def test_selection_dispatcher_distant():
     X = np.random.rand(20, 2)
     y = np.random.rand(20)
 
-    selected_X, selected_y = optimizer._selection_dispatcher(X, y)
+    selected_X, selected_y = optimizer.fit_selection_dispatcher(X, y)
 
     assert selected_X.shape == (3, 2), "Expected 3 points selected"
     assert selected_y.shape == (3,), "Expected 3 y values selected"
 
 
-def test_selection_dispatcher_best():
+def test_fit_selection_dispatcher_best():
     """Test selection dispatcher with 'best' method."""
     optimizer = SpotOptim(
         fun=sphere,
@@ -110,14 +110,14 @@ def test_selection_dispatcher_best():
     X = np.random.rand(20, 2)
     y = np.random.rand(20)
 
-    selected_X, selected_y = optimizer._selection_dispatcher(X, y)
+    selected_X, selected_y = optimizer.fit_selection_dispatcher(X, y)
 
     # Should return points from best cluster (not necessarily exactly 3)
     assert selected_X.shape[0] > 0, "Expected some points selected"
     assert selected_y.shape[0] > 0, "Expected some y values selected"
 
 
-def test_selection_dispatcher_no_limit():
+def test_fit_selection_dispatcher_no_limit():
     """Test selection dispatcher when max_surrogate_points is None."""
     optimizer = SpotOptim(
         fun=sphere,
@@ -130,7 +130,7 @@ def test_selection_dispatcher_no_limit():
     X = np.random.rand(20, 2)
     y = np.random.rand(20)
 
-    selected_X, selected_y = optimizer._selection_dispatcher(X, y)
+    selected_X, selected_y = optimizer.fit_selection_dispatcher(X, y)
 
     # Should return all points
     assert selected_X.shape == X.shape, "Expected all points returned"
@@ -164,7 +164,7 @@ def test_fit_surrogate_with_selection():
     y_all = np.concatenate([y, y_extra])
 
     # Fit surrogate - should trigger selection
-    optimizer._fit_surrogate(X_all, y_all)
+    optimizer.fit_surrogate(X_all, y_all)
 
     # Verify surrogate is fitted
     X_test = np.array([[0, 0]])
@@ -230,7 +230,7 @@ def test_too_few_points_for_clustering():
 
     # Should raise an error from KMeans
     with pytest.raises(ValueError):
-        optimizer.select_distant_points(X, y, k)
+        optimizer.fit_select_distant_points(X, y, k)
 
 
 def test_identical_points_handling():
@@ -247,7 +247,7 @@ def test_identical_points_handling():
     X = np.array([[1, 1], [1, 1], [2, 2], [3, 3], [4, 4]])
     y = np.array([1, 1, 2, 3, 4])
 
-    selected_X, selected_y = optimizer.select_distant_points(X, y, 3)
+    selected_X, selected_y = optimizer.fit_select_distant_points(X, y, 3)
 
     assert selected_X.shape == (3, 2), "Expected 3 points selected"
     assert selected_y.shape == (3,), "Expected 3 y values selected"
@@ -270,7 +270,7 @@ def test_verbose_output(capsys):
     X = np.random.rand(15, 2) * 10 - 5
     y = optimizer.evaluate_function(X)
 
-    optimizer._fit_surrogate(X, y)
+    optimizer.fit_surrogate(X, y)
 
     captured = capsys.readouterr()
     assert (

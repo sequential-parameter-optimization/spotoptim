@@ -147,7 +147,7 @@ class TestRefactoredOptimize:
         spot_optim._initialize_run = MagicMock(
             return_value=(np.zeros((5, 2)), np.zeros(5))
         )
-        spot_optim.rm_NA_values = MagicMock(
+        spot_optim.rm_initial_design_NA_values = MagicMock(
             return_value=(np.zeros((5, 2)), np.zeros(5), 5)
         )
         spot_optim.check_size_initial_design = MagicMock()

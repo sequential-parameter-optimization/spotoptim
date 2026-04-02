@@ -47,8 +47,8 @@ description: "Structure of the Methods"
 
 ### TASK_FIT:
 
-* _fit_scheduler()
-* _fit_surrogate()
+* _fit_scheduler() -> fit_scheduler()
+* _fit_surrogate() -> fit_surrogate()
 * _selection_dispatcher() -> fit_selection_dispatcher()
 * select_distant_points() -> fit_select_distant_points()
 * select_best_cluster() -> fit_select_best_cluster()

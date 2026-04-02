@@ -125,7 +125,7 @@ def remote_search_task(pickled_optimizer):
 
     Args:
         pickled_optimizer (bytes): A pickled SpotOptim instance that has been initialized with data
-            and a fitted surrogate model (via X_, y_, and _fit_surrogate).
+            and a fitted surrogate model (via X_, y_, and fit_surrogate).
 
     Returns:
         ndarray or Exception: The suggested next infill point(s) as an array of shape (n_infill_points, n_features),
@@ -154,7 +154,7 @@ def remote_search_task(pickled_optimizer):
         np.random.seed(0)
         opt.X_ = np.random.rand(10, 2) * 10 - 5
         opt.y_ = np.sum(opt.X_**2, axis=1)
-        opt._fit_surrogate(opt.X_, opt.y_)
+        opt.fit_surrogate(opt.X_, opt.y_)
 
         # Use the function
         pickled_optimizer = dill.dumps(opt)

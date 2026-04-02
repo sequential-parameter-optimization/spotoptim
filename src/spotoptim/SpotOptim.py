@@ -2398,17 +2398,17 @@ class SpotOptim(BaseEstimator):
 
     # ====================
     # TASK_FIT:
-    # *_fit_scheduler()
-    # * _fit_surrogate()
-    # * select_distant_points()
-    # * select_best_cluster()
+    # *fit_scheduler()
+    # * fit_surrogate()
+    # * fit_select_distant_points()
+    # * fit_select_best_cluster()
     # * fit_selection_dispatcher()
     # ====================
 
 
-    def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
+    def fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data.
-        Used by _fit_scheduler() to fit the surrogate model.
+        Used by fit_scheduler() to fit the surrogate model.
         If the number of points exceeds `self.max_surrogate_points`,
         a subset of points is selected using the selection dispatcher.
 
@@ -2432,7 +2432,7 @@ class SpotOptim(BaseEstimator):
             ...                 surrogate=GaussianProcessRegressor())
             >>> X = np.random.rand(50, 2)
             >>> y = np.random.rand(50)
-            >>> opt._fit_surrogate(X, y)
+            >>> opt.fit_surrogate(X, y)
             >>> # Surrogate is now fitted
         """
         X_fit = X
@@ -2452,7 +2452,7 @@ class SpotOptim(BaseEstimator):
 
         self.surrogate.fit(X_fit, y_fit)
 
-    def _fit_scheduler(self) -> None:
+    def fit_scheduler(self) -> None:
         """Fit surrogate model using appropriate data based on noise handling.
         This method selects the appropriate training data for surrogate fitting:
             * For noisy functions (repeats_surrogate > 1): Uses mean_X and mean_y (aggregated values)
@@ -2479,7 +2479,7 @@ class SpotOptim(BaseEstimator):
             >>> # Simulate optimization state
             >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
             >>> opt.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt._fit_scheduler()
+            >>> opt.fit_scheduler()
             >>> # Surrogate fitted with X_ and y_
             >>>
             >>> # Noisy function
@@ -2496,7 +2496,7 @@ class SpotOptim(BaseEstimator):
             >>> # Simulate noisy optimization state
             >>> opt_noise.mean_X = np.array([[1, 2], [0, 0]])
             >>> opt_noise.mean_y = np.array([5.0, 0.0])
-            >>> opt_noise._fit_scheduler()
+            >>> opt_noise.fit_scheduler()
             >>> # Surrogate fitted with mean_X and mean_y
         """
         # Fit surrogate (use mean_y if noise, otherwise y_)
@@ -2511,13 +2511,13 @@ class SpotOptim(BaseEstimator):
 
         if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
             X_for_surrogate = self.transform_X(self.mean_X)
-            self._fit_surrogate(X_for_surrogate, self.mean_y)
+            self.fit_surrogate(X_for_surrogate, self.mean_y)
         else:
             X_for_surrogate = self.transform_X(self.X_)
-            self._fit_surrogate(X_for_surrogate, self.y_)
+            self.fit_surrogate(X_for_surrogate, self.y_)
 
 
-    def select_distant_points(
+    def fit_select_distant_points(
         self, X: np.ndarray, y: np.ndarray, k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Selects k points that are distant from each other using K-means clustering.
@@ -2544,7 +2544,7 @@ class SpotOptim(BaseEstimator):
                             max_surrogate_points=5)
             X = np.random.rand(100, 2)
             y = np.random.rand(100)
-            X_sel, y_sel = opt.select_distant_points(X, y, 5)
+            X_sel, y_sel = opt.fit_select_distant_points(X, y, 5)
             print(X_sel.shape)
             ```
         """
@@ -2561,7 +2561,7 @@ class SpotOptim(BaseEstimator):
         selected_indices = np.array(selected_indices)
         return X[selected_indices], y[selected_indices]
 
-    def select_best_cluster(
+    def fit_select_best_cluster(
         self, X: np.ndarray, y: np.ndarray, k: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Selects all points from the cluster with the smallest mean y value.
@@ -2589,7 +2589,7 @@ class SpotOptim(BaseEstimator):
                              selection_method='best')
             X = np.random.rand(100, 2)
             y = np.random.rand(100)
-            X_sel, y_sel = opt.select_best_cluster(X, y, 5)
+            X_sel, y_sel = opt.fit_select_best_cluster(X, y, 5)
             print(f"X_sel.shape: {X_sel.shape}")
             print(f"y_sel.shape: {y_sel.shape}")
             ```
@@ -2652,9 +2652,9 @@ class SpotOptim(BaseEstimator):
             return X, y
 
         if self.selection_method == "distant":
-            return self.select_distant_points(X=X, y=y, k=max_k)
+            return self.fit_select_distant_points(X=X, y=y, k=max_k)
         elif self.selection_method == "best":
-            return self.select_best_cluster(X=X, y=y, k=max_k)
+            return self.fit_select_best_cluster(X=X, y=y, k=max_k)
         else:
             # If no valid selection method, return all points
             return X, y
@@ -2693,7 +2693,7 @@ class SpotOptim(BaseEstimator):
             ... )
             >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
             >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
+            >>> opt.fit_surrogate(X_train, y_train)
             >>> X_test = np.array([[1.5, 1.5], [3.0, 3.0]])
             >>> preds, stds = opt._predict_with_uncertainty(X_test)
             >>> print("Predictions:", preds)
@@ -2746,7 +2746,7 @@ class SpotOptim(BaseEstimator):
             ... )
             >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
             >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
+            >>> opt.fit_surrogate(X_train, y_train)
             >>> x_eval = np.array([1.5, 1.5])
             >>> acq_value = opt._acquisition_function(x_eval)
             >>> print("Acquisition function value:", acq_value)
@@ -2793,6 +2793,7 @@ class SpotOptim(BaseEstimator):
     # ====================
     # TASK_OPTIM:
     # * optimize()
+    # * execute_optimization_run()
     # * evaluate_function()
     # * _optimize_acquisition_tricands()
     # * _prepare_de_kwargs()
@@ -2805,7 +2806,6 @@ class SpotOptim(BaseEstimator):
     # * get_shape()
     # * optimize_acquisition_func()
     # * _optimize_run_task()
-    # * execute_optimization_run()
     # ====================
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
@@ -3404,7 +3404,7 @@ class SpotOptim(BaseEstimator):
             >>>
             >>> # Fit the surrogate model manually
             >>> # Note: this is normally handled inside optimize()
-            >>> optimizer._fit_surrogate(X, y)
+            >>> optimizer.fit_surrogate(X, y)
             >>>
             >>> # Optimize the acquisition function using scipy's minimize
             >>> x_next = optimizer._optimize_acquisition_scipy()
@@ -4203,7 +4203,7 @@ class SpotOptim(BaseEstimator):
             self.n_iter_ += 1
 
             # Fit surrogate (use mean_y if noise, otherwise y_)
-            self._fit_scheduler()
+            self.fit_scheduler()
 
             # Apply OCBA for noisy functions
             X_ocba = self.apply_ocba()
@@ -5003,7 +5003,7 @@ class SpotOptim(BaseEstimator):
 
         # Lock that serialises surrogate access:
         #   - search threads call suggest_next_infill_point() under the lock
-        #   - the main thread calls _fit_scheduler() under the lock after each eval
+        #   - the main thread calls fit_scheduler() under the lock after each eval
         # This prevents a surrogate refit from racing with an in-flight search.
         _surrogate_lock = threading.Lock()
 
@@ -5119,7 +5119,7 @@ class SpotOptim(BaseEstimator):
                 print(
                     f"Initial design evaluated. Fitting surrogate... (Data size: {len(self.y_)})"
                 )
-            self._fit_scheduler()
+            self.fit_scheduler()
 
             # --- Phase 2: Steady State Loop ---
             if self.verbose:
@@ -5267,7 +5267,7 @@ class SpotOptim(BaseEstimator):
                                 # held under the lock so in-flight search threads
                                 # do not read a partially-updated model.
                                 with _surrogate_lock:
-                                    self._fit_scheduler()
+                                    self.fit_scheduler()
 
                     except Exception as e:
                         _future_n_pts.pop(fut, None)
@@ -5740,7 +5740,7 @@ class SpotOptim(BaseEstimator):
             np.random.seed(0)
             opt.X_ = np.random.rand(10, 2)
             opt.y_ = np.random.rand(10)
-            opt._fit_surrogate(opt.X_, opt.y_)
+            opt.fit_surrogate(opt.X_, opt.y_)
             x_next = opt.suggest_next_infill_point()
             x_next.shape
             ```

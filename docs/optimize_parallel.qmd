@@ -324,19 +324,19 @@ print("initial postprocessing check passed.")
 
 ---
 
-## Step 8 — First Surrogate Fit (`_fit_scheduler()`)
+## Step 8 — First Surrogate Fit (`fit_scheduler()`)
 
 ```python
 # No lock needed — no search threads active yet
-self._fit_scheduler()
+self.fit_scheduler()
 ```
 
 After the initial postprocessing, the surrogate model is fitted to the complete initial
 design for the first time.
 No surrogate lock is acquired here because the `search_pool` has not yet been populated:
-this is the only point in the parallel path where `_fit_scheduler()` is called without
+this is the only point in the parallel path where `fit_scheduler()` is called without
 holding `_surrogate_lock`.
-`_fit_scheduler()` selects the most recent `window_size` training points according to
+`fit_scheduler()` selects the most recent `window_size` training points according to
 `selection_method`, fits the surrogate, and prepares it for acquisition-function
 queries.
 When a list of surrogates was specified at construction, one is chosen probabilistically
@@ -614,7 +614,7 @@ print("future routing check passed.")
 
 ---
 
-## Step 15 — Batch Evaluation Processing (`update_success_rate()`, `_update_storage_steady()`, `_fit_scheduler()`)
+## Step 15 — Batch Evaluation Processing (`update_success_rate()`, `_update_storage_steady()`, `fit_scheduler()`)
 
 ```python
 for xi, yi in zip(X_done, y_done):
@@ -622,7 +622,7 @@ for xi, yi in zip(X_done, y_done):
     self._update_storage_steady(xi, yi)
     self.n_iter_ += 1
 with _surrogate_lock:
-    self._fit_scheduler()
+    self.fit_scheduler()
 ```
 
 When a batch evaluation completes successfully, the main thread processes every point in
@@ -633,7 +633,7 @@ For each point, `update_success_rate()` records whether the new value improves o
 `best_y_` if an improvement is found, and synchronises `min_y` and `min_X`.
 `n_iter_` is incremented once per point so that it reflects the total number of
 post-initial-design evaluations.
-After all points in the batch have been stored, `_fit_scheduler()` is called once under
+After all points in the batch have been stored, `fit_scheduler()` is called once under
 `_surrogate_lock`, refitting the surrogate on the updated training window.
 Batching the refit in this way — one call per batch rather than one call per point —
 improves efficiency when `eval_batch_size > 1` and ensures that in-flight search
@@ -712,14 +712,14 @@ print("termination check passed.")
 | 5 | Phase 1 submission | Store injected points directly; submit remaining `n_to_submit` points to `eval_pool` |
 | 6 | `_update_storage_steady()` | Collect initial results; append each valid `(x, y)` to storage |
 | 7 | `_init_tensorboard()`, `update_stats()`, `get_best_xy_initial_design()` | Log initial design; compute statistics; identify initial best |
-| 8 | `_fit_scheduler()` | First surrogate fit (no lock needed, no search threads active) |
+| 8 | `fit_scheduler()` | First surrogate fit (no lock needed, no search threads active) |
 | 9 | `optimize_steady_state()` while loop | Main loop: iterate until budget or time exhausted |
 | 10 | `_batch_ready()` | Check whether `pending_cands` should be flushed |
 | 11 | `_flush_batch()` | Dispatch all pending candidates as one batch eval to `eval_pool` |
 | 12 | `_thread_search_task()` slot fill | Submit up to `n_jobs` search tasks under budget guard |
 | 13 | `suggest_next_infill_point()` | Optimise acquisition under `_surrogate_lock` to propose candidate |
 | 14 | `wait(FIRST_COMPLETED)` routing | Block until any future completes; route by `"search"` or `"batch_eval"` tag |
-| 15 | `update_success_rate()`, `_update_storage_steady()`, `_fit_scheduler()` | Process batch result; update storage and best; refit surrogate under lock |
+| 15 | `update_success_rate()`, `_update_storage_steady()`, `fit_scheduler()` | Process batch result; update storage and best; refit surrogate under lock |
 | 16 | Return `"FINISHED"` + `OptimizeResult` | Assemble and return final result |
 
 : Complete Parallel Run Summary {#tbl-par}

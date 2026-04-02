@@ -267,12 +267,12 @@ class TestSpotOptimReproducibility:
 
         # Instance 1
         opt1 = SpotOptim(fun=lambda x: x, bounds=[(0, 1)], seed=seed)
-        opt1._fit_surrogate(X, y)
+        opt1.fit_surrogate(X, y)
         pred1_mu, pred1_sigma = opt1._predict_with_uncertainty(X)
 
         # Instance 2
         opt2 = SpotOptim(fun=lambda x: x, bounds=[(0, 1)], seed=seed)
-        opt2._fit_surrogate(X, y)
+        opt2.fit_surrogate(X, y)
         pred2_mu, pred2_sigma = opt2._predict_with_uncertainty(X)
 
         np.testing.assert_array_equal(pred1_mu, pred2_mu)
