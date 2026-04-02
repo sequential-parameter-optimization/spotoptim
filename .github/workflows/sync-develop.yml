@@ -34,13 +34,9 @@
 #   git fetch origin && git merge origin/main
 # =============================================================================
 
-name: Sync main → develop
+name: Sync main -> develop
 
 on:
-  push:
-    branches: [main]
-  schedule:
-    - cron: '0 6 * * *'
   workflow_dispatch:
 
 # Never cancel a sync mid-flight — a partial merge left dangling is worse

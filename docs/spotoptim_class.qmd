@@ -41,12 +41,17 @@ description: "Structure of the Methods"
 * generate_initial_design()
 * curate_initial_design()
 * validate_x0()
-
-### TASK_Surrogate:
-
+* check_size_initial_design()
+* get_best_xy_initial_design()
 * init_surrogate()
-* _fit_surrogate()
+
+### TASK_FIT:
+
 * _fit_scheduler()
+* _fit_surrogate()
+* _selection_dispatcher() -> fit_selection_dispatcher()
+* select_distant_points() -> fit_select_distant_points()
+* select_best_cluster() -> fit_select_best_cluster()
 
 ### TASK_PREDICT:
 
@@ -106,11 +111,6 @@ description: "Structure of the Methods"
 * get_ocba()
 * get_ocba_X()
 
-### TASK_SUBSET:
-
-* select_distant_points()
-* select_best_cluster()
-* _selection_dispatcher()
 
 
 ### TASK_SELECT:
