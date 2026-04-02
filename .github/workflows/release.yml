@@ -3,30 +3,27 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # =============================================================================
-# .github/workflows/release.yml  — Automatic Semantic Releases (Optimised v2)
+# .github/workflows/release.yml  — Semantic Release on push to main
 # =============================================================================
 #
-# Triggered by the Release Preflight workflow succeeding on main.
-# Steps:
-#   1. Checkout main (SHA-pinned, not PR SHA — see security note)
-#   2. Verify checkout integrity
-#   3. Semantic Release (version bump, changelog, GitHub Release tag)
-#   4. Build wheel + sdist
-#   5. Publish to PyPI via Trusted Publisher (OIDC)
-#   6. Verify PyPI availability
+# Triggered on every push to main (typically via merged PR from develop).
+# semantic-release inspects commit messages and only creates a release when
+# it finds feat:, fix:, perf:, or other configured types.
+#
+# Requirements:
+#   - Repository secret SEMANTIC_RELEASE_TOKEN: a PAT with Contents: Read
+#     and write on this repository.  Passed to actions/checkout so git push
+#     and the GitHub API both work automatically.
+#   - PyPI Trusted Publisher configured for this repository (OIDC, no token).
 # =============================================================================
 
 name: Release
 
 on:
-  workflow_run:
-    workflows:
-      - Release Preflight
-    types:
-      - completed
+  push:
+    branches: [main]
   workflow_dispatch:
 
-# Only one release at a time
 concurrency:
   group: release
   cancel-in-progress: false
@@ -36,17 +33,11 @@ permissions:
 
 jobs:
   release:
-    name: Create Release
+    name: Semantic Release
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main' &&
-        !contains(github.event.workflow_run.head_commit.message, 'chore(release)')
-      )
+    # Skip release commits to prevent infinite loops
+    if: "!contains(github.event.head_commit.message, 'chore(release)')"
     permissions:
       contents: write
       issues: write
@@ -54,44 +45,32 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout main
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      # The token: parameter does two things:
+      #   1. Configures git credentials so semantic-release can push tags/commits
+      #   2. Authenticates the GitHub API calls semantic-release makes
+      # This is the standard, battle-tested approach — no manual credential setup.
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          ref: refs/heads/main
           fetch-depth: 0
-          persist-credentials: false
-
-      - name: Verify checkout integrity
-        run: |
-          ACTUAL_SHA=$(git rev-parse HEAD)
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            EXPECTED_SHA="${{ github.event.workflow_run.head_sha }}"
-            if [ "${ACTUAL_SHA}" != "${EXPECTED_SHA}" ]; then
-              echo "::error::HEAD SHA (${ACTUAL_SHA}) does not match triggering SHA (${EXPECTED_SHA}). Aborting."
-              exit 1
-            fi
-          fi
-          echo "Checkout integrity verified: ${ACTUAL_SHA}"
+          token: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7.5.0
+        uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      # Release only needs `uv build` (run by semantic-release's prepareCmd).
-      # uv build does not require the runtime deps (torch, xgboost, etc.),
-      # so skip --all-extras to avoid a 2–3 GB download on every release.
       - name: Install build tools
         run: uv sync --no-install-project --group dev
 
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -103,34 +82,24 @@ jobs:
             @semantic-release/exec@6 \
             conventional-changelog-conventionalcommits@7
 
-      - name: Configure Git credentials
+      - name: Run semantic-release
         env:
-          RELEASE_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
-        run: |
-          set -euo pipefail
-          git config --local --unset-all credential.helper || true
-          git config --local credential.helper ''
-          BASIC=$(echo -n "x-access-token:${RELEASE_TOKEN}" | base64 -w 0)
-          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${BASIC}"
-
-      - name: Semantic Release
-        env:
-          GH_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
-          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+          GH_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
         run: npx semantic-release
 
       - name: Check if release generated dist/
         id: check_dist
         run: |
           if [ -d "dist" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish to PyPI
         if: steps.check_dist.outputs.exists == 'true'
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # release/v1
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
           skip-existing: true

@@ -106,11 +106,15 @@ description: "Structure of the Methods"
 * get_ocba()
 * get_ocba_X()
 
-### TASK_SELECT:
+### TASK_SUBSET:
 
 * select_distant_points()
 * select_best_cluster()
 * _selection_dispatcher()
+
+
+### TASK_SELECT:
+
 * select_new()
 * suggest_next_infill_point()
 
