@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.27">
+<meta name="generator" content="quarto-1.7.29">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -68,19 +68,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../docs/images/favicon.png" rel="icon" type="image/png">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f1aadacce99040138bbb613f9330654f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-4e7a6ecc11b04d2331dcee725084a9de.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-486456a1ea2d3ce1c2bc0ac6b5794661.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-474c494e1f8843c89f52d41127e24191.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-486456a1ea2d3ce1c2bc0ac6b5794661.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-5b87ed80954e26ea15f9296f3680d709.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-ec0254ad7b8ffb92aa268097323fad65.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-5b87ed80954e26ea15f9296f3680d709.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -272,7 +271,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       toggleColorMode(toAlternate);
       setStyleSentinel(toAlternate);
       toggleGiscusIfUsed(toAlternate, darkModeDefault);
-      window.dispatchEvent(new Event('resize'));
     };
     // Switch to dark mode if need be
     if (hasAlternateSentinel()) {
@@ -288,8 +286,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo light-content">
-    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo dark-content">
+    <img src="../../docs/images/spotlogo.png" alt="" class="navbar-logo">
     </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">spotoptim</span>
@@ -2029,7 +2026,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer">FactorAnalyzer</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer(</span>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer(</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    n_factors<span class="op">=</span><span class="dv">3</span>,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    rotation<span class="op">=</span><span class="st">'promax'</span>,</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    method<span class="op">=</span><span class="st">'minres'</span>,</span>
@@ -2039,7 +2036,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    impute<span class="op">=</span><span class="st">'median'</span>,</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    svd_method<span class="op">=</span><span class="st">'randomized'</span>,</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    rotation_kwargs<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The main exploratory factor analysis class.</p>
 <section id="this-class" class="level4 doc-section doc-section-this-class">
 <h4 class="doc-section doc-section-this-class anchored" data-anchor-id="this-class">This class</h4>
@@ -2175,7 +2172,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
@@ -2193,7 +2190,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.76</span>, <span class="op">-</span><span class="fl">0.24</span>, <span class="op">-</span><span class="fl">0.12</span>],</span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.82</span>, <span class="op">-</span><span class="fl">0.12</span>,  <span class="fl">0.18</span>]])</span>
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.get_communalities(), <span class="dv">2</span>)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.59</span>, <span class="fl">0.</span>  , <span class="fl">0.5</span> , <span class="fl">0.73</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">0.62</span>, <span class="fl">0.73</span>, <span class="fl">0.65</span>, <span class="fl">0.71</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.59</span>, <span class="fl">0.</span>  , <span class="fl">0.5</span> , <span class="fl">0.73</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">0.62</span>, <span class="fl">0.73</span>, <span class="fl">0.65</span>, <span class="fl">0.71</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="methods" class="level4">
 <h4 class="anchored" data-anchor-id="methods">Methods</h4>
@@ -2237,7 +2234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.fit" class="level5">
 <h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.fit">fit</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.fit(X, y<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.fit(X, y<span class="op">=</span><span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Fit factor analysis model using either MINRES, ML, or principal factor analysis.</p>
 <p>By default, use SMC as starting guesses.</p>
 <section id="parameters-1" class="level6 doc-section doc-section-parameters">
@@ -2288,7 +2285,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-1" class="level6 doc-section doc-section-examples">
 <h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h6>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
@@ -2304,12 +2301,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.74</span>, <span class="op">-</span><span class="fl">0.16</span>, <span class="op">-</span><span class="fl">0.21</span>],</span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.83</span>, <span class="op">-</span><span class="fl">0.21</span>,  <span class="fl">0.05</span>],</span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.76</span>, <span class="op">-</span><span class="fl">0.24</span>, <span class="op">-</span><span class="fl">0.12</span>],</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.82</span>, <span class="op">-</span><span class="fl">0.12</span>,  <span class="fl">0.18</span>]])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.82</span>, <span class="op">-</span><span class="fl">0.12</span>,  <span class="fl">0.18</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities" class="level5">
 <h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities">get_communalities</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_communalities()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Calculate the communalities, given the factor loading matrix.</p>
 <section id="returns-1" class="level6 doc-section doc-section-returns">
 <h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h6>
@@ -2332,19 +2329,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-2" class="level6 doc-section doc-section-examples">
 <h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h6>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.get_communalities(), <span class="dv">2</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.59</span>, <span class="fl">0.</span>  , <span class="fl">0.5</span> , <span class="fl">0.73</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">0.62</span>, <span class="fl">0.73</span>, <span class="fl">0.65</span>, <span class="fl">0.71</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.59</span>, <span class="fl">0.</span>  , <span class="fl">0.5</span> , <span class="fl">0.73</span>, <span class="fl">0.33</span>, <span class="fl">0.66</span>, <span class="fl">0.62</span>, <span class="fl">0.73</span>, <span class="fl">0.65</span>, <span class="fl">0.71</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues" class="level5">
 <h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues">get_eigenvalues</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_eigenvalues()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Calculate the eigenvalues, given the factor correlation matrix.</p>
 <section id="returns-2" class="level6 doc-section doc-section-returns">
 <h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h6>
@@ -2372,7 +2369,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-3" class="level6 doc-section doc-section-examples">
 <h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h6>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
@@ -2382,12 +2379,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(ev, <span class="dv">1</span>)</span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>array([...])</span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(v, <span class="dv">1</span>)</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>array([...])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>array([...])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance" class="level5">
 <h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance">get_factor_variance</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_factor_variance()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Calculate factor variance information.</p>
 <p>The factor variance information including the variance, proportional variance, and cumulative variance for each factor.</p>
 <section id="returns-3" class="level6 doc-section doc-section-returns">
@@ -2421,7 +2418,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-4" class="level6 doc-section doc-section-examples">
 <h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h6>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
@@ -2433,12 +2430,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(prop_var, <span class="dv">2</span>)</span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.35</span>, <span class="fl">0.13</span>, <span class="fl">0.07</span>])</span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(cum_var, <span class="dv">2</span>)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.35</span>, <span class="fl">0.48</span>, <span class="fl">0.55</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.35</span>, <span class="fl">0.48</span>, <span class="fl">0.55</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses" class="level5">
 <h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses">get_uniquenesses</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.get_uniquenesses()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Calculate the uniquenesses, given the factor loading matrix.</p>
 <section id="returns-4" class="level6 doc-section doc-section-returns">
 <h6 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h6>
@@ -2461,19 +2458,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-5" class="level6 doc-section doc-section-examples">
 <h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h6>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> fa <span class="op">=</span> FactorAnalyzer(rotation<span class="op">=</span><span class="va">None</span>)</span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> _ <span class="op">=</span> fa.fit(df_features)</span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> np.<span class="bu">round</span>(fa.get_uniquenesses(), <span class="dv">2</span>)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.41</span>, <span class="fl">1.</span>  , <span class="fl">0.5</span> , <span class="fl">0.27</span>, <span class="fl">0.67</span>, <span class="fl">0.34</span>, <span class="fl">0.38</span>, <span class="fl">0.27</span>, <span class="fl">0.35</span>, <span class="fl">0.29</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>array([<span class="fl">0.41</span>, <span class="fl">1.</span>  , <span class="fl">0.5</span> , <span class="fl">0.27</span>, <span class="fl">0.67</span>, <span class="fl">0.34</span>, <span class="fl">0.38</span>, <span class="fl">0.27</span>, <span class="fl">0.35</span>, <span class="fl">0.29</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency" class="level5">
 <h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency">sufficiency</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency(num_observations)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.sufficiency(num_observations)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Perform the sufficiency test.</p>
 <p>The test calculates statistics under the null hypothesis that the selected number of factors is sufficient.</p>
 <section id="parameters-2" class="level6 doc-section doc-section-parameters">
@@ -2532,7 +2529,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-6" class="level6 doc-section doc-section-examples">
 <h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-6">Examples</h6>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test01.csv'</span>)</span>
@@ -2544,12 +2541,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df</span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="dv">663</span></span>
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="bu">bool</span>(p <span class="op">&lt;</span> <span class="fl">0.05</span>)</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="va">True</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.transform" class="level5">
 <h5 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.FactorAnalyzer.transform">transform</h5>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.transform(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.FactorAnalyzer.transform(X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Get factor scores for a new data set.</p>
 <section id="parameters-3" class="level6 doc-section doc-section-parameters">
 <h6 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h6>
@@ -2593,7 +2590,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-7" class="level6 doc-section doc-section-examples">
 <h6 class="doc-section doc-section-examples anchored" data-anchor-id="examples-7">Examples</h6>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.factor_analyzer <span class="im">import</span> FactorAnalyzer</span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> df_features <span class="op">=</span> pd.read_csv(<span class="st">'src/spotoptim/datasets/test02.csv'</span>)</span>
@@ -2606,7 +2603,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>       ...,</span>
 <span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.14</span>,  <span class="fl">0.04</span>,  <span class="fl">0.29</span>],</span>
 <span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">1.87</span>, <span class="op">-</span><span class="fl">0.35</span>, <span class="op">-</span><span class="fl">0.68</span>],</span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.86</span>,  <span class="fl">0.18</span>, <span class="op">-</span><span class="fl">0.79</span>]], shape<span class="op">=</span>(<span class="dv">1678</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>       [ <span class="fl">0.86</span>,  <span class="fl">0.18</span>, <span class="op">-</span><span class="fl">0.79</span>]], shape<span class="op">=</span>(<span class="dv">1678</span>, <span class="dv">3</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 </section>
@@ -2634,7 +2631,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <section id="spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.calculate_bartlett_sphericity">calculate_bartlett_sphericity</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.calculate_bartlett_sphericity(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.calculate_bartlett_sphericity(x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Compute the Bartlett sphericity test.</p>
 <p>H0: The matrix of population correlations is equal to I. H1: The matrix of population correlations is not equal to I.</p>
 <p>The formula for Bartlett’s Sphericity test is:</p>
@@ -2688,7 +2685,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="spotoptim.factor_analyzer.factor_analyzer.calculate_kmo" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.factor_analyzer.factor_analyzer.calculate_kmo">calculate_kmo</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.calculate_kmo(x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>factor_analyzer.factor_analyzer.calculate_kmo(x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Calculate the Kaiser-Meyer-Olkin criterion for items and overall.</p>
 <p>This statistic represents the degree to which each observed variable is predicted, without error, by the other variables in the dataset. In general, a KMO &lt; 0.6 is considered inadequate.</p>
 <section id="parameters-5" class="level4 doc-section doc-section-parameters">
@@ -2807,14 +2804,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-      const outerScaffold = trigger.parentElement.cloneNode(true);
-      const codeEl = outerScaffold.querySelector('code');
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
         }
-      }
-      return codeEl.innerText;
+        return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
