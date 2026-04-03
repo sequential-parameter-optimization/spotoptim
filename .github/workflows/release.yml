@@ -75,7 +75,7 @@ jobs:
             @semantic-release/exec@6
             conventional-changelog-conventionalcommits@7
         env:
-          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to PyPI
         if: success()
