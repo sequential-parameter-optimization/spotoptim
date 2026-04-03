@@ -47,7 +47,7 @@ jobs:
 
       - name: Run tests
         run: |
-          uv run pytest tests/ -v
+          uv run pytest tests/ -v -n auto
 
       - name: Verify package name in pyproject.toml
         run: |
@@ -94,8 +94,8 @@ jobs:
       - name: Generate API reference stubs
         if: success()
         run: |
-          uv run python docs/quartodoc_build.py
-          uv run quartodoc interlinks
+          uv run --extra docs python docs/quartodoc_build.py
+          uv run --extra docs quartodoc interlinks
 
       - name: Build documentation
         if: success()

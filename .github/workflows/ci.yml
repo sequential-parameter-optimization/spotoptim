@@ -68,7 +68,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          uv run pytest tests/ -v --tb=short --cov=src/spotoptim --cov-branch --cov-report=xml --cov-report=term
+          uv run pytest tests/ -v -n auto --tb=short --cov=src/spotoptim --cov-branch --cov-report=xml --cov-report=term
 
       - name: Upload results to Codecov
         uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad  # v5.5.3
