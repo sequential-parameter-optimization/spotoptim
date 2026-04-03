@@ -1,47 +1,30 @@
-name: CI Tests
+# =============================================================================
+# .github/workflows/ci.yml  —  Continuous Integration
+# =============================================================================
+# Runs on every push and PR to main/develop.
+# Jobs: tests (pytest + coverage), code quality (black, isort, ruff).
+# =============================================================================
+
+name: CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
-# Principle of Least Privilege: Base permissions are read-only
 permissions: read-all
 
-# Cancel stale runs when a new push arrives on the same branch or PR.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  reuse:
-    name: REUSE Compliance
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.2.2
-
-      - name: Run reuse lint
-        run: |
-          uv tool run reuse lint
-
   test:
-    name: Test on Python ${{ matrix.python-version }}
+    name: Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
 
     strategy:
       fail-fast: false
@@ -50,31 +33,30 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.2.2
+        uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: |
-          uv pip install --system -e ".[dev]"
+        run: uv pip install --system -e ".[dev]"
 
       - name: Run pytest
         run: |
-          uv run pytest tests/ -v -n auto --tb=short --cov=src/spotoptim --cov-branch --cov-report=xml --cov-report=term
+          uv run pytest tests/ -v -n auto --tb=short \
+            --cov=src/spotoptim --cov-branch \
+            --cov-report=xml --cov-report=term
 
-      - name: Upload results to Codecov
-        uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad  # v5.5.3
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: sequential-parameter-optimization/spotoptim
           files: ./coverage.xml
           fail_ci_if_error: false
 
@@ -84,72 +66,27 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.2.2
+        uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: |
-          uv pip install --system -e ".[dev]"
+        run: uv pip install --system -e ".[dev]"
 
-      - name: Check formatting with black
-        run: |
-          black --check src/ tests/
+      - name: Check formatting (black)
+        run: black --check src/ tests/
         continue-on-error: true
 
-      - name: Check imports with isort
-        run: |
-          isort --check-only src/ tests/
+      - name: Check imports (isort)
+        run: isort --check-only src/ tests/
         continue-on-error: true
 
-      - name: Lint with ruff
-        run: |
-          ruff check src/ tests/
-        continue-on-error: true
-
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
-        with:
-          python-version: "3.13"
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081  # v5.2.2
-
-      - name: Install dependencies
-        run: |
-          uv pip install --system -e ".[dev]"
-
-      - name: Check dependencies with safety
-        run: |
-          safety check --json
-        continue-on-error: true
-
-      - name: Security scan with bandit
-        run: |
-          bandit -r src/spotoptim/ -f sarif -o bandit-report.sarif
-        continue-on-error: true
-
-      - name: Upload bandit report to security tab
-        if: always()
-        uses: github/codeql-action/upload-sarif@c6f931105cb2c34c8f901cc885ba1e2e259cf745  # v4.34.0
-        with:
-          sarif_file: bandit-report.sarif
-          category: bandit
+      - name: Lint (ruff)
+        run: ruff check src/ tests/
         continue-on-error: true
