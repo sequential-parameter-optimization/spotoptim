@@ -1916,7 +1916,149 @@ class SpotOptim(BaseEstimator):
     # * validate_x0()
     # * check_size_initial_design()
     # * get_best_xy_initial_design()
+    # * init_surrogate()
     # ====================
+
+    def init_surrogate(self) -> None:
+        """Initialize or configure the surrogate model for optimization. Handles three surrogate configurations:
+            * List of surrogates: sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
+            * None (default): creates a `GaussianProcessRegressor` with a
+              `ConstantKernel * Matern(nu=2.5)` kernel, 100 optimizer restarts,
+              and `normalize_y=True`.
+            * User-provided surrogate: accepted as-is; internal bookkeeping
+              attributes (`_max_surrogate_points_list`,
+              `_active_max_surrogate_points`) are still initialised.
+        After this method returns the following attributes are set:
+            * `self.surrogate` — the active surrogate model.
+            * `self._surrogates_list` — `list | None`.
+            * `self._prob_surrogate` — normalised selection probabilities or `None`.
+            * `self._max_surrogate_points_list` — per-surrogate point caps or `None`.
+            * `self._active_max_surrogate_points` — active cap.
+
+        Raises:
+            ValueError: If the surrogate list is empty.
+            ValueError: If 'prob_surrogate' length does not match the surrogate list length.
+            ValueError: If 'max_surrogate_points' list length does not match the surrogate list length.
+
+        Returns:
+            None
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            # Default surrogate (GaussianProcessRegressor)
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+            )
+            print(type(opt.surrogate).__name__)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from sklearn.ensemble import RandomForestRegressor
+            # User-provided surrogate
+            rf = RandomForestRegressor(n_estimators=50, random_state=42)
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                surrogate=rf,
+            )
+            print(type(opt.surrogate).__name__)
+            ```
+
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            from sklearn.ensemble import RandomForestRegressor
+            from sklearn.gaussian_process import GaussianProcessRegressor
+            # List of surrogates with selection probabilities
+            surrogates = [GaussianProcessRegressor(), RandomForestRegressor()]
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                surrogate=surrogates,
+                prob_surrogate=[0.7, 0.3],
+            )
+            print(opt._prob_surrogate)
+            print([type(s).__name__ for s in opt._surrogates_list])
+            ```
+        """
+        self._surrogates_list = None
+        self._prob_surrogate = None
+
+        if isinstance(self.surrogate, list):
+            self._surrogates_list = self.surrogate
+            if not self._surrogates_list:
+                raise ValueError("Surrogate list cannot be empty.")
+
+            # Handle probabilities
+            if self.config.prob_surrogate is None:
+                # Uniform probability
+                n = len(self._surrogates_list)
+                self._prob_surrogate = [1.0 / n] * n
+            else:
+                probs = self.config.prob_surrogate
+                if len(probs) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of prob_surrogate ({len(probs)}) must match "
+                        f"number of surrogates ({len(self._surrogates_list)})."
+                    )
+                # Normalize probabilities
+                total = sum(probs)
+                if not np.isclose(total, 1.0) and total > 0:
+                    self._prob_surrogate = [p / total for p in probs]
+                else:
+                    self._prob_surrogate = probs
+
+            # Handle max_surrogate_points list
+            self._max_surrogate_points_list = None
+            if isinstance(self.config.max_surrogate_points, list):
+                if len(self.config.max_surrogate_points) != len(self._surrogates_list):
+                    raise ValueError(
+                        f"Length of max_surrogate_points ({len(self.config.max_surrogate_points)}) "
+                        f"must match number of surrogates ({len(self._surrogates_list)})."
+                    )
+                self._max_surrogate_points_list = self.config.max_surrogate_points
+            else:
+                # If int or None, broadcast to list for easier indexing
+                self._max_surrogate_points_list = [
+                    self.config.max_surrogate_points
+                ] * len(self._surrogates_list)
+
+            # Set initial surrogate and max points
+            self.surrogate = self._surrogates_list[0]
+            self._active_max_surrogate_points = self._max_surrogate_points_list[0]
+
+        elif self.surrogate is None:
+            # Default single surrogate case
+            self._max_surrogate_points_list = None
+            self._active_max_surrogate_points = self.config.max_surrogate_points
+
+            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
+                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
+            )
+
+            # Determine optimizer for GPR
+            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
+            if self.config.acquisition_optimizer_kwargs is not None:
+                optimizer = partial(
+                    gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
+                )
+
+            self.surrogate = GaussianProcessRegressor(
+                kernel=kernel,
+                n_restarts_optimizer=100,
+                normalize_y=True,
+                random_state=self.seed,
+                optimizer=optimizer,
+            )
+
 
     def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
         """Generate or process initial design points. Ensures that design points are in
@@ -2255,155 +2397,18 @@ class SpotOptim(BaseEstimator):
 
 
     # ====================
-    # TASK_Surrogate:
-    # * init_surrogate()
-    # * _fit_surrogate()
-    # *_fit_scheduler()
+    # TASK_FIT:
+    # *fit_scheduler()
+    # * fit_surrogate()
+    # * fit_select_distant_points()
+    # * fit_select_best_cluster()
+    # * fit_selection_dispatcher()
     # ====================
 
-    def init_surrogate(self) -> None:
-        """Initialize or configure the surrogate model for optimization. Handles three surrogate configurations:
-            * List of surrogates: sets up multi-surrogate selection with probability weights and per-surrogate `max_surrogate_points`.
-            * None (default): creates a `GaussianProcessRegressor` with a
-              `ConstantKernel * Matern(nu=2.5)` kernel, 100 optimizer restarts,
-              and `normalize_y=True`.
-            * User-provided surrogate: accepted as-is; internal bookkeeping
-              attributes (`_max_surrogate_points_list`,
-              `_active_max_surrogate_points`) are still initialised.
-        After this method returns the following attributes are set:
-            * `self.surrogate` — the active surrogate model.
-            * `self._surrogates_list` — `list | None`.
-            * `self._prob_surrogate` — normalised selection probabilities or `None`.
-            * `self._max_surrogate_points_list` — per-surrogate point caps or `None`.
-            * `self._active_max_surrogate_points` — active cap.
 
-        Raises:
-            ValueError: If the surrogate list is empty.
-            ValueError: If 'prob_surrogate' length does not match the surrogate list length.
-            ValueError: If 'max_surrogate_points' list length does not match the surrogate list length.
-
-        Returns:
-            None
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            # Default surrogate (GaussianProcessRegressor)
-            opt = SpotOptim(
-                fun=lambda X: np.sum(X**2, axis=1),
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-            )
-            print(type(opt.surrogate).__name__)
-            ```
-
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from sklearn.ensemble import RandomForestRegressor
-            # User-provided surrogate
-            rf = RandomForestRegressor(n_estimators=50, random_state=42)
-            opt = SpotOptim(
-                fun=lambda X: np.sum(X**2, axis=1),
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                surrogate=rf,
-            )
-            print(type(opt.surrogate).__name__)
-            ```
-
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            from sklearn.ensemble import RandomForestRegressor
-            from sklearn.gaussian_process import GaussianProcessRegressor
-            # List of surrogates with selection probabilities
-            surrogates = [GaussianProcessRegressor(), RandomForestRegressor()]
-            opt = SpotOptim(
-                fun=lambda X: np.sum(X**2, axis=1),
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                surrogate=surrogates,
-                prob_surrogate=[0.7, 0.3],
-            )
-            print(opt._prob_surrogate)
-            print([type(s).__name__ for s in opt._surrogates_list])
-            ```
-        """
-        self._surrogates_list = None
-        self._prob_surrogate = None
-
-        if isinstance(self.surrogate, list):
-            self._surrogates_list = self.surrogate
-            if not self._surrogates_list:
-                raise ValueError("Surrogate list cannot be empty.")
-
-            # Handle probabilities
-            if self.config.prob_surrogate is None:
-                # Uniform probability
-                n = len(self._surrogates_list)
-                self._prob_surrogate = [1.0 / n] * n
-            else:
-                probs = self.config.prob_surrogate
-                if len(probs) != len(self._surrogates_list):
-                    raise ValueError(
-                        f"Length of prob_surrogate ({len(probs)}) must match "
-                        f"number of surrogates ({len(self._surrogates_list)})."
-                    )
-                # Normalize probabilities
-                total = sum(probs)
-                if not np.isclose(total, 1.0) and total > 0:
-                    self._prob_surrogate = [p / total for p in probs]
-                else:
-                    self._prob_surrogate = probs
-
-            # Handle max_surrogate_points list
-            self._max_surrogate_points_list = None
-            if isinstance(self.config.max_surrogate_points, list):
-                if len(self.config.max_surrogate_points) != len(self._surrogates_list):
-                    raise ValueError(
-                        f"Length of max_surrogate_points ({len(self.config.max_surrogate_points)}) "
-                        f"must match number of surrogates ({len(self._surrogates_list)})."
-                    )
-                self._max_surrogate_points_list = self.config.max_surrogate_points
-            else:
-                # If int or None, broadcast to list for easier indexing
-                self._max_surrogate_points_list = [
-                    self.config.max_surrogate_points
-                ] * len(self._surrogates_list)
-
-            # Set initial surrogate and max points
-            self.surrogate = self._surrogates_list[0]
-            self._active_max_surrogate_points = self._max_surrogate_points_list[0]
-
-        elif self.surrogate is None:
-            # Default single surrogate case
-            self._max_surrogate_points_list = None
-            self._active_max_surrogate_points = self.config.max_surrogate_points
-
-            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
-                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
-            )
-
-            # Determine optimizer for GPR
-            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
-            if self.config.acquisition_optimizer_kwargs is not None:
-                optimizer = partial(
-                    gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
-                )
-
-            self.surrogate = GaussianProcessRegressor(
-                kernel=kernel,
-                n_restarts_optimizer=100,
-                normalize_y=True,
-                random_state=self.seed,
-                optimizer=optimizer,
-            )
-
-    def _fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
+    def fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data.
-        Used by _fit_scheduler() to fit the surrogate model.
+        Used by fit_scheduler() to fit the surrogate model.
         If the number of points exceeds `self.max_surrogate_points`,
         a subset of points is selected using the selection dispatcher.
 
@@ -2427,7 +2432,7 @@ class SpotOptim(BaseEstimator):
             ...                 surrogate=GaussianProcessRegressor())
             >>> X = np.random.rand(50, 2)
             >>> y = np.random.rand(50)
-            >>> opt._fit_surrogate(X, y)
+            >>> opt.fit_surrogate(X, y)
             >>> # Surrogate is now fitted
         """
         X_fit = X
@@ -2443,11 +2448,11 @@ class SpotOptim(BaseEstimator):
                     f"Selecting subset of {max_k} points "
                     f"from {X.shape[0]} total points for surrogate fitting."
                 )
-            X_fit, y_fit = self._selection_dispatcher(X, y)
+            X_fit, y_fit = self.fit_selection_dispatcher(X, y)
 
         self.surrogate.fit(X_fit, y_fit)
 
-    def _fit_scheduler(self) -> None:
+    def fit_scheduler(self) -> None:
         """Fit surrogate model using appropriate data based on noise handling.
         This method selects the appropriate training data for surrogate fitting:
             * For noisy functions (repeats_surrogate > 1): Uses mean_X and mean_y (aggregated values)
@@ -2474,7 +2479,7 @@ class SpotOptim(BaseEstimator):
             >>> # Simulate optimization state
             >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
             >>> opt.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt._fit_scheduler()
+            >>> opt.fit_scheduler()
             >>> # Surrogate fitted with X_ and y_
             >>>
             >>> # Noisy function
@@ -2491,7 +2496,7 @@ class SpotOptim(BaseEstimator):
             >>> # Simulate noisy optimization state
             >>> opt_noise.mean_X = np.array([[1, 2], [0, 0]])
             >>> opt_noise.mean_y = np.array([5.0, 0.0])
-            >>> opt_noise._fit_scheduler()
+            >>> opt_noise.fit_scheduler()
             >>> # Surrogate fitted with mean_X and mean_y
         """
         # Fit surrogate (use mean_y if noise, otherwise y_)
@@ -2506,10 +2511,156 @@ class SpotOptim(BaseEstimator):
 
         if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
             X_for_surrogate = self.transform_X(self.mean_X)
-            self._fit_surrogate(X_for_surrogate, self.mean_y)
+            self.fit_surrogate(X_for_surrogate, self.mean_y)
         else:
             X_for_surrogate = self.transform_X(self.X_)
-            self._fit_surrogate(X_for_surrogate, self.y_)
+            self.fit_surrogate(X_for_surrogate, self.y_)
+
+
+    def fit_select_distant_points(
+        self, X: np.ndarray, y: np.ndarray, k: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Selects k points that are distant from each other using K-means clustering.
+        This method performs K-means clustering to find k clusters, then selects
+        the point closest to each cluster center. This ensures a space-filling
+        subset of points for surrogate model training.
+
+        Args:
+            X (ndarray): Design points, shape (n_samples, n_features).
+            y (ndarray): Function values at X, shape (n_samples,).
+            k (int): Number of points to select.
+
+        Returns:
+            tuple: A tuple containing:
+                * selected_X (ndarray): Selected design points, shape (k, n_features).
+                * selected_y (ndarray): Function values at selected points, shape (k,).
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_surrogate_points=5)
+            X = np.random.rand(100, 2)
+            y = np.random.rand(100)
+            X_sel, y_sel = opt.fit_select_distant_points(X, y, 5)
+            print(X_sel.shape)
+            ```
+        """
+        # Perform k-means clustering
+        kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
+
+        # Find the closest point to each cluster center
+        selected_indices = []
+        for center in kmeans.cluster_centers_:
+            distances = np.linalg.norm(X - center, axis=1)
+            closest_idx = np.argmin(distances)
+            selected_indices.append(closest_idx)
+
+        selected_indices = np.array(selected_indices)
+        return X[selected_indices], y[selected_indices]
+
+    def fit_select_best_cluster(
+        self, X: np.ndarray, y: np.ndarray, k: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Selects all points from the cluster with the smallest mean y value.
+        This method performs K-means clustering and selects all points from the
+        cluster whose center corresponds to the best (smallest) mean objective
+        function value.
+
+        Args:
+            X (ndarray): Design points, shape (n_samples, n_features).
+            y (ndarray): Function values at X, shape (n_samples,).
+            k (int): Number of clusters.
+
+        Returns:
+            tuple: A tuple containing:
+                * selected_X (ndarray): Selected design points from best cluster, shape (m, n_features).
+                * selected_y (ndarray): Function values at selected points, shape (m,).
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_surrogate_points=5,
+                             selection_method='best')
+            X = np.random.rand(100, 2)
+            y = np.random.rand(100)
+            X_sel, y_sel = opt.fit_select_best_cluster(X, y, 5)
+            print(f"X_sel.shape: {X_sel.shape}")
+            print(f"y_sel.shape: {y_sel.shape}")
+            ```
+        """
+        # Perform k-means clustering
+        kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
+        labels = kmeans.labels_
+
+        # Compute mean y for each cluster
+        cluster_means = []
+        for cluster_idx in range(k):
+            cluster_y = y[labels == cluster_idx]
+            if len(cluster_y) == 0:
+                cluster_means.append(np.inf)
+            else:
+                cluster_means.append(np.mean(cluster_y))
+
+        # Find cluster with smallest mean y
+        best_cluster = np.argmin(cluster_means)
+
+        # Select all points from the best cluster
+        mask = labels == best_cluster
+        return X[mask], y[mask]
+
+    def fit_selection_dispatcher(
+        self, X: np.ndarray, y: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Dispatcher for selection methods.
+        Depending on the value of `self.selection_method`, this method calls
+        the appropriate selection function to choose a subset of points for
+        surrogate model training when the total number of points exceeds
+        `self.max_surrogate_points`.
+
+        Args:
+            X (ndarray): Design points, shape (n_samples, n_features).
+            y (ndarray): Function values at X, shape (n_samples,).
+
+        Returns:
+            tuple: A tuple containing:
+                * selected_X (ndarray): Selected design points.
+                * selected_y (ndarray): Function values at selected points.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(-5, 5), (-5, 5)],
+                            max_surrogate_points=5)
+            X = np.random.rand(100, 2)
+            y = np.random.rand(100)
+            X_sel, y_sel = opt.fit_selection_dispatcher(X, y)
+            print(X_sel.shape[0] <= 5)
+            ```
+        """
+        # Resolve active max points
+        max_k = getattr(self, "_active_max_surrogate_points", self.max_surrogate_points)
+
+        if max_k is None:
+            return X, y
+
+        if self.selection_method == "distant":
+            return self.fit_select_distant_points(X=X, y=y, k=max_k)
+        elif self.selection_method == "best":
+            return self.fit_select_best_cluster(X=X, y=y, k=max_k)
+        else:
+            # If no valid selection method, return all points
+            return X, y
+
+
+
 
     # ====================
     # TASK_PREDICT:
@@ -2542,7 +2693,7 @@ class SpotOptim(BaseEstimator):
             ... )
             >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
             >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
+            >>> opt.fit_surrogate(X_train, y_train)
             >>> X_test = np.array([[1.5, 1.5], [3.0, 3.0]])
             >>> preds, stds = opt._predict_with_uncertainty(X_test)
             >>> print("Predictions:", preds)
@@ -2595,7 +2746,7 @@ class SpotOptim(BaseEstimator):
             ... )
             >>> X_train = np.array([[0, 0], [1, 1], [2, 2]])
             >>> y_train = np.array([0, 2, 8])
-            >>> opt._fit_surrogate(X_train, y_train)
+            >>> opt.fit_surrogate(X_train, y_train)
             >>> x_eval = np.array([1.5, 1.5])
             >>> acq_value = opt._acquisition_function(x_eval)
             >>> print("Acquisition function value:", acq_value)
@@ -2642,6 +2793,7 @@ class SpotOptim(BaseEstimator):
     # ====================
     # TASK_OPTIM:
     # * optimize()
+    # * execute_optimization_run()
     # * evaluate_function()
     # * _optimize_acquisition_tricands()
     # * _prepare_de_kwargs()
@@ -2653,8 +2805,6 @@ class SpotOptim(BaseEstimator):
     # * _try_fallback_strategy()
     # * get_shape()
     # * optimize_acquisition_func()
-    # * _optimize_run_task()
-    # * execute_optimization_run()
     # ====================
 
     def optimize(self, X0: Optional[np.ndarray] = None) -> OptimizeResult:
@@ -3253,7 +3403,7 @@ class SpotOptim(BaseEstimator):
             >>>
             >>> # Fit the surrogate model manually
             >>> # Note: this is normally handled inside optimize()
-            >>> optimizer._fit_surrogate(X, y)
+            >>> optimizer.fit_surrogate(X, y)
             >>>
             >>> # Optimize the acquisition function using scipy's minimize
             >>> x_next = optimizer._optimize_acquisition_scipy()
@@ -3620,49 +3770,6 @@ class SpotOptim(BaseEstimator):
                 return self._optimize_acquisition_tricands()
         else:
             return self._optimize_acquisition_scipy()
-
-
-    def _optimize_run_task(
-        self,
-        seed: int,
-        timeout_start: float,
-        X0: Optional[np.ndarray],
-        y0_known_val: Optional[float],
-        max_iter_override: Optional[int],
-        shared_best_y=None,  # Accept shared value
-        shared_lock=None,  # Accept shared lock
-    ) -> Tuple[str, OptimizeResult]:
-        """Helper to run a single optimization task with a specific seed. Calls _optimize_single_run.
-
-        Args:
-            seed (int): Seed for this run.
-            timeout_start (float): Start time for timeout.
-            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
-            y0_known_val (Optional[float]): Known best value for initial design.
-            max_iter_override (Optional[int]): Override for maximum number of iterations.
-            shared_best_y (Optional[float]): Shared best value for parallel runs.
-            shared_lock (Optional[Lock]): Shared lock for parallel runs.
-
-        Returns:
-            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
-        """
-        # Set the seed for this run
-        self.seed = seed
-        self.set_seed()
-
-        # Re-initialize LHS sampler with new seed to ensure diversity in initial design
-        if hasattr(self, "n_dim"):
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
-
-        return self._optimize_single_run(
-            timeout_start,
-            X0,
-            y0_known=y0_known_val,
-            max_iter_override=max_iter_override,
-            shared_best_y=shared_best_y,
-            shared_lock=shared_lock,
-        )
-
 
     # ====================
     # TASK_OPTIM_SEQ:
@@ -4052,7 +4159,7 @@ class SpotOptim(BaseEstimator):
             self.n_iter_ += 1
 
             # Fit surrogate (use mean_y if noise, otherwise y_)
-            self._fit_scheduler()
+            self.fit_scheduler()
 
             # Apply OCBA for noisy functions
             X_ocba = self.apply_ocba()
@@ -4852,7 +4959,7 @@ class SpotOptim(BaseEstimator):
 
         # Lock that serialises surrogate access:
         #   - search threads call suggest_next_infill_point() under the lock
-        #   - the main thread calls _fit_scheduler() under the lock after each eval
+        #   - the main thread calls fit_scheduler() under the lock after each eval
         # This prevents a surrogate refit from racing with an in-flight search.
         _surrogate_lock = threading.Lock()
 
@@ -4968,7 +5075,7 @@ class SpotOptim(BaseEstimator):
                 print(
                     f"Initial design evaluated. Fitting surrogate... (Data size: {len(self.y_)})"
                 )
-            self._fit_scheduler()
+            self.fit_scheduler()
 
             # --- Phase 2: Steady State Loop ---
             if self.verbose:
@@ -5116,7 +5223,7 @@ class SpotOptim(BaseEstimator):
                                 # held under the lock so in-flight search threads
                                 # do not read a partially-updated model.
                                 with _surrogate_lock:
-                                    self._fit_scheduler()
+                                    self.fit_scheduler()
 
                     except Exception as e:
                         _future_n_pts.pop(fut, None)
@@ -5496,154 +5603,6 @@ class SpotOptim(BaseEstimator):
         else:
             return None
 
-    # ====================
-    # TASK_SUBSET:
-    # * select_distant_points()
-    # * select_best_cluster()
-    # * _selection_dispatcher()
-    # ====================
-
-    def select_distant_points(
-        self, X: np.ndarray, y: np.ndarray, k: int
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Selects k points that are distant from each other using K-means clustering.
-        This method performs K-means clustering to find k clusters, then selects
-        the point closest to each cluster center. This ensures a space-filling
-        subset of points for surrogate model training.
-
-        Args:
-            X (ndarray): Design points, shape (n_samples, n_features).
-            y (ndarray): Function values at X, shape (n_samples,).
-            k (int): Number of points to select.
-
-        Returns:
-            tuple: A tuple containing:
-                * selected_X (ndarray): Selected design points, shape (k, n_features).
-                * selected_y (ndarray): Function values at selected points, shape (k,).
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-                            bounds=[(-5, 5), (-5, 5)],
-                            max_surrogate_points=5)
-            X = np.random.rand(100, 2)
-            y = np.random.rand(100)
-            X_sel, y_sel = opt.select_distant_points(X, y, 5)
-            print(X_sel.shape)
-            ```
-        """
-        # Perform k-means clustering
-        kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
-
-        # Find the closest point to each cluster center
-        selected_indices = []
-        for center in kmeans.cluster_centers_:
-            distances = np.linalg.norm(X - center, axis=1)
-            closest_idx = np.argmin(distances)
-            selected_indices.append(closest_idx)
-
-        selected_indices = np.array(selected_indices)
-        return X[selected_indices], y[selected_indices]
-
-    def select_best_cluster(
-        self, X: np.ndarray, y: np.ndarray, k: int
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Selects all points from the cluster with the smallest mean y value.
-        This method performs K-means clustering and selects all points from the
-        cluster whose center corresponds to the best (smallest) mean objective
-        function value.
-
-        Args:
-            X (ndarray): Design points, shape (n_samples, n_features).
-            y (ndarray): Function values at X, shape (n_samples,).
-            k (int): Number of clusters.
-
-        Returns:
-            tuple: A tuple containing:
-                * selected_X (ndarray): Selected design points from best cluster, shape (m, n_features).
-                * selected_y (ndarray): Function values at selected points, shape (m,).
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-                            bounds=[(-5, 5), (-5, 5)],
-                            max_surrogate_points=5,
-                             selection_method='best')
-            X = np.random.rand(100, 2)
-            y = np.random.rand(100)
-            X_sel, y_sel = opt.select_best_cluster(X, y, 5)
-            print(f"X_sel.shape: {X_sel.shape}")
-            print(f"y_sel.shape: {y_sel.shape}")
-            ```
-        """
-        # Perform k-means clustering
-        kmeans = KMeans(n_clusters=k, random_state=0, n_init="auto").fit(X)
-        labels = kmeans.labels_
-
-        # Compute mean y for each cluster
-        cluster_means = []
-        for cluster_idx in range(k):
-            cluster_y = y[labels == cluster_idx]
-            if len(cluster_y) == 0:
-                cluster_means.append(np.inf)
-            else:
-                cluster_means.append(np.mean(cluster_y))
-
-        # Find cluster with smallest mean y
-        best_cluster = np.argmin(cluster_means)
-
-        # Select all points from the best cluster
-        mask = labels == best_cluster
-        return X[mask], y[mask]
-
-    def _selection_dispatcher(
-        self, X: np.ndarray, y: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Dispatcher for selection methods.
-        Depending on the value of `self.selection_method`, this method calls
-        the appropriate selection function to choose a subset of points for
-        surrogate model training when the total number of points exceeds
-        `self.max_surrogate_points`.
-
-        Args:
-            X (ndarray): Design points, shape (n_samples, n_features).
-            y (ndarray): Function values at X, shape (n_samples,).
-
-        Returns:
-            tuple: A tuple containing:
-                * selected_X (ndarray): Selected design points.
-                * selected_y (ndarray): Function values at selected points.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
-                            bounds=[(-5, 5), (-5, 5)],
-                            max_surrogate_points=5)
-            X = np.random.rand(100, 2)
-            y = np.random.rand(100)
-            X_sel, y_sel = opt._selection_dispatcher(X, y)
-            print(X_sel.shape[0] <= 5)
-            ```
-        """
-        # Resolve active max points
-        max_k = getattr(self, "_active_max_surrogate_points", self.max_surrogate_points)
-
-        if max_k is None:
-            return X, y
-
-        if self.selection_method == "distant":
-            return self.select_distant_points(X=X, y=y, k=max_k)
-        elif self.selection_method == "best":
-            return self.select_best_cluster(X=X, y=y, k=max_k)
-        else:
-            # If no valid selection method, return all points
-            return X, y
 
     # ====================
     # TASK_SELECT:
@@ -5737,7 +5696,7 @@ class SpotOptim(BaseEstimator):
             np.random.seed(0)
             opt.X_ = np.random.rand(10, 2)
             opt.y_ = np.random.rand(10)
-            opt._fit_surrogate(opt.X_, opt.y_)
+            opt.fit_surrogate(opt.X_, opt.y_)
             x_next = opt.suggest_next_infill_point()
             x_next.shape
             ```

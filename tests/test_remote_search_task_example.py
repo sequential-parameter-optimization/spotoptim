@@ -28,7 +28,7 @@ def test_remote_search_task_basic_example():
     np.random.seed(0)
     opt.X_ = np.random.rand(10, 2) * 10 - 5  # Scale to bounds [-5, 5]
     opt.y_ = np.sum(opt.X_**2, axis=1)
-    opt._fit_surrogate(opt.X_, opt.y_)
+    opt.fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
     x_new = remote_search_task(pickled_optimizer)
@@ -59,7 +59,7 @@ def test_remote_search_task_1d_problem():
     np.random.seed(42)
     opt.X_ = np.random.rand(8, 1) * 20 - 10  # Scale to bounds [-10, 10]
     opt.y_ = (opt.X_**2).ravel()
-    opt._fit_surrogate(opt.X_, opt.y_)
+    opt.fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
     x_new = remote_search_task(pickled_optimizer)
@@ -84,7 +84,7 @@ def test_remote_search_task_5d_problem():
     np.random.seed(123)
     opt.X_ = np.random.rand(12, 5) * 6 - 3  # Scale to bounds [-3, 3]
     opt.y_ = np.sum(opt.X_**2, axis=1)
-    opt._fit_surrogate(opt.X_, opt.y_)
+    opt.fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
     x_new = remote_search_task(pickled_optimizer)
@@ -119,7 +119,7 @@ def test_remote_search_task_custom_objective():
     np.random.seed(99)
     opt.X_ = np.random.rand(10, 2) * 4 - 2  # Scale to bounds [-2, 2]
     opt.y_ = rosenbrock(opt.X_)
-    opt._fit_surrogate(opt.X_, opt.y_)
+    opt.fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
     x_new = remote_search_task(pickled_optimizer)
@@ -146,7 +146,7 @@ def test_remote_search_task_with_acquisition_ei():
     np.random.seed(777)
     opt.X_ = np.random.rand(10, 2) * 10 - 5  # Scale to bounds [-5, 5]
     opt.y_ = np.sum(opt.X_**2, axis=1)
-    opt._fit_surrogate(opt.X_, opt.y_)
+    opt.fit_surrogate(opt.X_, opt.y_)
 
     pickled_optimizer = dill.dumps(opt)
     x_new = remote_search_task(pickled_optimizer)
@@ -173,7 +173,7 @@ def test_remote_search_task_different_seeds():
         np.random.seed(seed)
         opt.X_ = np.random.rand(10, 2) * 10 - 5  # Scale to bounds [-5, 5]
         opt.y_ = np.sum(opt.X_**2, axis=1)
-        opt._fit_surrogate(opt.X_, opt.y_)
+        opt.fit_surrogate(opt.X_, opt.y_)
 
         pickled_optimizer = dill.dumps(opt)
         x_new = remote_search_task(pickled_optimizer)
@@ -220,7 +220,7 @@ def test_remote_search_task_preserves_optimizer_state():
     np.random.seed(42)
     opt.X_ = np.random.rand(10, 2) * 10 - 5  # Scale to bounds [-5, 5]
     opt.y_ = np.sum(opt.X_**2, axis=1)
-    opt._fit_surrogate(opt.X_, opt.y_)
+    opt.fit_surrogate(opt.X_, opt.y_)
 
     # Store original seed
     original_seed = opt.seed

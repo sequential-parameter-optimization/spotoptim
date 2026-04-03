@@ -19,7 +19,7 @@ def test_suggest_next_infill_point_example():
     np.random.seed(0)
     opt.X_ = np.random.rand(10, 2)
     opt.y_ = np.random.rand(10)
-    opt._fit_surrogate(opt.X_, opt.y_)
+    opt.fit_surrogate(opt.X_, opt.y_)
 
     x_next = opt.suggest_next_infill_point()
 

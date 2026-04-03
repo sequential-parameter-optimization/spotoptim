@@ -41,12 +41,17 @@ description: "Structure of the Methods"
 * generate_initial_design()
 * curate_initial_design()
 * validate_x0()
-
-### TASK_Surrogate:
-
+* check_size_initial_design()
+* get_best_xy_initial_design()
 * init_surrogate()
-* _fit_surrogate()
-* _fit_scheduler()
+
+### TASK_FIT:
+
+* _fit_scheduler() -> fit_scheduler()
+* _fit_surrogate() -> fit_surrogate()
+* _selection_dispatcher() -> fit_selection_dispatcher()
+* select_distant_points() -> fit_select_distant_points()
+* select_best_cluster() -> fit_select_best_cluster()
 
 ### TASK_PREDICT:
 
@@ -70,7 +75,6 @@ description: "Structure of the Methods"
 * _try_fallback_strategy()
 * get_shape()
 * optimize_acquisition_func()
-* _optimize_run_task()
 
 ### TASK_OPTIM_SEQ:
 
@@ -106,11 +110,6 @@ description: "Structure of the Methods"
 * get_ocba()
 * get_ocba_X()
 
-### TASK_SUBSET:
-
-* select_distant_points()
-* select_best_cluster()
-* _selection_dispatcher()
 
 
 ### TASK_SELECT:
@@ -147,3 +146,93 @@ description: "Structure of the Methods"
 
 
 ## The Surrogate-model-based Optimization Process
+
+In the following, we will consider the `optimize` method as the main entry point for the surrogate-model-based optimization process. `optimize` calls the dispatcher for the sequential and the parallel (steady-state) optimization runs, which are the main optimization loops. We consider the sequential run, which is started via the method `optimize_sequential_run`. We list all the calls to `self.*` methods that are made in the sequential optimization loop and enumerate the dependencies. Every time, a self-method is called, the numbering goes down by one level. If the method is finished, we go back up one level.
+This results in a tree-like structure of method calls, which we will use to improve (refactor) the structure of the code in the `SpotOptim` class in @SpotOptim.py.
+
+1. _initialize_run()
+1.1. set_seed()
+1.2. get_initial_design()
+1.2.1. generate_initial_design()
+1.2.1.1. lhs_sampler.random()
+1.2.1.2. repair_non_numeric()
+1.3. curate_initial_design()
+1.4. evaluate_function()
+1.4.1. to_all_dim()
+1.4.2. inverse_transform_X()
+1.4.2.1. inverse_transform_value()
+1.4.3. map_to_factor_values()
+1.4.4. fun()
+1.4.5. mo2so()
+1.4.5.1. get_shape()
+1.4.5.2. store_mo()
+2. rm_initial_design_NA_values()
+3. check_size_initial_design()
+4. init_storage()
+4.1. inverse_transform_X()
+4.1.1. inverse_transform_value()
+5. update_stats()
+5.1. aggregate_mean_var()  *(only for noisy functions)*
+6. _init_tensorboard()
+6.1. _write_tensorboard_hparams()  *(for each initial point)*
+6.2. _write_tensorboard_scalars()
+7. get_best_xy_initial_design()
+8. _run_sequential_loop()  *(loop while evaluations < max_iter and time < max_time)*
+8.1. fit_scheduler()
+8.1.1. transform_X()
+8.1.1.1. transform_value()
+8.1.2. fit_surrogate()
+8.1.2.1. fit_selection_dispatcher()  *(only if n_points > max_surrogate_points)*
+8.1.2.1.1. fit_select_distant_points() or fit_select_best_cluster()
+8.1.2.2. surrogate.fit()
+8.2. apply_ocba()  *(only for noisy functions with ocba_delta > 0)*
+8.2.1. get_ocba_X()
+8.2.1.1. get_ocba()
+8.3. suggest_next_infill_point()
+8.3.1. _try_optimizer_candidates()
+8.3.1.1. optimize_acquisition_func()
+8.3.1.1.1. _optimize_acquisition_tricands()  *(if acquisition_optimizer == "tricands")*
+8.3.1.1.1.1. _acquisition_function()
+8.3.1.1.1.1.1. _predict_with_uncertainty()
+8.3.1.1.2. _optimize_acquisition_de()  *(if acquisition_optimizer == "differential_evolution")*
+8.3.1.1.2.1. transform_X()
+8.3.1.1.2.2. _acquisition_function()
+8.3.1.1.2.2.1. _predict_with_uncertainty()
+8.3.1.1.2.3. _prepare_de_kwargs()
+8.3.1.1.3. _optimize_acquisition_scipy()  *(otherwise)*
+8.3.1.1.3.1. _acquisition_function()
+8.3.1.1.3.1.1. _predict_with_uncertainty()
+8.3.1.2. transform_X()
+8.3.1.3. repair_non_numeric()
+8.3.1.4. select_new()
+8.3.2. _try_fallback_strategy()  *(if not enough candidates found)*
+8.3.2.1. _handle_acquisition_failure()
+8.3.2.1.1. lhs_sampler.random()
+8.3.2.1.2. repair_non_numeric()
+8.3.2.2. select_new()
+8.4. update_repeats_infill_points()
+8.5. evaluate_function()  *(see 1.4 for sub-calls)*
+8.6. _handle_NA_new_points()
+8.6.1. apply_penalty_NA()  *(if penalty=True)*
+8.6.2. remove_nan()
+8.7. update_success_rate()
+8.8. update_storage()
+8.8.1. inverse_transform_X()
+8.8.1.1. inverse_transform_value()
+8.9. update_stats()
+8.9.1. aggregate_mean_var()  *(only for noisy functions)*
+8.10. _write_tensorboard_hparams()  *(if tb_writer is not None, for each new point)*
+8.11. _write_tensorboard_scalars()  *(if tb_writer is not None)*
+8.12. _update_best_main_loop()
+8.12.1. inverse_transform_X()
+8.12.1.1. inverse_transform_value()
+--- *end of loop* ---
+9. to_all_dim()  *(if red_dim)*
+10. determine_termination()
+11. _close_tensorboard_writer()
+12. map_to_factor_values()  *(if factor variables present)*
+
+## The Surrogate-model-based Initialization Process
+
+In the following, we will consider the `__init__` method as the starting point before the `optimize` method is called. We list all the calls to `self.*` methods that are made in the `__init__` and enumerate the dependencies. Every time, a self-method is called, the numbering goes down by one level. If the method is finished, we go back up one level.
+This results in a tree-like structure of method calls, which we will use to improve (refactor) the structure of the code in the `SpotOptim` class in @SpotOptim.py.

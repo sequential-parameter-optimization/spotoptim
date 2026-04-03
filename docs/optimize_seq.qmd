@@ -60,7 +60,7 @@ print("dispatch check passed.")
 
 ```python
 X0, y0 = self._initialize_run(X0, y0_known)
-X0, y0, n_evaluated = self.rm_NA_values(X0, y0)
+X0, y0, n_evaluated = self.rm_initial_design_NA_values(X0, y0)
 self.check_size_initial_design(y0, n_evaluated)
 self.init_storage(X0, y0)
 self._zero_success_count = 0
@@ -137,7 +137,7 @@ print("_initialize_run check passed.")
 
 ---
 
-## Step 4 — Filtering Invalid Evaluations (`rm_NA_values()`)
+## Step 4 — Filtering Invalid Evaluations (`rm_initial_design_NA_values()`)
 
 ```python
 finite_mask = np.isfinite(y0)
@@ -164,13 +164,13 @@ from spotoptim.function import sphere
 opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)], n_initial=5)
 X0 = np.array([[1.0, 2.0], [3.0, 4.0], [0.0, 0.0]])
 y0 = np.array([5.0, np.nan, 0.0])
-X0_clean, y0_clean, n_original = opt.rm_NA_values(X0, y0)
+X0_clean, y0_clean, n_original = opt.rm_initial_design_NA_values(X0, y0)
 assert X0_clean.shape == (2, 2)
 assert len(y0_clean) == 2
 assert n_original == 3
 assert np.all(np.isfinite(y0_clean))
 print(f"1 NaN removed; {len(y0_clean)} of {n_original} points retained.")
-print("rm_NA_values check passed.")
+print("rm_initial_design_NA_values check passed.")
 ```
 
 ---
@@ -354,7 +354,7 @@ print("get_best_xy_initial_design check passed.")
 while len(self.y_) < effective_max_iter and \
       time.time() < timeout_start + max_time * 60:
     self.n_iter_ += 1
-    self._fit_scheduler()
+    self.fit_scheduler()
     X_ocba = self.apply_ocba()
     x_next = self.suggest_next_infill_point()
     x_next_repeated = self.update_repeats_infill_points(x_next)
@@ -398,15 +398,15 @@ print("_run_sequential_loop check passed.")
 
 ---
 
-## Step 11 — Surrogate Fitting (`_fit_scheduler()`)
+## Step 11 — Surrogate Fitting (`fit_scheduler()`)
 
 ```python
-self._fit_scheduler()
+self.fit_scheduler()
 ```
 
 At the start of each iteration, the surrogate model is refitted to the current training
 window.
-`_fit_scheduler()` selects the most recent `window_size` observations according to
+`fit_scheduler()` selects the most recent `window_size` observations according to
 `selection_method` (default `"distant"`) and calls the surrogate's `fit()` method.
 When a list of surrogates was supplied at construction, one surrogate is chosen
 probabilistically according to `prob_surrogate` before fitting, and per-surrogate
@@ -422,7 +422,7 @@ result = opt.optimize()
 print(f"window_size : {opt.window_size}")
 print(f"evaluations : {result.nfev}")
 assert opt.window_size == 10
-print("_fit_scheduler check passed.")
+print("fit_scheduler check passed.")
 ```
 
 ---
@@ -705,14 +705,14 @@ print("determine_termination check passed.")
 | 1 | `execute_optimization_run()` | Dispatch to sequential or parallel path |
 | 2 | `optimize_sequential_run()` | Sequential orchestrator |
 | 3 | `_initialize_run()` | Seed RNG, generate and evaluate initial design |
-| 4 | `rm_NA_values()` | Remove NaN/inf from initial evaluations |
+| 4 | `rm_initial_design_NA_values()` | Remove NaN/inf from initial evaluations |
 | 5 | `check_size_initial_design()` | Validate minimum initial design size |
 | 6 | `init_storage()` | Initialise `X_`, `y_`, `n_iter_` |
 | 7 | `update_stats()` | Compute `min_y`, `min_X`, `counter` |
 | 8 | `_init_tensorboard()` | Log initial design to TensorBoard |
 | 9 | `get_best_xy_initial_design()` | Identify initial `best_x_`, `best_y_` |
 | 10 | `_run_sequential_loop()` | Main iteration loop (Steps 11–20 per iteration) |
-| 11 | `_fit_scheduler()` | Fit surrogate to current training window |
+| 11 | `fit_scheduler()` | Fit surrogate to current training window |
 | 12 | `apply_ocba()` | Schedule OCBA re-evaluations (noisy problems only) |
 | 13 | `suggest_next_infill_point()` | Optimise acquisition to propose candidate |
 | 14 | `update_repeats_infill_points()` | Replicate candidate for noisy evaluation |

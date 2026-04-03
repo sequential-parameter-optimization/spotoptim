@@ -52,7 +52,7 @@ def test_max_surrogate_points_switching():
     )
 
     # We can't easily force switch without mocking RNG or running many iters.
-    # Instead, we can manually trigger _fit_scheduler behavior logic or inspect internal list.
+    # Instead, we can manually trigger fit_scheduler behavior logic or inspect internal list.
     assert opt._max_surrogate_points_list == [10, 20]
 
     # Initial state (first surrogate)
@@ -61,10 +61,10 @@ def test_max_surrogate_points_switching():
 
     # Manually switch to second surrogate
     opt.surrogate = surrogates[1]
-    # Update active manually (mimicking _fit_scheduler) to verify intended behavior would work
-    # Or actually call _fit_scheduler with mocked probability?
+    # Update active manually (mimicking fit_scheduler) to verify intended behavior would work
+    # Or actually call fit_scheduler with mocked probability?
 
-    # Let's rely on _fit_scheduler property: it uses self.rng.
+    # Let's rely on fit_scheduler property: it uses self.rng.
     # We can mock self.rng.choice
 
     class MockRNG:
@@ -77,8 +77,8 @@ def test_max_surrogate_points_switching():
     opt.X_ = np.array([[0.5]])
     opt.y_ = np.array([0.5])
 
-    # Call _fit_scheduler
-    opt._fit_scheduler()
+    # Call fit_scheduler
+    opt.fit_scheduler()
 
     assert opt.surrogate == surrogates[1]
     assert opt._active_max_surrogate_points == 20
@@ -94,7 +94,7 @@ def test_single_surrogate_behavior():
     X = np.random.rand(20, 1)
     y = np.random.rand(20)
 
-    # Mock _selection_dispatcher to verify it gets called
+    # Mock fit_selection_dispatcher to verify it gets called
     called = False
 
     def mock_dispatcher(X, y):
@@ -102,7 +102,7 @@ def test_single_surrogate_behavior():
         called = True
         return X[:15], y[:15]
 
-    opt._selection_dispatcher = mock_dispatcher
-    opt._fit_surrogate(X, y)
+    opt.fit_selection_dispatcher = mock_dispatcher
+    opt.fit_surrogate(X, y)
 
     assert called
