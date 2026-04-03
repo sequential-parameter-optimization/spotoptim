@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.29">
+<meta name="generator" content="quarto-1.8.27">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -69,18 +69,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../docs/images/favicon.png" rel="icon" type="image/png">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-4e7a6ecc11b04d2331dcee725084a9de.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-bcbce66894bfa8e7e94e40e0186b9bb8.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-f1aadacce99040138bbb613f9330654f.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-5b87ed80954e26ea15f9296f3680d709.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-ec0254ad7b8ffb92aa268097323fad65.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-5b87ed80954e26ea15f9296f3680d709.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-486456a1ea2d3ce1c2bc0ac6b5794661.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-474c494e1f8843c89f52d41127e24191.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-486456a1ea2d3ce1c2bc0ac6b5794661.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -272,6 +273,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       toggleColorMode(toAlternate);
       setStyleSentinel(toAlternate);
       toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
     };
     // Switch to dark mode if need be
     if (hasAlternateSentinel()) {
@@ -287,7 +289,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a href="../index.html" class="navbar-brand navbar-brand-logo">
-    <img src="../docs/images/spotlogo.png" alt="" class="navbar-logo">
+    <img src="../docs/images/spotlogo.png" alt="" class="navbar-logo light-content">
+    <img src="../docs/images/spotlogo.png" alt="" class="navbar-logo dark-content">
     </a>
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">spotoptim</span>
@@ -2034,17 +2037,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This document traces every step executed by <code>SpotOptim.execute_optimization_run()</code> along the parallel code path (<code>n_jobs &gt; 1</code>), in the order they occur. Each section describes one method or phase with a <code>{python}</code> code block that can be executed directly.</p>
 <p>The public entry point is <code>optimize()</code>, which manages the outer restart loop and delegates each cycle to <code>execute_optimization_run()</code>. When <code>n_jobs &gt; 1</code>, that dispatcher routes to <code>optimize_steady_state()</code>, which implements a hybrid steady-state parallelisation strategy that overlaps surrogate search with objective function evaluation. This document covers that path in full.</p>
 <p>Run all related tests with:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run pytest tests/test_spotoptim_deep.py <span class="at">-v</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run pytest tests/test_spotoptim_deep.py <span class="at">-v</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <hr>
 <section id="step-1-dispatch-execute_optimization_run" class="level2">
 <h2 class="anchored" data-anchor-id="step-1-dispatch-execute_optimization_run">Step 1 — Dispatch (<code>execute_optimization_run()</code>)</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">self</span>.n_jobs <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">self</span>.n_jobs <span class="op">&gt;</span> <span class="dv">1</span>:</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">self</span>.optimize_steady_state(...)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">self</span>.optimize_sequential_run(...)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">self</span>.optimize_sequential_run(...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>execute_optimization_run()</code> is the routing layer between the outer restart loop in <code>optimize()</code> and the actual optimisation engine. Its sole responsibility is to examine <code>n_jobs</code> and forward all arguments to either <code>optimize_steady_state()</code> (parallel) or <code>optimize_sequential_run()</code> (sequential). It returns a <code>(status, OptimizeResult)</code> tuple in both cases, which <code>optimize()</code> uses to decide whether to restart or terminate. The optional <code>shared_best_y</code> and <code>shared_lock</code> parameters support inter-worker coordination; they are unused in the current steady-state implementation and reserved for future multi-restart parallelism.</p>
-<div id="e32406a2" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<div id="d07db5c0" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2055,10 +2058,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"status : </span><span class="sc">{</span>status<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"best   : </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.6f}</span><span class="ss">"</span>)</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> status <span class="op">==</span> <span class="st">"FINISHED"</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"dispatch check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"dispatch check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>status : FINISHED
-best   : 3.563760
+best   : 3.941634
 dispatch check passed.</code></pre>
 </div>
 </div>
@@ -2066,15 +2069,15 @@ dispatch check passed.</code></pre>
 </section>
 <section id="step-2-parallel-run-orchestration-optimize_steady_state" class="level2">
 <h2 class="anchored" data-anchor-id="step-2-parallel-run-orchestration-optimize_steady_state">Step 2 — Parallel Run Orchestration (<code>optimize_steady_state()</code>)</h2>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.set_seed()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.set_seed()</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>X0 <span class="op">=</span> <span class="va">self</span>.get_initial_design(X0)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>X0 <span class="op">=</span> <span class="va">self</span>.curate_initial_design(X0)</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Phase 1: parallel initial evaluation</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Phase 2: steady-state loop</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="st">"FINISHED"</span>, OptimizeResult(...)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="st">"FINISHED"</span>, OptimizeResult(...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>optimize_steady_state()</code> is the parallel orchestrator. It follows the same preparatory sequence as its sequential counterpart — seeding the random number generator, generating and curating the initial design — before switching to a pool-based execution model. The method never returns <code>"RESTART"</code>: unlike the sequential loop, the steady-state engine does not implement a zero-success-rate restart criterion, and always exits with <code>"FINISHED"</code>. All worker pools are managed inside a single <code>contextlib.ExitStack</code> that guarantees orderly shutdown on success and on exception.</p>
-<div id="34a25aab" class="cell" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<div id="95054d36" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2085,7 +2088,7 @@ dispatch check passed.</code></pre>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"evaluations : </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"best        : </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.6f}</span><span class="ss">"</span>)</span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> status <span class="op">==</span> <span class="st">"FINISHED"</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"parallel orchestration check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"parallel orchestration check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>status      : FINISHED
 evaluations : 10
@@ -2097,12 +2100,12 @@ parallel orchestration check passed.</code></pre>
 </section>
 <section id="step-3-seed-and-initial-design-set_seed-get_initial_design-curate_initial_design" class="level2">
 <h2 class="anchored" data-anchor-id="step-3-seed-and-initial-design-set_seed-get_initial_design-curate_initial_design">Step 3 — Seed and Initial Design (<code>set_seed()</code>, <code>get_initial_design()</code>, <code>curate_initial_design()</code>)</h2>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.set_seed()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.set_seed()</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>X0 <span class="op">=</span> <span class="va">self</span>.get_initial_design(X0)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>X0 <span class="op">=</span> <span class="va">self</span>.curate_initial_design(X0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>X0 <span class="op">=</span> <span class="va">self</span>.curate_initial_design(X0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The parallel path begins with the same three preparatory calls as the sequential path. <code>set_seed()</code> re-seeds Python’s <code>random</code> module and NumPy’s global generator to ensure reproducibility. <code>get_initial_design()</code> either processes the user-supplied <code>X0</code> or generates a Latin Hypercube sample in the transformed, reduced search space. <code>curate_initial_design()</code> removes duplicate points and generates replacements as needed. Because points are dispatched concurrently to worker processes or threads in the next phase, curation must be complete before submission: worker processes operate on a snapshot of the optimiser serialised with <code>dill</code> and cannot interact with the main-process state. Immediately after curation, restart injection is applied: a <code>y0_prefilled</code> array (all <code>NaN</code> by default) is populated with <code>y0_known</code> at the position of the matching <code>self.x0</code> point, using the same distance tolerance as <code>_initialize_run()</code> in the sequential path. This pre-filled array is consumed by Phase 1 to skip one pool submission per restart.</p>
-<div id="3c310ab4" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="5cdc733f" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2113,7 +2116,7 @@ parallel orchestration check passed.</code></pre>
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"initial design shape : </span><span class="sc">{</span>X0<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> X0.shape <span class="op">==</span> (<span class="dv">5</span>, <span class="dv">2</span>)</span>
 <span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(np.unique(X0, axis<span class="op">=</span><span class="dv">0</span>)) <span class="op">==</span> <span class="dv">5</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"seed and initial design check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"seed and initial design check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>initial design shape : (5, 2)
 seed and initial design check passed.</code></pre>
@@ -2123,7 +2126,7 @@ seed and initial design check passed.</code></pre>
 </section>
 <section id="step-4-gil-detection-and-executor-construction-_is_gil_disabled" class="level2">
 <h2 class="anchored" data-anchor-id="step-4-gil-detection-and-executor-construction-_is_gil_disabled">Step 4 — GIL Detection and Executor Construction (<code>_is_gil_disabled()</code>)</h2>
-<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>_no_gil <span class="op">=</span> _is_gil_disabled()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>_no_gil <span class="op">=</span> _is_gil_disabled()</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> ExitStack() <span class="im">as</span> _stack:</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    eval_pool <span class="op">=</span> _stack.enter_context(</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        ThreadPoolExecutor(max_workers<span class="op">=</span><span class="va">self</span>.n_jobs) <span class="cf">if</span> _no_gil</span>
@@ -2131,15 +2134,15 @@ seed and initial design check passed.</code></pre>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    search_pool <span class="op">=</span> _stack.enter_context(</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        ThreadPoolExecutor(max_workers<span class="op">=</span><span class="va">self</span>.n_jobs)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>_is_gil_disabled()</code> queries <code>sys._is_gil_enabled()</code> (Python 3.13+) to detect whether the interpreter was built without the Global Interpreter Lock. On standard GIL builds — Python 3.12 or GIL-enabled 3.13 — objective evaluations are dispatched to a <code>ProcessPoolExecutor</code> so that each worker runs in a separate process, giving true CPU-level parallelism and safe isolation of arbitrary callables. Surrogate search tasks are always dispatched to a <code>ThreadPoolExecutor</code> because they share the main-process heap and require no serialisation. On free-threaded builds (<code>python3.13t</code>) both pools are <code>ThreadPoolExecutor</code> instances: threads achieve true parallelism without the GIL, <code>dill</code> serialisation is eliminated, and the objective function is called directly from the shared heap. The <code>_surrogate_lock</code> (a <code>threading.Lock</code>) is used in both configurations to serialise concurrent surrogate reads and refits.</p>
-<div id="4af8d1aa" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.SpotOptim <span class="im">import</span> is_gil_disabled</span>
+<div id="19e1c1fe" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.SpotOptim <span class="im">import</span> is_gil_disabled</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> is_gil_disabled()</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"GIL disabled: </span><span class="sc">{</span>result<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(result, <span class="bu">bool</span>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"GIL detection check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"GIL detection check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>GIL disabled: False
 GIL detection check passed.</code></pre>
@@ -2149,7 +2152,7 @@ GIL detection check passed.</code></pre>
 </section>
 <section id="step-5-phase-1-parallel-initial-submission" class="level2">
 <h2 class="anchored" data-anchor-id="step-5-phase-1-parallel-initial-submission">Step 5 — Phase 1: Parallel Initial Submission</h2>
-<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>n_to_submit <span class="op">=</span> <span class="dv">0</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>n_to_submit <span class="op">=</span> <span class="dv">0</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, x <span class="kw">in</span> <span class="bu">enumerate</span>(X0):</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> np.isfinite(y0_prefilled[i]):</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Restart injection: store directly, skip the pool.</span></span>
@@ -2161,10 +2164,10 @@ GIL detection check passed.</code></pre>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        pickled_args <span class="op">=</span> dill.dumps((<span class="va">self</span>, x))</span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        fut <span class="op">=</span> eval_pool.submit(remote_eval_wrapper, pickled_args)</span>
 <span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    futures[fut] <span class="op">=</span> <span class="st">"eval"</span></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    n_to_submit <span class="op">+=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    n_to_submit <span class="op">+=</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The initial design is partitioned into two groups before any worker is touched. Points that carry a pre-filled <code>y0_prefilled</code> value — set during Step 4 for the restart-injected best point — are stored on the main thread via <code>_update_storage_steady()</code> and skipped entirely. The remaining <code>n_to_submit</code> points are submitted to <code>eval_pool</code> concurrently. On GIL builds each point is serialised together with a snapshot of the optimiser using <code>dill.dumps()</code>; the TensorBoard writer is temporarily set to <code>None</code> before serialisation because <code>SummaryWriter</code> objects are not picklable. <code>remote_eval_wrapper()</code> unpickles the arguments in the worker process, reshapes the point to a <code>(1, d)</code> array, calls <code>evaluate_function()</code>, and returns the <code>(x, y)</code> pair. On free-threaded builds <code>_thread_eval_task_single()</code> calls <code>evaluate_function()</code> without any serialisation overhead. All submitted futures are tracked in a <code>futures</code> dictionary keyed by <code>Future</code> object with the string tag <code>"eval"</code>. When <code>y0_known</code> is <code>None</code> (no restart), <code>y0_prefilled</code> is all-NaN and <code>n_to_submit</code> equals <code>n_initial</code>, so behaviour is identical to a fresh run.</p>
-<div id="ccbfd2aa" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<div id="5b17c220" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2188,7 +2191,7 @@ GIL detection check passed.</code></pre>
 <span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">float</span>(np.<span class="bu">sum</span>(x_inject<span class="op">**</span><span class="dv">2</span>)) <span class="kw">in</span> opt2.y_</span>
 <span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"injected value present in y_: </span><span class="sc">{</span><span class="bu">float</span>(np.<span class="bu">sum</span>(x_inject<span class="op">**</span><span class="dv">2</span>))<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"parallel initial submission check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"parallel initial submission check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>evaluations (no injection): 8
 injected value present in y_: 0.5000
@@ -2199,7 +2202,7 @@ parallel initial submission check passed.</code></pre>
 </section>
 <section id="step-6-initial-design-collection-_update_storage_steady" class="level2">
 <h2 class="anchored" data-anchor-id="step-6-initial-design-collection-_update_storage_steady">Step 6 — Initial Design Collection (<code>_update_storage_steady()</code>)</h2>
-<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> initial_done_count <span class="op">&lt;</span> <span class="bu">len</span>(X0):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> initial_done_count <span class="op">&lt;</span> <span class="bu">len</span>(X0):</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    done, _ <span class="op">=</span> wait(futures.keys(), return_when<span class="op">=</span>FIRST_COMPLETED)</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> fut <span class="kw">in</span> done:</span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        ftype <span class="op">=</span> futures.pop(fut)</span>
@@ -2208,10 +2211,10 @@ parallel initial submission check passed.</code></pre>
 <span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>        x_done, y_done <span class="op">=</span> fut.result()</span>
 <span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> <span class="bu">isinstance</span>(y_done, <span class="pp">Exception</span>):</span>
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._update_storage_steady(x_done, y_done)</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        initial_done_count <span class="op">+=</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        initial_done_count <span class="op">+=</span> <span class="dv">1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The main thread waits in a loop using <code>concurrent.futures.wait()</code> with <code>return_when=FIRST_COMPLETED</code>, processing each completed future as it arrives. Futures tagged <code>"eval"</code> are the only type active during Phase 1; any unexpected type is silently skipped. When a result is an <code>Exception</code> instance — indicating a worker-side failure — the point is dropped and, if <code>verbose=True</code>, the error is printed; the initial design count still advances so the loop terminates correctly. For valid results, <code>_update_storage_steady()</code> appends the point in original scale to <code>X_</code> and its objective value to <code>y_</code>, initialising both arrays on the first call. It also updates <code>best_x_</code>, <code>best_y_</code>, <code>min_y</code>, and <code>min_X</code> in-place whenever the new value improves on the current best. Because the main thread is the only writer during Phase 1, no locking is required here.</p>
-<div id="b1d8b879" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="5845fe5c" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2222,10 +2225,10 @@ parallel initial submission check passed.</code></pre>
 <span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"y_        : </span><span class="sc">{</span>opt<span class="sc">.</span>y_<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> opt.X_.shape[<span class="dv">0</span>] <span class="op">&gt;=</span> <span class="dv">1</span></span>
 <span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> np.isfinite(opt.best_y_)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"_update_storage_steady check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"_update_storage_steady check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>X_ shape  : (5, 2)
-y_        : [ 8.46320329  9.97487171 16.65114474 30.97516031 19.210481  ]
+y_        : [ 9.97487171  8.46320329 16.65114474 30.97516031 19.210481  ]
 _update_storage_steady check passed.</code></pre>
 </div>
 </div>
@@ -2233,14 +2236,14 @@ _update_storage_steady check passed.</code></pre>
 </section>
 <section id="step-7-initial-postprocessing-_init_tensorboard-update_stats-get_best_xy_initial_design" class="level2">
 <h2 class="anchored" data-anchor-id="step-7-initial-postprocessing-_init_tensorboard-update_stats-get_best_xy_initial_design">Step 7 — Initial Postprocessing (<code>_init_tensorboard()</code>, <code>update_stats()</code>, <code>get_best_xy_initial_design()</code>)</h2>
-<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>._init_tensorboard()</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>._init_tensorboard()</span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">self</span>.y_ <span class="kw">is</span> <span class="va">None</span> <span class="kw">or</span> <span class="bu">len</span>(<span class="va">self</span>.y_) <span class="op">==</span> <span class="dv">0</span>:</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">RuntimeError</span>(...)</span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.update_stats()</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.get_best_xy_initial_design()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.get_best_xy_initial_design()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Once all initial evaluations have completed, three postprocessing steps are applied in fixed order. <code>_init_tensorboard()</code> logs each initial-design point to TensorBoard as a separate hyperparameter run; when <code>tensorboard_log=False</code> (the default) it is a no-op. A guard check follows: if <code>y_</code> is <code>None</code> or empty, every worker evaluation failed and a <code>RuntimeError</code> is raised with a diagnostic message pointing to likely causes such as unpicklable callables or missing imports inside the worker process. <code>update_stats()</code> refreshes <code>min_y</code>, <code>min_X</code>, <code>counter</code>, and, for noisy objectives, aggregated per-point means and variances. <code>get_best_xy_initial_design()</code> identifies the initial best solution and writes it to <code>best_x_</code> and <code>best_y_</code>; unlike the sequential path, these attributes are updated incrementally by <code>_update_storage_steady()</code> throughout the loop, so this call aligns the verbose best-solution display with the true running best after Phase 1.</p>
-<div id="d03eae80" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<div id="bfcd2569" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere, bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)], tensorboard_log<span class="op">=</span><span class="va">False</span>,</span>
@@ -2250,7 +2253,7 @@ _update_storage_steady check passed.</code></pre>
 <span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> opt.counter <span class="op">==</span> <span class="dv">5</span></span>
 <span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"counter : </span><span class="sc">{</span>opt<span class="sc">.</span>counter<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"min_y   : </span><span class="sc">{</span>opt<span class="sc">.</span>min_y<span class="sc">:.6f}</span><span class="ss">"</span>)</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"initial postprocessing check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"initial postprocessing check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>counter : 5
 min_y   : 0.560692
@@ -2261,11 +2264,11 @@ initial postprocessing check passed.</code></pre>
 </section>
 <section id="step-8-first-surrogate-fit-fit_scheduler" class="level2">
 <h2 class="anchored" data-anchor-id="step-8-first-surrogate-fit-fit_scheduler">Step 8 — First Surrogate Fit (<code>fit_scheduler()</code>)</h2>
-<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># No lock needed — no search threads active yet</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.fit_scheduler()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># No lock needed — no search threads active yet</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.fit_scheduler()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>After the initial postprocessing, the surrogate model is fitted to the complete initial design for the first time. No surrogate lock is acquired here because the <code>search_pool</code> has not yet been populated: this is the only point in the parallel path where <code>fit_scheduler()</code> is called without holding <code>_surrogate_lock</code>. <code>fit_scheduler()</code> selects the most recent <code>window_size</code> training points according to <code>selection_method</code>, fits the surrogate, and prepares it for acquisition-function queries. When a list of surrogates was specified at construction, one is chosen probabilistically according to <code>prob_surrogate</code> before fitting.</p>
-<div id="580731ab" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
+<div id="ff7917cc" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2275,7 +2278,7 @@ initial postprocessing check passed.</code></pre>
 <span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"window_size : </span><span class="sc">{</span>opt<span class="sc">.</span>window_size<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"evaluations : </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> opt.window_size <span class="op">==</span> <span class="dv">10</span></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"first surrogate fit check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"first surrogate fit check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>window_size : 10
 evaluations : 15
@@ -2286,7 +2289,7 @@ first surrogate fit check passed.</code></pre>
 </section>
 <section id="step-9-steady-state-loop-overview-optimize_steady_state" class="level2">
 <h2 class="anchored" data-anchor-id="step-9-steady-state-loop-overview-optimize_steady_state">Step 9 — Steady-State Loop Overview (<code>optimize_steady_state()</code>)</h2>
-<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>pending_cands: <span class="bu">list</span> <span class="op">=</span> []</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>pending_cands: <span class="bu">list</span> <span class="op">=</span> []</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>_future_n_pts: <span class="bu">dict</span> <span class="op">=</span> {}</span>
 <span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (<span class="bu">len</span>(<span class="va">self</span>.y_) <span class="op">&lt;</span> effective_max_iter) <span class="kw">and</span> (</span>
@@ -2297,10 +2300,10 @@ first surrogate fit check passed.</code></pre>
 <span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># fill open slots with search tasks</span></span>
 <span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># flush again if threshold crossed</span></span>
 <span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># wait for any future to complete</span></span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># route result by ftype: "search" or "batch_eval"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># route result by ftype: "search" or "batch_eval"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The main iteration loop runs until either the evaluation budget <code>effective_max_iter</code> or the wall-clock limit <code>max_time</code> minutes is exhausted. Two data structures coordinate the flow: <code>pending_cands</code> accumulates candidates returned by completed search tasks, and <code>_future_n_pts</code> maps each in-flight batch-eval future to the number of points it carries. Both structures are required for accurate budget accounting: the reserved count is <code>len(y_) + n_in_flight + n_active_searches + len(pending_cands)</code>, ensuring the total never exceeds <code>effective_max_iter</code> regardless of concurrency. Each loop iteration performs four actions in order — batch flush, slot filling, second flush, and future wait — before routing completed results by their type tag.</p>
-<div id="dac2c0cf" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="c32dbc45" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2311,10 +2314,10 @@ first surrogate fit check passed.</code></pre>
 <span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"best        : </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.6f}</span><span class="ss">"</span>)</span>
 <span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> result.nfev <span class="op">&lt;=</span> <span class="dv">20</span></span>
 <span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> result.success</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"steady-state loop check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"steady-state loop check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>evaluations : 20
-best        : 0.000001
+best        : 0.000000
 steady-state loop check passed.</code></pre>
 </div>
 </div>
@@ -2322,15 +2325,15 @@ steady-state loop check passed.</code></pre>
 </section>
 <section id="step-10-batch-readiness-_batch_ready" class="level2">
 <h2 class="anchored" data-anchor-id="step-10-batch-readiness-_batch_ready">Step 10 — Batch Readiness (<code>_batch_ready()</code>)</h2>
-<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _batch_ready() <span class="op">-&gt;</span> <span class="bu">bool</span>:</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _batch_ready() <span class="op">-&gt;</span> <span class="bu">bool</span>:</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> pending_cands:</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">False</span></span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">len</span>(pending_cands) <span class="op">&gt;=</span> <span class="va">self</span>.eval_batch_size:</span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">True</span></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">not</span> <span class="bu">any</span>(t <span class="op">==</span> <span class="st">"search"</span> <span class="cf">for</span> t <span class="kw">in</span> futures.values())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="kw">not</span> <span class="bu">any</span>(t <span class="op">==</span> <span class="st">"search"</span> <span class="cf">for</span> t <span class="kw">in</span> futures.values())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>_batch_ready()</code> determines whether the accumulated candidates in <code>pending_cands</code> should be dispatched as a batch evaluation. The primary condition is that the number of pending candidates meets or exceeds <code>eval_batch_size</code>. A secondary starvation-guard condition also triggers a flush when no search tasks remain in flight: without this guard, pending candidates would block indefinitely if the budget is nearly exhausted and no further search tasks can be submitted. With <code>eval_batch_size=1</code> (the default), <code>_batch_ready()</code> returns <code>True</code> whenever any candidate is pending, preserving the one-point-at-a-time behaviour of the sequential path. Larger values of <code>eval_batch_size</code> amortise process-spawn and inter-process communication overhead across multiple points, improving throughput for expensive objectives on GIL builds.</p>
-<div id="edf7a78b" class="cell" data-execution_count="10">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="872b8df3" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2341,7 +2344,7 @@ steady-state loop check passed.</code></pre>
 <span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> opt.eval_batch_size <span class="op">==</span> <span class="dv">1</span></span>
 <span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"eval_batch_size : </span><span class="sc">{</span>opt<span class="sc">.</span>eval_batch_size<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"evaluations     : </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"_batch_ready check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"_batch_ready check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>eval_batch_size : 1
 evaluations     : 15
@@ -2352,7 +2355,7 @@ _batch_ready check passed.</code></pre>
 </section>
 <section id="step-11-batch-dispatch-_flush_batch" class="level2">
 <h2 class="anchored" data-anchor-id="step-11-batch-dispatch-_flush_batch">Step 11 — Batch Dispatch (<code>_flush_batch()</code>)</h2>
-<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _flush_batch() <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _flush_batch() <span class="op">-&gt;</span> <span class="va">None</span>:</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    X_batch <span class="op">=</span> np.vstack(pending_cands)</span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    n_in_batch <span class="op">=</span> <span class="bu">len</span>(pending_cands)</span>
 <span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    pending_cands.clear()</span>
@@ -2362,10 +2365,10 @@ _batch_ready check passed.</code></pre>
 <span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>        pickled_args <span class="op">=</span> dill.dumps((<span class="va">self</span>, X_batch))</span>
 <span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>        fut_eval <span class="op">=</span> eval_pool.submit(remote_batch_eval_wrapper, pickled_args)</span>
 <span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    futures[fut_eval] <span class="op">=</span> <span class="st">"batch_eval"</span></span>
-<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    _future_n_pts[fut_eval] <span class="op">=</span> n_in_batch</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    _future_n_pts[fut_eval] <span class="op">=</span> n_in_batch</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>_flush_batch()</code> stacks all pending candidates into a single <code>(n, d)</code> array <code>X_batch</code>, clears <code>pending_cands</code>, and dispatches the batch to <code>eval_pool</code> as one future. On GIL builds <code>remote_batch_eval_wrapper()</code> is used: it unpickles the optimiser and batch in the worker process, calls <code>evaluate_function(X_batch)</code> once, and returns <code>(X_batch, y_batch)</code>. Evaluating the whole batch in a single <code>fun()</code> call avoids repeated process-spawn overhead and allows vectorised objective implementations to exploit NumPy-level parallelism within the worker. On free-threaded builds <code>_thread_batch_eval_task()</code> performs the same operation directly in a thread without serialisation. The future is registered under the <code>"batch_eval"</code> tag and its point count is recorded in <code>_future_n_pts</code> so that budget accounting remains correct while the evaluation is in flight.</p>
-<div id="53080c4d" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="b79d750d" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2375,7 +2378,7 @@ _batch_ready check passed.</code></pre>
 <span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> opt.eval_batch_size <span class="op">==</span> <span class="dv">3</span></span>
 <span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"eval_batch_size : </span><span class="sc">{</span>opt<span class="sc">.</span>eval_batch_size<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"evaluations     : </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"_flush_batch check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"_flush_batch check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>eval_batch_size : 3
 evaluations     : 20
@@ -2386,15 +2389,15 @@ _flush_batch check passed.</code></pre>
 </section>
 <section id="step-12-search-slot-management-_thread_search_task" class="level2">
 <h2 class="anchored" data-anchor-id="step-12-search-slot-management-_thread_search_task">Step 12 — Search Slot Management (<code>_thread_search_task()</code>)</h2>
-<div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>n_in_flight <span class="op">=</span> <span class="bu">sum</span>(_future_n_pts.values())</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>n_in_flight <span class="op">=</span> <span class="bu">sum</span>(_future_n_pts.values())</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>n_searches <span class="op">=</span> <span class="bu">sum</span>(<span class="dv">1</span> <span class="cf">for</span> t <span class="kw">in</span> futures.values() <span class="cf">if</span> t <span class="op">==</span> <span class="st">"search"</span>)</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>reserved <span class="op">=</span> <span class="bu">len</span>(<span class="va">self</span>.y_) <span class="op">+</span> n_in_flight <span class="op">+</span> n_searches <span class="op">+</span> <span class="bu">len</span>(pending_cands)</span>
 <span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> reserved <span class="op">&lt;</span> effective_max_iter:</span>
 <span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    fut <span class="op">=</span> search_pool.submit(_thread_search_task)</span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    futures[fut] <span class="op">=</span> <span class="st">"search"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    futures[fut] <span class="op">=</span> <span class="st">"search"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>At each loop iteration, the main thread fills any open slots in the search pool up to <code>n_jobs</code> concurrent tasks. Before submitting a new search task, the budget guard checks that adding one more in-flight search would not push the reserved count over <code>effective_max_iter</code>: if it would, no further search tasks are submitted and the loop drains existing futures until the budget is consumed. <code>_thread_search_task()</code> is a nested closure that acquires <code>_surrogate_lock</code> before calling <code>suggest_next_infill_point()</code> and releases it on return, so that a concurrent surrogate refit on the main thread cannot corrupt the model while a search thread reads it. Because search tasks are always submitted to a <code>ThreadPoolExecutor</code>, they share the main process heap and require no serialisation regardless of the GIL state.</p>
-<div id="fbe0be02" class="cell" data-execution_count="12">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="e7ab86c1" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2404,7 +2407,7 @@ _flush_batch check passed.</code></pre>
 <span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> result.nfev <span class="op">&lt;=</span> <span class="dv">12</span></span>
 <span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"n_jobs      : </span><span class="sc">{</span>opt<span class="sc">.</span>n_jobs<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"evaluations : </span><span class="sc">{</span>result<span class="sc">.</span>nfev<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"search slot management check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"search slot management check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>n_jobs      : 3
 evaluations : 12
@@ -2415,12 +2418,12 @@ search slot management check passed.</code></pre>
 </section>
 <section id="step-13-candidate-generation-suggest_next_infill_point" class="level2">
 <h2 class="anchored" data-anchor-id="step-13-candidate-generation-suggest_next_infill_point">Step 13 — Candidate Generation (<code>suggest_next_infill_point()</code>)</h2>
-<div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _thread_search_task():</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _thread_search_task():</span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> _surrogate_lock:</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.suggest_next_infill_point()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.suggest_next_infill_point()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>suggest_next_infill_point()</code> runs the acquisition function to identify the most promising candidate for the next objective evaluation. The acquisition strategy is controlled by <code>acquisition</code> (default <code>"y"</code>, minimising the surrogate prediction directly). The acquisition optimiser (default <code>"differential_evolution"</code>) searches the transformed, reduced search space. When the optimiser fails, the fallback strategy selected by <code>acquisition_failure_strategy</code> applies; <code>"random"</code> (the default) draws a uniform random point. In the parallel path this method is always called inside <code>_thread_search_task()</code>, which holds <code>_surrogate_lock</code> for the duration of the call, preventing simultaneous surrogate access by multiple search threads or by the main-thread refit.</p>
-<div id="857c74bd" class="cell" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<div id="0375ad23" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere, bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
@@ -2429,10 +2432,10 @@ search slot management check passed.</code></pre>
 <span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> opt.acquisition <span class="op">==</span> <span class="st">"ei"</span></span>
 <span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"acquisition : </span><span class="sc">{</span>opt<span class="sc">.</span>acquisition<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"best        : </span><span class="sc">{</span>result<span class="sc">.</span>fun<span class="sc">:.6f}</span><span class="ss">"</span>)</span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"suggest_next_infill_point check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"suggest_next_infill_point check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>acquisition : ei
-best        : 0.200256
+best        : 0.058819
 suggest_next_infill_point check passed.</code></pre>
 </div>
 </div>
@@ -2440,7 +2443,7 @@ suggest_next_infill_point check passed.</code></pre>
 </section>
 <section id="step-14-future-completion-and-routing" class="level2">
 <h2 class="anchored" data-anchor-id="step-14-future-completion-and-routing">Step 14 — Future Completion and Routing</h2>
-<div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>done, _ <span class="op">=</span> wait(futures.keys(), return_when<span class="op">=</span>FIRST_COMPLETED)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>done, _ <span class="op">=</span> wait(futures.keys(), return_when<span class="op">=</span>FIRST_COMPLETED)</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fut <span class="kw">in</span> done:</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    ftype <span class="op">=</span> futures.pop(fut)</span>
 <span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    res <span class="op">=</span> fut.result()</span>
@@ -2452,10 +2455,10 @@ suggest_next_infill_point check passed.</code></pre>
 <span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> ftype <span class="op">==</span> <span class="st">"batch_eval"</span>:</span>
 <span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>        _future_n_pts.pop(fut, <span class="va">None</span>)</span>
 <span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>        X_done, y_done <span class="op">=</span> res</span>
-<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># process batch...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># process batch...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>concurrent.futures.wait()</code> with <code>return_when=FIRST_COMPLETED</code> blocks until at least one future finishes, then returns all futures that are done. Each completed future is popped from <code>futures</code> and routed by its type tag. For a <code>"search"</code> future the returned candidate is appended to <code>pending_cands</code>; if this pushes the list over the batch threshold, <code>_flush_batch()</code> is called immediately to avoid an unnecessary extra loop iteration. For a <code>"batch_eval"</code> future the corresponding entry in <code>_future_n_pts</code> is removed so that budget accounting is unblocked before the storage update begins. If a result is an <code>Exception</code> — indicating a remote failure — the error is optionally printed, the budget entry is removed, and the loop continues; failed search slots are refilled in the next iteration, and failed eval points are lost without charging the budget counter.</p>
-<div id="201a8b1b" class="cell" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="522b4bf0" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2465,7 +2468,7 @@ suggest_next_infill_point check passed.</code></pre>
 <span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(opt.y_) <span class="op">&lt;=</span> <span class="dv">15</span></span>
 <span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> np.<span class="bu">all</span>(np.isfinite(opt.y_))</span>
 <span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"evaluations stored : </span><span class="sc">{</span><span class="bu">len</span>(opt.y_)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"future routing check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"future routing check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>evaluations stored : 15
 future routing check passed.</code></pre>
@@ -2475,15 +2478,15 @@ future routing check passed.</code></pre>
 </section>
 <section id="step-15-batch-evaluation-processing-update_success_rate-_update_storage_steady-fit_scheduler" class="level2">
 <h2 class="anchored" data-anchor-id="step-15-batch-evaluation-processing-update_success_rate-_update_storage_steady-fit_scheduler">Step 15 — Batch Evaluation Processing (<code>update_success_rate()</code>, <code>_update_storage_steady()</code>, <code>fit_scheduler()</code>)</h2>
-<div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> xi, yi <span class="kw">in</span> <span class="bu">zip</span>(X_done, y_done):</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> xi, yi <span class="kw">in</span> <span class="bu">zip</span>(X_done, y_done):</span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.update_success_rate(np.array([yi]))</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>._update_storage_steady(xi, yi)</span>
 <span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.n_iter_ <span class="op">+=</span> <span class="dv">1</span></span>
 <span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> _surrogate_lock:</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.fit_scheduler()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.fit_scheduler()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>When a batch evaluation completes successfully, the main thread processes every point in the returned <code>(X_done, y_done)</code> pair before refitting the surrogate. For each point, <code>update_success_rate()</code> records whether the new value improves on <code>best_y_</code>, maintaining the rolling <code>success_rate</code> attribute. <code>_update_storage_steady()</code> appends the point to <code>X_</code> and <code>y_</code>, updates <code>best_x_</code> and <code>best_y_</code> if an improvement is found, and synchronises <code>min_y</code> and <code>min_X</code>. <code>n_iter_</code> is incremented once per point so that it reflects the total number of post-initial-design evaluations. After all points in the batch have been stored, <code>fit_scheduler()</code> is called once under <code>_surrogate_lock</code>, refitting the surrogate on the updated training window. Batching the refit in this way — one call per batch rather than one call per point — improves efficiency when <code>eval_batch_size &gt; 1</code> and ensures that in-flight search threads always read a self-consistent model.</p>
-<div id="d51b81cb" class="cell" data-execution_count="15">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<div id="508bff89" class="cell" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a></span>
@@ -2495,9 +2498,9 @@ future routing check passed.</code></pre>
 <span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"y_ shape     : </span><span class="sc">{</span>opt<span class="sc">.</span>y_<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="fl">0.0</span> <span class="op">&lt;=</span> opt.success_rate <span class="op">&lt;=</span> <span class="fl">1.0</span></span>
 <span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> opt.X_.shape[<span class="dv">0</span>] <span class="op">==</span> opt.y_.shape[<span class="dv">0</span>]</span>
-<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"batch processing check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"batch processing check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>success_rate : 0.7000
+<pre><code>success_rate : 0.8000
 X_ shape     : (15, 2)
 y_ shape     : (15,)
 batch processing check passed.</code></pre>
@@ -2507,7 +2510,7 @@ batch processing check passed.</code></pre>
 </section>
 <section id="step-16-termination-and-result-assembly" class="level2">
 <h2 class="anchored" data-anchor-id="step-16-termination-and-result-assembly">Step 16 — Termination and Result Assembly</h2>
-<div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="st">"FINISHED"</span>, OptimizeResult(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="st">"FINISHED"</span>, OptimizeResult(</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    x<span class="op">=</span><span class="va">self</span>.best_x_,</span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    fun<span class="op">=</span><span class="va">self</span>.best_y_,</span>
 <span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    nfev<span class="op">=</span><span class="bu">len</span>(<span class="va">self</span>.y_),</span>
@@ -2516,10 +2519,10 @@ batch processing check passed.</code></pre>
 <span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    message<span class="op">=</span><span class="st">"Optimization finished (Steady State)"</span>,</span>
 <span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    X<span class="op">=</span><span class="va">self</span>.X_,</span>
 <span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>    y<span class="op">=</span><span class="va">self</span>.y_,</span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>optimize_steady_state()</code> exits the while loop when <code>len(y_) &gt;= effective_max_iter</code> or the wall-clock limit is exceeded. It always returns <code>"FINISHED"</code> — there is no restart mechanism in the parallel path. The <code>OptimizeResult</code> object carries the best solution (<code>x</code>, <code>fun</code>), total evaluation count (<code>nfev</code>), iteration count (<code>nit</code>), the full evaluation history (<code>X</code>, <code>y</code>), and a fixed termination message that identifies the result as coming from the steady-state engine. The <code>success</code> flag is always <code>True</code> because partial results are still valid whenever at least one evaluation completed successfully; the guard at the end of Phase 1 ensures the method does not return an empty result.</p>
-<div id="ec475d43" class="cell" data-execution_count="16">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
+<div id="f4c6dd86" class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere, bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)],</span>
@@ -2529,7 +2532,7 @@ batch processing check passed.</code></pre>
 <span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"termination : </span><span class="sc">{</span>first_line<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">"Steady State"</span> <span class="kw">in</span> result.message</span>
 <span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> result.success</span>
-<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"termination check passed."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"termination check passed."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>termination : Optimization finished (Steady State)
 termination check passed.</code></pre>
@@ -2714,13 +2717,14 @@ Table&nbsp;1: Complete Parallel Run Summary
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
