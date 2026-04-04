@@ -1,92 +1,61 @@
 # =============================================================================
 # .github/workflows/ci.yml  —  Continuous Integration
 # =============================================================================
-# Runs on every push and PR to main/develop.
-# Jobs: tests (pytest + coverage), code quality (black, isort, ruff).
+# Runs on pull requests to main. Fast feedback on tests + lint.
 # =============================================================================
 
 name: CI
 
 on:
-  push:
-    branches: [main, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 permissions: read-all
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   test:
-    name: Tests (Python ${{ matrix.python-version }})
+    name: Tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.13"]
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.13"
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
         run: uv pip install --system -e ".[dev]"
 
       - name: Run pytest
-        run: |
-          uv run pytest tests/ -v -n auto --tb=short \
-            --cov=src/spotoptim --cov-branch \
-            --cov-report=xml --cov-report=term
-
-      - name: Upload coverage to Codecov
-        if: always()
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          fail_ci_if_error: false
+        run: uv run pytest tests/ -v -n auto --tb=short
 
   lint:
-    name: Code Quality
+    name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
         run: uv pip install --system -e ".[dev]"
 
-      - name: Check formatting (black)
-        run: black --check src/ tests/
-        continue-on-error: true
-
-      - name: Check imports (isort)
-        run: isort --check-only src/ tests/
-        continue-on-error: true
-
-      - name: Lint (ruff)
+      - name: Ruff
         run: ruff check src/ tests/
         continue-on-error: true

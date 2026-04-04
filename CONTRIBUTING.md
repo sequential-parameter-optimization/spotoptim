@@ -163,10 +163,22 @@ New/renamed module in src/spotoptim/
 
 | Workflow | Trigger | What it does |
 |----------|---------|--------------|
-| `ci.yml` | Push/PR to `main` or `develop` | Runs tests, linting, security scan |
-| `docs.yml` | Push to `main` touching `src/**`, `docs/**`, or `_quarto.yml` | Runs quartodoc build → quarto render → deploys to GitHub Pages |
+| `ci.yml` | Pull requests to `main` | Runs tests + ruff lint |
+| `release.yml` | Push to `main` | Tests → semantic-release → PyPI → docs deploy |
+| `docs.yml` | Manual (`workflow_dispatch`) | Rebuild & deploy docs without a release |
+| `codeql.yml` | Push to `main`, PRs, weekly | CodeQL security analysis |
+| `scorecard.yml` | Push to `main`, weekly | OpenSSF supply-chain security |
 
-**Key point**: docs are only deployed on pushes to `main`. Working on `develop` does **not** trigger a deployment — preview locally with the workflow above.
+### Release flow
+
+Pushes to `main` with conventional commit prefixes trigger automatic releases:
+
+| Prefix | Effect |
+|--------|--------|
+| `fix:` | Patch release (0.0.x) |
+| `feat:` | Minor release (0.x.0) |
+| `feat!:` / `BREAKING CHANGE:` | Major release (x.0.0) |
+| `docs:`, `chore:`, `ci:`, `test:` | No release |
 
 ---
 
@@ -196,5 +208,6 @@ def my_function(x: np.ndarray, n: int = 10) -> float:
 
 ## Branch Strategy
 
-- **`develop`** — active development; PRs target this branch
-- **`main`** — stable releases; merging here triggers docs deployment
+- **`main`** — single branch for development and releases
+- Push directly to `main`, or use short-lived feature branches with PRs
+- Every push to `main` triggers the release pipeline (which only publishes when conventional commits warrant it)

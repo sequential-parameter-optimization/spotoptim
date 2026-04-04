@@ -1,88 +1,64 @@
 # =============================================================================
 # .github/workflows/release.yml  —  Semantic Release + PyPI + Docs
 # =============================================================================
-# Triggers on push to main (i.e. when a PR from develop is merged).
-# Semantic-release analyses conventional commits and, if a releasable
-# change is found (feat:, fix:, etc.), bumps the version, publishes to
-# PyPI, deploys documentation, and creates a back-merge PR.
+# Triggers on every push to main.
+# 1. Runs tests to gate the pipeline.
+# 2. Semantic-release checks conventional commits — if a releasable change
+#    is found (feat:, fix:, etc.) it bumps version, publishes to PyPI,
+#    and creates a GitHub release.
+# 3. Builds and deploys quartodoc documentation to GitHub Pages.
 # =============================================================================
 
 name: Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions: read-all
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release
   cancel-in-progress: false
 
 jobs:
   release:
-    name: Create Release
+    name: Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
       pull-requests: write
-      id-token: write          # needed for PyPI OIDC trusted publishers
+      id-token: write
     if: "!contains(github.event.head_commit.message, 'chore(release)')"
 
     steps:
-      # ------------------------------------------------------------------
-      # 1. Checkout — keep credentials so semantic-release can push tags
-      # ------------------------------------------------------------------
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # ── Checkout ──────────────────────────────────────────────────────
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # persist-credentials defaults to true; GITHUB_TOKEN is used for
-          # git push operations by semantic-release.
 
-      # ------------------------------------------------------------------
-      # 2. Python + uv
-      # ------------------------------------------------------------------
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # ── Python + uv ──────────────────────────────────────────────────
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
-        run: |
-          uv pip install --system build
-          uv pip install --system -e ".[dev,docs]"
+        run: uv pip install --system -e ".[dev,docs]"
 
-      # ------------------------------------------------------------------
-      # 3. Tests — gate the release on passing tests
-      # ------------------------------------------------------------------
+      # ── Tests ─────────────────────────────────────────────────────────
       - name: Run tests
         run: uv run pytest tests/ -v -n auto --tb=short
 
-      # ------------------------------------------------------------------
-      # 4. Build distribution
-      # ------------------------------------------------------------------
-      - name: Build distribution packages
-        run: |
-          rm -rf dist/ build/
-          uv build
-          echo "Build artifacts:"
-          ls -lah dist/
-
-      # ------------------------------------------------------------------
-      # 5. Semantic Release (Node.js)
-      # ------------------------------------------------------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # ── Semantic Release ──────────────────────────────────────────────
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Semantic Release
+        id: release
         uses: cycjimmy/semantic-release-action@v4
         with:
           extra_plugins: |
@@ -93,37 +69,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ------------------------------------------------------------------
-      # 6. Publish to PyPI (OIDC trusted publisher — no token needed)
-      # ------------------------------------------------------------------
+      # ── Publish to PyPI (only when a new version was released) ────────
       - name: Publish to PyPI
-        if: success()
+        if: steps.release.outputs.new-release-published == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
           skip-existing: true
 
-      # ------------------------------------------------------------------
-      # 7. Documentation — quartodoc + Quarto → GitHub Pages
-      # ------------------------------------------------------------------
+      # ── Documentation ─────────────────────────────────────────────────
       - name: Install Quarto CLI
-        if: success()
         uses: quarto-dev/quarto-actions/setup@v2
         with:
           version: "1.8.27"
 
-      - name: Generate API reference stubs
-        if: success()
+      - name: Generate API reference
         run: |
-          uv run --extra docs python docs/quartodoc_build.py
-          uv run --extra docs quartodoc interlinks
+          uv run python docs/quartodoc_build.py
+          uv run quartodoc interlinks
 
-      - name: Build documentation
-        if: success()
+      - name: Render documentation
         run: uv run quarto render --no-cache
 
-      - name: Deploy documentation to GitHub Pages
-        if: success()
+      - name: Deploy to GitHub Pages
         uses: quarto-dev/quarto-actions/publish@v2
         with:
           target: gh-pages
@@ -131,54 +99,3 @@ jobs:
           render: "false"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # ---------------------------------------------------------------------------
-  # Back-merge: keep develop in sync after every main release
-  # ---------------------------------------------------------------------------
-  back-merge:
-    name: Back-merge main → develop
-    runs-on: ubuntu-latest
-    needs: release
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout (full history)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check whether a back-merge is needed
-        id: sync-check
-        run: |
-          git fetch origin develop
-          AHEAD=$(git rev-list --count origin/develop..HEAD)
-          echo "main is ${AHEAD} commit(s) ahead of develop"
-          echo "needed=${AHEAD}" >> "$GITHUB_OUTPUT"
-
-      - name: Open back-merge PR (main → develop)
-        if: steps.sync-check.outputs.needed != '0'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
-
-          EXISTING=$(gh pr list \
-            --base develop --head main \
-            --state open \
-            --json number \
-            --jq '.[0].number' 2>/dev/null || true)
-
-          if [ -n "$EXISTING" ]; then
-            echo "Back-merge PR #${EXISTING} already open — nothing to do."
-            exit 0
-          fi
-
-          gh pr create \
-            --base develop \
-            --head main \
-            --title "chore: back-merge release ${VERSION} (main → develop)" \
-            --body "Automated back-merge. Release ${VERSION} committed updated files (CHANGELOG.md, pyproject.toml) to main. This PR syncs those changes into develop."
-          echo "✓ Back-merge PR created for release ${VERSION}"
