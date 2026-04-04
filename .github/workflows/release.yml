@@ -85,11 +85,11 @@ jobs:
 
       - name: Generate API reference
         run: |
-          uv run python docs/quartodoc_build.py
-          uv run quartodoc interlinks
+          uv run --extra docs python docs/quartodoc_build.py
+          uv run --extra docs quartodoc interlinks
 
       - name: Render documentation
-        run: uv run quarto render --no-cache
+        run: uv run --extra docs quarto render --no-cache
 
       - name: Deploy to GitHub Pages
         uses: quarto-dev/quarto-actions/publish@v2
