@@ -39,6 +39,8 @@ from spotoptim.plot.visualization import (
     _generate_mesh_grid_with_factors,
 )
 from spotoptim.utils.parallel import (remote_eval_wrapper, remote_batch_eval_wrapper, is_gil_disabled)
+from spotoptim.utils.convert import safe_float
+from spotoptim.utils import tensorboard as _tb
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 @dataclass
@@ -4402,14 +4404,8 @@ class SpotOptim(BaseEstimator):
         """
 
         # Ensure y is a float array (maps non-convertible values like "error" or None to nan)
-        def _safe_float(v):
-            try:
-                return float(v)
-            except (ValueError, TypeError):
-                return np.nan
-
         y_flat = np.array(y).flatten()
-        y = np.array([_safe_float(v) for v in y_flat])
+        y = np.array([safe_float(v) for v in y_flat])
         # Identify NaN and inf values in y
         mask = ~np.isfinite(y)
 
@@ -4657,16 +4653,8 @@ class SpotOptim(BaseEstimator):
         # Ensure y_next is a float array (maps non-convertible values like "error" or None to nan)
         # This is critical if the objective function returns non-numeric values and penalty=False
         if y_next.dtype == object:
-            # Use safe float conversion similar to apply_penalty_NA
-            def _safe_float(v):
-                try:
-                    return float(v)
-                except (ValueError, TypeError):
-                    return np.nan
-
-            # Reconstruct as float array
             y_flat = np.array(y_next).flatten()
-            y_next = np.array([_safe_float(v) for v in y_flat])
+            y_next = np.array([safe_float(v) for v in y_flat])
 
         finite_mask = np.isfinite(y_next)
 
@@ -7200,235 +7188,32 @@ class SpotOptim(BaseEstimator):
     # ====================
 
     def _clean_tensorboard_logs(self) -> None:
-        """Clean old TensorBoard log directories from the runs folder.
-        Removes all subdirectories in the 'runs' directory if tensorboard_clean is True.
-        This is useful for removing old logs before starting a new optimization run.
-
-        Warning:
-            This will permanently delete all subdirectories in the 'runs' folder.
-            Use with caution.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     tensorboard_log=True,
-            ...     tensorboard_clean=True
-            ... )
-            >>> # Old logs in 'runs' will be removed before optimization starts
-        """
-        if self.tensorboard_clean:
-            runs_dir = "runs"
-            if os.path.exists(runs_dir) and os.path.isdir(runs_dir):
-                # Get all subdirectories in runs
-                subdirs = [
-                    os.path.join(runs_dir, d)
-                    for d in os.listdir(runs_dir)
-                    if os.path.isdir(os.path.join(runs_dir, d))
-                ]
-
-                if subdirs:
-                    removed_count = 0
-                    for subdir in subdirs:
-                        try:
-                            shutil.rmtree(subdir)
-                            removed_count += 1
-                            if self.verbose:
-                                print(f"Removed old TensorBoard logs: {subdir}")
-                        except Exception as e:
-                            if self.verbose:
-                                print(f"Warning: Could not remove {subdir}: {e}")
-
-                    if self.verbose and removed_count > 0:
-                        print(
-                            f"Cleaned {removed_count} old TensorBoard log director{'y' if removed_count == 1 else 'ies'}"
-                        )
-                elif self.verbose:
-                    print("No old TensorBoard logs to clean in 'runs' directory")
-            elif self.verbose:
-                print("'runs' directory does not exist, nothing to clean")
+        """Clean old TensorBoard log directories from the runs folder."""
+        _tb.clean_tensorboard_logs(self)
 
     def _init_tensorboard_writer(self) -> None:
-        """Initialize TensorBoard SummaryWriter if logging is enabled.
-        Creates a unique log directory based on timestamp if tensorboard_log is True.
-        The log directory will be in the format: runs/spotoptim_YYYYMMDD_HHMMSS
-
-        Returns:
-            None
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     tensorboard_log=True
-            ... )
-            >>> hasattr(opt, 'tb_writer')
-            True
-        """
-        if self.tensorboard_log:
-            if self.tensorboard_path is None:
-                # Create default path with timestamp
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                self.tensorboard_path = f"runs/spotoptim_{timestamp}"
-
-            # Create directory if it doesn't exist
-            os.makedirs(self.tensorboard_path, exist_ok=True)
-
-            self.tb_writer = SummaryWriter(log_dir=self.tensorboard_path)
-            if self.verbose:
-                print(f"TensorBoard logging enabled: {self.tensorboard_path}")
-        else:
-            self.tb_writer = None
-            if self.verbose:
-                print("TensorBoard logging disabled")
+        """Initialize TensorBoard SummaryWriter if logging is enabled."""
+        _tb.init_tensorboard_writer(self)
 
     def _write_tensorboard_scalars(self) -> None:
-        """Write scalar metrics to TensorBoard.
-        Logs the following metrics:
-            * Best y value found so far (min_y)
-            * Last y value evaluated
-            * Best X coordinates (for each dimension)
-            * If repeats_surrogate > 1: also logs mean values and variance
-        """
-        if self.tb_writer is None or self.y_ is None or len(self.y_) == 0:
-            return
-
-        step = self.counter
-        y_last = self.y_[-1]
-
-        if not (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-            # Non-noisy optimization
-            self.tb_writer.add_scalars(
-                "y_values", {"min": self.min_y, "last": y_last}, step
-            )
-            # Log success rate
-            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
-            # Log best X coordinates using var_name if available
-            for i in range(self.n_dim):
-                param_name = self.var_name[i] if self.var_name else f"x{i}"
-                self.tb_writer.add_scalar(f"X_best/{param_name}", self.min_X[i], step)
-        else:
-            # Noisy optimization
-            self.tb_writer.add_scalars(
-                "y_values",
-                {"min": self.min_y, "mean_best": self.min_mean_y, "last": y_last},
-                step,
-            )
-            # Log variance of best mean
-            self.tb_writer.add_scalar("y_variance_at_best", self.min_var_y, step)
-            # Log success rate
-            self.tb_writer.add_scalar("success_rate", self.success_rate, step)
-
-            # Log best X coordinates (by mean) using var_name if available
-            for i in range(self.n_dim):
-                param_name = self.var_name[i] if self.var_name else f"x{i}"
-                self.tb_writer.add_scalar(
-                    f"X_mean_best/{param_name}", self.min_mean_X[i], step
-                )
-
-        self.tb_writer.flush()
+        """Write scalar metrics to TensorBoard."""
+        _tb.write_tensorboard_scalars(self)
 
     def _write_tensorboard_hparams(self, X: np.ndarray, y: float) -> None:
-        """Write hyperparameters and metric to TensorBoard.
-
-        Args:
-            X (ndarray): Design point coordinates, shape (n_features,)
-            y (float): Function value at X
-        """
-        if self.tb_writer is None:
-            return
-
-        # Create hyperparameter dict with variable names
-        hparam_dict = {self.var_name[i]: float(X[i]) for i in range(self.n_dim)}
-        metric_dict = {"hp_metric": float(y)}
-
-        self.tb_writer.add_hparams(hparam_dict, metric_dict)
-        self.tb_writer.flush()
+        """Write hyperparameters and metric to TensorBoard."""
+        _tb.write_tensorboard_hparams(self, X, y)
 
     def _close_tensorboard_writer(self) -> None:
         """Close TensorBoard writer and cleanup."""
-        if hasattr(self, "tb_writer") and self.tb_writer is not None:
-            self.tb_writer.flush()
-            self.tb_writer.close()
-            if self.verbose:
-                print(
-                    f"TensorBoard writer closed. View logs with: tensorboard --logdir={self.tensorboard_path}"
-                )
-            del self.tb_writer
+        _tb.close_tensorboard_writer(self)
 
     def _init_tensorboard(self) -> None:
-        """Log initial design to TensorBoard.
-        Logs all initial design points (hyperparameters and function values)
-        and scalar metrics to TensorBoard. Only executes if TensorBoard logging
-        is enabled (tb_writer is not None).
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_initial=5,
-            ...     tensorboard_log=True,
-            ...     verbose=False
-            ... )
-            >>> # Simulate initial design (normally done in optimize())
-            >>> opt.X_ = np.array([[1, 2], [0, 0], [2, 1]])
-            >>> opt.y_ = np.array([5.0, 0.0, 5.0])
-            >>> opt._init_tensorboard()
-            >>> # TensorBoard logs created for all initial points
-        """
-        # Create writer if not exists
-        if self.tensorboard_log and self.tb_writer is None:
-            # Determine log directory
-            if self.tensorboard_path:
-                log_dir = self.tensorboard_path
-            else:
-                import datetime
-
-                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                log_dir = f"runs/spotoptim_{timestamp}"
-                self.config.tensorboard_path = log_dir
-                self.tensorboard_path = log_dir
-
-            try:
-                from torch.utils.tensorboard import SummaryWriter
-
-                self.tb_writer = SummaryWriter(log_dir=log_dir)
-                if self.verbose:
-                    print(f"TensorBoard logging enabled: {log_dir}")
-            except ImportError:
-                print("Warning: torch or tensorboard not installed. Logging disabled.")
-                self.tb_writer = None
-                self.config.tensorboard_log = False
-                self.tensorboard_log = False
-
-        if self.tb_writer is not None:
-            for i in range(len(self.y_)):
-                self._write_tensorboard_hparams(self.X_[i], self.y_[i])
-            self._write_tensorboard_scalars()
+        """Log initial design to TensorBoard."""
+        _tb.init_tensorboard(self)
 
     def _close_and_del_tensorboard_writer(self) -> None:
-        """Close and delete TensorBoard writer to prepare for pickling.
-
-        Examples:
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(fun=lambda x: x, bounds=[(0, 1)])
-            >>> # Assume tb_writer is initialized
-            >>> opt.tb_writer = SomeTensorBoardWriter()
-            >>> # Close and delete tb_writer before pickling
-            >>> opt._close_and_del_tensorboard_writer()
-        """
-        if hasattr(self, "tb_writer") and self.tb_writer is not None:
-            try:
-                self.tb_writer.flush()
-                self.tb_writer.close()
-            except Exception:
-                pass
-            self.tb_writer = None
+        """Close and delete TensorBoard writer to prepare for pickling."""
+        _tb.close_and_del_tensorboard_writer(self)
 
     # ====================
     # TASK_PLOT:
