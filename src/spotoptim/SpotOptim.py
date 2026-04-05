@@ -5,7 +5,6 @@
 import numpy as np
 import random
 import dill
-import re
 import threading
 import torch
 from functools import partial
@@ -45,6 +44,8 @@ from spotoptim.utils import ocba as _ocba
 from spotoptim.utils import serialization as _serial
 from spotoptim.reporting import results as _results
 from spotoptim.reporting import analysis as _analysis
+from spotoptim.utils import variables as _vars
+from spotoptim.utils import transform as _trans
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 
@@ -1071,9 +1072,7 @@ class SpotOptim(BaseEstimator):
             print(spot.detect_var_type())
             ```
         """
-        return [
-            "factor" if i in self._factor_maps else "float" for i in range(self.n_dim)
-        ]
+        return _vars.detect_var_type(self)
 
     def modify_bounds_based_on_var_type(self) -> None:
         """Modify bounds based on variable types.
@@ -1101,30 +1100,7 @@ class SpotOptim(BaseEstimator):
             print(spot.bounds)
             ```
         """
-        for i, vtype in enumerate(self.var_type):
-            if vtype == "int":
-                # For integer variables, ensure bounds are integers
-                # Use Python's int() to convert numpy types to native Python int
-                lower = int(np.ceil(self.bounds[i][0]))
-                upper = int(np.floor(self.bounds[i][1]))
-                self.bounds[i] = (lower, upper)
-            elif vtype == "factor":
-                # For factor variables, bounds are already set to (0, n_levels-1)
-                # Ensure they are Python int, not numpy int64
-                lower = int(self.bounds[i][0])
-                upper = int(self.bounds[i][1])
-                self.bounds[i] = (lower, upper)
-            elif vtype == "float":
-                # Continuous variable, convert explicitly to float bounds
-                # Use Python's float() to convert numpy types to native Python float
-                lower = float(self.bounds[i][0])
-                upper = float(self.bounds[i][1])
-                self.bounds[i] = (lower, upper)
-            else:
-                raise ValueError(
-                    f"Unsupported var_type '{vtype}' at dimension {i}. "
-                    f"Supported types are 'float', 'int', 'factor'."
-                )
+        _vars.modify_bounds_based_on_var_type(self)
 
     def repair_non_numeric(self, X: np.ndarray, var_type: List[str]) -> np.ndarray:
         """Round non-numeric values to integers based on variable type.
@@ -1152,10 +1128,7 @@ class SpotOptim(BaseEstimator):
             print(X_repaired)
             ```
         """
-        # Don't round float or num types (continuous values)
-        mask = np.isin(var_type, ["float", "float"], invert=True)
-        X[:, mask] = np.around(X[:, mask])
-        return X
+        return _vars.repair_non_numeric(X, var_type)
 
     def handle_default_var_trans(self) -> None:
         """Handle default variable transformations. Does not perform any transformations,
@@ -1184,22 +1157,7 @@ class SpotOptim(BaseEstimator):
             print(f"spot.var_trans (should be ['log10', 'None']): {spot.var_trans}")
             ```
         """
-        # Default variable transformations (None means no transformation)
-        if self.var_trans is None:
-            self.var_trans = [None] * self.n_dim
-        else:
-            # Normalize transformation names
-            self.var_trans = [
-                None if (t is None or t == "id" or t == "None") else t
-                for t in self.var_trans
-            ]
-
-        # Validate var_trans length
-        if len(self.var_trans) != self.n_dim:
-            raise ValueError(
-                f"Length of var_trans ({len(self.var_trans)}) must match "
-                f"number of dimensions ({self.n_dim})"
-            )
+        _vars.handle_default_var_trans(self)
 
     def process_factor_bounds(self) -> None:
         """Process `bounds` to handle factor variables.
@@ -1221,54 +1179,7 @@ class SpotOptim(BaseEstimator):
             print(f"spot.bounds (should be [(0, 2), (0, 10)]): {spot.bounds}")
             ```
         """
-        processed_bounds = []
-
-        for dim_idx, bound in enumerate(self.bounds):
-            if isinstance(bound, (tuple, list)) and len(bound) >= 1:
-                # Check if this is a factor variable (contains strings)
-                if all(isinstance(v, str) for v in bound) and len(bound) > 0:
-                    # Factor variable: create integer mapping
-                    factor_levels = list(bound)
-                    n_levels = len(factor_levels)
-
-                    # Create mapping: {0: "level1", 1: "level2", ...}
-                    self._factor_maps[dim_idx] = {
-                        i: level for i, level in enumerate(factor_levels)
-                    }
-
-                    # Replace with integer bounds (use Python int, not numpy types)
-                    processed_bounds.append((int(0), int(n_levels - 1)))
-
-                    if self.verbose:
-                        print(f"Factor variable at dimension {dim_idx}:")
-                        print(f"  Levels: {factor_levels}")
-                        print(f"  Mapped to integers: 0 to {n_levels - 1}")
-                elif len(bound) == 2 and all(
-                    isinstance(v, (int, float, np.integer, np.floating)) for v in bound
-                ):
-                    # Numeric bound tuple (accepts Python and numpy numeric types)
-                    # Always cast to Python float/int
-                    low, high = float(bound[0]), float(bound[1])
-
-                    # Convert to int if both are integer-valued
-                    if low.is_integer() and high.is_integer():
-                        low, high = int(low), int(high)
-
-                    processed_bounds.append((low, high))
-                else:
-                    raise ValueError(
-                        f"Invalid bound at dimension {dim_idx}: {bound}. "
-                        f"Expected either (lower, upper) for numeric variables or "
-                        f"tuple of strings for factor variables."
-                    )
-            else:
-                raise ValueError(
-                    f"Invalid bound at dimension {dim_idx}: {bound}. "
-                    f"Expected a tuple/list with at least 1 element."
-                )
-
-        # Update bounds with processed values
-        self.bounds = processed_bounds
+        _vars.process_factor_bounds(self)
 
     # ====================
     # TASK_SAVE_LOAD:
@@ -1515,54 +1426,7 @@ class SpotOptim(BaseEstimator):
             spot.transform_value(100, 'log(x)')
             ```
         """
-        # Ensure x is a float
-        if not isinstance(x, float):
-            try:
-                x = float(x)
-            except (ValueError, TypeError):
-                raise TypeError(
-                    f"transform_value expects a float, got {type(x).__name__} (value: {x})"
-                )
-        if trans is None or trans == "id":
-            return x
-        elif trans == "log10":
-            return np.log10(x)
-        elif trans == "log" or trans == "ln":
-            return np.log(x)
-        elif trans == "sqrt":
-            return np.sqrt(x)
-        elif trans == "exp":
-            return np.exp(x)
-        elif trans == "square":
-            return x**2
-        elif trans == "cube":
-            return x**3
-        elif trans == "inv" or trans == "reciprocal":
-            return 1.0 / x
-
-        # Dynamic Transformations
-
-        if trans == "log(x)":
-            return np.log(x)
-        if trans == "sqrt(x)":
-            return np.sqrt(x)
-
-        m = re.match(r"pow\(x,\s*([0-9.]+)\)", trans)
-        if m:
-            p = float(m.group(1))
-            return x**p
-
-        m = re.match(r"pow\(([0-9.]+),\s*x\)", trans)
-        if m:
-            base = float(m.group(1))
-            return base**x
-
-        m = re.match(r"log\(x,\s*([0-9.]+)\)", trans)
-        if m:
-            base = float(m.group(1))
-            return np.log(x) / np.log(base)
-
-        raise ValueError(f"Unknown transformation: {trans}")
+        return _trans.transform_value(x, trans)
 
     def inverse_transform_value(self, x: float, trans: Optional[str]) -> float:
         """Apply inverse transformation to a single float value.
@@ -1586,53 +1450,7 @@ class SpotOptim(BaseEstimator):
             spot.inverse_transform_value(100, 'log(x)')
             ```
         """
-        # Ensure x is a float
-        if not isinstance(x, float):
-            try:
-                x = float(x)
-            except (ValueError, TypeError):
-                raise TypeError(
-                    f"transform_value expects a float, got {type(x).__name__} (value: {x})"
-                )
-        if trans is None or trans == "id":
-            return x
-        elif trans == "log10":
-            return 10**x
-        elif trans == "log" or trans == "ln":
-            return np.exp(x)
-        elif trans == "sqrt":
-            return x**2
-        elif trans == "exp":
-            return np.log(x)
-        elif trans == "square":
-            return np.sqrt(x)
-        elif trans == "cube":
-            return np.power(x, 1.0 / 3.0)
-        elif trans == "inv" or trans == "reciprocal":
-            return 1.0 / x
-
-        # Dynamic Transformations (Inverses)
-        if trans == "log(x)":
-            return np.exp(x)
-        if trans == "sqrt(x)":
-            return x**2
-
-        m = re.match(r"pow\(x,\s*([0-9.]+)\)", trans)
-        if m:
-            p = float(m.group(1))
-            return x ** (1.0 / p)
-
-        m = re.match(r"pow\(([0-9.]+),\s*x\)", trans)
-        if m:
-            base = float(m.group(1))
-            return np.log(x) / np.log(base)
-
-        m = re.match(r"log\(x,\s*([0-9.]+)\)", trans)
-        if m:
-            base = float(m.group(1))
-            return base**x
-
-        raise ValueError(f"Unknown transformation: {trans}")
+        return _trans.inverse_transform_value(x, trans)
 
     def transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from original (natural) to internal scale.
@@ -1655,22 +1473,7 @@ class SpotOptim(BaseEstimator):
             spot.transform_X(X_orig)
             ```
         """
-        X_transformed = X.copy()
-
-        # Handle 1D array
-        if X.ndim == 1:
-            for i, trans in enumerate(self.var_trans):
-                if trans is not None:
-                    X_transformed[i] = self.transform_value(X[i], trans)
-            return X_transformed
-
-        # Handle 2D array
-        for i, trans in enumerate(self.var_trans):
-            if trans is not None:
-                X_transformed[:, i] = np.array(
-                    [self.transform_value(x, trans) for x in X[:, i]]
-                )
-        return X_transformed
+        return _trans.transform_X(self, X)
 
     def inverse_transform_X(self, X: np.ndarray) -> np.ndarray:
         """Transform parameter array from internal to original scale.
@@ -1693,23 +1496,7 @@ class SpotOptim(BaseEstimator):
             spot.inverse_transform_X(X_trans)
             ```
         """
-        X_original = X.copy()
-
-        # Handle 1D array (single sample)
-        if X.ndim == 1:
-            for i, trans in enumerate(self.var_trans):
-                if trans is not None:
-                    # Element-wise transformation for 1D array
-                    X_original[i] = self.inverse_transform_value(X[i], trans)
-            return X_original
-
-        # Handle 2D array (multiple samples)
-        for i, trans in enumerate(self.var_trans):
-            if trans is not None:
-                X_original[:, i] = np.array(
-                    [self.inverse_transform_value(x, trans) for x in X[:, i]]
-                )
-        return X_original
+        return _trans.inverse_transform_X(self, X)
 
     def transform_bounds(self) -> None:
         """Transform bounds from original to internal scale.
@@ -1737,28 +1524,7 @@ class SpotOptim(BaseEstimator):
             print(f"spot.bounds: {spot.bounds}")
             ```
         """
-        for i, trans in enumerate(self.var_trans):
-            if trans is not None:
-                lower_t = self.transform_value(self.lower[i], trans)
-                upper_t = self.transform_value(self.upper[i], trans)
-
-                # Handle reversed bounds (e.g., reciprocal transformation)
-                if lower_t > upper_t:
-                    self.lower[i], self.upper[i] = upper_t, lower_t
-                else:
-                    self.lower[i], self.upper[i] = lower_t, upper_t
-
-        # Update self.bounds to reflect transformed bounds
-        # Convert numpy types to Python native types (int or float based on var_type)
-        self.bounds = []
-        for i in range(len(self.lower)):
-            # Check if var_type has this index (handle mismatched lengths)
-            if i < len(self.var_type) and (
-                self.var_type[i] == "int" or self.var_type[i] == "factor"
-            ):
-                self.bounds.append((int(self.lower[i]), int(self.upper[i])))
-            else:
-                self.bounds.append((float(self.lower[i]), float(self.upper[i])))
+        _trans.transform_bounds(self)
 
     def map_to_factor_values(self, X: np.ndarray) -> np.ndarray:
         """Map internal integer factor values back to string labels.
@@ -1788,33 +1554,7 @@ class SpotOptim(BaseEstimator):
             print(X_str[0])
             ```
         """
-
-        if not self._factor_maps:
-            # No factor variables
-            return X
-
-        X = np.atleast_2d(X)
-        # Create object array to hold mixed types (strings and numbers)
-        X_mapped = np.empty(X.shape, dtype=object)
-        X_mapped[:] = X  # Copy numeric values
-
-        for dim_idx, mapping in self._factor_maps.items():
-            # Check if already mapped (strings) or needs mapping (numeric)
-            col_values = X[:, dim_idx]
-
-            # If already strings, keep them
-            if isinstance(col_values[0], str):
-                continue
-
-            # Round to nearest integer and map to string
-            int_values = np.round(col_values).astype(int)
-            # Clip to valid range
-            int_values = np.clip(int_values, 0, len(mapping) - 1)
-            # Map to strings
-            for i, val in enumerate(int_values):
-                X_mapped[i, dim_idx] = mapping[int(val)]
-
-        return X_mapped
+        return _vars.map_to_factor_values(self, X)
 
     # ====================
     # TASK_INIT_DESIGN:
