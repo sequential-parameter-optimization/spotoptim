@@ -1,3 +1,9 @@
+## [0.11.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.1...v0.11.2) (2026-04-05)
+
+### Bug Fixes
+
+* update is_gil_disabled import path in optimize_parallel.qmd ([f17edeb](https://github.com/sequential-parameter-optimization/spotoptim/commit/f17edeb579c2e2e1027c7d56a75d8f20c2f74f95))
+
 ## [0.11.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.0...v0.11.1) (2026-04-05)
 
 ### Code Refactoring
