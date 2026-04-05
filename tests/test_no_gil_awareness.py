@@ -24,6 +24,7 @@ import unittest.mock as mock
 import numpy as np
 from spotoptim import SpotOptim
 from spotoptim.utils.parallel import is_gil_disabled
+from spotoptim.optimizer import steady_state as _steady_mod
 
 # importlib bypasses the __init__.py class re-export and gives the module.
 _spotoptim_mod = importlib.import_module("spotoptim.SpotOptim")
@@ -224,7 +225,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_sphere(self, monkeypatch):
         """Optimization succeeds when both pools are ThreadPoolExecutor."""
-        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_steady_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=sphere,
             bounds=BOUNDS,
@@ -239,7 +240,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_lambda(self, monkeypatch):
         """Lambda objectives work in the thread-based eval path."""
-        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_steady_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=BOUNDS,
@@ -253,7 +254,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_with_batch_size(self, monkeypatch):
         """Batch eval + no-GIL path: _thread_batch_eval_task is used."""
-        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_steady_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=sphere,
             bounds=BOUNDS,
@@ -268,7 +269,7 @@ class TestSimulatedNoGilPath:
 
     def test_simulated_no_gil_4d(self, monkeypatch):
         """Thread-based eval path handles higher-dimensional problems."""
-        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_steady_mod, "is_gil_disabled", lambda: True)
         opt = SpotOptim(
             fun=sphere,
             bounds=[(-3, 3)] * 4,
@@ -293,7 +294,7 @@ class TestSimulatedNoGilPath:
         )
         r_gil = opt_gil.optimize()
 
-        monkeypatch.setattr(_spotoptim_mod, "is_gil_disabled", lambda: True)
+        monkeypatch.setattr(_steady_mod, "is_gil_disabled", lambda: True)
         opt_no_gil = SpotOptim(
             fun=sphere,
             bounds=BOUNDS,

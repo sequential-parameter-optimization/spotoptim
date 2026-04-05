@@ -6,7 +6,7 @@
 import numpy as np
 import dill
 
-from spotoptim.SpotOptim import remote_eval_wrapper
+from spotoptim.utils.parallel import remote_eval_wrapper
 
 
 class DummyOptimizer:

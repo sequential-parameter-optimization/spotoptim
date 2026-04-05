@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import dill
 from spotoptim import SpotOptim
-from spotoptim.SpotOptim import remote_batch_eval_wrapper
+from spotoptim.utils.parallel import remote_batch_eval_wrapper
 
 # ---------------------------------------------------------------------------
 # Shared fixtures

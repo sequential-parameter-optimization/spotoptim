@@ -4,8 +4,6 @@
 
 import numpy as np
 import random
-import dill
-import threading
 import torch
 from functools import partial
 from dataclasses import dataclass, field
@@ -30,11 +28,6 @@ from spotoptim.plot.visualization import (
     _generate_mesh_grid,
     _generate_mesh_grid_with_factors,
 )
-from spotoptim.utils.parallel import (
-    remote_eval_wrapper,
-    remote_batch_eval_wrapper,
-    is_gil_disabled,
-)
 from spotoptim.utils.convert import safe_float
 from spotoptim.utils import tensorboard as _tb
 from spotoptim.utils import ocba as _ocba
@@ -46,6 +39,7 @@ from spotoptim.utils import transform as _trans
 from spotoptim.utils import dimreduction as _dimred
 from spotoptim.optimizer import acquisition as _acq
 from spotoptim.core import storage as _storage
+from spotoptim.optimizer import steady_state as _steady
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 
@@ -3991,21 +3985,7 @@ class SpotOptim(BaseEstimator):
             5.0
 
         """
-        x = np.atleast_2d(x)
-        if self.X_ is None:
-            self.X_ = x
-            self.y_ = np.array([y])
-        else:
-            self.X_ = np.vstack([self.X_, x])
-            self.y_ = np.append(self.y_, y)
-
-        # Update best
-        if self.best_y_ is None or y < self.best_y_:
-            self.best_y_ = y
-            self.best_x_ = x.flatten()
-
-        self.min_y = self.best_y_
-        self.min_X = self.best_x_
+        _steady.update_storage_steady(self, x, y)
 
     def optimize_steady_state(
         self,
@@ -4094,325 +4074,8 @@ class SpotOptim(BaseEstimator):
             print(result.message.splitlines()[0])
             ```
         """
-        # Setup similar to _optimize_single_run
-        self.set_seed()
-        X0 = self.get_initial_design(X0)
-        X0 = self.curate_initial_design(X0)
-
-        # Restart injection: if a known best value is provided, pre-fill the matching
-        # point in the initial design so it is not re-submitted to the worker pool.
-        # This mirrors the logic in _initialize_run() used by the sequential path.
-        y0_prefilled = np.full(len(X0), np.nan)
-        if y0_known is not None and self.x0 is not None:
-            dists = np.linalg.norm(X0 - self.x0, axis=1)
-            matches = dists < 1e-9
-            if np.any(matches):
-                if self.verbose:
-                    print("Skipping re-evaluation of injected best point.")
-                y0_prefilled[matches] = y0_known
-
-        # We need to know how many evaluations to do
-        effective_max_iter = (
-            max_iter_override if max_iter_override is not None else self.max_iter
-        )
-
-        # Import dill locally (assuming installed)
-
-        from contextlib import ExitStack
-        from concurrent.futures import (
-            ProcessPoolExecutor,
-            ThreadPoolExecutor,
-            wait,
-            FIRST_COMPLETED,
-        )
-
-        # Detect free-threaded (no-GIL) Python build (3.13+).
-        # On free-threaded builds ThreadPoolExecutor gives true CPU parallelism,
-        # so we can use threads for eval too and skip dill serialization entirely.
-        _no_gil = is_gil_disabled()
-
-        # Lock that serialises surrogate access:
-        #   - search threads call suggest_next_infill_point() under the lock
-        #   - the main thread calls fit_scheduler() under the lock after each eval
-        # This prevents a surrogate refit from racing with an in-flight search.
-        _surrogate_lock = threading.Lock()
-
-        def _thread_search_task():
-            """Search task for ThreadPoolExecutor: direct call, no dill."""
-            with _surrogate_lock:
-                return self.suggest_next_infill_point()
-
-        def _thread_eval_task_single(x):
-            """Thread-based single-point eval for free-threaded Python (no dill)."""
-            try:
-                x_2d = x.reshape(1, -1)
-                y_arr = self.evaluate_function(x_2d)
-                return x, y_arr[0]
-            except Exception as e:
-                return None, e
-
-        def _thread_batch_eval_task(X_batch):
-            """Thread-based batch eval for free-threaded Python (no dill)."""
-            try:
-                y_batch = self.evaluate_function(X_batch)
-                return X_batch, y_batch
-            except Exception as e:
-                return None, e
-
-        # Build executor pair:
-        #   GIL build     → eval: ProcessPoolExecutor, search: ThreadPoolExecutor
-        #   No-GIL build  → eval: ThreadPoolExecutor,  search: ThreadPoolExecutor
-        with ExitStack() as _stack:
-            eval_pool = _stack.enter_context(
-                ThreadPoolExecutor(max_workers=self.n_jobs)
-                if _no_gil
-                else ProcessPoolExecutor(max_workers=self.n_jobs)
-            )
-            search_pool = _stack.enter_context(
-                ThreadPoolExecutor(max_workers=self.n_jobs)
-            )
-            futures = {}  # map future -> type ('eval', 'search')
-
-            # --- Phase 1: Initial Design Evaluation ---
-            # Pre-filled points (restart injection) are stored on the main thread;
-            # all remaining points are submitted to eval_pool concurrently.
-            n_to_submit = 0
-            for i, x in enumerate(X0):
-                if np.isfinite(y0_prefilled[i]):
-                    # Known from restart injection — store directly, skip the pool.
-                    self._update_storage_steady(x, y0_prefilled[i])
-                    continue
-                if _no_gil:
-                    # Free-threaded: call fun directly in a thread — no dill.
-                    fut = eval_pool.submit(_thread_eval_task_single, x)
-                else:
-                    # GIL build: serialize with dill for process isolation.
-                    _tb_writer_temp = self.tb_writer
-                    self.tb_writer = None
-                    try:
-                        pickled_args = dill.dumps((self, x))
-                    finally:
-                        self.tb_writer = _tb_writer_temp
-                    fut = eval_pool.submit(remote_eval_wrapper, pickled_args)
-                futures[fut] = "eval"
-                n_to_submit += 1
-
-            if self.verbose:
-                n_injected = int(np.sum(np.isfinite(y0_prefilled)))
-                suffix = (
-                    f" ({n_injected} injected from restart, skipped re-evaluation)."
-                    if n_injected
-                    else "."
-                )
-                print(
-                    f"Submitted {n_to_submit} initial points for parallel evaluation{suffix}"
-                )
-
-            # Wait for all submitted initial evaluations to complete.
-            initial_done_count = 0
-            while initial_done_count < n_to_submit:
-                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
-                for fut in done:
-                    # Clean up
-                    ftype = futures.pop(fut)
-                    if ftype != "eval":
-                        continue
-
-                    try:
-                        x_done, y_done = fut.result()
-                        if isinstance(y_done, Exception):
-                            if self.verbose:
-                                print(f"Eval failed: {y_done}")
-                        else:
-                            self._update_storage_steady(x_done, y_done)
-                    except Exception as e:
-                        if self.verbose:
-                            print(f"Task failed: {e}")
-
-                    initial_done_count += 1
-
-            # Init tensorboard and stats
-            self._init_tensorboard()
-
-            if self.y_ is None or len(self.y_) == 0:
-                raise RuntimeError(
-                    "All initial design evaluations failed. "
-                    "Check your objective function for pickling issues or missing imports (e.g. numpy) in the worker process. "
-                    "If defining functions in a notebook/script, ensure imports are inside the function."
-                )
-
-            self.update_stats()
-            self.get_best_xy_initial_design()
-
-            # Fit first surrogate (no lock needed — no search threads active yet)
-            if self.verbose:
-                print(
-                    f"Initial design evaluated. Fitting surrogate... (Data size: {len(self.y_)})"
-                )
-            self.fit_scheduler()
-
-            # --- Phase 2: Steady State Loop ---
-            if self.verbose:
-                print("Starting steady-state optimization loop...")
-
-            # Candidates returned by search tasks, waiting to form the next batch.
-            pending_cands: list = []
-
-            # Maps each in-flight batch_eval future → number of points it carries.
-            # Used for accurate budget accounting: reserved = committed + in_flight
-            # + pending, so we never over-dispatch search tasks.
-            _future_n_pts: dict = {}
-
-            def _flush_batch() -> None:
-                """Dispatch all pending_cands as a single batch eval task."""
-                nonlocal pending_cands
-                X_batch = np.vstack(pending_cands)
-                n_in_batch = len(pending_cands)
-                pending_cands = []
-                if _no_gil:
-                    # Free-threaded: call fun directly in a thread — no dill.
-                    fut_eval = eval_pool.submit(_thread_batch_eval_task, X_batch)
-                else:
-                    # GIL build: serialize with dill for process isolation.
-                    _tb_writer_temp = self.tb_writer
-                    self.tb_writer = None
-                    try:
-                        pickled_args = dill.dumps((self, X_batch))
-                    finally:
-                        self.tb_writer = _tb_writer_temp
-                    fut_eval = eval_pool.submit(remote_batch_eval_wrapper, pickled_args)
-                futures[fut_eval] = "batch_eval"
-                _future_n_pts[fut_eval] = n_in_batch
-
-            def _batch_ready() -> bool:
-                """True when pending_cands should be flushed to eval_pool."""
-                if not pending_cands:
-                    return False
-                if len(pending_cands) >= self.eval_batch_size:
-                    return True
-                # Flush early if no search tasks remain — prevents starvation
-                # when budget is nearly exhausted and no new searches will run.
-                return not any(t == "search" for t in futures.values())
-
-            while (len(self.y_) < effective_max_iter) and (
-                time.time() < timeout_start + self.max_time * 60
-            ):
-                # 1. Flush pending candidates if the batch threshold is reached
-                #    or if no search tasks are in flight (starvation guard).
-                if _batch_ready():
-                    _flush_batch()
-
-                # 2. Fill open slots with search tasks (thread pool).
-                n_active = len(futures)
-                n_slots = self.n_jobs - n_active
-
-                if n_slots > 0:
-                    for _ in range(n_slots):
-                        # Budget: committed evals + in-flight eval points
-                        #         + in-flight search tasks (each yields 1 cand)
-                        #         + candidates not yet dispatched.
-                        n_in_flight = sum(_future_n_pts.values())
-                        n_searches = sum(1 for t in futures.values() if t == "search")
-                        reserved = (
-                            len(self.y_) + n_in_flight + n_searches + len(pending_cands)
-                        )
-                        if reserved < effective_max_iter:
-                            # Search runs in a thread — no dill serialization;
-                            # _thread_search_task holds _surrogate_lock.
-                            fut = search_pool.submit(_thread_search_task)
-                            futures[fut] = "search"
-                        else:
-                            break
-
-                # 3. Flush again — new slot-filling may have pushed batch over
-                #    the threshold (e.g. no budget left for more searches).
-                if _batch_ready():
-                    _flush_batch()
-
-                if not futures and not pending_cands:
-                    break  # Nothing left to do
-
-                if not futures:
-                    # Pending candidates but no in-flight futures — flush now.
-                    _flush_batch()
-                    continue
-
-                # 4. Wait for any future to complete.
-                done, _ = wait(futures.keys(), return_when=FIRST_COMPLETED)
-                for fut in done:
-                    ftype = futures.pop(fut)
-                    try:
-                        res = fut.result()
-                        if isinstance(res, Exception):
-                            if self.verbose:
-                                print(f"Remote {ftype} failed: {res}")
-                            # Failed search → slot freed; loop refills next iter.
-                            # Failed batch_eval → points lost (budget not charged).
-                            _future_n_pts.pop(fut, None)
-                            continue
-
-                        if ftype == "search":
-                            x_cand = res
-                            pending_cands.append(x_cand)
-                            # Flush immediately if batch threshold reached —
-                            # avoids an extra loop iteration for batch_size=1.
-                            if _batch_ready():
-                                _flush_batch()
-
-                        elif ftype == "batch_eval":
-                            _future_n_pts.pop(fut, None)
-                            X_done, y_done = res
-                            if isinstance(y_done, Exception):
-                                if self.verbose:
-                                    print(f"Batch eval failed: {y_done}")
-                            else:
-                                # Update storage for every point in the batch.
-                                for xi, yi in zip(X_done, y_done):
-                                    self.update_success_rate(np.array([yi]))
-                                    self._update_storage_steady(xi, yi)
-                                    self.n_iter_ += 1
-
-                                if self.verbose:
-                                    if self.max_time != np.inf:
-                                        prog_val = (
-                                            (time.time() - timeout_start)
-                                            / (self.max_time * 60)
-                                            * 100
-                                        )
-                                        progress_str = f"Time: {prog_val:.1f}%"
-                                    else:
-                                        prog_val = (
-                                            len(self.y_) / effective_max_iter * 100
-                                        )
-                                        progress_str = f"Evals: {prog_val:.1f}%"
-
-                                    print(
-                                        f"Iter {len(self.y_)}/{effective_max_iter}"
-                                        f" | Best: {self.best_y_:.6f}"
-                                        f" | Rate: {self.success_rate:.2f}"
-                                        f" | {progress_str}"
-                                    )
-
-                                # Single surrogate refit for the whole batch —
-                                # held under the lock so in-flight search threads
-                                # do not read a partially-updated model.
-                                with _surrogate_lock:
-                                    self.fit_scheduler()
-
-                    except Exception as e:
-                        _future_n_pts.pop(fut, None)
-                        if self.verbose:
-                            print(f"Error processing future: {e}")
-
-        return "FINISHED", OptimizeResult(
-            x=self.best_x_,
-            fun=self.best_y_,
-            nfev=len(self.y_),
-            nit=self.n_iter_,
-            success=True,
-            message="Optimization finished (Steady State)",
-            X=self.X_,
-            y=self.y_,
+        return _steady.optimize_steady_state(
+            self, timeout_start, X0, y0_known, max_iter_override
         )
 
     # ====================
