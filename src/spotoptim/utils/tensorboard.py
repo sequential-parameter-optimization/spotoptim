@@ -102,7 +102,9 @@ def write_tensorboard_scalars(optimizer) -> None:
         optimizer.tb_writer.add_scalar("success_rate", optimizer.success_rate, step)
         for i in range(optimizer.n_dim):
             param_name = optimizer.var_name[i] if optimizer.var_name else f"x{i}"
-            optimizer.tb_writer.add_scalar(f"X_best/{param_name}", optimizer.min_X[i], step)
+            optimizer.tb_writer.add_scalar(
+                f"X_best/{param_name}", optimizer.min_X[i], step
+            )
     else:
         optimizer.tb_writer.add_scalars(
             "y_values",

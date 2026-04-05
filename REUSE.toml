@@ -58,7 +58,8 @@ path = [
     "**/*.txt",
     "**/*.yml",
     "**/*.yaml",
-    "**/*.json"
+    "**/*.json",
+    "**/*.pyc"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 bartzbeielstein"

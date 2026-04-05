@@ -22,11 +22,7 @@ import warnings
 import matplotlib.pyplot as plt
 from numpy import append
 import time
-from torch.utils.tensorboard import SummaryWriter
-from datetime import datetime
 import os
-import shutil
-from tabulate import tabulate
 from spotoptim.tricands import tricands
 from spotoptim.sampling.design import generate_uniform_design
 from sklearn.cluster import KMeans
@@ -38,12 +34,19 @@ from spotoptim.plot.visualization import (
     _generate_mesh_grid,
     _generate_mesh_grid_with_factors,
 )
-from spotoptim.utils.parallel import (remote_eval_wrapper, remote_batch_eval_wrapper, is_gil_disabled)
+from spotoptim.utils.parallel import (
+    remote_eval_wrapper,
+    remote_batch_eval_wrapper,
+    is_gil_disabled,
+)
 from spotoptim.utils.convert import safe_float
 from spotoptim.utils import tensorboard as _tb
 from spotoptim.utils import ocba as _ocba
 from spotoptim.utils import serialization as _serial
+from spotoptim.reporting import results as _results
+from spotoptim.reporting import analysis as _analysis
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
+
 
 @dataclass
 class SpotOptimConfig:
@@ -272,7 +275,6 @@ class SpotOptimState:
 
     # Restart history
     restarts_results_: List = field(default_factory=list)
-
 
 
 class SpotOptim(BaseEstimator):
@@ -1155,7 +1157,6 @@ class SpotOptim(BaseEstimator):
         X[:, mask] = np.around(X[:, mask])
         return X
 
-
     def handle_default_var_trans(self) -> None:
         """Handle default variable transformations. Does not perform any transformations,
         only sets `var_trans` to a list of `None` values if not specified, or normalizes
@@ -1284,7 +1285,6 @@ class SpotOptim(BaseEstimator):
     def reinitialize_components(self) -> None:
         """Reinitialize components that were excluded during pickling."""
         _serial.reinitialize_components(self)
-
 
     # ====================
     # TASK_DIM:
@@ -1968,7 +1968,6 @@ class SpotOptim(BaseEstimator):
                 optimizer=optimizer,
             )
 
-
     def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
         """Generate or process initial design points. Ensures that design points are in
         internal (transformed and reduced) scale.
@@ -2184,7 +2183,6 @@ class SpotOptim(BaseEstimator):
 
         return X0
 
-
     def validate_x0(self, x0: np.ndarray) -> np.ndarray:
         """Validate and process starting point x0. Called in `__init__` and `optimize`.
         This method checks that x0:
@@ -2304,7 +2302,6 @@ class SpotOptim(BaseEstimator):
 
         return x0_transformed
 
-
     # ====================
     # TASK_FIT:
     # *fit_scheduler()
@@ -2313,7 +2310,6 @@ class SpotOptim(BaseEstimator):
     # * fit_select_best_cluster()
     # * fit_selection_dispatcher()
     # ====================
-
 
     def fit_surrogate(self, X: np.ndarray, y: np.ndarray) -> None:
         """Fit surrogate model to data.
@@ -2424,7 +2420,6 @@ class SpotOptim(BaseEstimator):
         else:
             X_for_surrogate = self.transform_X(self.X_)
             self.fit_surrogate(X_for_surrogate, self.y_)
-
 
     def fit_select_distant_points(
         self, X: np.ndarray, y: np.ndarray, k: int
@@ -2567,9 +2562,6 @@ class SpotOptim(BaseEstimator):
         else:
             # If no valid selection method, return all points
             return X, y
-
-
-
 
     # ====================
     # TASK_PREDICT:
@@ -2866,7 +2858,6 @@ class SpotOptim(BaseEstimator):
 
         return best_result
 
-
     def execute_optimization_run(
         self,
         timeout_start: float,
@@ -2928,7 +2919,6 @@ class SpotOptim(BaseEstimator):
                 shared_best_y=shared_best_y,
                 shared_lock=shared_lock,
             )
-
 
     def evaluate_function(self, X: np.ndarray) -> np.ndarray:
         """Evaluate objective function at points X.
@@ -3012,7 +3002,6 @@ class SpotOptim(BaseEstimator):
 
         return y
 
-
     def get_best_xy_initial_design(self) -> None:
         """Determine and store the best point from initial design.
         Finds the best (minimum) function value in the initial design,
@@ -3078,8 +3067,6 @@ class SpotOptim(BaseEstimator):
                 )
             else:
                 print(f"Initial best: f(x) = {self.best_y_:.6f}")
-
-
 
     def _optimize_acquisition_tricands(self) -> np.ndarray:
         """Optimize using geometric infill strategy via triangulation candidates.
@@ -3509,7 +3496,6 @@ class SpotOptim(BaseEstimator):
 
         return X[finite_mask], y[finite_mask]
 
-
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
         Used in the suggest_next_infill_point() method.
@@ -3637,7 +3623,6 @@ class SpotOptim(BaseEstimator):
         else:
             # For higher dimensions, flatten to 1D
             return y.size, None
-
 
     def optimize_acquisition_func(self) -> np.ndarray:
         """Optimize the acquisition function to find the next point to evaluate.
@@ -3771,7 +3756,6 @@ class SpotOptim(BaseEstimator):
         )
         return self._run_sequential_loop(timeout_start, effective_max_iter)
 
-
     def _initialize_run(
         self, X0: Optional[np.ndarray], y0_known: Optional[float]
     ) -> Tuple[np.ndarray, np.ndarray]:
@@ -3844,7 +3828,6 @@ class SpotOptim(BaseEstimator):
             y0 = self.evaluate_function(X0)
 
         return X0, y0
-
 
     def rm_initial_design_NA_values(
         self, X0: np.ndarray, y0: np.ndarray
@@ -3923,7 +3906,6 @@ class SpotOptim(BaseEstimator):
 
         return X0, y0, len(finite_mask)
 
-
     def check_size_initial_design(self, y0: np.ndarray, n_evaluated: int) -> None:
         """Validate that initial design has sufficient points for surrogate fitting.
 
@@ -3995,7 +3977,6 @@ class SpotOptim(BaseEstimator):
                 f"Note: Initial design size ({len(y0)}) is smaller than requested "
                 f"({self.n_initial}) due to NaN/inf values"
             )
-
 
     def _run_sequential_loop(
         self, timeout_start: float, effective_max_iter: int
@@ -4197,7 +4178,6 @@ class SpotOptim(BaseEstimator):
             y=self.y_,
         )
 
-
     def determine_termination(self, timeout_start: float) -> str:
         """Determine termination reason for optimization.
         Checks the termination conditions and returns an appropriate message
@@ -4263,8 +4243,6 @@ class SpotOptim(BaseEstimator):
             message = "Optimization finished successfully"
 
         return message
-
-
 
     def apply_penalty_NA(
         self,
@@ -4370,7 +4348,6 @@ class SpotOptim(BaseEstimator):
             y[mask] = penalty_values[mask]
 
         return y
-
 
     def _update_best_main_loop(
         self,
@@ -4608,8 +4585,6 @@ class SpotOptim(BaseEstimator):
 
         return X_next_clean, y_next_clean
 
-
-
     def update_repeats_infill_points(self, x_next: np.ndarray) -> np.ndarray:
         """Repeat infill point for noisy function evaluation. Used in the sequential_loop.
         For noisy objective functions (repeats_surrogate > 1), creates multiple
@@ -4662,7 +4637,6 @@ class SpotOptim(BaseEstimator):
         else:
             x_next_repeated = x_next
         return x_next_repeated
-
 
     # ====================
     # TASK_OPTIM_PARALLEL:
@@ -4837,7 +4811,6 @@ class SpotOptim(BaseEstimator):
         )
 
         # Import dill locally (assuming installed)
-        import dill
 
         from contextlib import ExitStack
         from concurrent.futures import (
@@ -5136,13 +5109,11 @@ class SpotOptim(BaseEstimator):
             y=self.y_,
         )
 
-
     # ====================
     # TASK_MO:
     # * store_mo()
     # * mo2so()
     # ====================
-
 
     def store_mo(self, y_mo: np.ndarray) -> None:
         """Store multi-objective values in self.y_mo.
@@ -5267,7 +5238,6 @@ class SpotOptim(BaseEstimator):
     # * get_ocba_X()
     # ====================
 
-
     def apply_ocba(self) -> Optional[np.ndarray]:
         """Apply Optimal Computing Budget Allocation for noisy functions."""
         return _ocba.apply_ocba(self)
@@ -5293,13 +5263,11 @@ class SpotOptim(BaseEstimator):
         """Calculate OCBA allocation and repeat input array X."""
         return _ocba.get_ocba_X(X, means, vars, delta, verbose)
 
-
     # ====================
     # TASK_SELECT:
     # * select_new()
     # * suggest_next_infill_point()
     # ====================
-
 
     def select_new(
         self, A: np.ndarray, X: np.ndarray, tolerance: float = 0
@@ -5349,11 +5317,12 @@ class SpotOptim(BaseEstimator):
         ind = is_duplicate
         return A[~ind], ~ind
 
-
-
     def suggest_next_infill_point(self) -> np.ndarray:
         """Suggest next point to evaluate (dispatcher).
-        Used in both sequential and parallel optimization loops. This method orchestrates the process of generating candidate points from the acquisition function optimizer, handling any failures in the acquisition process with a fallback strategy, and ensuring that the returned point(s) are valid and ready for evaluation.
+        Used in both sequential and parallel optimization loops. This method orchestrates
+        the process of generating candidate points from the acquisition function optimizer,
+        handling any failures in the acquisition process with a fallback strategy, and
+        ensuring that the returned point(s) are valid and ready for evaluation.
         The returned point is in the Transformed and Mapped Space (Internal Optimization Space).
         This means:
             1. Transformations (e.g., log, sqrt) have been applied.
@@ -5451,7 +5420,6 @@ class SpotOptim(BaseEstimator):
 
         return x_last.reshape(1, -1)
 
-
     # ====================
     # TASK_STATS:
     # * init_storage()
@@ -5531,7 +5499,6 @@ class SpotOptim(BaseEstimator):
             params[name] = val
 
         return params
-
 
     def init_storage(self, X0: np.ndarray, y0: np.ndarray) -> None:
         """Initialize storage for optimization.
@@ -5873,7 +5840,9 @@ class SpotOptim(BaseEstimator):
         verbosity: int = 0,
     ) -> None:
         """Save experiment configuration to a pickle file."""
-        _serial.save_experiment(self, filename, prefix, path, overwrite, unpickleables, verbosity)
+        _serial.save_experiment(
+            self, filename, prefix, path, overwrite, unpickleables, verbosity
+        )
 
     @staticmethod
     def load_experiment(filename: str) -> "SpotOptim":
@@ -5893,6 +5862,8 @@ class SpotOptim(BaseEstimator):
         Prints the table.
         """
         print(self.get_results_table(*args, **kwargs))
+
+    # --- Phase 4 delegations: Reporting & Analysis ---
 
     def print_best(
         self,
@@ -5938,75 +5909,13 @@ class SpotOptim(BaseEstimator):
             opt.print_best(result)
             ```
         """
-        # Get values from result or stored attributes
-        if result is not None:
-            best_x = result.x
-            best_y = result.fun
-            n_evals = result.nfev
-        else:
-            if self.best_x_ is None or self.best_y_ is None:
-                print("No optimization results available. Run optimize() first.")
-                return
-            best_x = self.best_x_
-            best_y = self.best_y_
-            n_evals = self.counter
-
-        # Expand to full dimensions if dimension reduction was applied
-        if self.red_dim:
-            best_x_full = self.to_all_dim(best_x.reshape(1, -1))[0]
-        else:
-            best_x_full = best_x
-
-        # Map factor variables back to original string values
-        best_x_full = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
-
-        # Determine variable names to use
-        if show_name and self.all_var_name is not None:
-            var_names = self.all_var_name
-        else:
-            var_names = [f"x{i}" for i in range(len(best_x_full))]
-
-        # Validate transformations length
-        if transformations is not None:
-            if len(transformations) != len(best_x_full):
-                raise ValueError(
-                    f"Length of transformations ({len(transformations)}) must match "
-                    f"number of dimensions ({len(best_x_full)})"
-                )
-        else:
-            transformations = [None] * len(best_x_full)
-
-        # Print header
-        print("\nBest Solution Found:")
-        print("-" * 50)
-
-        # Print each parameter
-        for i, (name, value, transform) in enumerate(
-            zip(var_names, best_x_full, transformations)
-        ):
-            # Apply transformation if provided
-            if transform is not None:
-                try:
-                    display_value = transform(value)
-                except Exception as e:
-                    print(f"Warning: Transformation failed for {name}: {e}")
-                    display_value = value
-            else:
-                display_value = value
-
-            # Format based on variable type
-            var_type = self.all_var_type[i] if i < len(self.all_var_type) else "float"
-
-            if var_type == "int" or isinstance(display_value, (int, np.integer)):
-                print(f"  {name}: {int(display_value)}")
-            elif var_type == "factor" or isinstance(display_value, str):
-                print(f"  {name}: {display_value}")
-            else:
-                print(f"  {name}: {display_value:.{precision}f}")
-
-        # Print objective value and evaluations
-        print(f"  Objective Value: {best_y:.{precision}f}")
-        print(f"  Total Evaluations: {n_evals}")
+        _results.print_best(
+            self,
+            result=result,
+            transformations=transformations,
+            show_name=show_name,
+            precision=precision,
+        )
 
     def get_results_table(
         self,
@@ -6056,109 +5965,12 @@ class SpotOptim(BaseEstimator):
             print(table)
             ```
         """
-        if self.best_x_ is None or self.best_y_ is None:
-            return "No optimization results available. Run optimize() first."
-
-        # Get best solution in full dimensions
-        # Note: best_x_ is already in original scale
-        if self.red_dim:
-            best_x_full = self.to_all_dim(self.best_x_.reshape(1, -1))[0]
-        else:
-            best_x_full = self.best_x_
-
-        # Map factor variables back to original string values
-        best_x_display = self.map_to_factor_values(best_x_full.reshape(1, -1))[0]
-
-        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
-        if self.red_dim and hasattr(self, "all_var_trans"):
-            all_var_trans = self.all_var_trans
-        else:
-            all_var_trans = self.var_trans
-
-        # Prepare table data
-        table_data = {
-            "name": (
-                self.all_var_name
-                if self.all_var_name
-                else [f"x{i}" for i in range(len(best_x_display))]
-            ),
-            "type": (
-                self.all_var_type
-                if self.all_var_type
-                else ["float"] * len(best_x_display)
-            ),
-            "default": [],
-            "lower": [],
-            "upper": [],
-            "tuned": [],
-            "transform": [t if t is not None else "-" for t in all_var_trans],
-        }
-
-        # Helper to format values
-        def fmt_val(v):
-            if isinstance(v, (float, np.floating)):
-                return f"{v:.{precision}f}"
-            return v
-
-        # Process bounds, defaults, and tuned values
-        for i in range(len(best_x_display)):
-            var_type = table_data["type"][i]
-
-            # Handle bounds and defaults based on variable type
-            if var_type == "factor":
-                # For factors, show original string values
-                if i in self._factor_maps:
-                    factor_map = self._factor_maps[i]
-                    # Default is middle level logic (matching get_design_table)
-                    mid_idx = len(factor_map) // 2
-                    default_str = factor_map[mid_idx]
-
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append(default_str)
-                else:
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append("N/A")
-            else:
-                table_data["lower"].append(fmt_val(self._original_lower[i]))
-                table_data["upper"].append(fmt_val(self._original_upper[i]))
-                # Default is midpoint logic
-                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
-                if var_type == "int":
-                    table_data["default"].append(int(default_val))
-                else:
-                    table_data["default"].append(fmt_val(default_val))
-
-            # Format tuned value
-            tuned_val = best_x_display[i]
-            if var_type == "int":
-                table_data["tuned"].append(int(tuned_val))
-            elif var_type == "factor":
-                table_data["tuned"].append(str(tuned_val))
-            else:
-                table_data["tuned"].append(fmt_val(tuned_val))
-
-        # Add importance if requested
-        if show_importance:
-            importance = self.get_importance()
-            table_data["importance"] = [f"{x:.2f}" for x in importance]
-            table_data["stars"] = self.get_stars(importance)
-
-        # Generate table
-        table = tabulate(
-            table_data,
-            headers="keys",
+        return _results.get_results_table(
+            self,
             tablefmt=tablefmt,
-            numalign="right",
-            stralign="right",
+            precision=precision,
+            show_importance=show_importance,
         )
-
-        # Add interpretation if importance is shown
-        if show_importance:
-            table += "\n\nInterpretation: ***: >99%, **: >75%, *: >50%, .: >10%"
-
-        return table
 
     def get_design_table(
         self,
@@ -6200,74 +6012,7 @@ class SpotOptim(BaseEstimator):
             print(table)
             ```
         """
-        # Prepare all variable transformations (use all_var_trans if dimension reduction occurred)
-        if self.red_dim and hasattr(self, "all_var_trans"):
-            all_var_trans = self.all_var_trans
-        else:
-            all_var_trans = self.var_trans
-
-        # Prepare table data
-        table_data = {
-            "name": (
-                self.all_var_name
-                if self.all_var_name
-                else [f"x{i}" for i in range(len(self.all_lower))]
-            ),
-            "type": (
-                self.all_var_type
-                if self.all_var_type
-                else ["float"] * len(self.all_lower)
-            ),
-            "lower": [],
-            "upper": [],
-            "default": [],
-            "transform": [t if t is not None else "-" for t in all_var_trans],
-        }
-
-        # Helper to format values
-        def fmt_val(v):
-            if isinstance(v, (float, np.floating)):
-                return f"{v:.{precision}f}"
-            return v
-
-        # Process bounds and compute defaults (use original bounds for display)
-        for i in range(len(self._original_lower)):
-            var_type = table_data["type"][i]
-
-            if var_type == "factor":
-                # For factors, show original string values
-                if i in self._factor_maps:
-                    factor_map = self._factor_maps[i]
-                    # Default is middle level
-                    mid_idx = len(factor_map) // 2
-                    default_str = factor_map[mid_idx]
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append(default_str)
-                else:
-                    table_data["lower"].append("-")
-                    table_data["upper"].append("-")
-                    table_data["default"].append("N/A")
-            else:
-                table_data["lower"].append(fmt_val(self._original_lower[i]))
-                table_data["upper"].append(fmt_val(self._original_upper[i]))
-                # Default is midpoint
-                default_val = (self._original_lower[i] + self._original_upper[i]) / 2
-                if var_type == "int":
-                    table_data["default"].append(int(default_val))
-                else:
-                    table_data["default"].append(fmt_val(default_val))
-
-        # Generate table
-        table = tabulate(
-            table_data,
-            headers="keys",
-            tablefmt=tablefmt,
-            numalign="right",
-            stralign="right",
-        )
-
-        return table
+        return _results.get_design_table(self, tablefmt=tablefmt, precision=precision)
 
     def gen_design_table(self, precision: int = 4, tablefmt: str = "github") -> str:
         """Generate a table of the design or results.
@@ -6349,63 +6094,7 @@ class SpotOptim(BaseEstimator):
             print(table)
             ```
         """
-        if self.X_ is None or self.y_ is None or len(self.y_) < 3:
-            # Not enough data to compute importance
-            return [0.0] * len(self.all_lower)
-
-        # Use full-dimensional data
-        X_full = self.X_
-        if self.red_dim:
-            X_full = np.array([self.to_all_dim(x.reshape(1, -1))[0] for x in self.X_])
-
-        # Calculate sensitivity for each dimension
-        sensitivities = []
-        for i in range(X_full.shape[1]):
-            x_i = X_full[:, i]
-
-            # Handle factor variables: map strings to integers
-            if hasattr(self, "_factor_maps") and i in self._factor_maps:
-                # _factor_maps[i] is {int: str}, we need {str: int}
-                str_to_int = {v: k for k, v in self._factor_maps[i].items()}
-                try:
-                    # Map values, handle potential missing values if any (though shouldn't simplify be there)
-                    x_i = np.array([str_to_int.get(val, -1) for val in x_i])
-                except Exception:
-                    # Fallback if mapping fails
-                    sensitivities.append(0.0)
-                    continue
-            else:
-                # Ensure numeric type for non-factors
-                try:
-                    x_i = x_i.astype(float)
-                except ValueError:
-                    # If conversion fails, likely a string column without factor map?
-                    sensitivities.append(0.0)
-                    continue
-
-            # Skip if no variation in this dimension
-            if np.std(x_i) < 1e-10:
-                sensitivities.append(0.0)
-                continue
-
-            # Compute correlation with objective
-            try:
-                correlation = np.abs(np.corrcoef(x_i, self.y_)[0, 1])
-                if np.isnan(correlation):
-                    correlation = 0.0
-            except Exception:
-                correlation = 0.0
-
-            sensitivities.append(correlation)
-
-        # Normalize to percentage
-        total = sum(sensitivities)
-        if total > 0:
-            importance = [(s / total) * 100 for s in sensitivities]
-        else:
-            importance = [0.0] * len(sensitivities)
-
-        return importance
+        return _analysis.get_importance(self)
 
     def sensitivity_spearman(self) -> None:
         """Compute and print Spearman correlation between parameters and objective values.
@@ -6447,84 +6136,7 @@ class SpotOptim(BaseEstimator):
         Note:
             Only meaningful after optimize() has been called with sufficient evaluations.
         """
-        try:
-            from scipy.stats import spearmanr
-        except ImportError:
-            raise ImportError(
-                "scipy is required for sensitivity_spearman(). "
-                "Install it with: pip install scipy"
-            )
-
-        if self.X_ is None or self.y_ is None:
-            raise ValueError("No optimization data available. Run optimize() first.")
-
-        # Get optimization history and parameters
-        history = self.y_
-        all_params = self.X_
-
-        # Get parameter names
-        param_names = (
-            self.var_name if self.var_name else [f"x{i}" for i in range(self.n_dim)]
-        )
-
-        print("\nSensitivity Analysis (Spearman Correlation):")
-        print("-" * 50)
-
-        for param_idx in range(self.n_dim):
-            name = param_names[param_idx]
-            param_values = all_params[:, param_idx]
-
-            # Check if it's a factor variable
-            var_type = self.var_type[param_idx] if self.var_type else "float"
-
-            if var_type == "factor":
-                # For categorical variables, skip correlation
-                print(f"  {name:20s}: (categorical variable, use visual inspection)")
-                continue
-
-            # Check if parameter has log transformation
-            var_trans = self.var_trans[param_idx] if self.var_trans else None
-
-            # Compute correlation based on transformation
-            if var_trans in ["log10", "log", "ln"]:
-                # For log-transformed parameters, use log-space correlation
-                try:
-                    param_values_numeric = param_values.astype(float)
-                    # Filter out non-positive values
-                    valid_mask = (param_values_numeric > 0) & (history > 0)
-                    if valid_mask.sum() < 3:
-                        print(
-                            f"  {name:20s}: (insufficient valid data for log correlation)"
-                        )
-                        continue
-
-                    corr, p_value = spearmanr(
-                        np.log10(param_values_numeric[valid_mask]),
-                        np.log10(history[valid_mask]),
-                    )
-                except (ValueError, TypeError):
-                    print(f"  {name:20s}: (error computing log correlation)")
-                    continue
-            else:
-                # For integer/float parameters, direct correlation
-                try:
-                    param_values_numeric = param_values.astype(float)
-                    corr, p_value = spearmanr(param_values_numeric, history)
-                except (ValueError, TypeError):
-                    print(f"  {name:20s}: (error computing correlation)")
-                    continue
-
-            # Determine significance level
-            if p_value < 0.001:
-                significance = " ***"
-            elif p_value < 0.01:
-                significance = " **"
-            elif p_value < 0.05:
-                significance = " *"
-            else:
-                significance = ""
-
-            print(f"  {name:20s}: {corr:+.3f} (p={p_value:.3f}){significance}")
+        _analysis.sensitivity_spearman(self)
 
     def get_stars(self, input_list: list) -> list:
         """Converts a list of values to a list of stars.
@@ -6557,19 +6169,7 @@ class SpotOptim(BaseEstimator):
             opt.get_stars([100, 75, 50, 10, 0])
             ```
         """
-        output_list = []
-        for value in input_list:
-            if value > 99:
-                output_list.append("***")
-            elif value > 75:
-                output_list.append("**")
-            elif value > 50:
-                output_list.append("*")
-            elif value > 10:
-                output_list.append(".")
-            else:
-                output_list.append("")
-        return output_list
+        return _analysis.get_stars(input_list)
 
     # ====================
     # TASK_TENSORBOARD:

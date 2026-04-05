@@ -4,6 +4,7 @@
 
 import sys
 
+
 def is_gil_disabled() -> bool:
     """Return True when running on a free-threaded (no-GIL) Python build.
     Uses ``sys.is_gil_enabled()`` (public name) when available, falling back
@@ -21,7 +22,9 @@ def is_gil_disabled() -> bool:
         print(isinstance(result, bool))  # True
         ```
     """
-    checker = getattr(sys, "is_gil_enabled", None) or getattr(sys, "_is_gil_enabled", None)
+    checker = getattr(sys, "is_gil_enabled", None) or getattr(
+        sys, "_is_gil_enabled", None
+    )
     return not checker() if checker is not None else False
 
 

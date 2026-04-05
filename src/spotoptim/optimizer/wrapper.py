@@ -4,6 +4,7 @@
 
 from scipy.optimize import minimize
 
+
 def gpr_minimize_wrapper(obj_func, initial_theta, bounds, **kwargs):
     """
     Wrapper for scipy.optimize.minimize to be used with sklearn GaussianProcessRegressor.
