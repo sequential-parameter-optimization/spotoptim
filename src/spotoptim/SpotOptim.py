@@ -41,6 +41,7 @@ from spotoptim.plot.visualization import (
 from spotoptim.utils.parallel import (remote_eval_wrapper, remote_batch_eval_wrapper, is_gil_disabled)
 from spotoptim.utils.convert import safe_float
 from spotoptim.utils import tensorboard as _tb
+from spotoptim.utils import ocba as _ocba
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 @dataclass
@@ -5362,194 +5363,18 @@ class SpotOptim(BaseEstimator):
 
 
     def apply_ocba(self) -> Optional[np.ndarray]:
-        """Apply Optimal Computing Budget Allocation for noisy functions.
-        Determines which existing design points should be re-evaluated based on
-        OCBA algorithm. This method computes optimal budget allocation to improve
-        the quality of the estimated best design.
-
-        Returns:
-            Optional[ndarray]:
-                Array of design points to re-evaluate, shape (n_re_eval, n_features).
-                Returns None if OCBA conditions are not met or OCBA is disabled.
-
-        Note:
-            OCBA is only applied when:
-
-                * (self.repeats_initial > 1) or (self.repeats_surrogate > 1)
-                * self.ocba_delta > 0
-                * All variances are > 0
-                * At least 3 design points exist
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(
-                fun=lambda X: np.sum(X**2, axis=1) + np.random.normal(0, 0.1, X.shape[0]),
-                bounds=[(-5, 5), (-5, 5)],
-                n_initial=5,
-                repeats_surrogate=2,
-                ocba_delta=5,
-                verbose=True
-            )
-            # Simulate optimization state (normally done in optimize())
-            opt.mean_X = np.array([[1, 2], [0, 0], [2, 1]])
-            opt.mean_y = np.array([5.0, 0.1, 5.0])
-            opt.var_y = np.array([0.1, 0.05, 0.15])
-            X_ocba = opt.apply_ocba()
-            # OCBA: Adding 5 re-evaluation(s).
-            # The following should be true:
-            print(X_ocba.shape[0] == 5)
-            ```
-
-            OCBA skipped - insufficient points
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt2 = SpotOptim(
-                fun=lambda X: np.sum(X**2, axis=1),
-                bounds=[(-5, 5), (-5, 5)],
-                repeats_surrogate=2,
-                ocba_delta=5,
-                verbose=True
-            )
-            opt2.mean_X = np.array([[1, 2], [0, 0]])
-            opt2.mean_y = np.array([5.0, 0.1])
-            opt2.var_y = np.array([0.1, 0.05])
-            X_ocba = opt2.apply_ocba()
-            # Warning: OCBA skipped (need >2 points with variance > 0)
-            print(X_ocba is None)
-            ```
-        """
-        # OCBA: Compute optimal budget allocation for noisy functions
-        # This determines which existing design points should be re-evaluated
-        X_ocba = None
-        if (
-            self.repeats_initial > 1 or self.repeats_surrogate > 1
-        ) and self.ocba_delta > 0:
-            # Check conditions for OCBA (need variance > 0 and at least 3 points)
-            if not np.all(self.var_y > 0) and (self.mean_X.shape[0] <= 2):
-                if self.verbose:
-                    print("Warning: OCBA skipped (need >2 points with variance > 0)")
-            elif np.all(self.var_y > 0) and (self.mean_X.shape[0] > 2):
-                # Get OCBA allocation
-                X_ocba = self.get_ocba_X(
-                    self.mean_X,
-                    self.mean_y,
-                    self.var_y,
-                    self.ocba_delta,
-                    verbose=self.verbose,
-                )
-                if self.verbose and X_ocba is not None:
-                    print(f"  OCBA: Adding {X_ocba.shape[0]} re-evaluation(s)")
-
-        return X_ocba
-
+        """Apply Optimal Computing Budget Allocation for noisy functions."""
+        return _ocba.apply_ocba(self)
 
     def get_ranks(self, x: np.ndarray) -> np.ndarray:
-        """Returns ranks of numbers within input array x.
-
-        Args:
-            x (ndarray): Input array.
-
-        Returns:
-            ndarray: Ranks array where ranks[i] is the rank of x[i].
-
-        Examples:
-            ```{python}
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            opt.get_ranks(np.array([2, 1]))
-            opt.get_ranks(np.array([20, 10, 100]))
-            ```
-        """
-        ts = x.argsort()
-        ranks = np.empty_like(ts)
-        ranks[ts] = np.arange(len(x))
-        return ranks
+        """Returns ranks of numbers within input array x."""
+        return _ocba.get_ranks(x)
 
     def get_ocba(
         self, means: np.ndarray, vars: np.ndarray, delta: int, verbose: bool = False
     ) -> np.ndarray:
-        """Optimal Computing Budget Allocation (OCBA).
-        Calculates budget recommendations for given means, variances, and incremental
-        budget using the OCBA algorithm.
-
-        References:
-            [1] Chun-Hung Chen and Loo Hay Lee: Stochastic Simulation Optimization:
-                An Optimal Computer Budget Allocation, pp. 49 and pp. 215
-
-        Args:
-            means (ndarray): Array of means.
-            vars (ndarray): Array of variances.
-            delta (int): Incremental budget.
-            verbose (bool): If True, print debug information. Defaults to False.
-
-        Returns:
-            ndarray: Array of budget recommendations, or None if conditions not met.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            means = np.array([1, 2, 3, 4, 5])
-            vars = np.array([1, 1, 9, 9, 4])
-            allocations = opt.get_ocba(means, vars, 50)
-            allocations
-            ```
-        """
-        if np.all(vars > 0) and (means.shape[0] > 2):
-            n_designs = means.shape[0]
-            allocations = np.zeros(n_designs, np.int32)
-            ratios = np.zeros(n_designs, np.float64)
-            budget = delta
-            ranks = self.get_ranks(means)
-            best, second_best = np.argpartition(ranks, 2)[:2]
-            ratios[second_best] = 1.0
-            select = [i for i in range(n_designs) if i not in [best, second_best]]
-            temp = (means[best] - means[second_best]) / (means[best] - means[select])
-            ratios[select] = np.square(temp) * (vars[select] / vars[second_best])
-            select = [i for i in range(n_designs) if i not in [best]]
-            temp = (np.square(ratios[select]) / vars[select]).sum()
-            ratios[best] = np.sqrt(vars[best] * temp)
-            more_runs = np.full(n_designs, True, dtype=bool)
-            add_budget = np.zeros(n_designs, dtype=float)
-            more_alloc = True
-
-            if verbose:
-                print("\nIn get_ocba():")
-                print(f"means: {means}")
-                print(f"vars: {vars}")
-                print(f"delta: {delta}")
-                print(f"n_designs: {n_designs}")
-                print(f"Ratios: {ratios}")
-                print(f"Best: {best}, Second best: {second_best}")
-
-            while more_alloc:
-                more_alloc = False
-                ratio_s = (more_runs * ratios).sum()
-                add_budget[more_runs] = (budget / ratio_s) * ratios[more_runs]
-                add_budget = np.around(add_budget).astype(int)
-                mask = add_budget < allocations
-                add_budget[mask] = allocations[mask]
-                more_runs[mask] = 0
-
-                if mask.sum() > 0:
-                    more_alloc = True
-                if more_alloc:
-                    budget = allocations.sum() + delta
-                    budget -= (add_budget * ~more_runs).sum()
-
-            t_budget = add_budget.sum()
-
-            # Adjust the best design to match the exact delta
-            # Ensure we don't go below current allocations
-            adjustment = allocations.sum() + delta - t_budget
-            add_budget[best] = max(allocations[best], add_budget[best] + adjustment)
-
-            return add_budget - allocations
-        else:
-            return None
+        """Optimal Computing Budget Allocation (OCBA)."""
+        return _ocba.get_ocba(means, vars, delta, verbose)
 
     def get_ocba_X(
         self,
@@ -5559,37 +5384,8 @@ class SpotOptim(BaseEstimator):
         delta: int,
         verbose: bool = False,
     ) -> np.ndarray:
-        """Calculate OCBA allocation (by calling `get_ocba()`) and repeat input array X.
-        Used in the `optimize()` method to generate new design points based on OCBA.
-
-        Args:
-            X (ndarray): Input array to be repeated, shape (n_designs, n_features).
-            means (ndarray): Array of means for each design.
-            vars (ndarray): Array of variances for each design.
-            delta (int): Incremental budget.
-            verbose (bool): If True, print debug information. Defaults to False.
-
-        Returns:
-            ndarray: Repeated array of X based on OCBA allocation, or None if
-                     conditions not met.
-
-        Examples:
-            ```{python}
-            import numpy as np
-            from spotoptim import SpotOptim
-            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1), bounds=[(-5, 5)])
-            X = np.array([[1, 2], [4, 5], [7, 8]])
-            means = np.array([1.5, 35, 550])
-            vars = np.array([0.5, 50, 5000])
-            X_new = opt.get_ocba_X(X, means, vars, delta=5, verbose=False)
-            print(X_new.shape[0])  # Should have 5 additional evaluations
-            ```
-        """
-        if np.all(vars > 0) and (means.shape[0] > 2):
-            o = self.get_ocba(means=means, vars=vars, delta=delta, verbose=verbose)
-            return np.repeat(X, o, axis=0)
-        else:
-            return None
+        """Calculate OCBA allocation and repeat input array X."""
+        return _ocba.get_ocba_X(X, means, vars, delta, verbose)
 
 
     # ====================
