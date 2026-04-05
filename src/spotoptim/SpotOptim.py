@@ -7,7 +7,7 @@ import random
 import torch
 from functools import partial
 from dataclasses import dataclass, field
-from typing import Callable, Optional, Tuple, List, Any, Dict, Union
+from typing import Callable, Optional, Tuple, List, Any, Dict, Union, Literal
 from scipy.optimize import OptimizeResult
 from scipy.stats.qmc import LatinHypercube
 from scipy.stats import norm
@@ -67,7 +67,7 @@ class SpotOptimConfig:
         fun_mo2so (Optional[Callable]): Function to convert multi-objective to single-objective.
         seed (Optional[int]): Seed for random number generator.
         verbose (bool): Whether to print verbose output.
-        warnings_filter (str): Filter for warnings.
+        warnings_filter (Literal["default", "error", "ignore"]): Filter for warnings.
         n_infill_points (int): Number of infill points.
         max_surrogate_points (Optional[Union[int, List[int]]]): Maximum number of surrogate points.
         selection_method (str): Method for selecting infill points.
@@ -186,7 +186,7 @@ class SpotOptimConfig:
     fun_mo2so: Optional[Callable] = None
     seed: Optional[int] = None
     verbose: bool = False
-    warnings_filter: str = "ignore"
+    warnings_filter: Literal["default", "error", "ignore"] = "ignore"
     n_infill_points: int = 1
     max_surrogate_points: Optional[Union[int, List[int]]] = None
     selection_method: str = "distant"
@@ -353,7 +353,7 @@ class SpotOptim(BaseEstimator):
             Random seed for reproducibility. Defaults to None.
         verbose (bool, optional):
             Print progress information. Defaults to False.
-        warnings_filter (str, optional):
+        warnings_filter (Literal["default", "error", "ignore"], optional):
             Filter for warnings. One of "error", "ignore", "always", "all",
             "default", "module", or "once". Defaults to "ignore".
         n_infill_points (int, optional):
@@ -455,7 +455,7 @@ class SpotOptim(BaseEstimator):
         counter (int): Total number of function evaluations.
         success_rate (float): Rolling success rate over the last window_size evaluations.
             A success is counted when a new evaluation improves upon the best value found so far.
-        warnings_filter (str): Filter for warnings during optimization.
+        warnings_filter (Literal["default", "error", "ignore"]): Filter for warnings during optimization.
         max_surrogate_points (int or None): Maximum number of points for surrogate fitting.
         selection_method (str): Point selection method.
         acquisition_failure_strategy (str): Strategy for handling acquisition failures ('random').
@@ -745,7 +745,7 @@ class SpotOptim(BaseEstimator):
         fun_mo2so: Optional[Callable] = None,
         seed: Optional[int] = None,
         verbose: bool = False,
-        warnings_filter: str = "ignore",
+        warnings_filter: Literal["default", "error", "ignore"] = "ignore",
         n_infill_points: int = 1,
         max_surrogate_points: Optional[Union[int, List[int]]] = None,
         selection_method: str = "distant",
