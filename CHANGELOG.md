@@ -1,3 +1,16 @@
+## [0.11.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.0...v0.11.1) (2026-04-05)
+
+### Code Refactoring
+
+* extract acquisition optimization methods from SpotOptim class ([4ec71db](https://github.com/sequential-parameter-optimization/spotoptim/commit/4ec71db004bb7343bcf0b1b251a05807decf6f60))
+* extract data management methods from SpotOptim class ([e6d6558](https://github.com/sequential-parameter-optimization/spotoptim/commit/e6d65580ccd9888749a456d37bfeb870f324c917))
+* extract dimension reduction methods from SpotOptim class ([e80757c](https://github.com/sequential-parameter-optimization/spotoptim/commit/e80757c842d37308757c8968dff7b24bbc2ca802))
+* extract OCBA methods from SpotOptim class ([d1db547](https://github.com/sequential-parameter-optimization/spotoptim/commit/d1db54714050377dc521c5655056c1befe0520cb))
+* extract reporting and analysis methods from SpotOptim class ([0fd5750](https://github.com/sequential-parameter-optimization/spotoptim/commit/0fd5750c2372efb4ffb1d33875c4a9f1276d8c8d))
+* extract serialization methods from SpotOptim class ([63fa4e4](https://github.com/sequential-parameter-optimization/spotoptim/commit/63fa4e49eb448e5c2c1da72988d7ad75c76051b9))
+* extract steady-state parallel optimization from SpotOptim class ([916b9ed](https://github.com/sequential-parameter-optimization/spotoptim/commit/916b9edfd6e800107871464e861af2274a634f40))
+* extract variable and transformation methods from SpotOptim class ([9d7da12](https://github.com/sequential-parameter-optimization/spotoptim/commit/9d7da12c9b6103067249f036d74b70fa11dd6226))
+
 ## [0.11.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.3...v0.11.0) (2026-04-05)
 
 ### Features
