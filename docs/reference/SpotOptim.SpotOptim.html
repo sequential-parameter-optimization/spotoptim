@@ -2514,7 +2514,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<div id="88d6e6db" class="cell" data-execution_count="1">
+<div id="00882677" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2529,17 +2529,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Best f(x):"</span>, result.fun)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>TensorBoard logging disabled
-Initial best: f(x) = 9.704551
-Iter 1 | Best: 9.704342 | Rate: 1.00 | Evals: 60.0%
-Iter 2 | Best: 8.829689 | Rate: 1.00 | Evals: 70.0%
-Iter 3 | Best: 4.507337 | Rate: 1.00 | Evals: 80.0%
-Iter 4 | Best: 1.390401 | Rate: 1.00 | Evals: 90.0%
-Iter 5 | Best: 0.317580 | Rate: 1.00 | Evals: 100.0%
-Best x: [-0.08345137  0.55732891]
-Best f(x): 0.3175796439153394</code></pre>
+Initial best: f(x) = 1.036422
+Iter 1 | Best: 1.036422 | Curr: 17.475483 | Rate: 0.00 | Evals: 60.0%
+Iter 2 | Best: 1.036422 | Curr: 11.272932 | Rate: 0.00 | Evals: 70.0%
+Iter 3 | Best: 0.996743 | Rate: 0.33 | Evals: 80.0%
+Iter 4 | Best: 0.621076 | Rate: 0.50 | Evals: 90.0%
+Iter 5 | Best: 0.109895 | Rate: 0.60 | Evals: 100.0%
+Best x: [-0.1513442   0.29494043]
+Best f(x): 0.10989492293408484</code></pre>
 </div>
 </div>
-<div id="55a48d8e" class="cell" data-execution_count="2">
+<div id="ecba3f52" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2560,12 +2560,12 @@ Best f(x): 0.3175796439153394</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="SpotOptim.SpotOptim_files/figure-html/cell-3-output-1.png" width="1125" height="950" class="figure-img"></p>
+<p><img src="SpotOptim.SpotOptim_files/figure-html/cell-3-output-1.png" width="1126" height="950" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
-<div id="1ea3578b" class="cell" data-execution_count="3">
+<div id="ce77d17d" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2602,7 +2602,7 @@ Best mean value: 1.6136057205973113
 Variance at best point: 0.002529978015323257</code></pre>
 </div>
 </div>
-<div id="fbd05127" class="cell" data-execution_count="4">
+<div id="becce636" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2657,7 +2657,7 @@ Best mean value: 0.3671523333490571
 Variance at best point: 0.0</code></pre>
 </div>
 </div>
-<div id="a683d05d" class="cell" data-execution_count="5">
+<div id="a0b38fa7" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> shutil</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
@@ -2687,17 +2687,17 @@ Variance at best point: 0.0</code></pre>
 <span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    shutil.rmtree(tb_dir)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>TensorBoard logging enabled: runs/my_optimization
-Initial best: f(x) = 2.651094
-Iter 1 | Best: 2.651094 | Curr: 2.655781 | Rate: 0.00 | Evals: 60.0%
-Iter 2 | Best: 2.651094 | Curr: 2.816504 | Rate: 0.00 | Evals: 70.0%
-Iter 3 | Best: 0.805549 | Rate: 0.33 | Evals: 80.0%
-Iter 4 | Best: 0.037382 | Rate: 0.50 | Evals: 90.0%
-Iter 5 | Best: 0.020351 | Rate: 0.60 | Evals: 100.0%
+Initial best: f(x) = 0.929510
+Iter 1 | Best: 0.919228 | Rate: 1.00 | Evals: 60.0%
+Iter 2 | Best: 0.596371 | Rate: 1.00 | Evals: 70.0%
+Iter 3 | Best: 0.210533 | Rate: 1.00 | Evals: 80.0%
+Iter 4 | Best: 0.116390 | Rate: 1.00 | Evals: 90.0%
+Iter 5 | Best: 0.001584 | Rate: 1.00 | Evals: 100.0%
 TensorBoard writer closed. View logs with: tensorboard --logdir=runs/my_optimization
 Logs saved to: runs/my_optimization</code></pre>
 </div>
 </div>
-<div id="59dd9cea" class="cell" data-execution_count="6">
+<div id="f065e9c8" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.surrogate <span class="im">import</span> Kriging</span>
@@ -2737,7 +2737,7 @@ Best solution found: [0.00141839 0.3210233 ]
 Best value: 0.10305797418752223</code></pre>
 </div>
 </div>
-<div id="c8f2ca2c" class="cell" data-execution_count="7">
+<div id="e5de288f" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
@@ -2769,7 +2769,7 @@ Best value: 0.10305797418752223</code></pre>
 <span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> optimizer_custom_gp.optimize()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="65e843ad" class="cell" data-execution_count="8">
+<div id="107835f2" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestRegressor</span>
@@ -2798,7 +2798,7 @@ Best value: 0.10305797418752223</code></pre>
 <span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a><span class="co"># so Expected Improvement (EI) may be less effective.</span></span>
 <span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Consider using acquisition='y' for pure exploitation.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="bb6a520f" class="cell" data-execution_count="9">
+<div id="40e8d028" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
@@ -3200,7 +3200,7 @@ Best value: 0.10305797418752223</code></pre>
 </section>
 <section id="examples-1" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
-<div id="ee0b7efb" class="cell" data-execution_count="10">
+<div id="2805bc8c" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -3294,7 +3294,7 @@ Best value: 0.10305797418752223</code></pre>
 </section>
 <section id="examples-2" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
-<div id="aee4ac7a" class="cell" data-execution_count="11">
+<div id="7311ba82" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>), bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)])</span>
@@ -3307,7 +3307,7 @@ Best value: 0.10305797418752223</code></pre>
 <span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"y_clean[1] &gt; 5.0: </span><span class="sc">{</span>y_clean[<span class="dv">1</span>] <span class="op">&gt;</span> <span class="fl">5.0</span><span class="sc">}</span><span class="ss">"</span>)  <span class="co"># Should be larger than max finite value in history</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>np.all(np.isfinite(y_clean)): True
-y_clean: [ 4.         10.08585968 10.1580682 ]
+y_clean: [ 4.         10.10998435 10.07224808]
 y_clean[1] &gt; 5.0: True</code></pre>
 </div>
 </div>
@@ -3385,7 +3385,7 @@ y_clean[1] &gt; 5.0: True</code></pre>
 </section>
 <section id="examples-3" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
-<div id="e7c87a8e" class="cell" data-execution_count="12">
+<div id="3e0e3dad" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -3476,7 +3476,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 </section>
 <section id="examples-4" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h4>
-<div id="9ea831e4" class="cell" data-execution_count="13">
+<div id="cb2fd8a7" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -3494,7 +3494,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 <pre><code>True</code></pre>
 </div>
 </div>
-<div id="cf8525ab" class="cell" data-execution_count="14">
+<div id="2576609d" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -3539,7 +3539,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 </section>
 <section id="examples-5" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h4>
-<div id="325cd448" class="cell" data-execution_count="15">
+<div id="4df00b16" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a simple objective mapping names to values for demonstration</span></span>
@@ -3603,7 +3603,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 </section>
 <section id="examples-6" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-6">Examples</h4>
-<div id="c8a19db5" class="cell" data-execution_count="16">
+<div id="2667e9f4" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
@@ -3622,7 +3622,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 <pre><code>Optimization terminated: maximum evaluations (10) reached</code></pre>
 </div>
 </div>
-<div id="e9907165" class="cell" data-execution_count="17">
+<div id="df720cf1" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Case 2: Time limit exceeded</span></span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
@@ -3635,7 +3635,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 <pre><code>Optimization terminated: maximum evaluations (10) reached</code></pre>
 </div>
 </div>
-<div id="68d912d2" class="cell" data-execution_count="18">
+<div id="63aeb3f2" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Case 3: Successful completion</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
@@ -3704,7 +3704,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 </section>
 <section id="examples-7" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-7">Examples</h4>
-<div id="b9b47d03" class="cell" data-execution_count="19">
+<div id="80a3d501" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Single-objective function</span></span>
@@ -3721,7 +3721,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 <pre><code>Single-objective output: [ 5. 25.]</code></pre>
 </div>
 </div>
-<div id="bc2559b6" class="cell" data-execution_count="20">
+<div id="677306c7" class="cell" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Multi-objective function (default: use first objective)</span></span>
@@ -3825,7 +3825,7 @@ Note: Initial design size (3) is smaller than requested (10) due to NaN/inf valu
 </section>
 <section id="examples-8" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-8">Examples</h4>
-<div id="778d51f1" class="cell" data-execution_count="21">
+<div id="be6cc6f1" class="cell" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
@@ -3976,7 +3976,7 @@ Optimization terminated: maximum evaluations (10) reached</code></pre>
 </section>
 <section id="examples-10" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-10">Examples</h4>
-<div id="e81be741" class="cell" data-execution_count="22">
+<div id="b9aab20d" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -4053,7 +4053,7 @@ y_sel.shape: (25,)</code></pre>
 </section>
 <section id="examples-11" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-11">Examples</h4>
-<div id="842fed2c" class="cell" data-execution_count="23">
+<div id="b51e4478" class="cell" data-execution_count="23">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -4127,7 +4127,7 @@ y_sel.shape: (25,)</code></pre>
 </section>
 <section id="examples-12" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-12">Examples</h4>
-<div id="877ca8f1" class="cell" data-execution_count="24">
+<div id="59b0e18a" class="cell" data-execution_count="24">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -4269,7 +4269,7 @@ y_sel.shape: (25,)</code></pre>
 </section>
 <section id="examples-14" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-14">Examples</h4>
-<div id="2c64bed8" class="cell" data-execution_count="25">
+<div id="b416297e" class="cell" data-execution_count="25">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4322,7 +4322,7 @@ y_sel.shape: (25,)</code></pre>
 </section>
 <section id="examples-15" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-15">Examples</h4>
-<div id="90f903b2" class="cell" data-execution_count="26">
+<div id="9daed10e" class="cell" data-execution_count="26">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere,</span>
@@ -4384,7 +4384,7 @@ y_sel.shape: (25,)</code></pre>
 </section>
 <section id="examples-16" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-16">Examples</h4>
-<div id="8b42f40e" class="cell" data-execution_count="27">
+<div id="5ea320fe" class="cell" data-execution_count="27">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4398,23 +4398,23 @@ y_sel.shape: (25,)</code></pre>
 <span id="cb69-11"><a href="#cb69-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(best_params[<span class="st">'x'</span>]) <span class="co"># Should be close to 0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>TensorBoard logging disabled
-Initial best: f(x) = 6.942495
-Iter 1 | Best: 6.729996 | Rate: 1.00 | Evals: 30.0%
-Iter 2 | Best: 0.590407 | Rate: 1.00 | Evals: 35.0%
-Iter 3 | Best: 0.072132 | Rate: 1.00 | Evals: 40.0%
-Iter 4 | Best: 0.072132 | Curr: 0.114336 | Rate: 0.75 | Evals: 45.0%
-Iter 5 | Best: 0.002024 | Rate: 0.80 | Evals: 50.0%
-Iter 6 | Best: 0.000000 | Rate: 0.83 | Evals: 55.0%
-Iter 7 | Best: 0.000000 | Rate: 0.86 | Evals: 60.0%
-Iter 8 | Best: 0.000000 | Rate: 0.88 | Evals: 65.0%
-Iter 9 | Best: 0.000000 | Rate: 0.89 | Evals: 70.0%
-Iter 10 | Best: 0.000000 | Curr: 0.000000 | Rate: 0.80 | Evals: 75.0%
-Iter 11 | Best: 0.000000 | Curr: 0.000000 | Rate: 0.73 | Evals: 80.0%
-Iter 12 | Best: 0.000000 | Curr: 0.000000 | Rate: 0.67 | Evals: 85.0%
-Iter 13 | Best: 0.000000 | Curr: 0.000000 | Rate: 0.62 | Evals: 90.0%
-Iter 14 | Best: 0.000000 | Curr: 0.000000 | Rate: 0.57 | Evals: 95.0%
-Iter 15 | Best: 0.000000 | Curr: 0.000000 | Rate: 0.53 | Evals: 100.0%
--2.4362570893443625e-05</code></pre>
+Initial best: f(x) = 12.770561
+Iter 1 | Best: 2.342924 | Rate: 1.00 | Evals: 30.0%
+Iter 2 | Best: 0.580844 | Rate: 1.00 | Evals: 35.0%
+Iter 3 | Best: 0.531437 | Rate: 1.00 | Evals: 40.0%
+Iter 4 | Best: 0.389393 | Rate: 1.00 | Evals: 45.0%
+Iter 5 | Best: 0.000361 | Rate: 1.00 | Evals: 50.0%
+Iter 6 | Best: 0.000361 | Curr: 0.000394 | Rate: 0.83 | Evals: 55.0%
+Iter 7 | Best: 0.000361 | Curr: 0.000375 | Rate: 0.71 | Evals: 60.0%
+Iter 8 | Best: 0.000345 | Rate: 0.75 | Evals: 65.0%
+Iter 9 | Best: 0.000311 | Rate: 0.78 | Evals: 70.0%
+Iter 10 | Best: 0.000228 | Rate: 0.80 | Evals: 75.0%
+Iter 11 | Best: 0.000069 | Rate: 0.82 | Evals: 80.0%
+Iter 12 | Best: 0.000004 | Rate: 0.83 | Evals: 85.0%
+Iter 13 | Best: 0.000000 | Rate: 0.85 | Evals: 90.0%
+Iter 14 | Best: 0.000000 | Rate: 0.86 | Evals: 95.0%
+Iter 15 | Best: 0.000000 | Rate: 0.87 | Evals: 100.0%
+-0.0001503186546564228</code></pre>
 </div>
 </div>
 </section>
@@ -4448,7 +4448,7 @@ Iter 15 | Best: 0.000000 | Curr: 0.000000 | Rate: 0.53 | Evals: 100.0%
 </section>
 <section id="examples-17" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-17">Examples</h4>
-<div id="a8fbe4c5" class="cell" data-execution_count="28">
+<div id="6922a360" class="cell" data-execution_count="28">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -4471,7 +4471,7 @@ Best x: [0 0]
 Best y: 0.0</code></pre>
 </div>
 </div>
-<div id="feda29bd" class="cell" data-execution_count="29">
+<div id="0da4caff" class="cell" data-execution_count="29">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
@@ -4550,7 +4550,7 @@ Best y: 0.0</code></pre>
 </section>
 <section id="examples-18" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-18">Examples</h4>
-<div id="d0724beb" class="cell" data-execution_count="30">
+<div id="3ebeea6e" class="cell" data-execution_count="30">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4608,7 +4608,7 @@ Best y: 0.0</code></pre>
 </section>
 <section id="examples-19" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-19">Examples</h4>
-<div id="3413c8f4" class="cell" data-execution_count="31">
+<div id="b1aa9ea5" class="cell" data-execution_count="31">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4697,7 +4697,7 @@ Interpretation: ***: &gt;99%, **: &gt;75%, *: &gt;50%, .: &gt;10%</code></pre>
 </section>
 <section id="examples-20" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-20">Examples</h4>
-<div id="ece6e8b6" class="cell" data-execution_count="32">
+<div id="f22039e0" class="cell" data-execution_count="32">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -4729,7 +4729,7 @@ Interpretation: ***: &gt;99%, **: &gt;75%, *: &gt;50%, .: &gt;10%</code></pre>
 </div>
 </div>
 </div>
-<div id="780af8c4" class="cell" data-execution_count="33">
+<div id="fda88e14" class="cell" data-execution_count="33">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -4853,7 +4853,7 @@ Interpretation: ***: &gt;99%, **: &gt;75%, *: &gt;50%, .: &gt;10%</code></pre>
 </section>
 <section id="examples-21" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-21">Examples</h4>
-<div id="df841011" class="cell" data-execution_count="34">
+<div id="99331399" class="cell" data-execution_count="34">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4877,14 +4877,14 @@ Interpretation: ***: &gt;99%, **: &gt;75%, *: &gt;50%, .: &gt;10%</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>|   name |   type |   default |   lower |   upper |   tuned |   transform |
 |--------|--------|-----------|---------|---------|---------|-------------|
-|     x1 |  float |         0 |      -5 |       5 |  0.2355 |           - |
-|     x2 |  float |         0 |      -5 |       5 | -0.0774 |           - |
-|     x3 |  float |         0 |      -5 |       5 | -0.8045 |           - |
+|     x1 |  float |         0 |      -5 |       5 |  0.1393 |           - |
+|     x2 |  float |         0 |      -5 |       5 | -0.6931 |           - |
+|     x3 |  float |         0 |      -5 |       5 | -0.8326 |           - |
 |   name |   type |   default |   lower |   upper |   tuned |   transform |   importance |   stars |
 |--------|--------|-----------|---------|---------|---------|-------------|--------------|---------|
-|     x1 |  float |         0 |      -5 |       5 |  0.2355 |           - |        21.67 |       . |
-|     x2 |  float |         0 |      -5 |       5 | -0.0774 |           - |        16.97 |       . |
-|     x3 |  float |         0 |      -5 |       5 | -0.8045 |           - |        61.36 |       * |
+|     x1 |  float |         0 |      -5 |       5 |  0.1393 |           - |         18.4 |       . |
+|     x2 |  float |         0 |      -5 |       5 | -0.6931 |           - |        31.39 |       . |
+|     x3 |  float |         0 |      -5 |       5 | -0.8326 |           - |        50.21 |       * |
 
 Interpretation: ***: &gt;99%, **: &gt;75%, *: &gt;50%, .: &gt;10%</code></pre>
 </div>
@@ -4943,7 +4943,7 @@ Interpretation: ***: &gt;99%, **: &gt;75%, *: &gt;50%, .: &gt;10%</code></pre>
 </section>
 <section id="examples-22" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-22">Examples</h4>
-<div id="c123a584" class="cell" data-execution_count="35">
+<div id="c399785d" class="cell" data-execution_count="35">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb97"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(</span>
@@ -5011,7 +5011,7 @@ n=3, m=2</code></pre>
 </section>
 <section id="examples-23" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-23">Examples</h4>
-<div id="5e8dcd1d" class="cell" data-execution_count="36">
+<div id="1fa590c7" class="cell" data-execution_count="36">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb100"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -5059,7 +5059,7 @@ n=3, m=2</code></pre>
 </section>
 <section id="examples-24" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-24">Examples</h4>
-<div id="c6c96955" class="cell" data-execution_count="37">
+<div id="a1e3b692" class="cell" data-execution_count="37">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb103"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x,</span>
 <span id="cb103-3"><a href="#cb103-3" aria-hidden="true" tabindex="-1"></a>                bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>), (<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)])</span>
@@ -5114,7 +5114,7 @@ n=3, m=2</code></pre>
 </section>
 <section id="examples-25" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-25">Examples</h4>
-<div id="fcf8f1ed" class="cell" data-execution_count="38">
+<div id="763a246c" class="cell" data-execution_count="38">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb106"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Default behavior - all None</span></span>
 <span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x, bounds<span class="op">=</span>[(<span class="dv">0</span>, <span class="dv">10</span>), (<span class="dv">0</span>, <span class="dv">10</span>)])</span>
@@ -5123,7 +5123,7 @@ n=3, m=2</code></pre>
 <pre><code>spot.var_trans (should be [None, None]): [None, None]</code></pre>
 </div>
 </div>
-<div id="a1c4432a" class="cell" data-execution_count="39">
+<div id="307e90a2" class="cell" data-execution_count="39">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb108"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Normalize transformation names</span></span>
 <span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x, bounds<span class="op">=</span>[(<span class="dv">1</span>, <span class="dv">10</span>), (<span class="dv">1</span>, <span class="dv">100</span>)],</span>
@@ -5193,7 +5193,7 @@ n=3, m=2</code></pre>
 </section>
 <section id="examples-26" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-26">Examples</h4>
-<div id="9d83003a" class="cell" data-execution_count="40">
+<div id="72331dc6" class="cell" data-execution_count="40">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb111"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -5271,7 +5271,7 @@ counter = 0</code></pre>
 </section>
 <section id="examples-27" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-27">Examples</h4>
-<div id="db17d931" class="cell" data-execution_count="41">
+<div id="67c8fd67" class="cell" data-execution_count="41">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb114"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Default surrogate (GaussianProcessRegressor)</span></span>
@@ -5285,7 +5285,7 @@ counter = 0</code></pre>
 <pre><code>GaussianProcessRegressor</code></pre>
 </div>
 </div>
-<div id="e3ea6a35" class="cell" data-execution_count="42">
+<div id="7cdf57f2" class="cell" data-execution_count="42">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb116"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb116-3"><a href="#cb116-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestRegressor</span>
@@ -5302,7 +5302,7 @@ counter = 0</code></pre>
 <pre><code>RandomForestRegressor</code></pre>
 </div>
 </div>
-<div id="0da4a62d" class="cell" data-execution_count="43">
+<div id="9e7a6c64" class="cell" data-execution_count="43">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb118"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestRegressor</span>
@@ -5377,7 +5377,7 @@ counter = 0</code></pre>
 </section>
 <section id="examples-28" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-28">Examples</h4>
-<div id="3c80532f" class="cell" data-execution_count="44">
+<div id="a1c525d9" class="cell" data-execution_count="44">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb121"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb121-3"><a href="#cb121-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -5448,7 +5448,7 @@ counter = 0</code></pre>
 </section>
 <section id="examples-29" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-29">Examples</h4>
-<div id="b5778f26" class="cell" data-execution_count="45">
+<div id="1b3aaea2" class="cell" data-execution_count="45">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb124"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb124-3"><a href="#cb124-3" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere, bounds<span class="op">=</span>[(<span class="dv">1</span>, <span class="dv">10</span>)])</span>
@@ -5522,7 +5522,7 @@ counter = 0</code></pre>
 </section>
 <section id="examples-30" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-30">Examples</h4>
-<div id="ece44678" class="cell" data-execution_count="46">
+<div id="b8078cac" class="cell" data-execution_count="46">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb129"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb129-2"><a href="#cb129-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb129-3"><a href="#cb129-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -5593,7 +5593,7 @@ counter = 0</code></pre>
 </section>
 <section id="examples-31" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-31">Examples</h4>
-<div id="366cfc2c" class="cell" data-execution_count="47">
+<div id="ae579666" class="cell" data-execution_count="47">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb132"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb132-2"><a href="#cb132-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb132-3"><a href="#cb132-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -5618,7 +5618,7 @@ counter = 0</code></pre>
 <pre><code>Single-objective (default): [1. 3.]</code></pre>
 </div>
 </div>
-<div id="5fad2d1a" class="cell" data-execution_count="48">
+<div id="33a39e13" class="cell" data-execution_count="48">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb134"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb134-2"><a href="#cb134-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb134-3"><a href="#cb134-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Example 2: Custom conversion function (sum of objectives)</span></span>
@@ -5684,7 +5684,7 @@ counter = 0</code></pre>
 </section>
 <section id="examples-32" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-32">Examples</h4>
-<div id="5bed2ce6" class="cell" data-execution_count="49">
+<div id="432f837c" class="cell" data-execution_count="49">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb137"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb137-2"><a href="#cb137-2" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x, bounds<span class="op">=</span>[(<span class="fl">0.5</span>, <span class="fl">10.5</span>)], var_type<span class="op">=</span>[<span class="st">'int'</span>])</span>
 <span id="cb137-3"><a href="#cb137-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(spot.bounds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -5692,7 +5692,7 @@ counter = 0</code></pre>
 <pre><code>[(1, 10)]</code></pre>
 </div>
 </div>
-<div id="09455466" class="cell" data-execution_count="50">
+<div id="f6d17855" class="cell" data-execution_count="50">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb139"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb139-1"><a href="#cb139-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb139-2"><a href="#cb139-2" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x, bounds<span class="op">=</span>[(<span class="dv">0</span>, <span class="dv">10</span>)], var_type<span class="op">=</span>[<span class="st">'float'</span>])</span>
 <span id="cb139-3"><a href="#cb139-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(spot.bounds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -5759,7 +5759,7 @@ counter = 0</code></pre>
 </section>
 <section id="examples-33" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-33">Examples</h4>
-<div id="ae5591b1" class="cell" data-execution_count="51">
+<div id="3a8c659c" class="cell" data-execution_count="51">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb142"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb142-2"><a href="#cb142-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb142-3"><a href="#cb142-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -5821,7 +5821,7 @@ Best value: 0.002221724893276279</code></pre>
 </section>
 <section id="examples-34" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-34">Examples</h4>
-<div id="ff8e0ea6" class="cell" data-execution_count="52">
+<div id="5665c68b" class="cell" data-execution_count="52">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb145"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb145-2"><a href="#cb145-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb145-3"><a href="#cb145-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sphere(X):</span>
@@ -5945,7 +5945,7 @@ Best value: 0.002221724893276279</code></pre>
 </section>
 <section id="examples-35" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-35">Examples</h4>
-<div id="1ca5652f" class="cell" data-execution_count="53">
+<div id="695cc4f4" class="cell" data-execution_count="53">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb148"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb148-1"><a href="#cb148-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb148-2"><a href="#cb148-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb148-3"><a href="#cb148-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
@@ -6063,7 +6063,7 @@ Optimization terminated: maximum evaluations (10) reached</code></pre>
 </section>
 <section id="examples-36" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-36">Examples</h4>
-<div id="9140910f" class="cell" data-execution_count="54">
+<div id="d3e9e353" class="cell" data-execution_count="54">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb151"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
 <span id="cb151-2"><a href="#cb151-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb151-3"><a href="#cb151-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -6137,7 +6137,7 @@ Optimization finished (Steady State)</code></pre>
 </section>
 <section id="examples-37" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-37">Examples</h4>
-<div id="58d3043b" class="cell" data-execution_count="55">
+<div id="80b48f04" class="cell" data-execution_count="55">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb154"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb154-1"><a href="#cb154-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb154-2"><a href="#cb154-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb154-3"><a href="#cb154-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -6268,7 +6268,7 @@ Optimization finished (Steady State)</code></pre>
 </section>
 <section id="examples-38" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-38">Examples</h4>
-<div id="78789ccc" class="cell" data-execution_count="56">
+<div id="9ad375c4" class="cell" data-execution_count="56">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb156"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb156-1"><a href="#cb156-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb156-2"><a href="#cb156-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb156-3"><a href="#cb156-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -6394,7 +6394,7 @@ Generating 1 surrogate plots...
 </section>
 <section id="examples-39" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-39">Examples</h4>
-<div id="41e72b1e" class="cell" data-execution_count="57">
+<div id="0fcef37b" class="cell" data-execution_count="57">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb159"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb159-1"><a href="#cb159-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb159-2"><a href="#cb159-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb159-3"><a href="#cb159-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> objective(X):</span>
@@ -6506,7 +6506,7 @@ Generating 1 surrogate plots...
 </section>
 <section id="examples-40" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-40">Examples</h4>
-<div id="52b5f7e5" class="cell" data-execution_count="58">
+<div id="bdcb2b39" class="cell" data-execution_count="58">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb161"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb161-1"><a href="#cb161-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb161-2"><a href="#cb161-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb161-3"><a href="#cb161-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -6665,7 +6665,7 @@ Generating 1 surrogate plots...
 </section>
 <section id="examples-41" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-41">Examples</h4>
-<div id="830e43f5" class="cell" data-execution_count="59">
+<div id="f1fcf0e8" class="cell" data-execution_count="59">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb163"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb163-2"><a href="#cb163-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb163-3"><a href="#cb163-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -6742,7 +6742,7 @@ Generating 1 surrogate plots...
 </section>
 <section id="examples-42" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-42">Examples</h4>
-<div id="9bc71668" class="cell" data-execution_count="60">
+<div id="09370faf" class="cell" data-execution_count="60">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb165"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb165-1"><a href="#cb165-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb165-2"><a href="#cb165-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb165-3"><a href="#cb165-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -6762,9 +6762,9 @@ Generating 1 surrogate plots...
 <pre><code>
 Best Solution Found:
 --------------------------------------------------
-  x1: -0.0215
-  x2: 0.0578
-  Objective Value: 0.0038
+  x1: -0.0782
+  x2: -0.0331
+  Objective Value: 0.0072
   Total Evaluations: 10</code></pre>
 </div>
 </div>
@@ -6819,7 +6819,7 @@ Best Solution Found:
 </section>
 <section id="examples-43" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-43">Examples</h4>
-<div id="ff223982" class="cell" data-execution_count="61">
+<div id="36039f3e" class="cell" data-execution_count="61">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb169"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb169-1"><a href="#cb169-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb169-2"><a href="#cb169-2" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x, bounds<span class="op">=</span>[(<span class="st">'red'</span>, <span class="st">'green'</span>, <span class="st">'blue'</span>), (<span class="dv">0</span>, <span class="dv">10</span>)])</span>
 <span id="cb169-3"><a href="#cb169-3" aria-hidden="true" tabindex="-1"></a>spot.process_factor_bounds()</span>
@@ -6912,7 +6912,7 @@ Best Solution Found:
 </section>
 <section id="examples-44" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-44">Examples</h4>
-<div id="4da75d54" class="cell" data-execution_count="62">
+<div id="3f50977f" class="cell" data-execution_count="62">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb173"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb173-2"><a href="#cb173-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb173-3"><a href="#cb173-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -6987,7 +6987,7 @@ Clean y: [1.]</code></pre>
 </section>
 <section id="examples-45" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-45">Examples</h4>
-<div id="dae48f08" class="cell" data-execution_count="63">
+<div id="51b70802" class="cell" data-execution_count="63">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb176"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb176-1"><a href="#cb176-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb176-2"><a href="#cb176-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb176-3"><a href="#cb176-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -7062,7 +7062,7 @@ Clean y: [1.]</code></pre>
 </section>
 <section id="examples-46" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-46">Examples</h4>
-<div id="86baa31c" class="cell" data-execution_count="64">
+<div id="a1ceb8f3" class="cell" data-execution_count="64">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb179"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb179-2"><a href="#cb179-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb179-3"><a href="#cb179-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -7174,7 +7174,7 @@ Clean y: [1.]</code></pre>
 </section>
 <section id="examples-47" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-47">Examples</h4>
-<div id="b243018a" class="cell" data-execution_count="65">
+<div id="054165b6" class="cell" data-execution_count="65">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb184"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb184-1"><a href="#cb184-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb184-2"><a href="#cb184-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb184-3"><a href="#cb184-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sphere(X):</span>
@@ -7200,7 +7200,7 @@ Is new: [ True False  True]</code></pre>
 <p>Compute and print Spearman correlation between parameters and objective values. This method analyzes the sensitivity of the objective function to each hyperparameter by computing Spearman rank correlations. For categorical (factor) variables, correlation is not computed as they require visual inspection instead. The method automatically handles different parameter types: * Integer/float parameters: Direct correlation with objective values * Log-transformed parameters (log10, log, ln): Correlation in log-space * Factor (categorical) parameters: Skipped with informative message Significance levels: * <strong><em>: p &lt; 0.001 (highly significant) </em> </strong>: p &lt; 0.01 (significant) * *: p &lt; 0.05 (marginally significant)</p>
 <section id="examples-48" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-48">Examples</h4>
-<div id="5f7576ab" class="cell" data-execution_count="66">
+<div id="249251f9" class="cell" data-execution_count="66">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb187"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb187-1"><a href="#cb187-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb187-2"><a href="#cb187-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb187-3"><a href="#cb187-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -7258,7 +7258,7 @@ Sensitivity Analysis (Spearman Correlation):
 </section>
 <section id="examples-49" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-49">Examples</h4>
-<div id="a4bba2f1" class="cell" data-execution_count="67">
+<div id="78994ee6" class="cell" data-execution_count="67">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb190"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb190-1"><a href="#cb190-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb190-2"><a href="#cb190-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb190-3"><a href="#cb190-3" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x, bounds<span class="op">=</span>[(<span class="dv">0</span>, <span class="dv">1</span>)], seed<span class="op">=</span><span class="dv">42</span>)</span>
@@ -7295,7 +7295,7 @@ Sensitivity Analysis (Spearman Correlation):
 </section>
 <section id="examples-50" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-50">Examples</h4>
-<div id="dacb1419" class="cell" data-execution_count="68">
+<div id="eef8606b" class="cell" data-execution_count="68">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb193"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb193-1"><a href="#cb193-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb193-2"><a href="#cb193-2" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> x: x, bounds<span class="op">=</span>[(<span class="dv">1</span>, <span class="dv">10</span>), (<span class="dv">5</span>, <span class="dv">5</span>), (<span class="dv">0</span>, <span class="dv">1</span>)])</span>
 <span id="cb193-3"><a href="#cb193-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Original lower bounds:"</span>, spot.all_lower)</span>
@@ -7350,7 +7350,7 @@ Is dimension reduction active? True</code></pre>
 </section>
 <section id="examples-51" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-51">Examples</h4>
-<div id="a146bc30" class="cell" data-execution_count="69">
+<div id="8e69a422" class="cell" data-execution_count="69">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb196"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb196-1"><a href="#cb196-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb196-2"><a href="#cb196-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb196-3"><a href="#cb196-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(</span>
@@ -7409,7 +7409,7 @@ y_mo after second call: [[1. 2.]
 </section>
 <section id="examples-52" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-52">Examples</h4>
-<div id="42c2240c" class="cell" data-execution_count="70">
+<div id="ffa8d331" class="cell" data-execution_count="70">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb199"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb199-1"><a href="#cb199-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb199-2"><a href="#cb199-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb199-3"><a href="#cb199-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sphere(X):</span>
@@ -7487,7 +7487,7 @@ y_mo after second call: [[1. 2.]
 </section>
 <section id="examples-53" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-53">Examples</h4>
-<div id="67a126d6" class="cell" data-execution_count="71">
+<div id="5b0c9ab7" class="cell" data-execution_count="71">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb202"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb202-1"><a href="#cb202-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb202-2"><a href="#cb202-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb202-3"><a href="#cb202-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sphere(X):</span>
@@ -7563,7 +7563,7 @@ y_mo after second call: [[1. 2.]
 </section>
 <section id="examples-54" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-54">Examples</h4>
-<div id="1b051f42" class="cell" data-execution_count="72">
+<div id="9ef9c415" class="cell" data-execution_count="72">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb205"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb205-1"><a href="#cb205-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb205-2"><a href="#cb205-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb205-3"><a href="#cb205-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sphere(X):</span>
@@ -7639,7 +7639,7 @@ True</code></pre>
 </section>
 <section id="examples-55" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-55">Examples</h4>
-<div id="83c22471" class="cell" data-execution_count="73">
+<div id="88c268eb" class="cell" data-execution_count="73">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb208"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb208-1"><a href="#cb208-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb208-2"><a href="#cb208-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb208-3"><a href="#cb208-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -7683,7 +7683,7 @@ True</code></pre>
 </section>
 <section id="examples-56" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-56">Examples</h4>
-<div id="2b4ab910" class="cell" data-execution_count="74">
+<div id="6b3a26a9" class="cell" data-execution_count="74">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb211"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb211-1"><a href="#cb211-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb211-2"><a href="#cb211-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb211-3"><a href="#cb211-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -7777,7 +7777,7 @@ True</code></pre>
 </section>
 <section id="examples-57" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-57">Examples</h4>
-<div id="6bc4bbdf" class="cell" data-execution_count="75">
+<div id="5ce450d7" class="cell" data-execution_count="75">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb214"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb214-1"><a href="#cb214-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb214-2"><a href="#cb214-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb214-3"><a href="#cb214-3" aria-hidden="true" tabindex="-1"></a>spot <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere, bounds<span class="op">=</span>[(<span class="dv">1</span>, <span class="dv">10</span>)])</span>
@@ -7841,7 +7841,7 @@ True</code></pre>
 </section>
 <section id="examples-58" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-58">Examples</h4>
-<div id="ccffb353" class="cell" data-execution_count="76">
+<div id="ae26ec0a" class="cell" data-execution_count="76">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb217"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb217-1"><a href="#cb217-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb217-2"><a href="#cb217-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb217-3"><a href="#cb217-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere, noisy_sphere</span>
@@ -7907,7 +7907,7 @@ True</code></pre>
 </section>
 <section id="examples-59" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-59">Examples</h4>
-<div id="5cee41d8" class="cell" data-execution_count="77">
+<div id="e5cef305" class="cell" data-execution_count="77">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb221"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb221-1"><a href="#cb221-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb221-2"><a href="#cb221-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb221-3"><a href="#cb221-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -7924,25 +7924,25 @@ True</code></pre>
 <span id="cb221-14"><a href="#cb221-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"opt.counter: </span><span class="sc">{</span>opt<span class="sc">.</span>counter<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>SpotOptim stats without noise:
-opt.X_: [[-3.24830854 -0.90496427]
- [ 1.380398    1.01509753]
- [ 4.94492971 -4.77170743]
- [-1.53416921 -1.99230732]
- [ 0.30194771  4.75241133]
- [ 0.94776585  0.56781444]
- [ 0.35869648  0.06588199]
- [ 0.18128427 -0.06737918]
- [ 0.08324264 -0.09259075]
- [ 0.02871709 -0.02257628]]
-opt.y_: [1.13704687e+01 2.93592162e+00 4.72215216e+01 6.32296362e+00
- 2.26765858e+01 1.22067334e+00 1.33003604e-01 3.74039421e-02
- 1.55023841e-02 1.33435951e-03]
-opt.min_y: 0.0013343595086731685
-opt.min_X: [ 0.02871709 -0.02257628]
+opt.X_: [[ 1.94836047 -4.07474331]
+ [-2.51707871  3.37476328]
+ [-4.08835169 -0.77634103]
+ [ 4.73283446 -2.51664467]
+ [ 0.84818863  1.91666825]
+ [ 0.84985285  1.92017973]
+ [ 0.63465486  1.41203862]
+ [ 0.44831307  0.8484287 ]
+ [ 0.24970618  0.31935734]
+ [ 0.04771883  0.06262294]]
+opt.y_: [2.03996416e+01 1.77247124e+01 1.73173249e+01 2.87332224e+01
+ 4.39304115e+00 4.40934005e+00 2.39663984e+00 9.20815869e-01
+ 1.64342287e-01 6.19871971e-03]
+opt.min_y: 0.006198719710447156
+opt.min_X: [0.04771883 0.06262294]
 opt.counter: 10</code></pre>
 </div>
 </div>
-<div id="bd88915a" class="cell" data-execution_count="78">
+<div id="0a0ee587" class="cell" data-execution_count="78">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb223"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb223-1"><a href="#cb223-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb223-2"><a href="#cb223-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb223-3"><a href="#cb223-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
@@ -7967,51 +7967,52 @@ opt.counter: 10</code></pre>
 <span id="cb223-22"><a href="#cb223-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"opt_noise.min_var_y: </span><span class="sc">{</span>opt_noise<span class="sc">.</span>min_var_y<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>SpotOptim stats with noise:
-opt_noise.X_: [[ 1.64560576 -4.92519025]
- [ 1.64560576 -4.92519025]
- [ 0.55868215  3.84179629]
- [ 0.55868215  3.84179629]
- [-3.47649422  1.63592053]
- [-3.47649422  1.63592053]
- [ 3.06324464 -2.43407772]
- [ 3.06324464 -2.43407772]
- [-1.77597509  0.69317023]
- [-1.77597509  0.69317023]
- [-1.7741509   0.69216625]
- [-1.7741509   0.69216625]
- [-1.69246913  0.64721111]
- [-1.69246913  0.64721111]
- [-1.72927558  0.66746828]
- [-1.72927558  0.66746828]
- [-1.66214992  0.63052378]
- [-1.66214992  0.63052378]
- [-1.67031773  0.63502054]
- [-1.67031773  0.63502054]]
-opt_noise.y_: [26.93431974 26.88148831 14.9708413  15.23968215 14.68301938 14.70908746
- 15.34478695 15.4379846   3.68268401  3.91050801  3.75344669  3.67665535
-  3.22441109  3.23848748  3.39103124  3.26148917  3.24535567  3.07639018
-  3.09609533  3.33584408]
-opt_noise.min_y: 3.07639018055072
-opt_noise.min_X: [-1.66214992  0.63052378]
+opt_noise.X_: [[ 4.76423638 -3.38023986]
+ [ 4.76423638 -3.38023986]
+ [-0.46584113 -1.95949915]
+ [-0.46584113 -1.95949915]
+ [ 2.9787678   4.44611952]
+ [ 2.9787678   4.44611952]
+ [-3.23525086  2.52393813]
+ [-3.23525086  2.52393813]
+ [-2.77317597 -0.76253876]
+ [-2.77317597 -0.76253876]
+ [-0.92003604 -1.86281975]
+ [-0.92003604 -1.86281975]
+ [-0.51446587 -2.22924562]
+ [-0.51446587 -2.22924562]
+ [-0.3280631  -1.06827034]
+ [-0.3280631  -1.06827034]
+ [-0.15721134 -0.45478085]
+ [-0.15721134 -0.45478085]
+ [-0.09954164 -0.33821585]
+ [-0.09954164 -0.33821585]]
+opt_noise.y_: [3.40927721e+01 3.40399407e+01 3.95596169e+00 4.22480254e+00
+ 2.85618077e+01 2.85878758e+01 1.68736967e+01 1.69668943e+01
+ 8.32008184e+00 8.54790584e+00 4.44330492e+00 4.36651358e+00
+ 5.17528827e+00 5.18936467e+00 1.20395023e+00 1.07440815e+00
+ 3.16594093e-01 1.47628606e-01 2.71814299e-02 2.66930182e-01]
+opt_noise.min_y: 0.027181429911123614
+opt_noise.min_X: [-0.09954164 -0.33821585]
 opt_noise.counter: 20
-opt_noise.mean_X: [[-3.47649422  1.63592053]
- [-1.77597509  0.69317023]
- [-1.7741509   0.69216625]
- [-1.72927558  0.66746828]
- [-1.69246913  0.64721111]
- [-1.67031773  0.63502054]
- [-1.66214992  0.63052378]
- [ 0.55868215  3.84179629]
- [ 1.64560576 -4.92519025]
- [ 3.06324464 -2.43407772]]
-opt_noise.mean_y: [14.69605342  3.79659601  3.71505102  3.32626021  3.23144929  3.21596971
-  3.16087292 15.10526172 26.90790403 15.39138577]
-opt_noise.var_y: [1.69886138e-04 1.29759436e-02 1.47422756e-03 4.19528726e-03
- 4.95362454e-05 1.43698661e-02 7.13733398e-03 1.80688502e-02
- 6.97789966e-04 2.17145039e-03]
-opt_noise.min_mean_X: [-1.66214992  0.63052378]
-opt_noise.min_mean_y: 3.160872924256856
-opt_noise.min_var_y: 0.007137333984116616</code></pre>
+opt_noise.mean_X: [[-3.23525086  2.52393813]
+ [-2.77317597 -0.76253876]
+ [-0.92003604 -1.86281975]
+ [-0.51446587 -2.22924562]
+ [-0.46584113 -1.95949915]
+ [-0.3280631  -1.06827034]
+ [-0.15721134 -0.45478085]
+ [-0.09954164 -0.33821585]
+ [ 2.9787678   4.44611952]
+ [ 4.76423638 -3.38023986]]
+opt_noise.mean_y: [16.92029549  8.43399384  4.40490925  5.18232647  4.09038211  1.13917919
+  0.23211135  0.14705581 28.57484177 34.0663564 ]
+opt_noise.var_y: [2.17145039e-03 1.29759436e-02 1.47422756e-03 4.95362454e-05
+ 1.80688502e-02 4.19528726e-03 7.13733398e-03 1.43698661e-02
+ 1.69886138e-04 6.97789966e-04]
+opt_noise.min_mean_X: [-0.09954164 -0.33821585]
+opt_noise.min_mean_y: 0.1470558061916945
+opt_noise.min_var_y: 0.014369866088655899</code></pre>
 </div>
 </div>
 </section>
@@ -8074,7 +8075,7 @@ opt_noise.min_var_y: 0.007137333984116616</code></pre>
 </section>
 <section id="examples-60" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-60">Examples</h4>
-<div id="7da34f5b" class="cell" data-execution_count="79">
+<div id="3b4529a6" class="cell" data-execution_count="79">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb226"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb226-1"><a href="#cb226-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb226-2"><a href="#cb226-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb226-3"><a href="#cb226-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -8141,7 +8142,7 @@ Updated storage:
 </section>
 <section id="examples-61" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-61">Examples</h4>
-<div id="909e8270" class="cell" data-execution_count="80">
+<div id="133f28ea" class="cell" data-execution_count="80">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb229"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb229-1"><a href="#cb229-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb229-2"><a href="#cb229-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb229-3"><a href="#cb229-3" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> SpotOptim(fun<span class="op">=</span><span class="kw">lambda</span> X: np.<span class="bu">sum</span>(X<span class="op">**</span><span class="dv">2</span>, axis<span class="op">=</span><span class="dv">1</span>),</span>
@@ -8224,7 +8225,7 @@ Updated storage:
 </section>
 <section id="examples-62" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-62">Examples</h4>
-<div id="514dcc2d" class="cell" data-execution_count="81">
+<div id="107a36ee" class="cell" data-execution_count="81">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb232"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb232-1"><a href="#cb232-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb232-2"><a href="#cb232-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb232-3"><a href="#cb232-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
