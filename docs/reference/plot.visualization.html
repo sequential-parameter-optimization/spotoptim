@@ -2165,7 +2165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
-<div id="07b49bb2" class="cell" data-execution_count="1">
+<div id="a3a80282" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2190,7 +2190,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="7c21b7d3" class="cell" data-execution_count="2">
+<div id="962edc2d" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2328,7 +2328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples-1" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
-<div id="51621f87" class="cell" data-execution_count="3">
+<div id="addfe39b" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.plot.visualization <span class="im">import</span> plot_important_hyperparameter_contour</span>
@@ -2342,19 +2342,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>plot_important_hyperparameter_contour(opt, max_imp<span class="op">=</span><span class="dv">3</span>, show<span class="op">=</span><span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Plotting surrogate contours for top 3 most important parameters:
-  acceleration: importance = 54.34% (type: float)
-  velocity: importance = 17.49% (type: float)
-  pressure: importance = 16.97% (type: float)
+  velocity: importance = 40.79% (type: float)
+  pressure: importance = 33.20% (type: float)
+  acceleration: importance = 14.94% (type: float)
 
 Generating 3 surrogate plots...
-  Plotting acceleration vs velocity
-  Plotting acceleration vs pressure
-  Plotting velocity vs pressure</code></pre>
+  Plotting velocity vs pressure
+  Plotting velocity vs acceleration
+  Plotting pressure vs acceleration</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="plot.visualization_files/figure-html/cell-4-output-2.png" width="1126" height="950" class="figure-img"></p>
+<p><img src="plot.visualization_files/figure-html/cell-4-output-2.png" width="1125" height="950" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -2464,7 +2464,7 @@ Generating 3 surrogate plots...
 </section>
 <section id="examples-2" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
-<div id="68b4b644" class="cell" data-execution_count="4">
+<div id="ed5cf44d" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.plot.visualization <span class="im">import</span> plot_progress</span>
@@ -2638,7 +2638,7 @@ Generating 3 surrogate plots...
 </section>
 <section id="examples-3" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
-<div id="b09dc262" class="cell" data-execution_count="5">
+<div id="9d430def" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.plot.visualization <span class="im">import</span> plot_surrogate</span>
@@ -2654,7 +2654,7 @@ Generating 3 surrogate plots...
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="plot.visualization_files/figure-html/cell-6-output-1.png" width="1125" height="950" class="figure-img"></p>
+<p><img src="plot.visualization_files/figure-html/cell-6-output-1.png" width="1126" height="950" class="figure-img"></p>
 </figure>
 </div>
 </div>
