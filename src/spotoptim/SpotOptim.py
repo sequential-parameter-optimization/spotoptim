@@ -46,6 +46,7 @@ from spotoptim.reporting import results as _results
 from spotoptim.reporting import analysis as _analysis
 from spotoptim.utils import variables as _vars
 from spotoptim.utils import transform as _trans
+from spotoptim.utils import dimreduction as _dimred
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 
@@ -1234,60 +1235,7 @@ class SpotOptim(BaseEstimator):
             print("Is dimension reduction active?", spot.red_dim)
             ```
         """
-        # Backup original values
-        self.all_lower = self.lower.copy()
-        self.all_upper = self.upper.copy()
-        self.all_var_type = self.var_type.copy()
-        self.all_var_name = self.var_name.copy()
-        self.all_var_trans = self.var_trans.copy()
-
-        # Identify fixed dimensions (lower == upper)
-        self.ident = (self.upper - self.lower) == 0
-
-        # Check if any dimension is fixed
-        self.red_dim = self.ident.any()
-
-        if self.red_dim:
-            # Reduce bounds to only varying dimensions
-            self.lower = self.lower[~self.ident]
-            self.upper = self.upper[~self.ident]
-
-            # Update dimension count
-            self.n_dim = self.lower.size
-
-            # Reduce variable types and names
-            self.var_type = [
-                vtype
-                for vtype, fixed in zip(self.all_var_type, self.ident)
-                if not fixed
-            ]
-            self.var_name = [
-                vname
-                for vname, fixed in zip(self.all_var_name, self.ident)
-                if not fixed
-            ]
-
-            # Reduce transformations
-            self.var_trans = [
-                vtrans
-                for vtrans, fixed in zip(self.all_var_trans, self.ident)
-                if not fixed
-            ]
-
-            # Update bounds list for reduced dimensions
-            # Convert numpy types to Python native types (int or float based on var_type)
-            self.bounds = []
-            for i in range(self.n_dim):
-                # Check if var_type has this index (handle mismatched lengths)
-                if i < len(self.var_type) and (
-                    self.var_type[i] == "int" or self.var_type[i] == "factor"
-                ):
-                    self.bounds.append((int(self.lower[i]), int(self.upper[i])))
-                else:
-                    self.bounds.append((float(self.lower[i]), float(self.upper[i])))
-
-            # Recreate LHS sampler with reduced dimensions
-            self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
+        _dimred.setup_dimension_reduction(self)
 
     def to_red_dim(self, X_full: np.ndarray) -> np.ndarray:
         """Reduce full-dimensional points to optimization space.
@@ -1320,16 +1268,7 @@ class SpotOptim(BaseEstimator):
             print(np.array_equal(X_red, np.array([[1.0, 3.0], [4.0, 5.0]])))
             ```
         """
-        if not self.red_dim:
-            # No reduction occurred, return as-is
-            return X_full
-
-        # Handle 1D array
-        if X_full.ndim == 1:
-            return X_full[~self.ident]
-
-        # Select only non-fixed dimensions (2D)
-        return X_full[:, ~self.ident]
+        return _dimred.to_red_dim(self, X_full)
 
     def to_all_dim(self, X_red: np.ndarray) -> np.ndarray:
         """Expand reduced-dimensional points to full-dimensional representation.
@@ -1362,31 +1301,7 @@ class SpotOptim(BaseEstimator):
             print(X_full[:, 1])
             ```
         """
-        if not self.red_dim:
-            # No reduction occurred, return as-is
-            return X_red
-
-        # Number of samples and full dimensions
-        n_samples = X_red.shape[0]
-        n_full_dims = len(self.ident)
-
-        # Initialize full-dimensional array
-        X_full = np.zeros((n_samples, n_full_dims))
-
-        # Track index in reduced array
-        red_idx = 0
-
-        # Fill in values dimension by dimension
-        for i in range(n_full_dims):
-            if self.ident[i]:
-                # Fixed dimension: use stored value
-                X_full[:, i] = self.all_lower[i]
-            else:
-                # Varying dimension: use value from reduced array
-                X_full[:, i] = X_red[:, red_idx]
-                red_idx += 1
-
-        return X_full
+        return _dimred.to_all_dim(self, X_red)
 
     # ====================
     # TASK_TRANSFORM:
