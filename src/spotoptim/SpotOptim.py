@@ -45,6 +45,7 @@ from spotoptim.utils import variables as _vars
 from spotoptim.utils import transform as _trans
 from spotoptim.utils import dimreduction as _dimred
 from spotoptim.optimizer import acquisition as _acq
+from spotoptim.core import storage as _storage
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 
@@ -4763,10 +4764,7 @@ class SpotOptim(BaseEstimator):
             print(f"counter = {opt.counter}")
             ```
         """
-        # Initialize storage (convert to original scale for user-facing storage)
-        self.X_ = self.inverse_transform_X(X0.copy())
-        self.y_ = y0.copy()
-        self.n_iter_ = 0
+        _storage.init_storage(self, X0, y0)
 
     def update_storage(self, X_new: np.ndarray, y_new: np.ndarray) -> None:
         """Update storage (`X_`, `y_`) with new evaluation points.
@@ -4802,9 +4800,7 @@ class SpotOptim(BaseEstimator):
             print(opt.y_)
             ```
         """
-        # Update storage (convert to original scale for user-facing storage)
-        self.X_ = np.vstack([self.X_, self.inverse_transform_X(X_new)])
-        self.y_ = np.append(self.y_, y_new)
+        _storage.update_storage(self, X_new, y_new)
 
     def update_stats(self) -> None:
         """Update optimization statistics.
@@ -4871,26 +4867,7 @@ class SpotOptim(BaseEstimator):
             print(f"opt_noise.min_var_y: {opt_noise.min_var_y}")
             ```
         """
-        if self.y_ is None or len(self.y_) == 0:
-            return
-
-        # Basic stats
-        self.min_y = np.min(self.y_)
-        self.min_X = self.X_[np.argmin(self.y_)]
-        self.counter = len(self.y_)
-
-        # Aggregated stats for noisy functions
-        if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
-            self.mean_X, self.mean_y, self.var_y = self.aggregate_mean_var(
-                self.X_, self.y_
-            )
-            # X value of the best mean y value so far
-            best_mean_idx = np.argmin(self.mean_y)
-            self.min_mean_X = self.mean_X[best_mean_idx]
-            # Best mean y value so far
-            self.min_mean_y = self.mean_y[best_mean_idx]
-            # Variance of the best mean y value so far
-            self.min_var_y = self.var_y[best_mean_idx]
+        _storage.update_stats(self)
 
     def update_success_rate(self, y_new: np.ndarray) -> None:
         """Update the rolling success rate of the optimization process.
@@ -4917,37 +4894,7 @@ class SpotOptim(BaseEstimator):
             print(opt.success_rate)
             ```
         """
-        # Initialize or update the rolling history of successes (1 for success, 0 for failure)
-        if not hasattr(self, "_success_history") or self._success_history is None:
-            self._success_history = []
-
-        # Get the best y value so far (before adding new evaluations)
-        # Since this is called BEFORE updating self.y_, we can safely use min(self.y_)
-        if self.y_ is not None and len(self.y_) > 0:
-            best_y_before = min(self.y_)
-        else:
-            # This is the initial design, no previous best
-            best_y_before = float("inf")
-
-        successes = []
-        current_best = best_y_before
-
-        for val in y_new:
-            if val < current_best:
-                successes.append(1)
-                current_best = val  # Update for next comparison within this batch
-            else:
-                successes.append(0)
-
-        # Add new successes to the history
-        self._success_history.extend(successes)
-        # Keep only the last window_size successes
-        self._success_history = self._success_history[-self.window_size :]
-
-        # Calculate the rolling success rate
-        window_size = len(self._success_history)
-        num_successes = sum(self._success_history)
-        self.success_rate = num_successes / window_size if window_size > 0 else 0.0
+        _storage.update_success_rate(self, y_new)
 
     def get_success_rate(self) -> float:
         """Get the current success rate of the optimization process.
@@ -4963,7 +4910,7 @@ class SpotOptim(BaseEstimator):
             print(opt.get_success_rate())
             ```
         """
-        return float(getattr(self, "success_rate", 0.0) or 0.0)
+        return _storage.get_success_rate(self)
 
     def aggregate_mean_var(
         self, X: np.ndarray, y: np.ndarray
@@ -4997,36 +4944,7 @@ class SpotOptim(BaseEstimator):
             print(y_var)
             ```
         """
-        # Input validation
-        X = np.asarray(X)
-        y = np.asarray(y)
-
-        if X.ndim != 2 or y.ndim != 1 or X.shape[0] != y.shape[0]:
-            raise ValueError("Invalid input shapes for aggregate_mean_var")
-
-        if X.shape[0] == 0:
-            return np.empty((0, X.shape[1])), np.array([]), np.array([])
-
-        # Find unique rows and group indices
-        _, unique_idx, inverse_idx = np.unique(
-            X, axis=0, return_index=True, return_inverse=True
-        )
-
-        X_agg = X[unique_idx]
-
-        # Calculate mean and variance for each group
-        n_groups = len(unique_idx)
-        y_mean = np.zeros(n_groups)
-        y_var = np.zeros(n_groups)
-
-        for i in range(n_groups):
-            group_mask = inverse_idx == i
-            group_y = y[group_mask]
-            y_mean[i] = np.mean(group_y)
-            # Use population variance (ddof=0) for consistency with Spot
-            y_var[i] = np.var(group_y, ddof=0)
-
-        return X_agg, y_mean, y_var
+        return _storage.aggregate_mean_var(self, X, y)
 
     # ====================
     # TASK_RESULTS:
