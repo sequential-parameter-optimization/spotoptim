@@ -4,10 +4,15 @@
 
 """Serialization utilities for SpotOptim (save/load experiments and results)."""
 
+from __future__ import annotations
+
 import os
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import dill
+
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
 
 def get_result_filename(prefix: str) -> str:
@@ -25,7 +30,7 @@ def get_experiment_filename(prefix: str) -> str:
 
 
 def get_pickle_safe_optimizer(
-    optimizer, unpickleables: str = "file_io", verbosity: int = 0
+    optimizer: SpotOptimProtocol, unpickleables: str = "file_io", verbosity: int = 0
 ):
     """Create a pickle-safe copy of the optimizer.
 
@@ -71,7 +76,7 @@ def get_pickle_safe_optimizer(
     return picklable_instance
 
 
-def reinitialize_components(optimizer) -> None:
+def reinitialize_components(optimizer: SpotOptimProtocol) -> None:
     """Reinitialize components that were excluded during pickling.
 
     Recreates the surrogate model and LHS sampler.

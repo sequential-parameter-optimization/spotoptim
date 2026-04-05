@@ -4,12 +4,17 @@
 
 """Data management utilities for optimization storage, stats, and aggregation."""
 
-from typing import Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Tuple
 
 import numpy as np
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
-def init_storage(optimizer, X0: np.ndarray, y0: np.ndarray) -> None:
+
+def init_storage(optimizer: SpotOptimProtocol, X0: np.ndarray, y0: np.ndarray) -> None:
     """Initialize storage for optimization.
 
     Sets up the initial data structures needed for optimization tracking.
@@ -24,7 +29,9 @@ def init_storage(optimizer, X0: np.ndarray, y0: np.ndarray) -> None:
     optimizer.n_iter_ = 0
 
 
-def update_storage(optimizer, X_new: np.ndarray, y_new: np.ndarray) -> None:
+def update_storage(
+    optimizer: SpotOptimProtocol, X_new: np.ndarray, y_new: np.ndarray
+) -> None:
     """Update storage (X_, y_) with new evaluation points.
 
     Appends new design points and their function values to the storage arrays.
@@ -39,7 +46,7 @@ def update_storage(optimizer, X_new: np.ndarray, y_new: np.ndarray) -> None:
     optimizer.y_ = np.append(optimizer.y_, y_new)
 
 
-def update_stats(optimizer) -> None:
+def update_stats(optimizer: SpotOptimProtocol) -> None:
     """Update optimization statistics.
 
     Updates min_y, min_X, counter, and aggregated stats for noisy functions.
@@ -69,7 +76,7 @@ def update_stats(optimizer) -> None:
         optimizer.min_var_y = optimizer.var_y[best_mean_idx]
 
 
-def update_success_rate(optimizer, y_new: np.ndarray) -> None:
+def update_success_rate(optimizer: SpotOptimProtocol, y_new: np.ndarray) -> None:
     """Update the rolling success rate of the optimization process.
 
     A success is counted only if the new value is better (smaller) than the best
@@ -105,7 +112,7 @@ def update_success_rate(optimizer, y_new: np.ndarray) -> None:
     optimizer.success_rate = num_successes / window_size if window_size > 0 else 0.0
 
 
-def get_success_rate(optimizer) -> float:
+def get_success_rate(optimizer: SpotOptimProtocol) -> float:
     """Get the current success rate of the optimization process.
 
     Args:
@@ -118,7 +125,7 @@ def get_success_rate(optimizer) -> float:
 
 
 def aggregate_mean_var(
-    optimizer, X: np.ndarray, y: np.ndarray
+    optimizer: SpotOptimProtocol, X: np.ndarray, y: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Aggregate X and y values to compute mean and variance per group.
 

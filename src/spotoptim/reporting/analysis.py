@@ -4,12 +4,17 @@
 
 """Analysis utilities for variable importance and sensitivity."""
 
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
 
 import numpy as np
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
-def get_importance(optimizer) -> List[float]:
+
+def get_importance(optimizer: SpotOptimProtocol) -> List[float]:
     """Calculate variable importance scores.
 
     Importance is computed as the normalized sensitivity of each parameter
@@ -79,7 +84,7 @@ def get_importance(optimizer) -> List[float]:
     return importance
 
 
-def sensitivity_spearman(optimizer) -> None:
+def sensitivity_spearman(optimizer: SpotOptimProtocol) -> None:
     """Compute and print Spearman correlation between parameters and objective values.
 
     This method analyzes the sensitivity of the objective function to each

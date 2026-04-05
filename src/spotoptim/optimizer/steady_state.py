@@ -4,9 +4,11 @@
 
 """Steady-state parallel optimization loop."""
 
+from __future__ import annotations
+
 import threading
 import time
-from typing import Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import dill
 import numpy as np
@@ -18,8 +20,11 @@ from spotoptim.utils.parallel import (
     remote_eval_wrapper,
 )
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
-def update_storage_steady(optimizer, x, y):
+
+def update_storage_steady(optimizer: SpotOptimProtocol, x, y):
     """Helper to safely append single point (for steady state).
 
     Args:
@@ -45,7 +50,7 @@ def update_storage_steady(optimizer, x, y):
 
 
 def optimize_steady_state(
-    optimizer,
+    optimizer: SpotOptimProtocol,
     timeout_start: float,
     X0: Optional[np.ndarray],
     y0_known: Optional[float] = None,

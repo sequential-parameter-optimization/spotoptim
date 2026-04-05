@@ -4,10 +4,15 @@
 
 """Value and array transformation utilities (log, sqrt, pow, etc.)."""
 
+from __future__ import annotations
+
 import re
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
 
 def transform_value(x: float, trans: Optional[str]) -> float:
@@ -137,7 +142,7 @@ def inverse_transform_value(x: float, trans: Optional[str]) -> float:
     raise ValueError(f"Unknown transformation: {trans}")
 
 
-def transform_X(optimizer, X: np.ndarray) -> np.ndarray:
+def transform_X(optimizer: SpotOptimProtocol, X: np.ndarray) -> np.ndarray:
     """Transform parameter array from original (natural) to internal scale.
 
     Args:
@@ -163,7 +168,7 @@ def transform_X(optimizer, X: np.ndarray) -> np.ndarray:
     return X_transformed
 
 
-def inverse_transform_X(optimizer, X: np.ndarray) -> np.ndarray:
+def inverse_transform_X(optimizer: SpotOptimProtocol, X: np.ndarray) -> np.ndarray:
     """Transform parameter array from internal to original scale.
 
     Args:
@@ -191,7 +196,7 @@ def inverse_transform_X(optimizer, X: np.ndarray) -> np.ndarray:
     return X_original
 
 
-def transform_bounds(optimizer) -> None:
+def transform_bounds(optimizer: SpotOptimProtocol) -> None:
     """Transform bounds from original to internal scale.
 
     Updates optimizer.bounds (and optimizer.lower, optimizer.upper) from Natural Space

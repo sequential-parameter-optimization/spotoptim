@@ -4,15 +4,20 @@
 
 """Reporting utilities for displaying optimization results and search space design."""
 
-from typing import Callable, List, Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 import numpy as np
 from scipy.optimize import OptimizeResult
 from tabulate import tabulate
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
+
 
 def print_best(
-    optimizer,
+    optimizer: SpotOptimProtocol,
     result: Optional[OptimizeResult] = None,
     transformations: Optional[List[Optional[Callable]]] = None,
     show_name: bool = True,
@@ -104,7 +109,7 @@ def print_best(
 
 
 def get_results_table(
-    optimizer,
+    optimizer: SpotOptimProtocol,
     tablefmt: str = "github",
     precision: int = 4,
     show_importance: bool = False,
@@ -228,7 +233,7 @@ def get_results_table(
 
 
 def get_design_table(
-    optimizer,
+    optimizer: SpotOptimProtocol,
     tablefmt: str = "github",
     precision: int = 4,
 ) -> str:

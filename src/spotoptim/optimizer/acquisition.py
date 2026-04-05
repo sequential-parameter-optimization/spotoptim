@@ -4,7 +4,9 @@
 
 """Acquisition function optimization and infill point selection."""
 
-from typing import List, Optional, Tuple
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import numpy as np
 from scipy.optimize import OptimizeResult, differential_evolution, minimize
@@ -13,8 +15,11 @@ from scipy.spatial.distance import cdist
 from spotoptim.sampling.design import generate_uniform_design
 from spotoptim.tricands import tricands
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
-def optimize_acquisition_tricands(optimizer) -> np.ndarray:
+
+def optimize_acquisition_tricands(optimizer: SpotOptimProtocol) -> np.ndarray:
     """Optimize using geometric infill strategy via triangulation candidates.
 
     Args:
@@ -65,7 +70,7 @@ def optimize_acquisition_tricands(optimizer) -> np.ndarray:
     return X_cands[best_indices]
 
 
-def prepare_de_kwargs(optimizer, x0=None):
+def prepare_de_kwargs(optimizer: SpotOptimProtocol, x0=None):
     """Prepare kwargs for differential_evolution, extracting options if necessary.
 
     Args:
@@ -112,7 +117,7 @@ def prepare_de_kwargs(optimizer, x0=None):
     return filtered_kwargs
 
 
-def optimize_acquisition_de(optimizer) -> np.ndarray:
+def optimize_acquisition_de(optimizer: SpotOptimProtocol) -> np.ndarray:
     """Optimize using differential evolution.
 
     Args:
@@ -177,7 +182,7 @@ def optimize_acquisition_de(optimizer) -> np.ndarray:
     return result.x
 
 
-def optimize_acquisition_scipy(optimizer) -> np.ndarray:
+def optimize_acquisition_scipy(optimizer: SpotOptimProtocol) -> np.ndarray:
     """Optimize using scipy.optimize.minimize interface (default).
 
     Args:
@@ -244,7 +249,9 @@ def optimize_acquisition_scipy(optimizer) -> np.ndarray:
 
 
 def try_optimizer_candidates(
-    optimizer, n_needed: int = 1, current_batch: Optional[List[np.ndarray]] = None
+    optimizer: SpotOptimProtocol,
+    n_needed: int = 1,
+    current_batch: Optional[List[np.ndarray]] = None,
 ) -> List[np.ndarray]:
     """Try candidates proposed by the acquisition result optimizer.
 
@@ -311,7 +318,10 @@ def try_optimizer_candidates(
 
 
 def remove_nan(
-    optimizer, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
+    optimizer: SpotOptimProtocol,
+    X: np.ndarray,
+    y: np.ndarray,
+    stop_on_zero_return: bool = True,
 ) -> tuple:
     """Remove rows where y contains NaN or inf values.
 
@@ -345,7 +355,7 @@ def remove_nan(
     return X[finite_mask], y[finite_mask]
 
 
-def handle_acquisition_failure(optimizer) -> np.ndarray:
+def handle_acquisition_failure(optimizer: SpotOptimProtocol) -> np.ndarray:
     """Handle acquisition failure by proposing new design points.
 
     Args:
@@ -364,7 +374,7 @@ def handle_acquisition_failure(optimizer) -> np.ndarray:
 
 
 def try_fallback_strategy(
-    optimizer,
+    optimizer: SpotOptimProtocol,
     max_attempts: int = 10,
     current_batch: Optional[List[np.ndarray]] = None,
 ) -> Tuple[Optional[np.ndarray], np.ndarray]:
@@ -419,7 +429,7 @@ def try_fallback_strategy(
     return None, x_last
 
 
-def optimize_acquisition_func(optimizer) -> np.ndarray:
+def optimize_acquisition_func(optimizer: SpotOptimProtocol) -> np.ndarray:
     """Optimize the acquisition function to find the next point to evaluate.
 
     Args:
@@ -443,7 +453,7 @@ def optimize_acquisition_func(optimizer) -> np.ndarray:
 
 
 def select_new(
-    optimizer, A: np.ndarray, X: np.ndarray, tolerance: float = 0
+    optimizer: SpotOptimProtocol, A: np.ndarray, X: np.ndarray, tolerance: float = 0
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Select rows from A that are not in X.
 
@@ -465,7 +475,7 @@ def select_new(
     return A[~ind], ~ind
 
 
-def suggest_next_infill_point(optimizer) -> np.ndarray:
+def suggest_next_infill_point(optimizer: SpotOptimProtocol) -> np.ndarray:
     """Suggest next point to evaluate (dispatcher).
 
     Args:

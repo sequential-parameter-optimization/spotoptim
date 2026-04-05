@@ -8,13 +8,19 @@ All functions receive an optimizer object and read/write its attributes.
 This module is used exclusively by SpotOptim's private TensorBoard methods.
 """
 
+from __future__ import annotations
+
 import os
 import shutil
+from typing import TYPE_CHECKING
 
 import numpy as np
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
-def clean_tensorboard_logs(optimizer) -> None:
+
+def clean_tensorboard_logs(optimizer: SpotOptimProtocol) -> None:
     """Clean old TensorBoard log directories from the runs folder.
 
     Removes all subdirectories in the 'runs' directory if tensorboard_clean is True.
@@ -53,7 +59,7 @@ def clean_tensorboard_logs(optimizer) -> None:
             print("'runs' directory does not exist, nothing to clean")
 
 
-def init_tensorboard_writer(optimizer) -> None:
+def init_tensorboard_writer(optimizer: SpotOptimProtocol) -> None:
     """Initialize TensorBoard SummaryWriter if logging is enabled.
 
     Creates a unique log directory based on timestamp if tensorboard_log is True.
@@ -80,7 +86,7 @@ def init_tensorboard_writer(optimizer) -> None:
             print("TensorBoard logging disabled")
 
 
-def write_tensorboard_scalars(optimizer) -> None:
+def write_tensorboard_scalars(optimizer: SpotOptimProtocol) -> None:
     """Write scalar metrics to TensorBoard.
 
     Logs min_y, last y, best X coordinates, success rate.
@@ -123,7 +129,9 @@ def write_tensorboard_scalars(optimizer) -> None:
     optimizer.tb_writer.flush()
 
 
-def write_tensorboard_hparams(optimizer, X: np.ndarray, y: float) -> None:
+def write_tensorboard_hparams(
+    optimizer: SpotOptimProtocol, X: np.ndarray, y: float
+) -> None:
     """Write hyperparameters and metric to TensorBoard.
 
     Args:
@@ -141,7 +149,7 @@ def write_tensorboard_hparams(optimizer, X: np.ndarray, y: float) -> None:
     optimizer.tb_writer.flush()
 
 
-def close_tensorboard_writer(optimizer) -> None:
+def close_tensorboard_writer(optimizer: SpotOptimProtocol) -> None:
     """Close TensorBoard writer and cleanup.
 
     Args:
@@ -157,7 +165,7 @@ def close_tensorboard_writer(optimizer) -> None:
         del optimizer.tb_writer
 
 
-def init_tensorboard(optimizer) -> None:
+def init_tensorboard(optimizer: SpotOptimProtocol) -> None:
     """Log initial design to TensorBoard.
 
     Logs all initial design points (hyperparameters and function values)
@@ -195,7 +203,7 @@ def init_tensorboard(optimizer) -> None:
         write_tensorboard_scalars(optimizer)
 
 
-def close_and_del_tensorboard_writer(optimizer) -> None:
+def close_and_del_tensorboard_writer(optimizer: SpotOptimProtocol) -> None:
     """Close and delete TensorBoard writer to prepare for pickling.
 
     Args:

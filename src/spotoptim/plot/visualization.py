@@ -2,8 +2,11 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable, Optional, List, Tuple, Union
+
 import numpy as np
-from typing import Callable, Optional, List, Tuple, Union
 
 try:
     import matplotlib.pyplot as plt
@@ -12,9 +15,12 @@ except ImportError:
     plt = None
     Axes3D = None
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
+
 
 def plot_surrogate(
-    optimizer: object,
+    optimizer: SpotOptimProtocol,
     i: int = 0,
     j: int = 1,
     show: bool = True,
@@ -174,7 +180,7 @@ def plot_surrogate(
 
 
 def plot_progress(
-    optimizer: object,
+    optimizer: SpotOptimProtocol,
     show: bool = True,
     log_y: bool = False,
     figsize: Tuple[int, int] = (10, 6),
@@ -327,7 +333,7 @@ def plot_progress(
 
 
 def plot_important_hyperparameter_contour(
-    optimizer: object,
+    optimizer: SpotOptimProtocol,
     max_imp: int = 3,
     show: bool = True,
     alpha: float = 0.8,
@@ -438,7 +444,7 @@ def plot_important_hyperparameter_contour(
 
 
 def _plot_surrogate_with_factors(
-    optimizer: object,
+    optimizer: SpotOptimProtocol,
     i: int,
     j: int,
     show: bool = True,
@@ -774,7 +780,7 @@ def plot_design_points(
 
 
 def _generate_mesh_grid(
-    optimizer: object, i: int, j: int, num: int = 100
+    optimizer: SpotOptimProtocol, i: int, j: int, num: int = 100
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Generate a mesh grid for two dimensions, filling others with mean values.
 
@@ -877,7 +883,12 @@ def _generate_mesh_grid(
 
 
 def _generate_mesh_grid_with_factors(
-    optimizer: object, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
+    optimizer: SpotOptimProtocol,
+    i: int,
+    j: int,
+    num: int,
+    is_factor_i: bool,
+    is_factor_j: bool,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, list, list]:
     """Generate mesh grid with special handling for factor variables.
 

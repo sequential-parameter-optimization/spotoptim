@@ -4,12 +4,17 @@
 
 """Variable type detection, bounds processing, and factor mapping utilities."""
 
-from typing import List
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, List
 
 import numpy as np
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
-def detect_var_type(optimizer) -> list:
+
+def detect_var_type(optimizer: SpotOptimProtocol) -> list:
     """Auto-detect variable types based on factor mappings.
 
     Args:
@@ -24,7 +29,7 @@ def detect_var_type(optimizer) -> list:
     ]
 
 
-def modify_bounds_based_on_var_type(optimizer) -> None:
+def modify_bounds_based_on_var_type(optimizer: SpotOptimProtocol) -> None:
     """Modify bounds based on variable types.
 
     Adjusts bounds for each dimension according to its var_type:
@@ -73,7 +78,7 @@ def repair_non_numeric(X: np.ndarray, var_type: List[str]) -> np.ndarray:
     return X
 
 
-def handle_default_var_trans(optimizer) -> None:
+def handle_default_var_trans(optimizer: SpotOptimProtocol) -> None:
     """Handle default variable transformations.
 
     Sets var_trans to a list of None values if not specified, or normalizes
@@ -100,7 +105,7 @@ def handle_default_var_trans(optimizer) -> None:
         )
 
 
-def process_factor_bounds(optimizer) -> None:
+def process_factor_bounds(optimizer: SpotOptimProtocol) -> None:
     """Process bounds to handle factor variables.
 
     For dimensions with tuple bounds (factor variables), creates internal
@@ -162,7 +167,7 @@ def process_factor_bounds(optimizer) -> None:
     optimizer.bounds = processed_bounds
 
 
-def map_to_factor_values(optimizer, X: np.ndarray) -> np.ndarray:
+def map_to_factor_values(optimizer: SpotOptimProtocol, X: np.ndarray) -> np.ndarray:
     """Map internal integer factor values back to string labels.
 
     For factor variables, converts integer indices back to original string values.

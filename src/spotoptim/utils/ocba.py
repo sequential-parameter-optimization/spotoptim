@@ -9,9 +9,14 @@ References:
     An Optimal Computer Budget Allocation, pp. 49 and pp. 215
 """
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
 
 def get_ranks(x: np.ndarray) -> np.ndarray:
@@ -125,7 +130,7 @@ def get_ocba_X(
         return None
 
 
-def apply_ocba(optimizer) -> Optional[np.ndarray]:
+def apply_ocba(optimizer: SpotOptimProtocol) -> Optional[np.ndarray]:
     """Apply Optimal Computing Budget Allocation for noisy functions.
 
     Determines which existing design points should be re-evaluated based on

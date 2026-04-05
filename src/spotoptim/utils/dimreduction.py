@@ -4,11 +4,18 @@
 
 """Dimension reduction utilities for fixed-variable elimination."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 from scipy.stats.qmc import LatinHypercube
 
+if TYPE_CHECKING:
+    from spotoptim.core.protocol import SpotOptimProtocol
 
-def setup_dimension_reduction(optimizer) -> None:
+
+def setup_dimension_reduction(optimizer: SpotOptimProtocol) -> None:
     """Set up dimension reduction by identifying fixed dimensions.
 
     Identifies dimensions where lower and upper bounds are equal in Transformed Space.
@@ -76,7 +83,7 @@ def setup_dimension_reduction(optimizer) -> None:
         optimizer.lhs_sampler = LatinHypercube(d=optimizer.n_dim, rng=optimizer.seed)
 
 
-def to_red_dim(optimizer, X_full: np.ndarray) -> np.ndarray:
+def to_red_dim(optimizer: SpotOptimProtocol, X_full: np.ndarray) -> np.ndarray:
     """Reduce full-dimensional points to optimization space.
 
     Removes fixed dimensions from full-dimensional points.
@@ -99,7 +106,7 @@ def to_red_dim(optimizer, X_full: np.ndarray) -> np.ndarray:
     return X_full[:, ~optimizer.ident]
 
 
-def to_all_dim(optimizer, X_red: np.ndarray) -> np.ndarray:
+def to_all_dim(optimizer: SpotOptimProtocol, X_red: np.ndarray) -> np.ndarray:
     """Expand reduced-dimensional points to full-dimensional representation.
 
     Restores points from the reduced optimization space to the full-dimensional
