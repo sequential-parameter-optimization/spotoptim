@@ -164,7 +164,7 @@ The `_surrogate_lock` (a `threading.Lock`) is used in both configurations to ser
 concurrent surrogate reads and refits.
 
 ```{python}
-from spotoptim.SpotOptim import is_gil_disabled
+from spotoptim.utils.parallel import is_gil_disabled
 
 result = is_gil_disabled()
 print(f"GIL disabled: {result}")
