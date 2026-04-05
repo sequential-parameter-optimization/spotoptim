@@ -1,3 +1,14 @@
+## [0.11.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.2...v0.11.3) (2026-04-05)
+
+### Bug Fixes
+
+* ty ([738ba02](https://github.com/sequential-parameter-optimization/spotoptim/commit/738ba02f34a5b80ae650e1c731adb292c6c7f997))
+* warnings_type ([18151b3](https://github.com/sequential-parameter-optimization/spotoptim/commit/18151b3f497c6830c716cf1c98e8ba5bf2940c15))
+
+### Code Refactoring
+
+* add SpotOptimProtocol for type-safe extracted modules ([5a38c02](https://github.com/sequential-parameter-optimization/spotoptim/commit/5a38c02e9fa8c954b3fa8c8f423b4bd8b532b77b))
+
 ## [0.11.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.1...v0.11.2) (2026-04-05)
 
 ### Bug Fixes
