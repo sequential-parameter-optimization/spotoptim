@@ -25,7 +25,7 @@ class TestAcquisitionReturnSize:
         opt_default = SpotOptim(fun=lambda x: np.sum(x**2), bounds=[(-1, 1)])
         assert opt_default.acquisition_fun_return_size == 3
 
-    @patch("spotoptim.SpotOptim.differential_evolution")
+    @patch("spotoptim.optimizer.acquisition.differential_evolution")
     def test_optimize_acquisition_func_returns_single(self, mock_de):
         """Test default behavior returns 1D array."""
         mock_res = MagicMock(spec=OptimizeResult)
@@ -44,7 +44,7 @@ class TestAcquisitionReturnSize:
         assert res.shape == (2,)
         np.testing.assert_array_equal(res, mock_res.x)
 
-    @patch("spotoptim.SpotOptim.differential_evolution")
+    @patch("spotoptim.optimizer.acquisition.differential_evolution")
     def test_optimize_acquisition_func_returns_multiple(self, mock_de):
         """Test returns top N candidates when size > 1."""
         # Setup mock behavior to simulate callback callback
@@ -83,7 +83,7 @@ class TestAcquisitionReturnSize:
         assert candidates.shape == (3, 2)
         np.testing.assert_array_equal(candidates, expected_candidates)
 
-    @patch("spotoptim.SpotOptim.differential_evolution")
+    @patch("spotoptim.optimizer.acquisition.differential_evolution")
     def testsuggest_next_infill_point_uses_alternatives(self, mock_de):
         """Test suggest_next_infill_point tries 2nd candidate if 1st is duplicate."""
         # Setup: 1st candidate is duplicate, 2nd is new

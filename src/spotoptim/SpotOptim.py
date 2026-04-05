@@ -10,20 +10,17 @@ import torch
 from functools import partial
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Tuple, List, Any, Dict, Union
-from scipy.optimize import OptimizeResult, differential_evolution, minimize
+from scipy.optimize import OptimizeResult
 from scipy.stats.qmc import LatinHypercube
 from scipy.stats import norm
 from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
-from scipy.spatial.distance import cdist
 import warnings
 import matplotlib.pyplot as plt
 from numpy import append
 import time
 import os
-from spotoptim.tricands import tricands
-from spotoptim.sampling.design import generate_uniform_design
 from sklearn.cluster import KMeans
 from spotoptim.plot.visualization import (
     plot_surrogate,
@@ -47,6 +44,7 @@ from spotoptim.reporting import analysis as _analysis
 from spotoptim.utils import variables as _vars
 from spotoptim.utils import transform as _trans
 from spotoptim.utils import dimreduction as _dimred
+from spotoptim.optimizer import acquisition as _acq
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 
@@ -2743,97 +2741,11 @@ class SpotOptim(BaseEstimator):
             >>> x_next.shape[1] == 2
             True
         """
-        # Use X_ (all evaluated points) as basis for triangulation
-        # If no points yet (e.g. before initial design), fallback to LHS or random
-        if not hasattr(self, "X_") or self.X_ is None or len(self.X_) < self.n_dim + 1:
-            # Not enough points for valid triangulation (need n >= m + 1)
-            # Fallback to random search using existing logic logic in 'else' block or explicit call pass
-            # Will fall through to 'else' block which handles generic minimize/random x0
-            # BUT 'tricands' isn't a valid minimize method, so we should handle this fallback specifically.
-            # Actually, let's just use random sampling here for fallback.
-
-            # Fallback to random search using generate_uniform_design
-            # Return size defaults to 1 unless specified
-            n_design = max(1, self.acquisition_fun_return_size)
-            x0 = generate_uniform_design(self.bounds, n_design, seed=self.rng)
-
-            # If we requested ONLY 1 point, return expected shape (n_dim,) for flatten behavior
-            if self.acquisition_fun_return_size <= 1:
-                return x0.flatten()
-            return x0
-
-        # Generate candidates
-        # Default nmax to a reasonable multiple of desired return size, or just large enough
-        # tricands handles nmax internally (default 100*m).
-        # We pass nmax as max(100*m, acquisition_fun_return_size * 10) to ensure we have enough.
-        nmax = max(100 * self.n_dim, self.acquisition_fun_return_size * 50)
-
-        # Wrapper for tricands: Normalize -> Gen Candidates -> Denormalize
-        # This handles non-hypercube bounds correctly as tricands assumes [lower, upper]^m box.
-
-        # Normalize X_ to [0, 1] relative to bounds
-        X_norm = (self.X_ - self.lower) / (self.upper - self.lower)
-
-        # Generate candidates in [0, 1] space
-        X_cands_norm = tricands(
-            X_norm, nmax=nmax, lower=0.0, upper=1.0, fringe=self.tricands_fringe
-        )
-
-        # Denormalize candidates back to original space
-        X_cands = X_cands_norm * (self.upper - self.lower) + self.lower
-
-        # Evaluate acquisition function on all candidates in a single batched call.
-        # X_cands is (n_cands, n_dim); transposing to (n_dim, n_cands) matches the
-        # vectorised convention used by _acquisition_function and differential_evolution.
-        acq_values = self._acquisition_function(X_cands.T)
-
-        # Sort indices (smallest is best because of negation)
-        sorted_indices = np.argsort(acq_values)
-
-        # Select top n
-        top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
-        best_indices = sorted_indices[:top_n]
-        return X_cands[best_indices]
+        return _acq.optimize_acquisition_tricands(self)
 
     def _prepare_de_kwargs(self, x0=None):
         """Prepare kwargs for differential_evolution, extracting options if necessary."""
-        kwargs = (self.config.acquisition_optimizer_kwargs or {}).copy()
-
-        # Extract 'options' if present (compatibility with minimize structure)
-        if "options" in kwargs and isinstance(kwargs["options"], dict):
-            options = kwargs.pop("options")
-            kwargs.update(options)
-
-        # Define valid arguments for differential_evolution
-        valid_de_args = {
-            "strategy",
-            "maxiter",
-            "popsize",
-            "tol",
-            "mutation",
-            "recombination",
-            "seed",
-            "callback",
-            "disp",
-            "polish",
-            "init",
-            "atol",
-            "updating",
-            "workers",
-            "constraints",
-            "x0",
-        }
-
-        # Filter kwargs to only include valid DE arguments
-        # This prevents errors when passing shared kwargs that contain
-        # optimizer-specific options for the surrogate (e.g. 'gtol' for L-BFGS-B)
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_de_args}
-
-        # Set defaults if not provided
-        if "maxiter" not in filtered_kwargs:
-            filtered_kwargs["maxiter"] = 1000
-
-        return filtered_kwargs
+        return _acq.prepare_de_kwargs(self, x0)
 
     def _optimize_acquisition_de(self) -> np.ndarray:
         """Optimize using differential evolution.
@@ -2855,73 +2767,7 @@ class SpotOptim(BaseEstimator):
             >>> x_next.shape[0] >= 0
             True
         """
-        # Variables to capture population from callback
-        population = None
-        population_energies = None
-        # with probability .5 select best_x_ as x0 or None
-        # Determine which "best" to use
-        if (self.repeats_initial > 1 or self.repeats_surrogate > 1) and hasattr(
-            self, "min_mean_X"
-        ):
-            best_x = self.min_mean_X
-        else:
-            best_x = self.best_x_
-
-        if best_x is not None:
-            best_x = self.transform_X(best_x)
-            # Nudge x0 strictly inside DE bounds using nextafter to absorb FP rounding.
-            # Example: sqrt(10) ≈ 3.1622776601683795 is the exact lower bound; after
-            # scipy's _unscale_parameters, the value may compute to −1e-16 instead of
-            # 0.0, triggering "Some entries in x0 lay outside the specified bounds".
-            _lb = np.array([b[0] for b in self.bounds])
-            _ub = np.array([b[1] for b in self.bounds])
-            best_x = np.clip(best_x, np.nextafter(_lb, _ub), np.nextafter(_ub, _lb))
-            best_X = best_x if self.rng.rand() < self.de_x0_prob else None
-        else:
-            best_X = None
-
-        def callback(intermediate_result: OptimizeResult):
-            nonlocal population, population_energies
-            # Capture population if available (requires scipy >= 1.10.0)
-            if hasattr(intermediate_result, "population"):
-                population = intermediate_result.population
-                population_energies = intermediate_result.population_energies
-
-        result = differential_evolution(
-            func=self._acquisition_function,
-            bounds=self.bounds,
-            seed=self.rng,
-            callback=callback,
-            x0=best_X,
-            vectorized=True,  # Entire population evaluated in one batched call
-            **self._prepare_de_kwargs(best_X),
-        )
-
-        if self.acquisition_fun_return_size > 1:
-            if population is not None and population_energies is not None:
-                # Sort by energy (ascending, since DE minimizes)
-                sorted_indices = np.argsort(population_energies)
-
-                # Determine how many to take
-                top_n = min(self.acquisition_fun_return_size, len(sorted_indices))
-
-                # First candidate is always the polished result (best)
-                candidates = [result.x]
-
-                # Add remaining candidates from population (skipping the best unpolished one which corresponds to result.x)
-                if top_n > 1:
-                    # Take next (top_n - 1) indices
-                    # Start from 1 because 0 is the best unpolished
-                    next_indices = sorted_indices[1:top_n]
-                    candidates.extend(population[next_indices])
-
-                return np.array(candidates)
-            else:
-                # Fallback if population not available (e.g. very fast convergence or old scipy)
-                # Just return the best point as 2D array
-                return result.x.reshape(1, -1)
-
-        return result.x
+        return _acq.optimize_acquisition_de(self)
 
     def _optimize_acquisition_scipy(self) -> np.ndarray:
         """Optimize using scipy.optimize.minimize interface (default).
@@ -2962,71 +2808,7 @@ class SpotOptim(BaseEstimator):
             (2,)
 
         """
-        # Use scipy.optimize.minimize interface
-        # Generate random x0 within bounds
-        low = np.array([b[0] for b in self.bounds])
-        high = np.array([b[1] for b in self.bounds])
-        # Use persistent RNG
-        x0 = self.rng.uniform(low, high)
-
-        if isinstance(self.acquisition_optimizer, str):
-            kwargs = self.config.acquisition_optimizer_kwargs or {}
-
-            # Avoid duplicate method args if kwargs has it, but self.acquisition_optimizer is the primary source
-            # However, if user passes kwargs={'method': '...'}, it might conflict if acquisition_optimizer is also a string.
-            # Strategy: self.acquisition_optimizer takes precedence if it's a specific string like "L-BFGS-B"
-            # But wait, acquisition_optimizer default is "differential_evolution".
-            # If user sets acquisition_optimizer="Nelder-Mead", we use that.
-
-            run_kwargs = kwargs.copy()
-            if "method" not in run_kwargs:
-                run_kwargs["method"] = self.acquisition_optimizer
-
-            # Define valid arguments for minimize() (excluding fun, x0, bounds which we pass explicitly)
-            valid_minimize_args = {
-                "args",
-                "method",
-                "jac",
-                "hess",
-                "hessp",
-                "constraints",
-                "tol",
-                "callback",
-                "options",
-            }
-
-            # Move any argument that is NOT a valid minimize() argument into 'options'
-            if "options" not in run_kwargs:
-                run_kwargs["options"] = {}
-
-            keys_to_move = [k for k in run_kwargs if k not in valid_minimize_args]
-            for k in keys_to_move:
-                run_kwargs["options"][k] = run_kwargs.pop(k)
-
-            # It's a method name for minimize (e.g. "Nelder-Mead")
-            result = minimize(
-                fun=self._acquisition_function, x0=x0, bounds=self.bounds, **run_kwargs
-            )
-        elif callable(self.acquisition_optimizer):
-            # It's a custom callable compatible with minimize
-            # We pass kwargs if the callable supports it?
-            # Safest is to just call it as before, or assume it handles kwargs if documented.
-            # Let's pass kwargs if we can, but the standard protocol might not expect it.
-            # We'll assume the callable is configured or wraps kwargs itself.
-            result = self.acquisition_optimizer(
-                fun=self._acquisition_function, x0=x0, bounds=self.bounds
-            )
-        else:
-            raise ValueError(
-                f"Unknown acquisition optimizer type: {type(self.acquisition_optimizer)}"
-            )
-
-        # Minimize-based optimizers typically return a single point
-        # If acquisition_fun_return_size > 1, we map to 2D array but only 1 unique point
-        if self.acquisition_fun_return_size > 1:
-            return result.x.reshape(1, -1)
-
-        return result.x
+        return _acq.optimize_acquisition_scipy(self)
 
     def _try_optimizer_candidates(
         self, n_needed: int = 1, current_batch: Optional[List[np.ndarray]] = None
@@ -3040,67 +2822,9 @@ class SpotOptim(BaseEstimator):
         Returns:
             List[ndarray]: List of unique valid candidate points found.
         """
-        valid_candidates = []
-        if current_batch is None:
-            current_batch = []
-
-        # Phase 1: Try candidates from acquisition function optimizer
-        # These can be multiple if acquisition_fun_return_size > 1
-        x_next_candidates = self.optimize_acquisition_func()
-
-        # Ensure iterable of 1D arrays
-        if x_next_candidates.ndim == 1:
-            obs_candidates = [x_next_candidates]
-        else:
-            obs_candidates = [
-                x_next_candidates[i] for i in range(x_next_candidates.shape[0])
-            ]
-
-        # Combine existing points and previously found candidates for distance check
-        # We need to check against (X_ + current_batch + valid_candidates)
-        # _select_new checks against X passed to it.
-        # We should construct the reference set once or update it.
-
-        X_transformed = self.transform_X(self.X_)
-
-        # Helper to check if a point is valid
-        def is_valid(p, reference_set):
-            p_rounded = self.repair_non_numeric(p.reshape(1, -1), self.var_type)[0]
-            # Check distance
-            p_2d = p_rounded.reshape(1, -1)
-            # select_new returns subset of A that is distant from X
-            x_new, _ = self.select_new(
-                A=p_2d, X=reference_set, tolerance=self.tolerance_x
-            )
-            return p_rounded if x_new.shape[0] > 0 else None
-
-        for i, x_next in enumerate(obs_candidates):
-            if len(valid_candidates) >= n_needed:
-                break
-
-            # Build current reference set: X_ + current_batch + valid_candidates_so_far
-            # Note: This can be expensive if X_ is large, but n_infill is usually small.
-            ref_list = [X_transformed]
-            if current_batch:
-                ref_list.append(np.array(current_batch))
-            if valid_candidates:
-                ref_list.append(np.array(valid_candidates))
-
-            if len(ref_list) > 1:
-                reference_set = np.vstack(ref_list)
-            else:
-                reference_set = ref_list[0]
-
-            candidate = is_valid(x_next, reference_set)
-
-            if candidate is not None:
-                valid_candidates.append(candidate)
-            elif self.verbose:
-                print(
-                    f"Optimizer candidate {i + 1}/{len(obs_candidates)} was duplicate/invalid."
-                )
-
-        return valid_candidates
+        return _acq.try_optimizer_candidates(
+            self, n_needed=n_needed, current_batch=current_batch
+        )
 
     def remove_nan(
         self, X: np.ndarray, y: np.ndarray, stop_on_zero_return: bool = True
@@ -3132,24 +2856,7 @@ class SpotOptim(BaseEstimator):
             print("Clean y:", y_clean)
             ```
         """
-        # Find finite values
-        finite_mask = np.isfinite(y)
-
-        if not np.any(finite_mask):
-            msg = "All objective function values are NaN or inf."
-            if stop_on_zero_return:
-                raise ValueError(msg)
-            else:
-                if self.verbose:
-                    print(f"Warning: {msg} Returning empty arrays.")
-                return np.array([]).reshape(0, X.shape[1]), np.array([])
-
-        # Filter out non-finite values
-        n_removed = np.sum(~finite_mask)
-        if n_removed > 0 and self.verbose:
-            print(f"Warning: Removed {n_removed} sample(s) with NaN/inf values")
-
-        return X[finite_mask], y[finite_mask]
+        return _acq.remove_nan(self, X, y, stop_on_zero_return=stop_on_zero_return)
 
     def _handle_acquisition_failure(self) -> np.ndarray:
         """Handle acquisition failure by proposing new design points.
@@ -3177,16 +2884,7 @@ class SpotOptim(BaseEstimator):
             >>> print(x_fallback)
             [some new point within bounds]
         """
-        if self.acquisition_failure_strategy == "random":
-            # Default: random space-filling design (Latin Hypercube Sampling)
-            if self.verbose:
-                print(
-                    "Acquisition failure: Using random space-filling design as fallback."
-                )
-            x_new_unit = self.lhs_sampler.random(n=1)[0]
-            x_new = self.lower + x_new_unit * (self.upper - self.lower)
-
-        return self.repair_non_numeric(x_new.reshape(1, -1), self.var_type)[0]
+        return _acq.handle_acquisition_failure(self)
 
     def _try_fallback_strategy(
         self, max_attempts: int = 10, current_batch: Optional[List[np.ndarray]] = None
@@ -3203,46 +2901,9 @@ class SpotOptim(BaseEstimator):
                 - The first element is the unique valid candidate point if found, else None.
                 - The second element is the last attempted point.
         """
-        x_last = None
-        if current_batch is None:
-            current_batch = []
-
-        X_transformed = self.transform_X(self.X_)
-        # Build reference set once if possible or dynamically
-        # Since fallback is random, we check against X + current_batch
-
-        for attempt in range(max_attempts):
-            if self.verbose:
-                print(
-                    f"Fallback attempt {attempt + 1}/{max_attempts}: Using fallback strategy"
-                )
-            x_next = self._handle_acquisition_failure()
-
-            x_next_rounded = self.repair_non_numeric(
-                x_next.reshape(1, -1), self.var_type
-            )[0]
-            x_last = x_next_rounded
-
-            x_next_2d = x_next_rounded.reshape(1, -1)
-
-            # Reference set
-            ref_list = [X_transformed]
-            if len(current_batch) > 0:
-                ref_list.append(np.array(current_batch))
-
-            if len(ref_list) > 1:
-                reference_set = np.vstack(ref_list)
-            else:
-                reference_set = ref_list[0]
-
-            x_new, _ = self.select_new(
-                A=x_next_2d, X=reference_set, tolerance=self.tolerance_x
-            )
-
-            if x_new.shape[0] > 0:
-                return x_next_rounded, x_last
-
-        return None, x_last
+        return _acq.try_fallback_strategy(
+            self, max_attempts=max_attempts, current_batch=current_batch
+        )
 
     def get_shape(self, y: np.ndarray) -> Tuple[int, Optional[int]]:
         """Get the shape of the objective function output.
@@ -3307,18 +2968,7 @@ class SpotOptim(BaseEstimator):
             print("Next point to evaluate:", x_next)
             ```
         """
-        if self.acquisition_optimizer == "tricands":
-            return self._optimize_acquisition_tricands()
-        elif self.acquisition_optimizer == "differential_evolution":
-            return self._optimize_acquisition_de()
-        elif self.acquisition_optimizer == "de_tricands":
-            val = self.rng.rand()
-            if val < self.prob_de_tricands:
-                return self._optimize_acquisition_de()
-            else:
-                return self._optimize_acquisition_tricands()
-        else:
-            return self._optimize_acquisition_scipy()
+        return _acq.optimize_acquisition_func(self)
 
     # ====================
     # TASK_OPTIM_SEQ:
@@ -4955,22 +4605,7 @@ class SpotOptim(BaseEstimator):
             print("Is new:", is_new)
             ```
         """
-        if len(X) == 0:
-            return A, np.ones(len(A), dtype=bool)
-
-        # Calculate distances using the configured metric
-        # cdist supports 'euclidean', 'minkowski', 'chebyshev', etc.
-        # Note: 'chebyshev' is closest to the previous logic but checks absolute difference on all coords
-        # Previous logic: np.all(np.abs(diff) <= tolerance) -> Chebyshev <= tolerance
-        dists = cdist(A, X, metric=self.min_tol_metric)
-
-        # Check if min distance to any existing point is <= tolerance (duplicate)
-        # Duplicate if ANY existing point is within tolerance
-        # is_duplicate[i] is True if A[i] is close to at least one point in X
-        is_duplicate = np.any(dists <= tolerance, axis=1)
-
-        ind = is_duplicate
-        return A[~ind], ~ind
+        return _acq.select_new(self, A, X, tolerance=tolerance)
 
     def suggest_next_infill_point(self) -> np.ndarray:
         """Suggest next point to evaluate (dispatcher).
@@ -5015,65 +4650,7 @@ class SpotOptim(BaseEstimator):
             x_next.shape
             ```
         """
-        # 1. Optimizer candidates
-        candidates = []
-        opt_candidates = self._try_optimizer_candidates(
-            n_needed=self.n_infill_points, current_batch=candidates
-        )
-        candidates.extend(opt_candidates)
-
-        if len(candidates) >= self.n_infill_points:
-            return np.vstack(candidates)
-
-        # 2. Try fallback strategy to fill remaining slots
-        while len(candidates) < self.n_infill_points:
-            # Just try one attempt at a time but loop
-            # We pass current batch to avoid dups
-            cand, x_last = self._try_fallback_strategy(
-                max_attempts=10, current_batch=candidates
-            )
-            if cand is not None:
-                candidates.append(cand)
-            else:
-                # Fallback failed to find unique point even after retries
-                # Break and fill with last attempts or just return what we have?
-                # If we return partial batch, we might fail downstream if code expects n points?
-                # Actually code should handle any number of points returned by this method?
-                # Or duplicate valid points?
-                # Warn and use duplicate if absolutely necessary?
-                if self.verbose:
-                    print(
-                        "Warning: Could not fill all infill points with unique candidates."
-                    )
-                break
-
-        if len(candidates) > 0:
-            return np.vstack(candidates)
-
-        # 3. Return last attempt (duplicate) if absolutely nothing found
-        # This returns a single point (1, d).
-        # Should we return n copies?
-        # If n_infill_points > 1, we should probably output (n, d)
-
-        if self.verbose:
-            print(
-                "Warning: Could not find unique point after optimization candidates and fallback attempts. "
-                "Returning last candidate (duplicate)."
-            )
-
-        # Verify x_last is not None
-        if x_last is None:
-            # Should practically not happen
-            x_next = self._handle_acquisition_failure()
-            return x_next.reshape(1, -1)
-
-        # Return duplicated x_last to fill n_infill_points? OR just 1?
-        # Let's return 1 and let loop repeat it?
-        # But loop repeats based on x_next logic.
-        # If we return 1 point, it is treated as 1 point.
-        # If user asked for n_infill_points, maybe we should just return what we have (1 duplicated).
-
-        return x_last.reshape(1, -1)
+        return _acq.suggest_next_infill_point(self)
 
     # ====================
     # TASK_STATS:

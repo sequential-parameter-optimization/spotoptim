@@ -66,7 +66,7 @@ class TestTricandsIntegration:
 
         self.opt._acquisition_function = MagicMock(side_effect=side_effect)
 
-        with patch("spotoptim.SpotOptim.tricands") as mock_tricands:
+        with patch("spotoptim.optimizer.acquisition.tricands") as mock_tricands:
             # Mock tricands returning 10 candidates
             # We explicitly control values to ensure deterministic sorting order.
             mock_cands_norm = np.full(
@@ -120,7 +120,7 @@ class TestTricandsIntegration:
         self.opt.acquisition_fun_return_size = 50
         self.opt.X_ = np.random.uniform(0, 1, size=(10, 2))
 
-        with patch("spotoptim.SpotOptim.tricands") as mock_tricands:
+        with patch("spotoptim.optimizer.acquisition.tricands") as mock_tricands:
             mock_tricands.return_value = np.zeros((100, 2))
             self.opt._acquisition_function = MagicMock(return_value=np.zeros(100))
 

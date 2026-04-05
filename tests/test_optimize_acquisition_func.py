@@ -48,7 +48,7 @@ class TestOptimizeAcquisitionFunc:
         assert -5 <= x_opt[0] <= 5
         assert -5 <= x_opt[1] <= 5
 
-    @patch("spotoptim.SpotOptim.differential_evolution")
+    @patch("spotoptim.optimizer.acquisition.differential_evolution")
     def test_optimize_acquisition_func_calls_differential_evolution(self, mock_de):
         """Test that optimize_acquisition_func calls differential_evolution with correct args."""
 
