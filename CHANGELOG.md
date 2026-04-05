@@ -1,3 +1,35 @@
+## [0.11.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.3...v0.11.0) (2026-04-05)
+
+### Features
+
+* parallel and wrapper ([847bec0](https://github.com/sequential-parameter-optimization/spotoptim/commit/847bec025186f90558704243f61b33cbd76158eb))
+
+### Bug Fixes
+
+* add --extra docs to uv run commands in release workflow ([f568290](https://github.com/sequential-parameter-optimization/spotoptim/commit/f5682904640802a844e288fb9afd008e0a91548b))
+* ci ([497ae0d](https://github.com/sequential-parameter-optimization/spotoptim/commit/497ae0da0a4032ea20bc5a6932dd52aec185be3f))
+* global structure ([b8f89ac](https://github.com/sequential-parameter-optimization/spotoptim/commit/b8f89acd0c1bdba4fd734f045f17e035b4bb70fa))
+* ip plots dataframe colnames ([cbee260](https://github.com/sequential-parameter-optimization/spotoptim/commit/cbee2605e10055bbcb5d1e9ee1f040e64e83e70d))
+* labels ([ff400e0](https://github.com/sequential-parameter-optimization/spotoptim/commit/ff400e0942f39edad5539a0a15e2030956768a9c))
+* preflight and release ([13eaa27](https://github.com/sequential-parameter-optimization/spotoptim/commit/13eaa27010174ddb1652fd8f8ce4a91d580ea5f8))
+* quartodoc 2nd ([4c4837b](https://github.com/sequential-parameter-optimization/spotoptim/commit/4c4837b5f673842ab1cea8e9dc46293d265cbc13))
+* quartodoc ru ([e976ced](https://github.com/sequential-parameter-optimization/spotoptim/commit/e976cedcd3a573f883e6314e9d13f0eea306957c))
+* release ([09c8d3f](https://github.com/sequential-parameter-optimization/spotoptim/commit/09c8d3fcc70eef23beea2ae4065807c93cb095c9))
+* release-preflight ([eed5cc0](https://github.com/sequential-parameter-optimization/spotoptim/commit/eed5cc094e7de81c0b6b9deedde5d1a35a599e91))
+* renaming fit() ([39ebe63](https://github.com/sequential-parameter-optimization/spotoptim/commit/39ebe63d30e3ab8358ee9b4316a11aba9d71c555))
+* TASKS ([4a4d94d](https://github.com/sequential-parameter-optimization/spotoptim/commit/4a4d94d268edaf2d337541d278760689a821889c))
+* tolerance ([b0d6e25](https://github.com/sequential-parameter-optimization/spotoptim/commit/b0d6e258dc71dc60ffbd82eb03dab5bf9f68d1e8))
+* update preflight ([a3a838a](https://github.com/sequential-parameter-optimization/spotoptim/commit/a3a838a4d7a5465ba27d0d9e70537192d5522bf3))
+* via claude ([8fa065a](https://github.com/sequential-parameter-optimization/spotoptim/commit/8fa065a79f48c54d0cd9a228023569ac2810c545))
+
+### Documentation
+
+* fit ([8d6e61f](https://github.com/sequential-parameter-optimization/spotoptim/commit/8d6e61f8e2f05bef7277ee09a8847087d3a1aefc))
+
+### Code Refactoring
+
+* extract TensorBoard and safe_float from SpotOptim class ([5417505](https://github.com/sequential-parameter-optimization/spotoptim/commit/5417505b6685cacfce1cc180f79c136b435c2131))
+
 ## [0.10.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.10.2...v0.10.3) (2026-03-15)
 
 
