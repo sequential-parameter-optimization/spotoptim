@@ -2078,7 +2078,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="step-1-silence-warnings">Step 1 — Silence Warnings</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>warnings.filterwarnings(warnings_filter)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The very first action is to apply a global Python <code>warnings</code> filter. The default value is <code>"ignore"</code>, which suppresses deprecation and runtime warnings from third-party libraries during optimization. Accepted values are any string accepted by <code>warnings.filterwarnings</code>: <code>"ignore"</code>, <code>"always"</code>, <code>"error"</code>, <code>"once"</code>, etc.</p>
-<div id="7bf9550c" class="cell" data-execution_count="1">
+<div id="0ec8b778" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2096,7 +2096,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="step-2-machine-epsilon-self.eps">Step 2 — Machine Epsilon (<code>self.eps</code>)</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.eps <span class="op">=</span> np.sqrt(np.spacing(<span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>self.eps</code> is set to <span class="math inline">\(\sqrt{\epsilon_{\text{machine}}}\)</span>, approximately <code>1.49e-8</code> for IEEE 754 double precision. It is used throughout the class as a tolerance for floating-point comparisons, for example, when checking whether a starting point <code>x0</code> matches a fixed bound or when evaluating the <code>tolerance_x</code> stopping criterion. <code>np.spacing(1)</code> returns the smallest representable difference from 1.0 (equivalent to <code>np.finfo(float).eps</code>).</p>
-<div id="48eb08c0" class="cell" data-execution_count="2">
+<div id="90591381" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2117,7 +2117,7 @@ eps check passed.</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> tolerance_x <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    tolerance_x <span class="op">=</span> <span class="va">self</span>.eps</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If the user does not supply <code>tolerance_x</code>, it defaults to <code>self.eps</code>. <code>tolerance_x</code> controls the minimum required improvement in the decision variable space to keep the optimizer running: if consecutive best points are closer than <code>tolerance_x</code> (measured by <code>min_tol_metric</code>, default <code>"chebyshev"</code>), the run is considered converged.</p>
-<div id="89de3488" class="cell" data-execution_count="3">
+<div id="f42fb1fc" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>opt_default <span class="op">=</span> SpotOptim(fun<span class="op">=</span>sphere, bounds<span class="op">=</span>[(<span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>)])</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"tolerance_x (default): </span><span class="sc">{</span>opt_default<span class="sc">.</span>tolerance_x<span class="sc">:.6e}</span><span class="ss">"</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> np.isclose(opt_default.tolerance_x, np.sqrt(np.spacing(<span class="dv">1</span>)))</span>
@@ -2146,7 +2146,7 @@ tolerance_x check passed.</code></pre>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    var_trans <span class="op">=</span> <span class="bu">getattr</span>(fun, <span class="st">"var_trans"</span>, <span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Before any validation, <code>__init__</code> tries to read missing parameters directly from the callable <code>fun</code> using <code>getattr</code>. This allows self-describing objective functions to carry their own metadata: <code>fun.bounds</code> as a list of <code>(lower, upper)</code> tuples, <code>fun.var_type</code> as a per-dimension type string list, <code>fun.var_name</code> as human-readable parameter names, and <code>fun.var_trans</code> as a list of transformation strings.</p>
 <p><code>bounds</code> is the only mandatory parameter: if it is <code>None</code> after this inference step, <code>__init__</code> raises a <code>ValueError</code> immediately. The remaining three attributes (<code>var_type</code>, <code>var_name</code>, <code>var_trans</code>) are permitted to remain <code>None</code>; downstream steps supply their own defaults when needed.</p>
-<div id="ffb87122" class="cell" data-execution_count="4">
+<div id="488e405b" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2188,7 +2188,7 @@ Parameter inference check passed.</code></pre>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> acquisition_optimizer_kwargs <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    acquisition_optimizer_kwargs <span class="op">=</span> {<span class="st">"maxiter"</span>: <span class="dv">10000</span>, <span class="st">"gtol"</span>: <span class="fl">1e-9</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Four checks run before the configuration object is assembled. <code>max_iter</code> must be at least <code>n_initial</code> because the total budget must accommodate the initial design. <code>n_jobs</code> follows the scikit-learn convention: <code>-1</code> is resolved to <code>os.cpu_count()</code>, while <code>0</code> and values below <code>-1</code> are rejected. <code>eval_batch_size</code> controls how many candidate points accumulate before a single vectorised call is dispatched to the process pool and must be at least <code>1</code>. Finally, when <code>acquisition_optimizer_kwargs</code> is not supplied it is initialised to <code>{"maxiter": 10000, "gtol": 1e-9}</code>, providing tight convergence tolerances for the default differential-evolution run.</p>
-<div id="0e146411" class="cell" data-execution_count="5">
+<div id="62755180" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2239,7 +2239,7 @@ Validation check passed.</code></pre>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>All constructor arguments are stored in a <code>SpotOptimConfig</code> dataclass-like object assigned to <code>self.config</code>. <code>SpotOptim</code> uses a <code>__getattr__</code> proxy so that every field in <code>config</code> is also accessible directly on the <code>SpotOptim</code> instance — for example, <code>opt.n_initial</code> reads from <code>opt.config.n_initial</code>. <code>acquisition</code> is normalized to lowercase inside the config.</p>
 <p>Storing parameters in a separate object makes serialization and parameter inspection straightforward.</p>
-<div id="23201ccb" class="cell" data-execution_count="6">
+<div id="095941ed" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2272,7 +2272,7 @@ Config construction check passed.</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.state <span class="op">=</span> SpotOptimState()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>SpotOptimState</code> holds all mutable runtime state that changes during optimization: evaluated points <code>X_</code>, function values <code>y_</code>, the current best solution <code>best_x_</code>, <code>best_y_</code>, iteration counters, and similar fields. It starts empty and is populated once <code>optimize()</code> is called.</p>
 <p>Like <code>config</code>, its attributes are accessible directly via <code>__getattr__</code>.</p>
-<div id="2a848872" class="cell" data-execution_count="7">
+<div id="2cc54c9a" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2294,7 +2294,7 @@ State construction check passed.</code></pre>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.objective_names <span class="op">=</span> <span class="bu">getattr</span>(fun, <span class="st">"objective_names"</span>, <span class="bu">getattr</span>(fun, <span class="st">"metrics"</span>, <span class="va">None</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The callable <code>fun</code> is stored as <code>self.fun</code>. <code>objective_names</code> is the list of output-metric names used by multi-objective or torch-based objectives (e.g., <code>["val_loss", "epochs"]</code>). It is copied from <code>fun.objective_names</code> or, as a fallback, from <code>fun.metrics</code>. If neither attribute exists, <code>objective_names</code> is <code>None</code>.</p>
 <p>The visualization module reads <code>optimizer.objective_names</code> to label plot axes.</p>
-<div id="d6747081" class="cell" data-execution_count="8">
+<div id="38483709" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2328,7 +2328,7 @@ objective_names check passed.</code></pre>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.set_seed()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>A <code>numpy.random.RandomState</code> object is created with the supplied <code>seed</code> and stored as <code>self.rng</code>. It is used internally wherever random choices are needed (e.g., surrogate selection probabilities).</p>
 <p><code>set_seed()</code> then calls <code>random.seed(self.seed)</code> and <code>np.random.seed(self.seed)</code> to seed Python’s global and NumPy’s global generators, providing a reproducibility guarantee across the full call stack.</p>
-<div id="18290401" class="cell" data-execution_count="9">
+<div id="212d8d43" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2362,7 +2362,7 @@ RNG reproducibility check passed.</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># before:  bounds = [("red", "green", "blue"), (-5.0, 5.0)]</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># after:   bounds = [(0, 2),                   (-5.0, 5.0)]</span></span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># factor_maps = {0: {0: "red", 1: "green", 2: "blue"}}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="101b1223" class="cell" data-execution_count="10">
+<div id="f743de24" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2395,7 +2395,7 @@ Factor bounds check passed.</code></pre>
 <h2 class="anchored" data-anchor-id="step-11-dimension-count-n_dim">Step 11 — Dimension Count (<code>n_dim</code>)</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.n_dim <span class="op">=</span> <span class="bu">len</span>(<span class="va">self</span>.bounds)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>After <code>process_factor_bounds()</code> has resolved all string-level dimensions, <code>n_dim</code> is calculated as the number of remaining bounds. For problems with dimension reduction (fixed bounds, see Step 15), <code>n_dim</code> will later reflect the reduced dimension count.</p>
-<div id="073db163" class="cell" data-execution_count="11">
+<div id="c470eae7" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2416,7 +2416,7 @@ n_dim check passed.</code></pre>
 <span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.var_type <span class="op">=</span> <span class="va">self</span>.detect_var_type()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>detect_var_type()</code> infers the variable type for each dimension from the bounds. For dimensions with purely numeric bounds it returns <code>"float"</code> — it does not auto-promote integer-looking bounds like <code>(0, 5)</code> to <code>"int"</code>. Factor dimensions created in Step 10 (string-tuple bounds) are already typed as <code>"factor"</code> and are left untouched.</p>
 <p>To use integer variables you must pass <code>var_type=["int", ...]</code> explicitly.</p>
-<div id="7f6b744c" class="cell" data-execution_count="12">
+<div id="04829e38" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -2460,7 +2460,7 @@ detect_var_type check passed.</code></pre>
 <h2 class="anchored" data-anchor-id="step-13-bound-modification-modify_bounds_based_on_var_type">Step 13 — Bound Modification (<code>modify_bounds_based_on_var_type</code>)</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.modify_bounds_based_on_var_type()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>modify_bounds_based_on_var_type()</code> adjusts the bounds to be consistent with the declared variable types. For <code>"int"</code> and <code>"factor"</code> variables it ensures bounds are expressed as integers. For <code>"float"</code> variables it converts bounds to <code>float</code>. This makes downstream arithmetic type-safe and avoids mixed int/float arrays.</p>
-<div id="fa4d2934" class="cell" data-execution_count="13">
+<div id="13ff0016" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2488,7 +2488,7 @@ modify_bounds_based_on_var_type check passed.</code></pre>
 <li><code>self.upper</code> — 1-D array of upper bounds, one entry per dimension</li>
 </ul>
 <p>These arrays are used throughout the class for vectorized bound arithmetic, for example, when scaling Latin Hypercube samples — <code>lower + X_unit * (upper - lower)</code>.</p>
-<div id="8985acc3" class="cell" data-execution_count="14">
+<div id="3c7d84f1" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2512,7 +2512,7 @@ lower/upper arrays check passed.</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">self</span>.var_name <span class="kw">is</span> <span class="va">None</span>:</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.var_name <span class="op">=</span> [<span class="ss">f"x</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="va">self</span>.n_dim)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>If neither the constructor argument nor the function attribute provided names, each dimension receives an auto-generated name <code>"x0"</code>, <code>"x1"</code>, etc. Names appear in console output, error messages, and plot axis labels.</p>
-<div id="db8dd915" class="cell" data-execution_count="15">
+<div id="99298b30" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2536,7 +2536,7 @@ var_name check passed.</code></pre>
 <h2 class="anchored" data-anchor-id="step-16-default-transformation-normalization-handle_default_var_trans">Step 16 — Default Transformation Normalization (<code>handle_default_var_trans</code>)</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.handle_default_var_trans()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>handle_default_var_trans()</code> normalizes the <code>var_trans</code> list without applying any transformation. It replaces the strings <code>"id"</code> and <code>"None"</code> and Python <code>None</code> values with <code>None</code> so that all downstream code can use a single <code>None</code> check. If <code>var_trans</code> was not provided, it initializes a list of <code>None</code> values with length <code>n_dim</code>. It also validates that the list length matches <code>n_dim</code>.</p>
-<div id="54d2f66e" class="cell" data-execution_count="16">
+<div id="11bfa109" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2578,7 +2578,7 @@ handle_default_var_trans check passed.</code></pre>
 <li>After transformation: <code>lower = [0.0]</code>, <code>upper = [2.0]</code></li>
 </ul>
 <p><code>transform_bounds()</code> also handles reversed bounds that arise from monotone decreasing transforms such as <code>reciprocal</code>.</p>
-<div id="a5e2fda3" class="cell" data-execution_count="17">
+<div id="636161e6" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2618,7 +2618,7 @@ transform_bounds check passed.</code></pre>
 <li>The main attributes (<code>self.lower</code>, <code>self.upper</code>, <code>self.bounds</code>, <code>self.n_dim</code>) are reduced to the active (non-fixed) dimensions only.</li>
 </ul>
 <p>The flag <code>self.red_dim</code> is <code>True</code> when at least one dimension was removed.</p>
-<div id="677f84e5" class="cell" data-execution_count="18">
+<div id="4645de78" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2660,7 +2660,7 @@ setup_dimension_reduction check passed.</code></pre>
 <li>Fixed dimensions must exactly equal their fixed value.</li>
 </ol>
 <p>If all checks pass, <code>validate_x0()</code> applies <code>transform_X()</code> to convert <code>x0</code> to the same internal (transformed and reduced) representation used during optimization.</p>
-<div id="cb85e886" class="cell" data-execution_count="19">
+<div id="c0c389d4" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2709,7 +2709,7 @@ validate_x0 check passed.</code></pre>
 <li><code>self._max_surrogate_points_list</code> — per-surrogate max point limits</li>
 <li><code>self._active_max_surrogate_points</code> — current active limit</li>
 </ul>
-<div id="214c29f2" class="cell" data-execution_count="20">
+<div id="b65f8a1f" class="cell" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.gaussian_process <span class="im">import</span> GaussianProcessRegressor</span>
 <span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2736,7 +2736,7 @@ init_surrogate check passed.</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="va">self</span>.lhs_sampler <span class="op">=</span> LatinHypercube(d<span class="op">=</span><span class="va">self</span>.n_dim, rng<span class="op">=</span><span class="va">self</span>.seed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>A <code>scipy.stats.qmc.LatinHypercube</code> sampler is created for generating space-filling initial designs. <code>d=self.n_dim</code> sets the dimensionality to the reduced dimension count. <code>rng=self.seed</code> seeds the sampler for reproducibility.</p>
 <p>The primary parameter <code>rng=</code> is used instead of the legacy alias <code>seed=</code> to align with the current scipy API. The sampler is called in <code>generate_initial_design()</code> via <code>self.lhs_sampler.random(n=self.n_initial)</code>, which returns points in <code>[0, 1]^d</code> that are then scaled to <code>[lower, upper]</code>.</p>
-<div id="300dc3c9" class="cell" data-execution_count="21">
+<div id="7fec5fb8" class="cell" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats.qmc <span class="im">import</span> LatinHypercube</span>
 <span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2771,7 +2771,7 @@ lhs_sampler reproducibility check passed.</code></pre>
 <li>When <code>restart_after_n</code> is set, <code>window_size</code> mirrors it so that the sliding window aligns with the restart cycle length.</li>
 <li>Otherwise it falls back to <code>100</code>, large enough to include all points in a typical short optimization run.</li>
 </ul>
-<div id="c59f3a0b" class="cell" data-execution_count="22">
+<div id="88203243" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2806,7 +2806,7 @@ window_size check passed.</code></pre>
 <p>The final two calls set up optional TensorBoard logging.</p>
 <p><code>_clean_tensorboard_logs()</code> deletes existing log files at <code>tensorboard_path</code> if <code>tensorboard_clean=True</code> was requested.</p>
 <p><code>_init_tensorboard_writer()</code> creates a <code>SummaryWriter</code> if <code>tensorboard_log=True</code>, writing event files to <code>tensorboard_path</code>. When logging is disabled (the default), both methods are no-ops so there is no runtime cost.</p>
-<div id="c4d4e479" class="cell" data-execution_count="23">
+<div id="20cb9aa6" class="cell" data-execution_count="23">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a></span>
