@@ -136,10 +136,10 @@ print("seed and initial design check passed.")
 
 ---
 
-## Step 4 — GIL Detection and Executor Construction (`_is_gil_disabled()`)
+## Step 4 — GIL Detection and Executor Construction (`is_gil_disabled()`)
 
 ```python
-_no_gil = _is_gil_disabled()
+_no_gil = is_gil_disabled()
 with ExitStack() as _stack:
     eval_pool = _stack.enter_context(
         ThreadPoolExecutor(max_workers=self.n_jobs) if _no_gil
@@ -150,7 +150,7 @@ with ExitStack() as _stack:
     )
 ```
 
-`_is_gil_disabled()` queries `sys._is_gil_enabled()` (Python 3.13+) to detect whether
+`is_gil_disabled()` queries `sys._is_gil_enabled()` (Python 3.13+) to detect whether
 the interpreter was built without the Global Interpreter Lock.
 On standard GIL builds — Python 3.12 or GIL-enabled 3.13 — objective evaluations are
 dispatched to a `ProcessPoolExecutor` so that each worker runs in a separate process,
@@ -708,7 +708,7 @@ print("termination check passed.")
 | 1 | `execute_optimization_run()` | Dispatch to parallel path when `n_jobs > 1` |
 | 2 | `optimize_steady_state()` | Parallel orchestrator; manages pools and phases |
 | 3 | `set_seed()`, `get_initial_design()`, `curate_initial_design()` | Seed RNG, generate and curate initial design; pre-fill `y0_prefilled` for restart-injected point |
-| 4 | `_is_gil_disabled()` | Detect GIL state; select `ProcessPoolExecutor` or `ThreadPoolExecutor` for eval |
+| 4 | `is_gil_disabled()` | Detect GIL state; select `ProcessPoolExecutor` or `ThreadPoolExecutor` for eval |
 | 5 | Phase 1 submission | Store injected points directly; submit remaining `n_to_submit` points to `eval_pool` |
 | 6 | `_update_storage_steady()` | Collect initial results; append each valid `(x, y)` to storage |
 | 7 | `_init_tensorboard()`, `update_stats()`, `get_best_xy_initial_design()` | Log initial design; compute statistics; identify initial best |
