@@ -1,3 +1,14 @@
+## [0.11.4](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.3...v0.11.4) (2026-04-12)
+
+### Bug Fixes
+
+* commit _freeze/ outputs and fix user guide code examples ([a992fa3](https://github.com/sequential-parameter-optimization/spotoptim/commit/a992fa32ea033e3734d01b33d649752f3b16bd70))
+
+### Documentation
+
+* add comprehensive User Guide with 18 module pages ([5559729](https://github.com/sequential-parameter-optimization/spotoptim/commit/55597298a416ae78244ef2fce41524e2a71dd28e))
+* update _is_gil -> is_gil ([50a08d9](https://github.com/sequential-parameter-optimization/spotoptim/commit/50a08d9c5072865730249cef19d7bdae608aa504))
+
 ## [0.11.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.2...v0.11.3) (2026-04-05)
 
 ### Bug Fixes
