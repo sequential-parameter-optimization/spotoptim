@@ -1,3 +1,9 @@
+## [0.11.5](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.4...v0.11.5) (2026-04-12)
+
+### Bug Fixes
+
+* show figures in plot user guide instead of print statements ([57ec92b](https://github.com/sequential-parameter-optimization/spotoptim/commit/57ec92bc58925bb99008d7866811941ea36acd8b))
+
 ## [0.11.4](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.3...v0.11.4) (2026-04-12)
 
 ### Bug Fixes
