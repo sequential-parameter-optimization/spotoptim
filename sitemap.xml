@@ -2,1054 +2,1054 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/utils.html</loc>
-    <lastmod>2026-04-12T18:21:04.757Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/surrogate.html</loc>
-    <lastmod>2026-04-12T18:21:04.757Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/sampling.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/plot.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/nn.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/inspection.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/function.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/eda.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/core.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/spotoptim_init.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/spotoptim_class.html</loc>
-    <lastmod>2026-04-12T18:21:04.755Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.vif.html</loc>
-    <lastmod>2026-04-12T20:01:29.447Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.838Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.html</loc>
-    <lastmod>2026-04-12T20:01:29.356Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.753Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.plot_coeff_vs_pvals_by_included.html</loc>
-    <lastmod>2026-04-12T20:01:29.436Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.827Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.partial_correlation_test.html</loc>
-    <lastmod>2026-04-12T20:01:29.416Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.809Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.pairwise_semi_partial_correlation.html</loc>
-    <lastmod>2026-04-12T20:01:29.405Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.799Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.get_sample_size.html</loc>
-    <lastmod>2026-04-12T20:01:29.398Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.793Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.get_all_vars_from_formula.html</loc>
-    <lastmod>2026-04-12T20:01:29.388Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.783Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.cov_to_cor.html</loc>
-    <lastmod>2026-04-12T20:01:29.379Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.775Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.compute_standardized_betas.html</loc>
-    <lastmod>2026-04-12T20:01:29.371Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.768Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.calculate_outliers.html</loc>
-    <lastmod>2026-04-12T20:01:29.361Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.758Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.scaler.TorchStandardScaler.html</loc>
-    <lastmod>2026-04-12T20:01:29.269Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.672Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.pca.html</loc>
-    <lastmod>2026-04-12T20:01:29.208Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.613Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.pca.plot_pca1vs2.html</loc>
-    <lastmod>2026-04-12T20:01:29.232Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.636Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.pca.get_pca_topk.html</loc>
-    <lastmod>2026-04-12T20:01:29.222Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.626Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.pca.get_loading_scores.html</loc>
-    <lastmod>2026-04-12T20:01:29.212Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.617Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.mapping.map_lr.html</loc>
-    <lastmod>2026-04-12T20:01:29.178Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.585Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.file.get_experiment_filename.html</loc>
-    <lastmod>2026-04-12T20:01:29.159Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.568Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.eval.mo_eval_models.html</loc>
-    <lastmod>2026-04-12T20:01:29.143Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.554Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.boundaries.html</loc>
-    <lastmod>2026-04-12T20:01:29.098Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.512Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.boundaries.get_boundaries.html</loc>
-    <lastmod>2026-04-12T20:01:29.102Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.516Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/tricands.tricands.tricands_fringe.html</loc>
-    <lastmod>2026-04-12T20:01:30.435Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.752Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/tricands.tricands.html</loc>
-    <lastmod>2026-04-12T20:01:30.419Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.738Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.simple_kriging.html</loc>
-    <lastmod>2026-04-12T20:01:28.109Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.598Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.html</loc>
-    <lastmod>2026-04-12T20:01:27.988Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.486Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.pipeline.Pipeline.html</loc>
-    <lastmod>2026-04-12T20:01:28.273Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.750Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.nystroem.Nystroem.html</loc>
-    <lastmod>2026-04-12T20:01:28.195Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.678Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.mlp_surrogate.MLPSurrogate.html</loc>
-    <lastmod>2026-04-12T20:01:28.164Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.649Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kriging.Kriging.html</loc>
-    <lastmod>2026-04-12T20:01:28.092Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.582Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.WhiteKernel.html</loc>
-    <lastmod>2026-04-12T20:01:28.250Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.728Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.SpotOptimKernel.html</loc>
-    <lastmod>2026-04-12T20:01:28.243Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.722Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.Product.html</loc>
-    <lastmod>2026-04-12T20:01:28.235Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.715Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.ConstantKernel.html</loc>
-    <lastmod>2026-04-12T20:01:28.227Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.707Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.subset.html</loc>
-    <lastmod>2026-04-12T20:01:28.712Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.155Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.propose_mmphi_intensive_minimizing_point.html</loc>
-    <lastmod>2026-04-12T20:01:28.699Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.143Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.plot_mmphi_vs_points.html</loc>
-    <lastmod>2026-04-12T20:01:28.682Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.127Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.plot_mmphi_corrected_vs_points.html</loc>
-    <lastmod>2026-04-12T20:01:28.691Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.136Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.phisort.html</loc>
-    <lastmod>2026-04-12T20:01:28.660Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.107Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mmsort.html</loc>
-    <lastmod>2026-04-12T20:01:28.650Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.098Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mmphi_intensive.html</loc>
-    <lastmod>2026-04-12T20:01:28.625Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.075Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mmphi_corrected.html</loc>
-    <lastmod>2026-04-12T20:01:28.638Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.087Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mmlhs.html</loc>
-    <lastmod>2026-04-12T20:01:28.613Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.064Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mm_improvement.html</loc>
-    <lastmod>2026-04-12T20:01:28.592Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.044Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mm.html</loc>
-    <lastmod>2026-04-12T20:01:28.584Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.037Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.bestlh.html</loc>
-    <lastmod>2026-04-12T20:01:28.574Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.028Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.lhs.html</loc>
-    <lastmod>2026-04-12T20:01:28.415Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.881Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.effects.screening_print.html</loc>
-    <lastmod>2026-04-12T20:01:28.407Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.873Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.effects.randorient.html</loc>
-    <lastmod>2026-04-12T20:01:28.393Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.860Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.effects.plot_all_partial_dependence.html</loc>
-    <lastmod>2026-04-12T20:01:28.388Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.855Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.generate_uniform_design.html</loc>
-    <lastmod>2026-04-12T20:01:28.353Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.824Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.generate_qmc_lhs_design.html</loc>
-    <lastmod>2026-04-12T20:01:28.343Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.814Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.generate_collinear_design.html</loc>
-    <lastmod>2026-04-12T20:01:28.332Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.804Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.fullfactorial.html</loc>
-    <lastmod>2026-04-12T20:01:28.320Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.793Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.visualization.plot_surrogate.html</loc>
-    <lastmod>2026-04-12T20:01:29.077Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.493Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.visualization.plot_important_hyperparameter_contour.html</loc>
-    <lastmod>2026-04-12T20:01:29.059Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.476Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.html</loc>
-    <lastmod>2026-04-12T20:01:28.893Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.321Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.mo.plot_mo.html</loc>
-    <lastmod>2026-04-12T20:01:29.014Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.436Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.contour.html</loc>
-    <lastmod>2026-04-12T20:01:28.938Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.363Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.contour.mo_generate_plot_grid.html</loc>
-    <lastmod>2026-04-12T20:01:28.955Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.379Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/optimizer.schedule_free.html</loc>
-    <lastmod>2026-04-12T20:01:28.724Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.166Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/optimizer.html</loc>
-    <lastmod>2026-04-12T20:01:28.713Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.156Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/nn.mlp.html</loc>
-    <lastmod>2026-04-12T20:01:28.874Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.304Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/nn.linear_regressor.html</loc>
-    <lastmod>2026-04-12T20:01:28.826Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.260Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.html</loc>
-    <lastmod>2026-04-12T20:01:29.523Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.908Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.pareto.mo_xy_surface.html</loc>
-    <lastmod>2026-04-12T20:01:29.620Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.999Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.pareto.mo_pareto_optx_plot.html</loc>
-    <lastmod>2026-04-12T20:01:29.606Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.986Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.mo_mm.html</loc>
-    <lastmod>2026-04-12T20:01:29.547Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.930Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.mo_mm.mo_mm_desirability_optimizer.html</loc>
-    <lastmod>2026-04-12T20:01:29.561Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.943Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.html</loc>
-    <lastmod>2026-04-12T20:01:29.622Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.000Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.predictions.plot_actual_vs_predicted.html</loc>
-    <lastmod>2026-04-12T20:01:29.706Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.078Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.importance.plot_importances.html</loc>
-    <lastmod>2026-04-12T20:01:29.693Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.066Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.importance.plot_feature_importances.html</loc>
-    <lastmod>2026-04-12T20:01:29.678Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.052Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.importance.generate_imp.html</loc>
-    <lastmod>2026-04-12T20:01:29.665Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.040Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/hyperparameters.repr_helpers.html</loc>
-    <lastmod>2026-04-12T20:01:28.791Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.228Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/hyperparameters.repr_helpers.Bounds.html</loc>
-    <lastmod>2026-04-12T20:01:28.793Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.229Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/hyperparameters.parameters.html</loc>
-    <lastmod>2026-04-12T20:01:28.763Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.202Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.torch_objective.html</loc>
-    <lastmod>2026-04-12T20:01:30.388Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.708Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.wingwt.html</loc>
-    <lastmod>2026-04-12T20:01:30.376Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.698Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.rosenbrock.html</loc>
-    <lastmod>2026-04-12T20:01:30.367Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.689Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.robot_arm_hard.html</loc>
-    <lastmod>2026-04-12T20:01:30.355Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.679Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.noisy_sphere.html</loc>
-    <lastmod>2026-04-12T20:01:30.351Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.674Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.lennard_jones.html</loc>
-    <lastmod>2026-04-12T20:01:30.340Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.665Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.remote.html</loc>
-    <lastmod>2026-04-12T20:01:30.275Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.605Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.html</loc>
-    <lastmod>2026-04-12T20:01:30.080Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.425Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.zdt4.html</loc>
-    <lastmod>2026-04-12T20:01:30.263Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.594Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.zdt2.html</loc>
-    <lastmod>2026-04-12T20:01:30.253Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.584Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.schaffer_n1.html</loc>
-    <lastmod>2026-04-12T20:01:30.241Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.574Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.mo_conv2_min.html</loc>
-    <lastmod>2026-04-12T20:01:30.237Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.569Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.kursawe.html</loc>
-    <lastmod>2026-04-12T20:01:30.225Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.558Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.fonseca_fleming.html</loc>
-    <lastmod>2026-04-12T20:01:30.214Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.549Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.dtlz1.html</loc>
-    <lastmod>2026-04-12T20:01:30.203Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.539Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.activity_pred.html</loc>
-    <lastmod>2026-04-12T20:01:30.193Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.530Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.forr08a.onevar.html</loc>
-    <lastmod>2026-04-12T20:01:30.110Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.452Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.forr08a.aerofoilcd.html</loc>
-    <lastmod>2026-04-12T20:01:30.100Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.443Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.unique_elements.html</loc>
-    <lastmod>2026-04-12T20:01:30.079Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.423Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.html</loc>
-    <lastmod>2026-04-12T20:01:30.008Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.358Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.merge_variance_covariance.html</loc>
-    <lastmod>2026-04-12T20:01:30.068Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.414Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.impute_values.html</loc>
-    <lastmod>2026-04-12T20:01:30.060Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.406Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_lower_idxs.html</loc>
-    <lastmod>2026-04-12T20:01:30.052Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.399Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.get_first_idxs_from_values.html</loc>
-    <lastmod>2026-04-12T20:01:30.044Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.392Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix_pre_post.html</loc>
-    <lastmod>2026-04-12T20:01:30.036Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.384Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.covariance_to_correlation.html</loc>
-    <lastmod>2026-04-12T20:01:30.028Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.377Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.corr.html</loc>
-    <lastmod>2026-04-12T20:01:30.020Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.369Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.apply_impute_nan.html</loc>
-    <lastmod>2026-04-12T20:01:30.012Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.362Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_rotator.Rotator.html</loc>
-    <lastmod>2026-04-12T20:01:29.937Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.293Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer.calculate_kmo.html</loc>
-    <lastmod>2026-04-12T20:01:29.899Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.257Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer.FactorAnalyzer.html</loc>
-    <lastmod>2026-04-12T20:01:29.891Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.251Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecificationParser.html</loc>
-    <lastmod>2026-04-12T20:01:29.810Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.175Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.confirmatory_factor_analyzer.ConfirmatoryFactorAnalyzer.html</loc>
-    <lastmod>2026-04-12T20:01:29.785Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.152Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/eda.plots.html</loc>
-    <lastmod>2026-04-12T20:01:29.505Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.891Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/eda.plots.plot_ip_boxplots.html</loc>
-    <lastmod>2026-04-12T20:01:29.514Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.900Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/data.diabetes.html</loc>
-    <lastmod>2026-04-12T20:01:29.475Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.864Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/data.diabetes.DiabetesDataset.html</loc>
-    <lastmod>2026-04-12T20:01:29.478Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.866Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/data.base.FileConfig.html</loc>
-    <lastmod>2026-04-12T20:01:29.464Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.853Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/core.html</loc>
-    <lastmod>2026-04-12T20:01:27.924Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.427Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/core.experiment.ExperimentControl.html</loc>
-    <lastmod>2026-04-12T20:01:27.985Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.484Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/core.data.SpotDataSet.html</loc>
-    <lastmod>2026-04-12T20:01:27.957Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.457Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/core.data.SpotDataFromArray.html</loc>
-    <lastmod>2026-04-12T20:01:27.944Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.446Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/SpotOptim.SpotOptimConfig.html</loc>
-    <lastmod>2026-04-12T20:01:27.910Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.414Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/optimize_seq.html</loc>
-    <lastmod>2026-04-12T18:21:04.755Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.793Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/examples.html</loc>
-    <lastmod>2026-04-12T18:21:04.754Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.793Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/index.html</loc>
-    <lastmod>2026-04-12T18:21:04.754Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.793Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/download.html</loc>
-    <lastmod>2026-04-12T18:21:04.754Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.793Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/optimize_parallel.html</loc>
-    <lastmod>2026-04-12T18:21:04.755Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.793Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/SpotOptim.SpotOptim.html</loc>
-    <lastmod>2026-04-12T20:01:27.884Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.390Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/SpotOptim.SpotOptimState.html</loc>
-    <lastmod>2026-04-12T20:01:27.923Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.426Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/core.data.SpotDataFromTorchDataset.html</loc>
-    <lastmod>2026-04-12T20:01:27.948Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.449Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/core.data.html</loc>
-    <lastmod>2026-04-12T20:01:27.941Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.443Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/core.experiment.html</loc>
-    <lastmod>2026-04-12T20:01:27.972Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.471Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/data.base.Config.html</loc>
-    <lastmod>2026-04-12T20:01:29.460Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.849Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/data.base.html</loc>
-    <lastmod>2026-04-12T20:01:29.457Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.847Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/data.diabetes.get_diabetes_dataloaders.html</loc>
-    <lastmod>2026-04-12T20:01:29.486Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.873Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/data.html</loc>
-    <lastmod>2026-04-12T20:01:29.449Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.839Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/eda.plots.plot_ip_histograms.html</loc>
-    <lastmod>2026-04-12T20:01:29.522Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.907Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/eda.html</loc>
-    <lastmod>2026-04-12T20:01:29.487Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.875Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.confirmatory_factor_analyzer.ModelSpecification.html</loc>
-    <lastmod>2026-04-12T20:01:29.798Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.164Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.confirmatory_factor_analyzer.html</loc>
-    <lastmod>2026-04-12T20:01:29.760Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.128Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer.calculate_bartlett_sphericity.html</loc>
-    <lastmod>2026-04-12T20:01:29.895Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.254Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer.html</loc>
-    <lastmod>2026-04-12T20:01:29.855Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.217Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_rotator.html</loc>
-    <lastmod>2026-04-12T20:01:29.919Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.276Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.commutation_matrix.html</loc>
-    <lastmod>2026-04-12T20:01:30.017Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.366Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.cov.html</loc>
-    <lastmod>2026-04-12T20:01:30.024Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.373Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.duplication_matrix.html</loc>
-    <lastmod>2026-04-12T20:01:30.032Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.380Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.fill_lower_diag.html</loc>
-    <lastmod>2026-04-12T20:01:30.039Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.387Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.get_free_parameter_idxs.html</loc>
-    <lastmod>2026-04-12T20:01:30.048Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.395Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.get_symmetric_upper_idxs.html</loc>
-    <lastmod>2026-04-12T20:01:30.056Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.403Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.inv_chol.html</loc>
-    <lastmod>2026-04-12T20:01:30.064Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.410Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.partial_correlations.html</loc>
-    <lastmod>2026-04-12T20:01:30.072Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.417Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.factor_analyzer_utils.smc.html</loc>
-    <lastmod>2026-04-12T20:01:30.076Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.420Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/factor_analyzer.html</loc>
-    <lastmod>2026-04-12T20:01:29.707Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.079Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.forr08a.branin.html</loc>
-    <lastmod>2026-04-12T20:01:30.105Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.448Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.forr08a.html</loc>
-    <lastmod>2026-04-12T20:01:30.096Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.439Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.conversion_pred.html</loc>
-    <lastmod>2026-04-12T20:01:30.197Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.533Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.dtlz2.html</loc>
-    <lastmod>2026-04-12T20:01:30.209Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.544Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.fun_myer16a.html</loc>
-    <lastmod>2026-04-12T20:01:30.219Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.553Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.mo_conv2_max.html</loc>
-    <lastmod>2026-04-12T20:01:30.231Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.564Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.html</loc>
-    <lastmod>2026-04-12T20:01:30.189Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.526Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.zdt1.html</loc>
-    <lastmod>2026-04-12T20:01:30.247Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.579Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.zdt3.html</loc>
-    <lastmod>2026-04-12T20:01:30.258Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.589Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.mo.zdt6.html</loc>
-    <lastmod>2026-04-12T20:01:30.269Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.599Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.remote.objective_remote.html</loc>
-    <lastmod>2026-04-12T20:01:30.281Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.610Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.ackley.html</loc>
-    <lastmod>2026-04-12T20:01:30.334Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.659Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.michalewicz.html</loc>
-    <lastmod>2026-04-12T20:01:30.345Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.669Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.html</loc>
-    <lastmod>2026-04-12T20:01:30.328Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.655Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.robot_arm_obstacle.html</loc>
-    <lastmod>2026-04-12T20:01:30.361Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.684Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.so.sphere.html</loc>
-    <lastmod>2026-04-12T20:01:30.372Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.694Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/function.torch_objective.TorchObjective.html</loc>
-    <lastmod>2026-04-12T20:01:30.398Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.717Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/hyperparameters.parameters.ParameterSet.html</loc>
-    <lastmod>2026-04-12T20:01:28.790Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.227Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/hyperparameters.html</loc>
-    <lastmod>2026-04-12T20:01:28.734Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.175Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/hyperparameters.repr_helpers.Parameter.html</loc>
-    <lastmod>2026-04-12T20:01:28.795Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.232Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/index.html</loc>
-    <lastmod>2026-04-12T20:01:27.528Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.056Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.importance.generate_mdi.html</loc>
-    <lastmod>2026-04-12T20:01:29.671Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.046Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.importance.plot_feature_scatter_matrix.html</loc>
-    <lastmod>2026-04-12T20:01:29.685Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.059Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.importance.html</loc>
-    <lastmod>2026-04-12T20:01:29.658Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.033Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/inspection.predictions.html</loc>
-    <lastmod>2026-04-12T20:01:29.700Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.072Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.mo_mm.mo_mm_desirability_function.html</loc>
-    <lastmod>2026-04-12T20:01:29.555Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.938Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.mo_mm.mo_xy_desirability_plot.html</loc>
-    <lastmod>2026-04-12T20:01:29.570Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.952Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.pareto.is_pareto_efficient.html</loc>
-    <lastmod>2026-04-12T20:01:29.600Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.979Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.pareto.mo_xy_contour.html</loc>
-    <lastmod>2026-04-12T20:01:29.613Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.992Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/mo.pareto.html</loc>
-    <lastmod>2026-04-12T20:01:29.596Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.976Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/nn.linear_regressor.LinearRegressor.html</loc>
-    <lastmod>2026-04-12T20:01:28.854Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.286Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/nn.mlp.MLP.html</loc>
-    <lastmod>2026-04-12T20:01:28.892Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.320Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/nn.html</loc>
-    <lastmod>2026-04-12T20:01:28.797Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.233Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/optimizer.schedule_free.AdamWScheduleFree.html</loc>
-    <lastmod>2026-04-12T20:01:28.733Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.174Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.contour.contourf_plot.html</loc>
-    <lastmod>2026-04-12T20:01:28.951Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.375Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.contour.plotModel.html</loc>
-    <lastmod>2026-04-12T20:01:28.974Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.397Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.contour.simple_contour.html</loc>
-    <lastmod>2026-04-12T20:01:28.982Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.406Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.mo.html</loc>
-    <lastmod>2026-04-12T20:01:28.999Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.421Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.visualization.plot_design_points.html</loc>
-    <lastmod>2026-04-12T20:01:29.085Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.500Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.visualization.plot_progress.html</loc>
-    <lastmod>2026-04-12T20:01:29.066Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.483Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/plot.visualization.html</loc>
-    <lastmod>2026-04-12T20:01:29.050Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.468Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.generate_clustered_design.html</loc>
-    <lastmod>2026-04-12T20:01:28.326Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.798Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.generate_grid_design.html</loc>
-    <lastmod>2026-04-12T20:01:28.337Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.809Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.generate_sobol_design.html</loc>
-    <lastmod>2026-04-12T20:01:28.348Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.819Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.design.html</loc>
-    <lastmod>2026-04-12T20:01:28.314Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.788Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.effects.html</loc>
-    <lastmod>2026-04-12T20:01:28.380Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.849Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.effects.screening_plot.html</loc>
-    <lastmod>2026-04-12T20:01:28.400Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.867Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.effects.screeningplan.html</loc>
-    <lastmod>2026-04-12T20:01:28.409Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.875Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.lhs.rlh.html</loc>
-    <lastmod>2026-04-12T20:01:28.421Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.886Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.jd.html</loc>
-    <lastmod>2026-04-12T20:01:28.579Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.032Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mm_corrected_improvement.html</loc>
-    <lastmod>2026-04-12T20:01:28.601Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.052Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mm_improvement_contour.html</loc>
-    <lastmod>2026-04-12T20:01:28.607Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.058Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mmphi.html</loc>
-    <lastmod>2026-04-12T20:01:28.619Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.069Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mmphi_corrected_update.html</loc>
-    <lastmod>2026-04-12T20:01:28.645Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.094Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.mmphi_intensive_update.html</loc>
-    <lastmod>2026-04-12T20:01:28.632Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.081Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.perturb.html</loc>
-    <lastmod>2026-04-12T20:01:28.655Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.102Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.plot_mmphi_corrected_vs_n_lhs.html</loc>
-    <lastmod>2026-04-12T20:01:28.674Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.120Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.plot_mmphi_vs_n_lhs.html</loc>
-    <lastmod>2026-04-12T20:01:28.667Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.113Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.propose_mmphi_corrected_minimizing_point.html</loc>
-    <lastmod>2026-04-12T20:01:28.708Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.151Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.mm.html</loc>
-    <lastmod>2026-04-12T20:01:28.566Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.020Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/sampling.html</loc>
-    <lastmod>2026-04-12T20:01:28.275Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.751Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.Kernel.html</loc>
-    <lastmod>2026-04-12T20:01:28.232Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.711Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.RBF.html</loc>
-    <lastmod>2026-04-12T20:01:28.239Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.718Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.Sum.html</loc>
-    <lastmod>2026-04-12T20:01:28.247Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.725Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kernels.html</loc>
-    <lastmod>2026-04-12T20:01:28.223Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.703Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.kriging.html</loc>
-    <lastmod>2026-04-12T20:01:28.041Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.535Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.mlp_surrogate.html</loc>
-    <lastmod>2026-04-12T20:01:28.145Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.632Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.nystroem.html</loc>
-    <lastmod>2026-04-12T20:01:28.180Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.664Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.pipeline.html</loc>
-    <lastmod>2026-04-12T20:01:28.262Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.739Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/surrogate.simple_kriging.SimpleKriging.html</loc>
-    <lastmod>2026-04-12T20:01:28.124Z</lastmod>
+    <lastmod>2026-04-12T22:14:23.612Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/tricands.html</loc>
-    <lastmod>2026-04-12T20:01:30.399Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.718Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/tricands.tricands.tricands.html</loc>
-    <lastmod>2026-04-12T20:01:30.430Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.747Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/tricands.tricands.tricands_interior.html</loc>
-    <lastmod>2026-04-12T20:01:30.439Z</lastmod>
+    <lastmod>2026-04-12T22:14:25.756Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.boundaries.map_to_original_scale.html</loc>
-    <lastmod>2026-04-12T20:01:29.108Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.521Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.eval.mo_cv_models.html</loc>
-    <lastmod>2026-04-12T20:01:29.134Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.545Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.eval.html</loc>
-    <lastmod>2026-04-12T20:01:29.126Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.538Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.file.html</loc>
-    <lastmod>2026-04-12T20:01:29.153Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.562Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.mapping.html</loc>
-    <lastmod>2026-04-12T20:01:29.169Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.577Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.pca.get_pca.html</loc>
-    <lastmod>2026-04-12T20:01:29.217Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.621Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.pca.plot_loading_scores.html</loc>
-    <lastmod>2026-04-12T20:01:29.226Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.631Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.pca.plot_pca_scree.html</loc>
-    <lastmod>2026-04-12T20:01:29.238Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.642Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.html</loc>
-    <lastmod>2026-04-12T20:01:29.087Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.502Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.scaler.html</loc>
-    <lastmod>2026-04-12T20:01:29.254Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.658Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.compute_coefficients_table.html</loc>
-    <lastmod>2026-04-12T20:01:29.366Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.763Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.condition_index.html</loc>
-    <lastmod>2026-04-12T20:01:29.375Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.771Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.fit_all_lm.html</loc>
-    <lastmod>2026-04-12T20:01:29.384Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.780Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.get_combinations.html</loc>
-    <lastmod>2026-04-12T20:01:29.393Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.788Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.normalize_X.html</loc>
-    <lastmod>2026-04-12T20:01:29.403Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.797Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.partial_correlation.html</loc>
-    <lastmod>2026-04-12T20:01:29.410Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.804Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.plot_coeff_vs_pvals.html</loc>
-    <lastmod>2026-04-12T20:01:29.426Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.818Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.preprocess_df_for_ols.html</loc>
-    <lastmod>2026-04-12T20:01:29.441Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.832Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/reference/utils.stats.semi_partial_correlation.html</loc>
-    <lastmod>2026-04-12T20:01:29.442Z</lastmod>
+    <lastmod>2026-04-12T22:14:24.834Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/sequential-parameter-optimization-cookbook.html</loc>
-    <lastmod>2026-04-12T18:21:04.755Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/spotoptim_examples.html</loc>
-    <lastmod>2026-04-12T18:21:04.755Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/data.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/factor_analyzer.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/hyperparameters.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/mo.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/optimizer.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/reporting.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/spotoptim.html</loc>
-    <lastmod>2026-04-12T18:21:04.756Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
   <url>
     <loc>https://sequential-parameter-optimization.github.io/spotoptim/docs/user_guide/tricands.html</loc>
-    <lastmod>2026-04-12T18:21:04.757Z</lastmod>
+    <lastmod>2026-04-12T20:30:43.795Z</lastmod>
   </url>
 </urlset>
