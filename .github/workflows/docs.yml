@@ -55,7 +55,7 @@ jobs:
           uv run quartodoc interlinks
 
       - name: Render Quarto site
-        run: uv run quarto render --no-cache
+        run: uv run quarto render
 
       - name: Deploy to GitHub Pages
         uses: quarto-dev/quarto-actions/publish@v2

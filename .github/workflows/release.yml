@@ -89,7 +89,7 @@ jobs:
           uv run --extra docs quartodoc interlinks
 
       - name: Render documentation
-        run: uv run --extra docs quarto render --no-cache
+        run: uv run --extra docs quarto render
 
       - name: Deploy to GitHub Pages
         uses: quarto-dev/quarto-actions/publish@v2

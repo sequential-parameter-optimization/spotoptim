@@ -147,9 +147,9 @@ def obj_with_lr(X):
 
 opt = SpotOptim(
     fun=obj_with_lr,
-    bounds=[(-5, -1), (0.0, 1.0)],
+    bounds=[(1e-5, 1e-1), (0.0, 1.0)],
     var_type=["float", "float"],
-    var_name=["log10_lr", "weight"],
+    var_name=["lr", "weight"],
     var_trans=["log10", None],
     max_iter=20,
     n_initial=10,
@@ -157,13 +157,14 @@ opt = SpotOptim(
 )
 result = opt.optimize()
 
-print(f"Best log10_lr: {result.x[0]:.4f}")
+print(f"Best lr      : {result.x[0]:.6f}")
 print(f"Best weight  : {result.x[1]:.4f}")
 print(f"Best f(x)    : {result.fun:.8f}")
 ```
 
 With `var_trans=["log10", None]`, the first variable is optimized in
-log10 space internally but reported in log10 scale in the result.
+log10 space internally. The bounds are specified in natural (original)
+scale --- here `1e-5` to `1e-1` for the learning rate.
 
 ---
 

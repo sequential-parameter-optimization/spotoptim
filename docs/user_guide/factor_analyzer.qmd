@@ -17,7 +17,7 @@ using the Kaiser-Meyer-Olkin (KMO) test and Bartlett's test of sphericity:
 
 ```{python}
 import numpy as np
-from spotoptim.factor_analyzer.factor_analyzer_utils import (
+from spotoptim.factor_analyzer.factor_analyzer import (
     calculate_kmo,
     calculate_bartlett_sphericity,
 )

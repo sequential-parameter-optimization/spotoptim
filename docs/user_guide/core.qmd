@@ -36,8 +36,7 @@ class SpotOptimProtocol(Protocol):
     ...
 ```
 
-See [SpotOptimProtocol API](../reference/core.protocol.SpotOptimProtocol.qmd)
-for the full attribute list.
+See `core/protocol.py` in the source for the full attribute list.
 
 ---
 
@@ -60,9 +59,21 @@ configurations. It bundles dataset, model class, hyperparameters, device
 settings, and training parameters into a single object.
 
 ```{python}
+import numpy as np
+from spotoptim.core.data import SpotDataFromArray
 from spotoptim.core.experiment import ExperimentControl
+from spotoptim.nn.mlp import MLP
 
+# Prepare a minimal dataset
+X = np.array([[0.1, 0.2], [0.3, 0.4]])
+y = np.array([[1.0], [2.0]])
+dataset = SpotDataFromArray(x_train=X, y_train=y)
+
+# Create experiment control
 ec = ExperimentControl(
+    dataset=dataset,
+    model_class=MLP,
+    hyperparameters={"l1": 16, "num_hidden_layers": 1, "lr": 1e-3},
     experiment_name="demo",
     seed=0,
     device="cpu",

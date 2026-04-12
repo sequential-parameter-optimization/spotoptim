@@ -157,9 +157,9 @@ scheduler.
 
 ```{python}
 import torch
-from spotoptim.nn import LinearRegressor
+from spotoptim.nn import MLP
 
-model = LinearRegressor(input_dim=5, output_dim=1, lr=1.0)
+model = MLP(in_channels=5, hidden_channels=[16, 1], lr=1.0)
 optimizer = model.get_optimizer("AdamWScheduleFree")
 
 print(f"Optimizer type: {type(optimizer).__name__}")
