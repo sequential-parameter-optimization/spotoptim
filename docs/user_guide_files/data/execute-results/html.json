@@ -1,0 +1,12 @@
+{
+  "hash": "cbe02308c6a91c38d3cbc005007898b6",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"Datasets and Data Loaders\"\ndescription: \"Ready-to-use datasets for PyTorch-based optimization workflows.\"\n---\n\nThe `data` subpackage provides PyTorch `Dataset` wrappers and data\nloader utilities. These are primarily used for hyperparameter tuning\nof neural networks with spotoptim.\n\n---\n\n## DiabetesDataset\n\n`DiabetesDataset` wraps the sklearn diabetes regression dataset as a\nPyTorch `Dataset`. It provides 442 samples with 10 features each.\n\n::: {#4ca989da .cell execution_count=1}\n``` {.python .cell-code}\nfrom spotoptim.data import DiabetesDataset\n\nds = DiabetesDataset()\nprint(f\"Samples : {ds.n_samples}\")\nprint(f\"Features: {ds.n_features}\")\n\nx, y = ds[0]\nprint(f\"First sample shape: {x.shape}\")\nprint(f\"First target shape: {y.shape}\")\n```\n\n::: {.cell-output .cell-output-stdout}\n```\nSamples : 442\nFeatures: 10\nFirst sample shape: torch.Size([10])\nFirst target shape: torch.Size([1])\n```\n:::\n:::\n\n\n---\n\n## Data Loaders\n\n`get_diabetes_dataloaders()` creates train and test `DataLoader` objects\nwith configurable split, batch size, and optional feature scaling:\n\n::: {#9af69098 .cell execution_count=2}\n``` {.python .cell-code}\nfrom spotoptim.data import get_diabetes_dataloaders\n\ntrain_loader, test_loader, scaler = get_diabetes_dataloaders(\n    test_size=0.2,\n    batch_size=32,\n    scale_features=True,\n    random_state=0,\n)\n\nX_batch, y_batch = next(iter(train_loader))\nprint(f\"Train batches : {len(train_loader)}\")\nprint(f\"Test batches  : {len(test_loader)}\")\nprint(f\"Batch X shape : {X_batch.shape}\")\nprint(f\"Batch y shape : {y_batch.shape}\")\nprint(f\"Scaler fitted : {scaler is not None}\")\n```\n\n::: {.cell-output .cell-output-stdout}\n```\nTrain batches : 12\nTest batches  : 3\nBatch X shape : torch.Size([32, 10])\nBatch y shape : torch.Size([32, 1])\nScaler fitted : True\n```\n:::\n:::\n\n\n---\n\n## See Also\n\n- [Neural Networks](nn.qmd) --- MLP and LinearRegressor models\n- [Hyperparameters](hyperparameters.qmd) --- Defining search spaces for NN tuning\n\n",
+    "supporting": [
+      "data_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "hash": "7fe35a3cd89bf94afe8bc7a170f38f9b",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"Exploratory Data Analysis\"\ndescription: \"Histograms, boxplots, and summary visualizations for optimization data.\"\n---\n\nThe `eda` subpackage provides quick visualization functions for\nexploring optimization data. These are particularly useful for\ninspecting the distribution of evaluated parameter values and\nobjective function responses.\n\n---\n\n## Histograms\n\n`plot_ip_histograms()` creates a grid of histograms for each column\nin a DataFrame. Columns with few unique values (controlled by\n`thrs_unique`) are shown as bar charts instead.\n\n::: {#39fe9b34 .cell execution_count=1}\n``` {.python .cell-code}\nimport numpy as np\nimport pandas as pd\nfrom spotoptim.eda.plots import plot_ip_histograms\n\nnp.random.seed(0)\ndf = pd.DataFrame({\n    \"x1\": np.random.uniform(-5, 5, 50),\n    \"x2\": np.random.uniform(-5, 5, 50),\n    \"objective\": np.random.uniform(0, 25, 50),\n})\n\nplot_ip_histograms(df, bins=15, num_cols=3, figwidth=12)\n```\n\n::: {.cell-output .cell-output-display}\n![](eda_files/figure-html/cell-2-output-1.png){width=1171 height=470}\n:::\n:::\n\n\n### Highlighting Specific Points\n\nPass `add_points` to overlay vertical lines for specific configurations\n(e.g., the best solution found):\n\n::: {#b7f21ea7 .cell execution_count=2}\n``` {.python .cell-code}\nimport numpy as np\nimport pandas as pd\nfrom spotoptim.eda.plots import plot_ip_histograms\n\nnp.random.seed(0)\ndf = pd.DataFrame({\n    \"x1\": np.random.uniform(-5, 5, 50),\n    \"x2\": np.random.uniform(-5, 5, 50),\n})\n\nbest_point = pd.DataFrame({\"x1\": [0.1], \"x2\": [-0.2]})\nplot_ip_histograms(df, bins=15, num_cols=2, add_points=best_point)\n```\n\n::: {.cell-output .cell-output-display}\n![](eda_files/figure-html/cell-3-output-1.png){width=950 height=470}\n:::\n:::\n\n\n---\n\n## See Also\n\n- [Reporting and Analysis](reporting.qmd) --- Tabular summaries and importance scores\n- [Visualization](plot.qmd) --- Surrogate and progress plots\n- [Factor Analysis](factor_analyzer.qmd) --- Latent structure analysis\n\n",
+    "supporting": [
+      "eda_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}
