@@ -1,0 +1,82 @@
+---
+title: "Core Infrastructure"
+description: "Data protocols, storage, and experiment control that underpin spotoptim."
+---
+
+The `core` subpackage provides the foundational infrastructure that
+the rest of spotoptim builds on. Most users interact with it indirectly
+through `SpotOptim`, but understanding these components helps when
+extending the package or building custom workflows.
+
+---
+
+## SpotOptimProtocol
+
+`SpotOptimProtocol` is a structural typing protocol (PEP 544) that
+defines the interface extracted modules expect. Instead of importing
+the concrete `SpotOptim` class (which would create circular imports),
+modules like `optimizer.steady_state` and `reporting.analysis` accept
+any object matching this protocol.
+
+The protocol declares configuration attributes (`bounds`, `max_iter`,
+`acquisition`, `surrogate`, etc.) and mutable state attributes (`X_`,
+`y_`, `best_x_`, `best_y_`, etc.). This makes it straightforward to
+test extracted functions with mock objects or to use them outside the
+main `SpotOptim` class.
+
+```python
+# Signature (not executable — for illustration)
+class SpotOptimProtocol(Protocol):
+    bounds: list
+    max_iter: int
+    surrogate: object
+    acquisition: str
+    X_: np.ndarray
+    y_: np.ndarray
+    ...
+```
+
+See [SpotOptimProtocol API](../reference/core.protocol.SpotOptimProtocol.qmd)
+for the full attribute list.
+
+---
+
+## Storage
+
+The `core.storage` module manages the optimizer's internal data arrays.
+Functions like `init_storage()` and `update_storage()` handle appending
+new evaluation results, updating running statistics (mean, variance,
+best-so-far), and tracking success rates.
+
+These are called automatically by `SpotOptim` during optimization. They
+accept a `SpotOptimProtocol` instance rather than the concrete class.
+
+---
+
+## ExperimentControl
+
+`ExperimentControl` is a dataclass for managing PyTorch-based experiment
+configurations. It bundles dataset, model class, hyperparameters, device
+settings, and training parameters into a single object.
+
+```{python}
+from spotoptim.core.experiment import ExperimentControl
+
+ec = ExperimentControl(
+    experiment_name="demo",
+    seed=0,
+    device="cpu",
+    batch_size=32,
+    epochs=10,
+)
+print(f"Experiment: {ec.experiment_name}")
+print(f"Device    : {ec.device}")
+print(f"Batch size: {ec.batch_size}")
+```
+
+---
+
+## See Also
+
+- [The SpotOptim Class](spotoptim.qmd) --- The main class that uses these core components
+- [Utilities](utils.qmd) --- Helper functions for boundaries, PCA, OCBA

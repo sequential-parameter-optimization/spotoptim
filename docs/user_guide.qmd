@@ -1,0 +1,119 @@
+---
+title: "User Guide"
+description: "Comprehensive guide to the spotoptim package: surrogate-model-based optimization of expensive black-box functions."
+---
+
+spotoptim is a Python toolbox for Sequential Parameter Optimization (SPO).
+It optimizes expensive black-box functions by building a surrogate model
+(typically Kriging) from a small initial design, then iteratively selecting
+new evaluation points using an acquisition function. The result is a
+scipy-compatible `OptimizeResult` object.
+
+The core loop looks like this:
+
+```
+Initial Design  -->  Evaluate  -->  Fit Surrogate  -->  Optimize Acquisition
+     ^                                                         |
+     |                   Infill (new point)                    |
+     +---------------------------------------------------------+
+```
+
+---
+
+## Quick Start
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Evaluations: {result.nfev}")
+```
+
+---
+
+## How to Read This Guide
+
+Each page below covers one spotoptim module. Start with
+[The SpotOptim Class](user_guide/spotoptim.qmd) for the core workflow,
+then explore the modules that match your use case.
+
+---
+
+## Module Index
+
+### Core Workflow
+
+- [The SpotOptim Class](user_guide/spotoptim.qmd) --- Central optimizer: constructor, `optimize()`, `OptimizeResult`, variable types, noisy optimization
+- [Acquisition and Infill](user_guide/optimizer.qmd) --- Acquisition functions (`"y"`, `"ei"`, `"pi"`), infill strategies, acquisition optimizers
+- [Surrogate Models](user_guide/surrogate.qmd) --- Kriging, SimpleKriging, MLPSurrogate, custom sklearn surrogates
+
+### Functions and Designs
+
+- [Built-in Test Functions](user_guide/function.qmd) --- Single- and multi-objective benchmark functions, custom objectives
+- [Sampling and Designs](user_guide/sampling.qmd) --- Latin Hypercube, Sobol, grid, and clustered experimental designs
+
+### Analysis and Visualization
+
+- [Visualization](user_guide/plot.qmd) --- Optimization progress, surrogate surfaces, contour plots
+- [Reporting and Analysis](user_guide/reporting.qmd) --- Results tables, variable importance, sensitivity analysis
+- [Model Inspection](user_guide/inspection.qmd) --- Feature importance (MDI, permutation), actual-vs-predicted plots
+
+### Utilities
+
+- [Utilities](user_guide/utils.qmd) --- Boundaries, transforms, PCA, OCBA, parallel helpers
+- [Neural Networks](user_guide/nn.qmd) --- PyTorch MLP and LinearRegressor for building objectives
+- [Datasets](user_guide/data.qmd) --- DiabetesDataset and data loaders for PyTorch workflows
+
+### Advanced Topics
+
+- [Multi-Objective Optimization](user_guide/mo.qmd) --- Pareto fronts, desirability functions, ZDT/DTLZ benchmarks
+- [Core Infrastructure](user_guide/core.qmd) --- SpotOptimProtocol, storage, experiment control
+- [Hyperparameter Definition](user_guide/hyperparameters.qmd) --- ParameterSet fluent API for defining search spaces
+- [Factor Analysis](user_guide/factor_analyzer.qmd) --- Exploratory and confirmatory factor analysis
+- [Exploratory Data Analysis](user_guide/eda.qmd) --- Histograms and boxplots for optimization data
+- [Triangulation Candidates](user_guide/tricands.qmd) --- Delaunay-based candidate point generation
+
+---
+
+## Module Map
+
+```
+src/spotoptim/
+├── SpotOptim.py          # Core optimizer
+├── core/                 # Protocol, storage, experiment control
+├── optimizer/            # Acquisition, steady-state, scipy wrapper
+├── surrogate/            # Kriging, MLP surrogate, Nystroem, sklearn pipeline
+├── nn/                   # PyTorch MLP, LinearRegressor
+├── function/             # Objective functions (single/multi-objective, remote, torch)
+├── sampling/             # LHS, Sobol, grid, clustered designs
+├── reporting/            # Results extraction, analysis utilities
+├── plot/                 # Surrogate visualization, contour, multi-objective
+├── utils/                # Boundaries, transforms, PCA, OCBA, TensorBoard, parallel
+├── mo/                   # Multi-objective: Morris-Mitchell, Pareto front
+├── hyperparameters/      # Parameter set management for NN tuning
+├── data/                 # Dataset loaders (e.g., DiabetesDataset)
+├── inspection/           # Model/surrogate inspection (importance, predictions)
+├── factor_analyzer/      # Factor analysis
+├── eda/                  # Exploratory data analysis
+└── tricands/             # Triangulation-based candidate generation
+```
+
+---
+
+## See Also
+
+- [Getting Started](sequential-parameter-optimization-cookbook.qmd) --- External cookbook with detailed tutorials
+- [Examples](examples.qmd) --- Quick runnable examples
+- [API Reference](reference/index.qmd) --- Complete auto-generated API documentation

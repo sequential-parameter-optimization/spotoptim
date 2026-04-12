@@ -1,0 +1,185 @@
+---
+title: "Neural Network Models"
+description: "PyTorch MLP and LinearRegressor for building objective functions and surrogates."
+---
+
+spotoptim provides two PyTorch neural network modules in `spotoptim.nn`:
+**`MLP`** (multi-layer perceptron) and **`LinearRegressor`** (configurable
+regression network). Both serve as building blocks for surrogate models and
+objective functions in hyperparameter tuning workflows.
+
+---
+
+## MLP
+
+`MLP` is a `torch.nn.Sequential` subclass that builds a multi-layer
+perceptron with configurable width, depth, activation, and dropout.
+
+The architecture can be specified in two ways:
+
+- Explicit: pass a `hidden_channels` list where each element is a layer
+  size and the last element is the output dimension.
+- Compact: pass `l1` (neurons per hidden layer), `num_hidden_layers`, and
+  `output_dim`. Internally this is converted to
+  `hidden_channels = [l1] * num_hidden_layers + [output_dim]`.
+
+```{python}
+import torch
+from spotoptim.nn import MLP
+
+torch.manual_seed(0)
+
+# Explicit architecture: 10 -> 32 -> 16 -> 1
+model = MLP(in_channels=10, hidden_channels=[32, 16, 1])
+x = torch.randn(5, 10)
+output = model(x)
+
+print(f"Input shape:  {x.shape}")
+print(f"Output shape: {output.shape}")
+print(f"Output:\n{output.detach()}")
+```
+
+The compact form is convenient for hyperparameter tuning, where `l1` and
+`num_hidden_layers` are the tunable integers:
+
+```{python}
+import torch
+from spotoptim.nn import MLP
+
+model = MLP(
+    in_channels=10,
+    l1=64,
+    num_hidden_layers=2,
+    output_dim=1,
+    dropout=0.1,
+)
+
+print(model)
+```
+
+### Default Hyperparameters
+
+`MLP.get_default_parameters()` returns a `ParameterSet` with sensible
+bounds for `l1`, `num_hidden_layers`, `activation`, `lr`, and `optimizer`.
+This is the starting point when tuning an MLP with SpotOptim.
+
+```{python}
+from spotoptim.nn import MLP
+
+params = MLP.get_default_parameters()
+print(f"Parameter names: {params.names()}")
+```
+
+See [Hyperparameter Sets](hyperparameters.qmd) for details on modifying
+parameter bounds and types.
+
+---
+
+## LinearRegressor
+
+`LinearRegressor` is a `torch.nn.Module` for regression tasks. With
+`num_hidden_layers=0` it performs pure linear regression; with one or
+more hidden layers it becomes a deep network with a configurable
+activation function.
+
+```{python}
+import torch
+from spotoptim.nn import LinearRegressor
+
+torch.manual_seed(0)
+
+# Pure linear regression: 5 inputs -> 1 output
+model = LinearRegressor(input_dim=5, output_dim=1)
+x = torch.randn(8, 5)
+y_pred = model(x)
+
+print(f"Input shape:  {x.shape}")
+print(f"Output shape: {y_pred.shape}")
+print(f"Predictions:\n{y_pred.detach()}")
+```
+
+Adding hidden layers turns it into a deep network:
+
+```{python}
+import torch
+from spotoptim.nn import LinearRegressor
+
+model = LinearRegressor(
+    input_dim=10,
+    output_dim=1,
+    l1=32,
+    num_hidden_layers=2,
+    activation="Tanh",
+)
+
+print(model.network)
+```
+
+### Default Hyperparameters
+
+Like MLP, `LinearRegressor` provides a `get_default_parameters()` class
+method for hyperparameter tuning:
+
+```{python}
+from spotoptim.nn import LinearRegressor
+
+params = LinearRegressor.get_default_parameters()
+print(f"Parameter names: {params.names()}")
+```
+
+---
+
+## Optimizers
+
+Both `MLP` and `LinearRegressor` expose a `get_optimizer` method that
+maps a string name to the corresponding `torch.optim` class. An
+internal `map_lr` function translates a unified learning-rate multiplier
+to optimizer-specific defaults (e.g., $\text{lr}=1.0$ maps to $0.001$ for
+Adam and $0.01$ for SGD).
+
+```{python}
+import torch
+from spotoptim.nn import MLP
+
+torch.manual_seed(0)
+
+model = MLP(in_channels=5, hidden_channels=[16, 1], lr=1.0)
+optimizer = model.get_optimizer("Adam")
+
+print(f"Optimizer type: {type(optimizer).__name__}")
+print(f"Learning rate:  {optimizer.param_groups[0]['lr']}")
+```
+
+Beyond standard PyTorch optimizers, spotoptim bundles
+`AdamWScheduleFree` from `spotoptim.optimizer.schedule_free`, a
+schedule-free variant of AdamW that does not require a learning-rate
+scheduler.
+
+```{python}
+import torch
+from spotoptim.nn import LinearRegressor
+
+model = LinearRegressor(input_dim=5, output_dim=1, lr=1.0)
+optimizer = model.get_optimizer("AdamWScheduleFree")
+
+print(f"Optimizer type: {type(optimizer).__name__}")
+print(f"Learning rate:  {optimizer.param_groups[0]['lr']}")
+```
+
+---
+
+## Integration with SpotOptim
+
+`MLP` and `LinearRegressor` are the network backbones used inside
+`TorchObjective`-based optimization workflows. In a typical setup:
+
+1. A network class (e.g., `LinearRegressor`) defines the architecture.
+2. A `TorchObjective` wraps training and evaluation into a single callable
+   that SpotOptim treats as its black-box objective.
+3. SpotOptim tunes hyperparameters (`l1`, `num_hidden_layers`, `lr`,
+   `optimizer`, `activation`) using a surrogate model such as
+   [MLPSurrogate or Kriging](surrogate.qmd).
+
+The dataset loaders in [Data](data.qmd) provide ready-made datasets for
+this workflow, and the [Hyperparameter Sets](hyperparameters.qmd) page
+explains how to customize parameter bounds for tuning.

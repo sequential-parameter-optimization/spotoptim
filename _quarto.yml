@@ -47,8 +47,44 @@ website:
         file: docs/sequential-parameter-optimization-cookbook.qmd
       - text: Examples
         file: docs/examples.qmd
-      - text: Download
-        file: docs/download.qmd
+      - section: User Guide
+        contents:
+          - text: Overview
+            file: docs/user_guide.qmd
+          - text: The SpotOptim Class
+            file: docs/user_guide/spotoptim.qmd
+          - text: Surrogate Models
+            file: docs/user_guide/surrogate.qmd
+          - text: Acquisition & Infill
+            file: docs/user_guide/optimizer.qmd
+          - text: Test Functions
+            file: docs/user_guide/function.qmd
+          - text: Sampling & Designs
+            file: docs/user_guide/sampling.qmd
+          - text: Visualization
+            file: docs/user_guide/plot.qmd
+          - text: Reporting & Analysis
+            file: docs/user_guide/reporting.qmd
+          - text: Utilities
+            file: docs/user_guide/utils.qmd
+          - text: Neural Networks
+            file: docs/user_guide/nn.qmd
+          - text: Multi-Objective
+            file: docs/user_guide/mo.qmd
+          - text: Core Infrastructure
+            file: docs/user_guide/core.qmd
+          - text: Hyperparameters
+            file: docs/user_guide/hyperparameters.qmd
+          - text: Datasets
+            file: docs/user_guide/data.qmd
+          - text: Model Inspection
+            file: docs/user_guide/inspection.qmd
+          - text: Factor Analysis
+            file: docs/user_guide/factor_analyzer.qmd
+          - text: Exploratory Data Analysis
+            file: docs/user_guide/eda.qmd
+          - text: Triangulation Candidates
+            file: docs/user_guide/tricands.qmd
       - text: Initialization
         file: docs/spotoptim_init.qmd
       - text: Sequential Optimization

@@ -1,0 +1,376 @@
+---
+title: "The SpotOptim Class"
+description: "Central orchestrator for surrogate-model-based optimization: constructor, optimize(), and result inspection."
+---
+
+`SpotOptim` is the main entry point for all optimization in spotoptim.
+You create an instance with your objective function and bounds, call
+`optimize()`, and get back a scipy-compatible `OptimizeResult`.
+
+---
+
+## Minimal Example
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Evaluations: {result.nfev}")
+```
+
+Three ingredients: a callable `fun`, a list of `bounds`, and a budget via
+`max_iter` (total evaluations including the initial design). The optimizer
+builds a Kriging surrogate by default and uses predicted-value acquisition
+(`acquisition="y"`).
+
+---
+
+## Key Constructor Parameters
+
+The constructor accepts many parameters. The most commonly used are:
+
+| Parameter | Default | Description |
+|---|---|---|
+| `fun` | (required) | Objective function: accepts `(n, d)` array, returns `(n,)` array |
+| `bounds` | `None` | List of `(lower, upper)` tuples, one per dimension |
+| `max_iter` | `20` | Total evaluation budget (initial + sequential) |
+| `n_initial` | `10` | Number of initial design points |
+| `surrogate` | `None` | Surrogate model (default: `Kriging(method="regression")`) |
+| `acquisition` | `"y"` | Acquisition function: `"y"`, `"ei"`, or `"pi"` |
+| `var_type` | `None` | Variable types: list of `"float"`, `"int"`, `"factor"` |
+| `seed` | `None` | Random seed for reproducibility |
+
+See the [SpotOptim API](../reference/SpotOptim.SpotOptim.qmd) for the full parameter list.
+
+---
+
+## The OptimizeResult
+
+`optimize()` returns a `scipy.optimize.OptimizeResult` with these fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `x` | `ndarray` | Best point found (original scale) |
+| `fun` | `float` | Best objective value |
+| `nfev` | `int` | Total function evaluations |
+| `nit` | `int` | Sequential iterations (after initial design) |
+| `success` | `bool` | Whether optimization succeeded |
+| `message` | `str` | Termination reason with statistics |
+| `X` | `ndarray` | All evaluated points |
+| `y` | `ndarray` | All objective values |
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import ackley
+
+opt = SpotOptim(
+    fun=ackley,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Success   : {result.success}")
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Iterations: {result.nit}")
+print(f"All points: {result.X.shape}")
+```
+
+---
+
+## Variable Types
+
+spotoptim supports three variable types via the `var_type` parameter:
+
+- `"float"` --- continuous real-valued variables (default)
+- `"int"` --- integer-constrained variables (rounded after surrogate prediction)
+- `"factor"` --- categorical/unordered variables (encoded internally)
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+
+def mixed_objective(X):
+    X = np.atleast_2d(X)
+    continuous = X[:, 0]
+    integer_val = X[:, 1]
+    factor_val = X[:, 2]
+    return continuous**2 + (integer_val - 3)**2 + factor_val
+
+opt = SpotOptim(
+    fun=mixed_objective,
+    bounds=[(-5.0, 5.0), (0, 10), (0, 4)],
+    var_type=["float", "int", "factor"],
+    var_name=["x_cont", "x_int", "x_cat"],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+When `var_type` is not provided, all variables default to `"float"`.
+
+---
+
+## Variable Transformations
+
+Use `var_trans` to apply log-transformations to parameters that span
+several orders of magnitude (e.g., learning rates):
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+
+def obj_with_lr(X):
+    X = np.atleast_2d(X)
+    lr = X[:, 0]
+    weight = X[:, 1]
+    return (lr - 0.001)**2 + (weight - 0.5)**2
+
+opt = SpotOptim(
+    fun=obj_with_lr,
+    bounds=[(-5, -1), (0.0, 1.0)],
+    var_type=["float", "float"],
+    var_name=["log10_lr", "weight"],
+    var_trans=["log10", None],
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best log10_lr: {result.x[0]:.4f}")
+print(f"Best weight  : {result.x[1]:.4f}")
+print(f"Best f(x)    : {result.fun:.8f}")
+```
+
+With `var_trans=["log10", None]`, the first variable is optimized in
+log10 space internally but reported in log10 scale in the result.
+
+---
+
+## Choosing an Acquisition Function
+
+The `acquisition` parameter controls how the optimizer selects the next
+evaluation point:
+
+- `"y"` (default) --- minimize the surrogate's predicted value (pure exploitation)
+- `"ei"` --- Expected Improvement: balances exploitation and exploration
+- `"pi"` --- Probability of Improvement: probability of beating the current best
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import rosenbrock
+
+opt = SpotOptim(
+    fun=rosenbrock,
+    bounds=[(-2, 2), (-2, 2)],
+    acquisition="ei",
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+See [Acquisition and Infill](optimizer.qmd) for details on acquisition
+optimizers and infill strategies.
+
+---
+
+## Choosing a Surrogate Model
+
+The default surrogate is `Kriging(method="regression")`. You can pass
+any model that implements `fit(X, y)` and `predict(X, return_std=False)`:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.surrogate import Kriging
+from spotoptim.function import sphere
+
+kriging = Kriging(method="interpolation", noise=1e-3, seed=0)
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    surrogate=kriging,
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+See [Surrogate Models](surrogate.qmd) for Kriging options, MLPSurrogate,
+and how to plug in sklearn estimators.
+
+---
+
+## Noisy Optimization
+
+For noisy objective functions, use `repeats_initial` and
+`repeats_surrogate` to re-evaluate each design point multiple times.
+Add `ocba_delta` to enable Optimal Computing Budget Allocation, which
+intelligently allocates extra evaluations to the most promising points.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import noisy_sphere
+
+np.random.seed(0)
+
+opt = SpotOptim(
+    fun=noisy_sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    repeats_initial=3,
+    repeats_surrogate=2,
+    ocba_delta=3,
+    max_iter=30,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Evaluations: {result.nfev}")
+```
+
+The surrogate is fitted on the mean values across repeats, reducing
+the effect of noise. See [Utilities](utils.qmd) for more on OCBA.
+
+---
+
+## Time Budget
+
+Use `max_time` (in minutes) to set a wall-clock time limit instead of
+or in addition to `max_iter`:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_time=0.05,
+    max_iter=1000,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Evaluations: {result.nfev}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+The optimizer stops when either `max_iter` or `max_time` is reached,
+whichever comes first.
+
+---
+
+## Restarts
+
+When the optimizer gets stuck in a local minimum, automatic restarts
+can help. Set `restart_after_n` to trigger a restart after that many
+consecutive iterations without improvement:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import ackley
+
+opt = SpotOptim(
+    fun=ackley,
+    bounds=[(-5, 5), (-5, 5)],
+    restart_after_n=10,
+    restart_inject_best=True,
+    max_iter=30,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+With `restart_inject_best=True` (default), the best point found so far
+is injected into the new initial design after each restart.
+
+---
+
+## Parallel Evaluation
+
+Set `n_jobs` to evaluate multiple points in parallel. Use `n_jobs=-1`
+to use all available CPU cores:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    n_jobs=2,
+    eval_batch_size=2,
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Evaluations: {result.nfev}")
+```
+
+---
+
+## Configuration Access
+
+All constructor parameters are stored in `opt.config` (a `SpotOptimConfig`
+dataclass). For convenience, you can access them directly on the optimizer:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(fun=sphere, bounds=[(-5, 5)], max_iter=15, seed=0)
+
+print(f"max_iter  : {opt.max_iter}")
+print(f"n_initial : {opt.n_initial}")
+print(f"acquisition: {opt.acquisition}")
+print(f"bounds    : {opt.bounds}")
+```
+
+---
+
+## See Also
+
+- [SpotOptim API](../reference/SpotOptim.SpotOptim.qmd) --- Full constructor and method documentation
+- [Surrogate Models](surrogate.qmd) --- Kriging, MLPSurrogate, custom surrogates
+- [Acquisition and Infill](optimizer.qmd) --- Acquisition functions and optimizers
+- [Built-in Test Functions](function.qmd) --- Benchmark functions for testing

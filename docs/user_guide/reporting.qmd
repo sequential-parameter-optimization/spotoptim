@@ -1,0 +1,171 @@
+---
+title: "Reporting and Analysis"
+description: "Extracting, formatting, and analyzing optimization results."
+---
+
+After an optimization run, spotoptim provides utilities for printing
+the best solution, building summary tables, and computing variable
+importance and sensitivity. All functions accept a `SpotOptim` instance
+and work on the data stored during `optimize()`.
+
+---
+
+## Printing the Best Solution
+
+**`print_best`** displays the best parameter vector, objective value,
+and total evaluation count in a human-readable format. Factor variables
+are mapped back to their original string labels.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+from spotoptim.reporting.results import print_best
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print_best(opt, result)
+```
+
+Pass `transformations` (a list of callables, one per dimension) to
+display parameters on a different scale --- for example, `10**x` for
+log-transformed learning rates.
+
+---
+
+## Results Table
+
+**`get_results_table`** returns a formatted table string with one row per
+variable showing its name, type, bounds, default value, and tuned
+(best) value. Set `show_importance=True` to append importance scores
+and star ratings.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+from spotoptim.reporting.results import get_results_table
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+    var_name=["x1", "x2"],
+)
+result = opt.optimize()
+
+table = get_results_table(opt)
+print(table)
+```
+
+The `tablefmt` argument accepts any format supported by the `tabulate`
+library (e.g. `"github"`, `"pipe"`, `"grid"`, `"latex"`).
+
+---
+
+## Design Table
+
+**`get_design_table`** summarises the search space before optimization
+results are known: variable names, types, bounds, default (midpoint)
+values, and transformations.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+from spotoptim.reporting.results import get_design_table
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+    var_name=["x1", "x2"],
+)
+result = opt.optimize()
+
+design = get_design_table(opt)
+print(design)
+```
+
+---
+
+## Variable Importance
+
+**`get_importance`** computes a correlation-based importance score for
+each variable. Scores are normalised to a 0--100 scale: a variable that
+correlates strongly with the objective receives a high score, while a
+variable with no correlation scores near zero.
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+from spotoptim.reporting.analysis import get_importance
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+    var_name=["x1", "x2"],
+)
+result = opt.optimize()
+
+importance = get_importance(opt)
+for name, score in zip(["x1", "x2"], importance):
+    print(f"{name}: {score:.1f}%")
+```
+
+The sphere function treats both dimensions symmetrically, so their
+importance scores will be roughly equal.
+
+---
+
+## Sensitivity Analysis
+
+**`sensitivity_spearman`** prints Spearman rank correlations between each
+parameter and the objective value, together with p-values and
+significance stars:
+
+- `***` --- $p < 0.001$ (highly significant)
+- `**` --- $p < 0.01$
+- `*` --- $p < 0.05$
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+from spotoptim.reporting.analysis import sensitivity_spearman
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+    var_name=["x1", "x2"],
+)
+result = opt.optimize()
+
+sensitivity_spearman(opt)
+print("Done")
+```
+
+---
+
+## Next Steps
+
+- [The SpotOptim Class](spotoptim.qmd) for constructor parameters and `OptimizeResult` fields
+- [Visualization](plot.qmd) for plotting progress and surrogate surfaces

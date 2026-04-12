@@ -1,0 +1,59 @@
+---
+title: "Datasets and Data Loaders"
+description: "Ready-to-use datasets for PyTorch-based optimization workflows."
+---
+
+The `data` subpackage provides PyTorch `Dataset` wrappers and data
+loader utilities. These are primarily used for hyperparameter tuning
+of neural networks with spotoptim.
+
+---
+
+## DiabetesDataset
+
+`DiabetesDataset` wraps the sklearn diabetes regression dataset as a
+PyTorch `Dataset`. It provides 442 samples with 10 features each.
+
+```{python}
+from spotoptim.data import DiabetesDataset
+
+ds = DiabetesDataset()
+print(f"Samples : {ds.n_samples}")
+print(f"Features: {ds.n_features}")
+
+x, y = ds[0]
+print(f"First sample shape: {x.shape}")
+print(f"First target shape: {y.shape}")
+```
+
+---
+
+## Data Loaders
+
+`get_diabetes_dataloaders()` creates train and test `DataLoader` objects
+with configurable split, batch size, and optional feature scaling:
+
+```{python}
+from spotoptim.data import get_diabetes_dataloaders
+
+train_loader, test_loader, scaler = get_diabetes_dataloaders(
+    test_size=0.2,
+    batch_size=32,
+    scale_features=True,
+    random_state=0,
+)
+
+X_batch, y_batch = next(iter(train_loader))
+print(f"Train batches : {len(train_loader)}")
+print(f"Test batches  : {len(test_loader)}")
+print(f"Batch X shape : {X_batch.shape}")
+print(f"Batch y shape : {y_batch.shape}")
+print(f"Scaler fitted : {scaler is not None}")
+```
+
+---
+
+## See Also
+
+- [Neural Networks](nn.qmd) --- MLP and LinearRegressor models
+- [Hyperparameters](hyperparameters.qmd) --- Defining search spaces for NN tuning

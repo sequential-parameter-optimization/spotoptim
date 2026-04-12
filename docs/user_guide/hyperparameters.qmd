@@ -1,0 +1,91 @@
+---
+title: "Hyperparameter Definition"
+description: "The ParameterSet fluent API for defining search spaces with typed variables."
+---
+
+When tuning hyperparameters of machine learning models, you need a
+structured way to define the search space. The `ParameterSet` class
+provides a fluent API for declaring float, integer, and categorical
+variables with bounds, defaults, and optional transformations.
+
+---
+
+## Building a ParameterSet
+
+Chain `add_float()`, `add_int()`, and `add_factor()` calls to build a
+search space:
+
+```{python}
+from spotoptim.hyperparameters.parameters import ParameterSet
+
+ps = ParameterSet()
+ps.add_float("learning_rate", low=-5, high=-1, default=-3, transform="log10")
+ps.add_int("num_layers", low=1, high=5, default=2)
+ps.add_float("dropout", low=0.0, high=0.5, default=0.1)
+
+print(f"Names    : {ps.names}")
+print(f"Bounds   : {ps.bounds}")
+print(f"Var types: {ps.var_type}")
+print(f"Defaults : {ps.defaults}")
+```
+
+---
+
+## Connecting to SpotOptim
+
+The `ParameterSet` properties (`bounds`, `var_type`, `var_name`,
+`var_trans`) map directly to `SpotOptim` constructor arguments:
+
+```{python}
+from spotoptim.hyperparameters.parameters import ParameterSet
+from spotoptim import SpotOptim
+import numpy as np
+
+ps = ParameterSet()
+ps.add_float("x1", low=-5, high=5, default=0)
+ps.add_float("x2", low=-5, high=5, default=0)
+
+def objective(X):
+    X = np.atleast_2d(X)
+    return np.sum(X**2, axis=1)
+
+opt = SpotOptim(
+    fun=objective,
+    bounds=ps.bounds,
+    var_type=ps.var_type,
+    var_name=ps.names,
+    var_trans=ps.var_trans,
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+---
+
+## Neural Network Default Parameters
+
+The `MLP` and `LinearRegressor` classes provide `get_default_parameters()`
+which returns a pre-configured `ParameterSet` for their hyperparameters:
+
+```{python}
+from spotoptim.nn import MLP
+
+ps = MLP.get_default_parameters()
+print(f"Names : {ps.names}")
+print(f"Bounds: {ps.bounds}")
+```
+
+This makes it easy to set up a hyperparameter tuning loop for neural
+network architectures.
+
+---
+
+## See Also
+
+- [The SpotOptim Class](spotoptim.qmd) --- Using bounds and var_type
+- [Neural Networks](nn.qmd) --- Models with default ParameterSets

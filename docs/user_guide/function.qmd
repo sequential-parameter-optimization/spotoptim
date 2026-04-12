@@ -1,0 +1,201 @@
+---
+title: "Built-in Test Functions"
+description: "Analytical objective functions for benchmarking, testing, and learning spotoptim."
+---
+
+spotoptim ships with a collection of well-known test functions for
+optimization benchmarking. All functions accept a 2-D array of shape
+`(n_samples, n_features)` and return a 1-D array of shape `(n_samples,)`.
+They live in `spotoptim.function`.
+
+---
+
+## Single-Objective Functions
+
+### Sphere
+
+The simplest test function: $f(\mathbf{x}) = \sum_{i=1}^{d} x_i^2$.
+Global minimum at the origin.
+
+```{python}
+import numpy as np
+from spotoptim.function import sphere
+
+X = np.array([[0.0, 0.0], [1.0, 2.0], [-3.0, 4.0]])
+y = sphere(X)
+print(f"sphere([0,0]) = {y[0]:.1f}")
+print(f"sphere([1,2]) = {y[1]:.1f}")
+print(f"sphere([-3,4]) = {y[2]:.1f}")
+```
+
+---
+
+### Noisy Sphere
+
+Sphere with additive Gaussian noise:
+$f(\mathbf{x}) = \sum x_i^2 + \mathcal{N}(0, \sigma^2)$.
+Useful for testing noise-handling strategies (repeats, OCBA).
+
+```{python}
+import numpy as np
+from spotoptim.function import noisy_sphere
+
+np.random.seed(0)
+X = np.array([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]])
+y = noisy_sphere(X, sigma=0.1)
+print(f"Three evaluations at origin: {y}")
+print(f"Mean: {y.mean():.4f}, Std: {y.std():.4f}")
+```
+
+---
+
+### Rosenbrock
+
+A classic non-convex function with a narrow curved valley:
+$f(x, y) = (1 - x)^2 + 100(y - x^2)^2$.
+Global minimum at $(1, 1, \ldots, 1)$.
+
+```{python}
+import numpy as np
+from spotoptim.function import rosenbrock
+
+X = np.array([[1.0, 1.0], [0.0, 0.0], [-1.0, 2.0]])
+y = rosenbrock(X)
+print(f"rosenbrock([1,1]) = {y[0]:.1f}  (global min)")
+print(f"rosenbrock([0,0]) = {y[1]:.1f}")
+print(f"rosenbrock([-1,2]) = {y[2]:.1f}")
+```
+
+---
+
+### Ackley
+
+Multi-modal function with many local minima:
+global minimum $f(\mathbf{0}) = 0$.
+
+```{python}
+import numpy as np
+from spotoptim.function import ackley
+
+X = np.array([[0.0, 0.0], [1.0, 1.0]])
+y = ackley(X)
+print(f"ackley([0,0]) = {y[0]:.4f}  (global min)")
+print(f"ackley([1,1]) = {y[1]:.4f}")
+```
+
+---
+
+### Michalewicz
+
+A function with steep valleys whose depth increases with the
+steepness parameter $m$. The 2-D minimum is approximately $-1.8013$.
+
+```{python}
+import numpy as np
+from spotoptim.function import michalewicz
+
+X = np.array([[2.20, 1.57]])
+y = michalewicz(X, m=10)
+print(f"michalewicz([2.20, 1.57]) = {y[0]:.4f}")
+```
+
+---
+
+### Engineering Functions
+
+spotoptim also includes engineering benchmark functions:
+
+- `wingwt` --- Wing weight estimation (9 or 10 dimensions, unit-cube domain)
+- `robot_arm_hard` --- 10-link robot arm maze navigation (10 dimensions)
+- `robot_arm_obstacle` --- 10-link robot arm with obstacle avoidance
+- `lennard_jones` --- Lennard-Jones atomic cluster potential (39 dimensions for 13 atoms)
+
+```{python}
+import numpy as np
+from spotoptim.function import robot_arm_hard
+
+X = np.random.default_rng(0).uniform(0, 1, size=(3, 10))
+y = robot_arm_hard(X)
+print(f"robot_arm_hard evaluations: {y}")
+```
+
+---
+
+## Optimizing a Built-in Function
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import ackley
+
+opt = SpotOptim(
+    fun=ackley,
+    bounds=[(-5, 5), (-5, 5)],
+    acquisition="ei",
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+---
+
+## Writing a Custom Objective
+
+Your objective function must accept a 2-D array `X` of shape
+`(n_samples, n_features)` and return a 1-D array of shape `(n_samples,)`:
+
+```{python}
+import numpy as np
+from spotoptim import SpotOptim
+
+def my_objective(X):
+    X = np.atleast_2d(X)
+    x, y = X[:, 0], X[:, 1]
+    return np.sin(x) * np.cos(y) + 0.1 * (x**2 + y**2)
+
+opt = SpotOptim(
+    fun=my_objective,
+    bounds=[(-3, 3), (-3, 3)],
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+---
+
+## Multi-Objective Functions
+
+Multi-objective functions return arrays of shape `(n_samples, n_objectives)`.
+They live in `spotoptim.function` alongside the single-objective functions.
+
+```{python}
+import numpy as np
+from spotoptim.function import fonseca_fleming
+
+X = np.array([[0.0, 0.0], [0.5, 0.5], [-1.0, 1.0]])
+y = fonseca_fleming(X)
+print(f"Shape: {y.shape}")
+print(f"fonseca_fleming([0, 0])    = {y[0]}")
+print(f"fonseca_fleming([0.5, 0.5]) = {y[1]}")
+```
+
+Available multi-objective functions include `zdt1` through `zdt6`,
+`dtlz1`, `dtlz2`, `fonseca_fleming`, `schaffer_n1`, and `kursawe`.
+See [Multi-Objective Optimization](mo.qmd) for details on optimizing these.
+
+---
+
+## See Also
+
+- [The SpotOptim Class](spotoptim.qmd) --- How to run optimization with these functions
+- [Multi-Objective Optimization](mo.qmd) --- Pareto fronts and multi-objective workflows
+- [Functions API](../reference/function.so.qmd) --- Complete function reference

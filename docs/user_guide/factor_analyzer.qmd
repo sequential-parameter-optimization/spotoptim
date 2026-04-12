@@ -1,0 +1,74 @@
+---
+title: "Factor Analysis"
+description: "Exploratory and confirmatory factor analysis for high-dimensional optimization data."
+---
+
+The `factor_analyzer` subpackage provides tools for exploratory factor
+analysis (EFA) and confirmatory factor analysis (CFA). These are useful
+for understanding the latent structure in high-dimensional parameter
+spaces or response data.
+
+---
+
+## Suitability Tests
+
+Before running factor analysis, check whether your data is suitable
+using the Kaiser-Meyer-Olkin (KMO) test and Bartlett's test of sphericity:
+
+```{python}
+import numpy as np
+from spotoptim.factor_analyzer.factor_analyzer_utils import (
+    calculate_kmo,
+    calculate_bartlett_sphericity,
+)
+
+np.random.seed(0)
+X = np.random.randn(100, 5)
+X[:, 1] = X[:, 0] + np.random.randn(100) * 0.3
+X[:, 3] = X[:, 2] + np.random.randn(100) * 0.5
+
+kmo_all, kmo_model = calculate_kmo(X)
+chi2, p_value = calculate_bartlett_sphericity(X)
+
+print(f"KMO measure   : {kmo_model:.4f}")
+print(f"Bartlett chi2 : {chi2:.2f}")
+print(f"Bartlett p    : {p_value:.6f}")
+```
+
+A KMO value above 0.6 and a significant Bartlett test (low p-value)
+suggest the data is suitable for factor analysis.
+
+---
+
+## Exploratory Factor Analysis
+
+`FactorAnalyzer` extracts latent factors from the data:
+
+```{python}
+import numpy as np
+from spotoptim.factor_analyzer.factor_analyzer import FactorAnalyzer
+
+np.random.seed(0)
+X = np.random.randn(100, 5)
+X[:, 1] = X[:, 0] + np.random.randn(100) * 0.3
+X[:, 3] = X[:, 2] + np.random.randn(100) * 0.5
+
+fa = FactorAnalyzer(n_factors=2, rotation="varimax")
+fa.fit(X)
+
+loadings = fa.loadings_
+print(f"Loadings shape: {loadings.shape}")
+print(f"Factor loadings:\n{np.round(loadings, 3)}")
+```
+
+### Rotation Methods
+
+Common rotation methods: `"varimax"` (orthogonal), `"promax"` (oblique),
+or `None` (no rotation).
+
+---
+
+## See Also
+
+- [Exploratory Data Analysis](eda.qmd) --- Histograms and boxplots
+- [Utilities](utils.qmd) --- PCA as an alternative dimensionality reduction

@@ -1,0 +1,99 @@
+---
+title: "Triangulation-Based Candidate Generation"
+description: "Generating candidate points via Delaunay triangulation for acquisition optimization."
+---
+
+The `tricands` module generates candidate points for infill by
+computing the Delaunay triangulation of the existing evaluated points.
+This provides a geometry-aware alternative to global optimizers like
+differential evolution for maximizing the acquisition function.
+
+---
+
+## How It Works
+
+Given a set of evaluated points, `tricands()`:
+
+1. Computes the Delaunay triangulation of those points.
+2. Generates interior candidates at the midpoints (centroids) of each simplex.
+3. Optionally generates fringe candidates that extend beyond the convex hull toward the search space boundary.
+4. Returns a combined set of candidate points.
+
+The interior candidates explore gaps between existing points. The fringe
+candidates push the search toward unexplored boundary regions.
+
+---
+
+## Basic Usage
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from spotoptim.tricands import tricands
+
+np.random.seed(0)
+X = np.random.uniform(0, 1, size=(10, 2))
+
+candidates = tricands(X, p=0.5, fringe=True)
+
+plt.scatter(X[:, 0], X[:, 1], c="blue", s=50, label="Data", zorder=5)
+plt.scatter(candidates[:, 0], candidates[:, 1], c="red", s=20, label="Candidates", zorder=4)
+plt.xlabel("$x_1$")
+plt.ylabel("$x_2$")
+plt.title(f"Tricands: {candidates.shape[0]} candidates from {X.shape[0]} points")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
+print(f"Data points: {X.shape[0]}")
+print(f"Candidates : {candidates.shape[0]}")
+```
+
+---
+
+## Parameters
+
+| Parameter | Default | Description |
+|---|---|---|
+| `X` | (required) | Existing data points, shape `(n, d)` |
+| `p` | `0.5` | Fraction for fringe extension beyond convex hull |
+| `fringe` | `True` | Whether to include fringe candidates |
+| `nmax` | `None` | Maximum number of candidates to return |
+| `lower` | `0` | Lower bound of the search space |
+| `upper` | `1` | Upper bound of the search space |
+
+---
+
+## Integration with SpotOptim
+
+Use tricands as the acquisition optimizer by setting
+`acquisition_optimizer="tricands"`:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    acquisition_optimizer="tricands",
+    tricands_fringe=True,
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+The hybrid `"de_tricands"` mode randomly alternates between differential
+evolution and tricands, controlled by `prob_de_tricands`.
+See [Acquisition and Infill](optimizer.qmd) for details.
+
+---
+
+## See Also
+
+- [Acquisition and Infill](optimizer.qmd) --- How tricands fits into the optimization loop
+- [Sampling and Designs](sampling.qmd) --- Initial space-filling designs

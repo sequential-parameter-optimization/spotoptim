@@ -1,0 +1,191 @@
+---
+title: "Utilities"
+description: "Boundaries, transformations, PCA, OCBA, scaling, and parallel helpers."
+---
+
+spotoptim ships a collection of utility functions that support the
+optimization loop and post-hoc analysis. This page covers the most
+commonly used helpers in `spotoptim.utils`.
+
+---
+
+## Boundaries and Mapping
+
+**`get_boundaries`** computes the column-wise minimum and maximum of a
+NumPy array. This is useful for determining the range of evaluated
+points or for setting up scaling.
+
+`map_to_original_scale` maps points from the $[0, 1]$ unit hypercube
+back to the original variable ranges defined by lower and upper bounds.
+
+```{python}
+import numpy as np
+from spotoptim.utils import get_boundaries, map_to_original_scale
+
+np.random.seed(0)
+data = np.random.uniform(low=-5, high=5, size=(20, 3))
+
+min_vals, max_vals = get_boundaries(data)
+print(f"Min per column: {min_vals}")
+print(f"Max per column: {max_vals}")
+```
+
+Given boundaries, you can map unit-scaled search points back to the
+original scale:
+
+```{python}
+import numpy as np
+from spotoptim.utils import map_to_original_scale
+
+x_min = np.array([0.0, -10.0])
+x_max = np.array([10.0, 10.0])
+X_unit = np.array([[0.0, 0.5], [0.25, 0.75], [1.0, 1.0]])
+
+X_original = map_to_original_scale(X_unit, x_min, x_max)
+print(X_original)
+```
+
+---
+
+## PCA Utilities
+
+The `get_pca` function scales numeric columns of a DataFrame and
+performs Principal Component Analysis. It returns the fitted PCA object,
+scaled data, feature names, sample names, and the transformed data.
+
+`get_pca_topk` identifies the top $k$ features with the strongest
+influence on PC1 and PC2.
+
+```{python}
+import numpy as np
+import pandas as pd
+from spotoptim.utils import get_pca, get_pca_topk
+
+np.random.seed(0)
+df = pd.DataFrame({
+    "feature_a": np.random.randn(50),
+    "feature_b": np.random.randn(50) * 2,
+    "feature_c": np.random.randn(50) + 1,
+    "feature_d": np.random.randn(50) * 0.5,
+})
+
+pca, scaled_data, feature_names, sample_names, pca_data = get_pca(df, n_components=3)
+
+print(f"Feature names: {list(feature_names)}")
+print(f"Explained variance: {pca.explained_variance_ratio_}")
+print(f"PCA data shape: {pca_data.shape}")
+```
+
+Use `get_pca_topk` to find which original features load most heavily on
+the first two components:
+
+```{python}
+import numpy as np
+import pandas as pd
+from spotoptim.utils import get_pca, get_pca_topk
+
+np.random.seed(0)
+df = pd.DataFrame({
+    "feature_a": np.random.randn(50),
+    "feature_b": np.random.randn(50) * 2,
+    "feature_c": np.random.randn(50) + 1,
+    "feature_d": np.random.randn(50) * 0.5,
+})
+
+pca, _, feature_names, _, _ = get_pca(df, n_components=2)
+top_pc1, top_pc2 = get_pca_topk(pca, feature_names, k=2)
+
+print(f"Top features for PC1: {top_pc1}")
+print(f"Top features for PC2: {top_pc2}")
+```
+
+---
+
+## OCBA (Optimal Computing Budget Allocation)
+
+When the objective function is noisy, repeated evaluations of the same
+design can be allocated smartly using **OCBA**. Given the current sample
+means, variances, and an incremental budget $\delta$, `get_ocba`
+returns an allocation vector that concentrates evaluations on the most
+promising and most uncertain designs.
+
+`get_ranks` is a helper that returns the rank of each element in an
+array (0 = smallest).
+
+```{python}
+import numpy as np
+from spotoptim.utils.ocba import get_ocba, get_ranks
+
+means = np.array([2.1, 3.5, 1.8, 4.0, 2.9])
+variances = np.array([0.5, 1.2, 0.3, 0.8, 1.0])
+delta = 20
+
+ranks = get_ranks(means)
+print(f"Ranks: {ranks}")
+
+allocation = get_ocba(means, variances, delta)
+print(f"OCBA allocation (delta={delta}): {allocation}")
+```
+
+The allocation vector tells you how many additional evaluations each
+design should receive. Designs with lower means (better objectives,
+assuming minimization) and higher variance tend to receive more budget.
+
+See [The SpotOptim Class](spotoptim.qmd) for how OCBA integrates into
+noisy optimization runs.
+
+---
+
+## TorchStandardScaler
+
+`TorchStandardScaler` standardizes PyTorch tensors to zero mean and unit
+variance, analogous to sklearn's `StandardScaler` but operating on
+`torch.Tensor` objects directly.
+
+```{python}
+import torch
+from spotoptim.utils import TorchStandardScaler
+
+torch.manual_seed(0)
+X = torch.randn(10, 3) * 5 + 2  # mean ~2, std ~5
+
+scaler = TorchStandardScaler()
+scaler.fit(X)
+
+X_scaled = scaler.transform(X)
+print(f"Original mean:  {X.mean(dim=0).tolist()}")
+print(f"Scaled mean:    {X_scaled.mean(dim=0).tolist()}")
+print(f"Scaled std:     {X_scaled.std(dim=0).tolist()}")
+```
+
+The `fit_transform` shortcut fits and transforms in a single call:
+
+```{python}
+import torch
+from spotoptim.utils import TorchStandardScaler
+
+torch.manual_seed(0)
+X = torch.randn(8, 2) * 3
+
+scaler = TorchStandardScaler()
+X_scaled = scaler.fit_transform(X)
+print(f"Shape: {X_scaled.shape}")
+print(f"Mean after scaling: {X_scaled.mean(dim=0)}")
+```
+
+---
+
+## Parallel Evaluation
+
+`is_gil_disabled` checks whether the current Python interpreter is a
+free-threaded build (PEP 703). On standard CPython the GIL is enabled
+and this returns `False`. spotoptim uses this check internally to decide
+whether thread-based parallelism is safe for objective evaluation.
+
+```{python}
+from spotoptim.utils import is_gil_disabled
+
+result = is_gil_disabled()
+print(f"GIL disabled: {result}")
+print(f"Return type: {type(result).__name__}")
+```

@@ -1,0 +1,72 @@
+---
+title: "Model Inspection"
+description: "Feature importance, permutation importance, and prediction diagnostics."
+---
+
+The `inspection` subpackage helps you understand which variables matter
+most and how well models predict the objective. These tools are useful
+both for analyzing optimization results and for general machine learning
+model diagnostics.
+
+---
+
+## Mean Decrease in Impurity (MDI)
+
+`generate_mdi()` trains a Random Forest and extracts feature importance
+scores based on impurity reduction:
+
+```{python}
+import numpy as np
+import pandas as pd
+from spotoptim.inspection.importance import generate_mdi
+
+np.random.seed(0)
+X = np.random.uniform(-5, 5, size=(100, 3))
+y = X[:, 0]**2 + 0.5 * X[:, 1]**2 + 0.01 * X[:, 2]**2
+
+df_mdi = generate_mdi(X, y, feature_names=["x1", "x2", "x3"], random_state=0)
+print(df_mdi.to_string())
+```
+
+---
+
+## Permutation Importance
+
+`generate_imp()` measures importance by shuffling each feature and
+observing the change in model performance:
+
+```{python}
+import numpy as np
+from sklearn.model_selection import train_test_split
+from spotoptim.inspection.importance import generate_imp
+
+np.random.seed(0)
+X = np.random.uniform(-5, 5, size=(100, 3))
+y = X[:, 0]**2 + 0.5 * X[:, 1]**2 + 0.01 * X[:, 2]**2
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+
+perm_imp = generate_imp(X_train, X_test, y_train, y_test, random_state=0, n_repeats=10)
+print(f"Importance means: {perm_imp.importances_mean}")
+```
+
+---
+
+## Actual vs. Predicted
+
+`plot_actual_vs_predicted()` creates a scatter plot comparing true
+values against model predictions --- useful for diagnosing surrogate
+model quality:
+
+```python
+# Signature (non-executable illustration)
+plot_actual_vs_predicted(y_test, y_pred, title="Model Fit", show=True)
+```
+
+A perfect model would place all points on the diagonal line.
+
+---
+
+## See Also
+
+- [Reporting and Analysis](reporting.qmd) --- get_importance() integrated with SpotOptim
+- [Surrogate Models](surrogate.qmd) --- The models being inspected

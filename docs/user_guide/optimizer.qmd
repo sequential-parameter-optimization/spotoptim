@@ -1,0 +1,214 @@
+---
+title: "Acquisition Functions and Infill Strategies"
+description: "How spotoptim selects the next point to evaluate: acquisition functions, optimizers, and infill configuration."
+---
+
+After fitting the surrogate model, spotoptim must decide where to
+evaluate the (expensive) objective function next. This decision is
+governed by the acquisition function and the acquisition optimizer.
+
+---
+
+## Acquisition Functions
+
+The `acquisition` parameter controls the strategy:
+
+| Value | Name | Behavior |
+|---|---|---|
+| `"y"` | Predicted Value | Minimizes the surrogate's prediction (pure exploitation) |
+| `"ei"` | Expected Improvement | Balances exploitation and exploration via the EI formula |
+| `"pi"` | Probability of Improvement | Probability of finding a value better than the current best |
+
+The default is `"y"`, which simply picks the point where the surrogate
+predicts the lowest value. This is fast and works well when the surrogate
+is accurate, but it can get stuck in local minima.
+
+### Expected Improvement
+
+Expected Improvement is the most popular acquisition function for
+Bayesian optimization. It accounts for both the predicted value and
+the surrogate's uncertainty:
+
+$$
+\text{EI}(\mathbf{x}) = (y_{\min} - \mu(\mathbf{x})) \, \Phi(Z) + \sigma(\mathbf{x}) \, \phi(Z)
+$$
+
+where $Z = (y_{\min} - \mu(\mathbf{x})) / \sigma(\mathbf{x})$,
+$\Phi$ is the standard normal CDF, and $\phi$ is the PDF.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import ackley
+
+opt = SpotOptim(
+    fun=ackley,
+    bounds=[(-5, 5), (-5, 5)],
+    acquisition="ei",
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best x    : {result.x}")
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+---
+
+## Acquisition Optimizers
+
+The acquisition optimizer determines how spotoptim searches for the
+point that maximizes the acquisition function. Set via `acquisition_optimizer`:
+
+| Value | Description |
+|---|---|
+| `"differential_evolution"` | Differential Evolution (default) --- global optimizer, robust |
+| `"tricands"` | Triangulation candidates --- geometric infill based on Delaunay triangulation |
+| `"de_tricands"` | Hybrid: randomly switches between DE and tricands per iteration |
+| `"L-BFGS-B"`, `"Nelder-Mead"`, etc. | Any `scipy.optimize.minimize` method |
+
+### Differential Evolution (Default)
+
+DE is a global optimizer that works well in most situations. It searches
+the entire bounds for the best acquisition value.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import rosenbrock
+
+opt = SpotOptim(
+    fun=rosenbrock,
+    bounds=[(-2, 2), (-2, 2)],
+    acquisition="ei",
+    acquisition_optimizer="differential_evolution",
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+### Triangulation Candidates
+
+Tricands generates candidate points from the Delaunay triangulation of
+existing data. This is a purely geometric approach that does not require
+gradient information.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    acquisition_optimizer="tricands",
+    max_iter=20,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+### Hybrid: DE + Tricands
+
+The `prob_de_tricands` parameter (default 0.8) controls the probability
+of using DE vs. tricands when `acquisition_optimizer="de_tricands"`:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import ackley
+
+opt = SpotOptim(
+    fun=ackley,
+    bounds=[(-5, 5), (-5, 5)],
+    acquisition_optimizer="de_tricands",
+    prob_de_tricands=0.7,
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+See [Triangulation Candidates](tricands.qmd) for details on the
+underlying algorithm.
+
+---
+
+## Multiple Infill Points
+
+By default, spotoptim proposes one new point per iteration. Set
+`n_infill_points` to propose multiple candidates at once, which is
+useful for batch-parallel evaluation:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    n_infill_points=3,
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+print(f"Evaluations: {result.nfev}")
+```
+
+---
+
+## Handling Acquisition Failures
+
+When the acquisition optimizer fails to find a valid new point (e.g.,
+due to a flat surrogate surface), the fallback strategy is controlled
+by `acquisition_failure_strategy`:
+
+- `"random"` (default) --- generate a random point within bounds
+
+---
+
+## Surrogate Point Budget
+
+Use `max_surrogate_points` to limit how many data points the surrogate
+is fitted on. This keeps surrogate fitting fast when the evaluation
+budget is large:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_surrogate_points=30,
+    selection_method="distant",
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+
+print(f"Best f(x) : {result.fun:.6f}")
+```
+
+The `selection_method="distant"` (default) selects the most spatially
+diverse subset of points for surrogate fitting.
+
+---
+
+## See Also
+
+- [The SpotOptim Class](spotoptim.qmd) --- Core constructor and optimization workflow
+- [Surrogate Models](surrogate.qmd) --- The surrogates used by acquisition functions
+- [Triangulation Candidates](tricands.qmd) --- Details on the tricands algorithm
