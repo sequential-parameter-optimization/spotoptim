@@ -18,8 +18,6 @@ appear as grey dots with a shaded background region; sequential
 evaluations are connected by a line.
 
 ```{python}
-import matplotlib
-matplotlib.use("Agg")
 import numpy as np
 from spotoptim import SpotOptim
 from spotoptim.function import sphere
@@ -34,15 +32,12 @@ opt = SpotOptim(
 )
 result = opt.optimize()
 
-plot_progress(opt, show=False)
-print(f"Best objective value: {result.fun:.6f}")
+plot_progress(opt)
 ```
 
 Pass `log_y=True` when the objective spans several orders of magnitude:
 
 ```{python}
-import matplotlib
-matplotlib.use("Agg")
 import numpy as np
 from spotoptim import SpotOptim
 from spotoptim.function import sphere
@@ -57,8 +52,7 @@ opt = SpotOptim(
 )
 result = opt.optimize()
 
-plot_progress(opt, log_y=True, show=False)
-print(f"Evaluations: {result.nfev}")
+plot_progress(opt, log_y=True)
 ```
 
 ---
@@ -79,8 +73,6 @@ Use the `i` and `j` arguments to choose which pair of dimensions to
 project onto. All other dimensions are held at their midpoint.
 
 ```{python}
-import matplotlib
-matplotlib.use("Agg")
 import numpy as np
 from spotoptim import SpotOptim
 from spotoptim.function import sphere
@@ -95,8 +87,7 @@ opt = SpotOptim(
 )
 result = opt.optimize()
 
-plot_surrogate(opt, i=0, j=1, show=False)
-print(f"Surrogate fitted on {result.nfev} points")
+plot_surrogate(opt, i=0, j=1)
 ```
 
 Key parameters:
@@ -119,8 +110,7 @@ a rectangular region. The function must accept a `(1, 2)` array and
 return a scalar (or 1-element array).
 
 ```{python}
-import matplotlib
-matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 from spotoptim.function import rosenbrock
 from spotoptim.plot.contour import simple_contour
@@ -133,7 +123,7 @@ simple_contour(
     max_y=3,
     n_levels=30,
 )
-print("Rosenbrock contour rendered")
+plt.show()
 ```
 
 Parameters:
@@ -156,8 +146,6 @@ used to colour the markers, giving a visual cue about hidden-dimension
 spread.
 
 ```{python}
-import matplotlib
-matplotlib.use("Agg")
 import numpy as np
 from spotoptim import SpotOptim
 from spotoptim.function import sphere
@@ -172,8 +160,7 @@ opt = SpotOptim(
 )
 result = opt.optimize()
 
-fig = plot_design_points(opt.X_, i=0, j=1, show=False)
-print(f"Plotted {opt.X_.shape[0]} design points")
+plot_design_points(opt.X_, i=0, j=1)
 ```
 
 Parameters:
