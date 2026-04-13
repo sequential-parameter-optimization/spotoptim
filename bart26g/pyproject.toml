@@ -1,0 +1,17 @@
+[project]
+name = "bart26c-mcdm"
+version = "0.0.1"
+description = "Desirability"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "jupyter>=1.1.1",
+    "jupyter-cache>=1.0.1",
+    "matplotlib>=3.10.7",
+    "plotly>=6.5.0",
+    "spotoptim",
+    "spotdesirability",
+]
+
+[tool.uv.sources]
+spotoptim = { path = "../../spotoptim", editable = true }

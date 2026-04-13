@@ -1,0 +1,67 @@
+digraph steady_state {
+    rankdir=TB;
+    fontname="Latin Modern Roman";
+    node [fontname="Latin Modern Roman", fontsize=10, shape=box, style="rounded,filled", margin="0.12,0.07"];
+    edge [fontname="Latin Modern Roman", fontsize=9];
+    graph [fontsize=10, nodesep=0.6, ranksep=0.45];
+
+    // Phase labels as plain nodes
+    p1_label [label="Phase 1:\nInitial Design", shape=plaintext, fontsize=11, fontname="Latin Modern Roman"];
+    p2_label [label="Phase 2: Steady-State Loop", shape=plaintext, fontsize=11, fontname="Latin Modern Roman"];
+
+    // Phase 1 nodes
+    init [label="Generate n_initial\ndesign points", fillcolor="#dce6f1"];
+    eval_init [label="Evaluate in parallel\n(eval_pool)", fillcolor="#fff2cc"];
+    fit_first [label="Fit surrogate", fillcolor="#d9ead3"];
+
+    // Phase 2 nodes
+    check [label="Budget\nexhausted?", shape=diamond, fillcolor="#fce5cd"];
+    search [label="Optimize acquisition\n(search_pool, threads)", fillcolor="#d0e0f0"];
+    fill [label="Launch new\nsearch tasks", fillcolor="#d0e0f0"];
+    collect [label="Collect candidate\nin pending_cands", fillcolor="#f0f0f0"];
+    refit [label="Refit surrogate\n(under lock)", fillcolor="#d9ead3"];
+    batch_q [label="Batch ready?", shape=diamond, fillcolor="#fce5cd"];
+    update [label="Update storage", fillcolor="#f0f0f0"];
+    dispatch [label="Dispatch batch\nto eval_pool", fillcolor="#fff2cc"];
+    eval_done [label="Batch evaluation\ncompletes", fillcolor="#fff2cc"];
+
+    result [label="Return\nOptimizeResult", fillcolor="#e6d9f2"];
+
+    // Row assignments: Phase 1 left, Phase 2 right
+    {rank=same; p1_label; p2_label;}
+    {rank=same; init; check;}
+    {rank=same; eval_init; search; fill;}
+    {rank=same; fit_first; collect; refit;}
+    {rank=same; batch_q; update;}
+    {rank=same; dispatch; eval_done;}
+
+    // Phase 1 flow (vertical, left)
+    p1_label -> init [style=invis];
+    init -> eval_init;
+    eval_init -> fit_first;
+
+    // Phase label to check
+    p2_label -> check [style=invis];
+
+    // Phase 1 -> Phase 2 (horizontal)
+    fit_first -> check [label="  ", minlen=2];
+
+    // Phase 2: search path (left column, down)
+    check -> search [label=" no"];
+    search -> collect;
+    collect -> batch_q;
+    batch_q -> search [label=" no\n (more slots)", style=dashed, constraint=false];
+
+    // Phase 2: dispatch (bottom, left to right)
+    batch_q -> dispatch [label=" yes"];
+    dispatch -> eval_done;
+
+    // Phase 2: eval return path (right column, up)
+    eval_done -> update;
+    update -> refit;
+    refit -> fill;
+    fill -> check;
+
+    // Exit
+    check -> result [label=" yes"];
+}
