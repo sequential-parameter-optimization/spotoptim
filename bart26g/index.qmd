@@ -30,7 +30,7 @@ The Sequential Parameter Optimization (SPO) methodology was introduced by @BLP05
 
 The SPO methodology has been implemented in several software packages over the past two decades. The original R package SPOT, which was available on the Comprehensive R Archive Network (CRAN, <https://cran.r-project.org/web/packages/SPOT/index.html>), provided the first publicly available implementation and was used extensively in the companion volume "Hyperparameter Tuning for Machine and Deep Learning with R" [@bart21i]^[With more than 150k accesses, it is one of the most popular publications in the field. See \url{https://link.springer.com/book/10.1007/978-981-19-5170-1}.]. An overview of the SPOT methodology and its R implementation is given by @bart21b. The R package was subsequently ported to Python as SpotPython, which extended the framework with PyTorch integration and a hyperparameter tuning cookbook [@bart23iArXiv]. The `spotoptim` package (<https://github.com/sequential-parameter-optimization/spotoptim>) is the current generation of this lineage. It is a complete rewrite that preserves the core SPO algorithm while modernizing the architecture, improving extensibility, and integrating with the Python scientific computing ecosystem.
 
-The package is part of a family of related tools. `spotdesirability` provides desirability functions for multi-objective optimization [@bart25b], `spotforecast2` extends the optimization framework to time series forecasting, and `spotforecast2_safe` adds robustness guarantees for safety-critical forecasting applications. Together, these packages form an ecosystem for optimization-driven scientific computing research and practice.
+The package is part of a family of related tools. Together, these packages form an ecosystem for optimization-driven scientific computing research and practice.
 
 The contributions of this paper are threefold.
 First, it positions spotoptim within the landscape of hyperparameter optimization frameworks by comparing it with Optuna, Ray Tune, BOHB, SMAC, and Hyperopt (@sec-related).
@@ -43,13 +43,14 @@ The remainder of this paper is organized as follows. @sec-related reviews relate
 
 Hyperparameter optimization has received sustained attention over the past decade, resulting in several mature software frameworks. These tools differ along multiple axes: the search strategy they employ (random, bandit-based, or model-based), the type of surrogate model they use (if any), their parallelism model (single-machine or distributed), and the interface they present to the user. This section reviews the most widely used frameworks and highlights how SPO, as implemented in `spotoptim`, relates to each of them.
 
-Optuna [@akib19a] is a popular hyperparameter optimization framework in the Python ecosystem. It employs a "define-by-run" API in which the search space is specified implicitly through trial suggestions, rather than declared upfront. The default search strategy uses Tree-structured Parzen Estimators (TPE), a density-ratio approach that models $p(\mathbf{x} \mid y < y^*)$ and $p(\mathbf{x} \mid y \geq y^*)$ separately, rather than fitting a global surrogate $p(y \mid \mathbf{x})$ as Kriging does. Optuna also supports Covariance Matrix Adaptation Evolution Strategy (CMA-ES) and provides a pruning mechanism based on successive halving that allows unpromising trials to be terminated early. However, the TPE surrogate does not provide the same principled uncertainty quantification that a Gaussian process offers, which limits the theoretical grounding of acquisition functions like Expected Improvement.
+HyperOpt [@berg11a] introduced  Tree-structured Parzen Estimators (TPE) as an alternative to Gaussian-process-based Bayesian optimization. TPE avoids the $\mathcal{O}(n^3)$ cost of fitting a Gaussian process, making it more scalable to large numbers of observations. However, it does not yield a global surrogate model and therefore cannot produce uncertainty estimates or support acquisition functions like Expected Improvement in their standard form.
+
+Optuna [@akib19a] is a popular hyperparameter optimization framework in the Python ecosystem. It employs a "define-by-run" API in which the search space is specified implicitly through trial suggestions, rather than declared upfront. The default search strategy uses TPE. Optuna also supports Covariance Matrix Adaptation Evolution Strategy (CMA-ES) and provides a pruning mechanism based on successive halving that allows unpromising trials to be terminated early. However, the TPE surrogate does not provide the same principled uncertainty quantification that a Gaussian process offers, which limits the theoretical grounding of acquisition functions like Expected Improvement.
 
 Bayesian Optimization and Hyperband (BOHB) [@falk18a] combines Bayesian optimization with Hyperband, a multi-fidelity method that allocates resources adaptively across trials. The Bayesian component uses TPE as its surrogate, similar to Optuna. BOHB's key contribution is the integration of early stopping into the surrogate-based search, allowing it to discard poorly performing configurations after partial training. This multi-fidelity approach is effective when intermediate performance measures (such as validation loss after a few epochs) are available. In contrast, `spotoptim` treats the objective function as a black box that returns a single scalar per evaluation and does not currently incorporate multi-fidelity scheduling.
 
 SMAC [@hutt11a] (Sequential Model-based Algorithm Configuration) is the framework most closely related to SPO in its algorithmic philosophy. Like SPO, SMAC iteratively fits a surrogate model and selects new configurations by optimizing an acquisition function. The key difference lies in the choice of surrogate: SMAC uses random forests which handle high-dimensional and categorical parameter spaces well but do not provide the smooth, differentiable uncertainty estimates that Gaussian processes offer. SMAC has its roots in SPO [@Hutt09a]. Similar to SPO, it was originally designed for algorithm configuration, where the goal is to find parameter settings that minimize the runtime or solution quality of a target algorithm across a distribution of problem instances. `spotoptim` targets a broader class of optimization problems, including engineering design and simulation-based optimization, and returns scipy-compatible results that integrate directly with the scientific Python ecosystem.
 
-HyperOpt [@berg11a] introduced TPE as an alternative to Gaussian-process-based Bayesian optimization. The TPE approach models the conditional densities $p(\mathbf{x} \mid y < y^*)$ and $p(\mathbf{x} \mid y \geq y^*)$ using kernel density estimators and selects candidates that maximize the ratio of these two densities. This avoids the $\mathcal{O}(n^3)$ cost of fitting a Gaussian process, making TPE more scalable to large numbers of observations. However, the density-ratio formulation does not yield a global surrogate model $p(y \mid \mathbf{x})$ and therefore cannot produce uncertainty estimates or support acquisition functions like Expected Improvement in their standard form.
 
 Ray Tune [@liaw18a] is a distributed hyperparameter tuning platform built on top of the Ray framework. Rather than implementing a single search strategy, Ray Tune serves as an orchestrator that wraps external search algorithms including Optuna, HyperOpt, and Bayesian optimization libraries. Its primary strength lies in scalable trial scheduling across clusters, making it well-suited for large-scale distributed training. A comparison between SPO and Ray Tune for PyTorch hyperparameter tuning on CIFAR-10 is available in @bart23e; the tutorial by @pyto23a provides additional context. While Ray Tune excels at distributed scheduling, it is not itself a surrogate-based optimizer and delegates the actual search logic to external backends.
 
@@ -92,8 +93,7 @@ $$
 \text{EI}(\mathbf{x}) = (y_{\min} - \mu(\mathbf{x})) \, \Phi(Z) + \sigma(\mathbf{x}) \, \phi(Z), \quad Z = \frac{y_{\min} - \mu(\mathbf{x})}{\sigma(\mathbf{x})}
 $$
 
-where $\mu(\mathbf{x})$ and $\sigma(\mathbf{x})$ are the Kriging mean and standard deviation, $y_{\min}$ is the best observed value, and $\Phi$ and $\phi$ are the standard normal cumulative distribution function and probability density function, respectively.
-
+where $\mu(\mathbf{x})$ and $\sigma(\mathbf{x})$ are the Kriging mean and standard deviation, $y_{\min}$ is the best observed value, and $\Phi$ and $\phi$ are the standard normal cumulative distribution function and probability density function, respectively [@Forr08a].
 ```python
 from spotoptim import SpotOptim
 from spotoptim.surrogate import Kriging
@@ -170,7 +170,7 @@ When more than one worker is available (`n_jobs > 1`), `spotoptim` switches from
 
 @fig-steady-state illustrates this two-phase pipeline. In Phase 1, the initial design points are evaluated in parallel and the surrogate is fitted for the first time. In Phase 2, the steady-state loop checks the evaluation budget, dispatches search tasks to the thread pool, collects candidates into batches, and sends them to the evaluation pool. After each batch completes, the storage is updated, the surrogate is refitted under a lock, and new search tasks fill the freed worker slots.
 
-![Steady-state parallelization in `spotoptim`. Phase 1 evaluates the initial design in parallel and fits the first surrogate. Phase 2 overlaps surrogate search (thread pool) with objective evaluation (process or thread pool) in a steady-state loop until the budget is exhausted.](steady-state.pdf){#fig-steady-state width=75%}
+![Steady-state parallelization in `spotoptim`. Phase 1 evaluates the initial design in parallel and fits the first surrogate. Phase 2 overlaps surrogate search (thread pool) with objective evaluation (process or thread pool) in a steady-state loop until the budget is exhausted.](steady-state.pdf){#fig-steady-state width=95%}
 
 On standard CPython builds^[With the Global Interpreter Lock (GIL) enabled.], the evaluation pool uses processes (`ProcessPoolExecutor`) so that CPU-bound objective functions achieve true parallelism, while the search pool uses threads to avoid serialization overhead for surrogate access. On free-threaded Python builds^[Python Enhancement Proposal 703, `python3.13t`.], both pools use threads, eliminating `dill` serialization entirely and reducing dispatch latency. The runtime detects the GIL state automatically via `is_gil_disabled()` and selects the appropriate executor. The following example runs a parallel optimization with four workers:
 
@@ -390,7 +390,6 @@ For post-hoc analysis, `get_importance` computes a correlation-based importance 
 ## Visualization {#sec-plotting}
 
 The `plot` subpackage provides several visualization functions. `plot_progress` displays the full evaluation history as a scatter plot with a best-so-far curve overlaid, distinguishing initial design points from sequential evaluations. `plot_surrogate` renders a 2x2 panel showing the fitted surrogate model for a selected pair of dimensions: the top row contains 3-D surfaces of predictions and prediction uncertainty, while the bottom row shows the corresponding contour plots with evaluated points overlaid. `simple_contour` draws a quick 2-D filled contour of any callable over a rectangular region, and `plot_design_points` creates a scatter plot of evaluated points with hidden-dimension aggregation. Multi-objective visualization is provided through `mo_pareto_optx_plot`, which shows Pareto-optimal points in the input space, and `mo_xy_contour` and `mo_xy_surface` for surrogate-based objective-space visualization.
-
 The following examples use the sphere function optimized over $[-5, 5]^2$ with 25 iterations. @fig-progress shows a typical progress plot. The initial design points appear as grey dots in a shaded background region; sequential evaluations are connected by a line, and the red curve traces the best objective value found so far.
 
 ```{python}
@@ -408,7 +407,7 @@ opt = SpotOptim(
     seed=0,
 )
 result = opt.optimize()
-plot_progress(opt, show=False, log_y=True)
+plot_progress(opt, show=False, figsize=(6, 4), log_y=True)
 ```
 
 @fig-surrogate shows the surrogate model fitted after optimization. The top row displays 3-D surfaces of the predicted objective value and the prediction uncertainty; the bottom row shows the corresponding contour maps with the evaluated points overlaid as red dots.
@@ -485,6 +484,20 @@ The `utils` subpackage collects helper functions that support the optimization l
 
 OCBA functions (`get_ocba`, `get_ranks`) implement the OCBA algorithm for noisy optimization [@Bart11a]. Given current sample means, variances, and an incremental budget, `get_ocba` returns an allocation vector that concentrates additional evaluations on the most promising and most uncertain designs. `TorchStandardScaler` standardizes PyTorch tensors to zero mean and unit variance, analogous to scikit-learn's `StandardScaler`. The `is_gil_disabled` function checks whether the Python interpreter is a free-threaded build (PEP 703), which `spotoptim` uses internally to decide whether thread-based parallelism is safe for objective evaluation.
 
+The TensorBoard integration (`utils/tensorboard.py`) provides real-time monitoring of the optimization process. Setting `tensorboard_log=True` in the `SpotOptim` constructor activates logging: at each iteration, the module writes scalar metrics (current best objective value, last evaluation, success rate) and the coordinates of the best design point to a TensorBoard event file. For noisy optimization with repeated evaluations, additional statistics are logged, including the best mean objective value and the variance at the best design. Each evaluated hyperparameter configuration is also logged via `add_hparams`, which populates TensorBoard's HParams dashboard and enables interactive comparison of configurations across runs. The log directory defaults to `runs/spotoptim_YYYYMMDD_HHMMSS` but can be customized via the `tensorboard_path` parameter. Setting `tensorboard_clean=True` removes all previous log directories from the `runs` folder before a new optimization starts, preventing clutter from accumulating across experiments. After optimization completes, the writer is flushed and closed automatically. The logs can then be viewed by running `tensorboard --logdir=runs` in a terminal and opening the displayed URL in a browser. The integration works seamlessly with both synchronous and steady-state (parallel) optimization modes: in the latter case, the TensorBoard writer is temporarily detached before pickling the optimizer for process-based parallelism and reattached afterward, so logging continues uninterrupted. A minimal example that enables TensorBoard logging is:
+
+```python
+opt = SpotOptim(
+    fun=objective,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=20,
+    tensorboard_log=True,
+    tensorboard_path="runs/my_experiment",
+)
+result = opt.optimize()
+# View logs: tensorboard --logdir=runs/my_experiment
+```
+
 ## Multi-Objective Optimization {#sec-mo}
 
 The `mo` subpackage supports multi-objective optimization through Pareto front analysis and scalarization. The `is_pareto_efficient` function accepts a cost array of shape $(n_s, m)$, where $n_s$ is the number of solutions and $m$ is the number of objectives, and returns a boolean mask identifying the non-dominated points. It works for any number of objectives and supports both minimization and maximization.
@@ -534,6 +547,36 @@ The `data` subpackage provides PyTorch `Dataset` wrappers for use in hyperparame
 
 The `inspection` subpackage provides feature importance and prediction diagnostics. `generate_mdi()` trains a Random Forest and extracts impurity-based feature importance scores. `generate_imp()` computes permutation importance by shuffling each feature and measuring the degradation in model performance on a held-out test set. `plot_actual_vs_predicted()` creates scatter plots comparing true values against model predictions, providing a visual diagnostic of surrogate quality.
 
+@fig-importances shows impurity-based (Gini) and permutation-based feature importances for the sphere optimization from @sec-plotting. Both methods correctly identify $x_0$ and $x_1$ as equally important, which is expected for the symmetric sphere function $f(\mathbf{x}) = \sum_i x_i^2$.
+
+```{python}
+#| label: fig-importances
+#| fig-cap: "Feature importances for the sphere optimization. Left: impurity-based (Gini) importances from a Random Forest. Right: permutation importances on the test set."
+from sklearn.model_selection import train_test_split
+from spotoptim.inspection import generate_mdi, generate_imp, plot_importances
+
+X_train, X_test, y_train, y_test = train_test_split(
+    opt.X_, opt.y_, test_size=0.3, random_state=42
+)
+df_mdi = generate_mdi(X_train, y_train, feature_names=["x0", "x1"])
+perm_imp = generate_imp(X_train, X_test, y_train, y_test)
+plot_importances(
+    df_mdi, perm_imp, X_test,
+    feature_names=["x0", "x1"], show=False,
+)
+```
+
+@fig-actual-vs-predicted compares the surrogate's predictions against the true objective values for all evaluated points. The left panel shows actual versus predicted values (points on the diagonal indicate perfect agreement); the right panel shows residuals versus predicted values.
+
+```{python}
+#| label: fig-actual-vs-predicted
+#| fig-cap: "Surrogate prediction diagnostics. Left: actual versus predicted objective values. Right: residuals versus predicted values."
+from spotoptim.inspection import plot_actual_vs_predicted
+
+y_pred = opt.surrogate.predict(opt.X_)
+plot_actual_vs_predicted(opt.y_, y_pred, show=False)
+```
+
 ## Factor Analysis {#sec-factor}
 
 The `factor_analyzer` subpackage provides tools for exploratory factor analysis (EFA) of high-dimensional optimization data. Before running the analysis, suitability tests (`calculate_kmo` for the Kaiser-Meyer-Olkin measure, `calculate_bartlett_sphericity` for Bartlett's test) check whether the data has sufficient correlational structure. The `FactorAnalyzer` class extracts latent factors with optional varimax or promax rotation, helping to reveal the latent structure in large parameter spaces.
@@ -549,7 +592,7 @@ The `tricands` module generates candidate points for acquisition optimization by
 
 # Hyperparameter Tuning with spotoptim {#sec-hpt}
 
-A primary application of `spotoptim` is the tuning of machine learning hyperparameters, where each function evaluation corresponds to training and validating a model with a specific configuration. This section demonstrates a complete neural network tuning workflow using the diabetes regression dataset, a multi-layer perceptron architecture, and the `spotoptim` optimization loop.
+A primary application of `spotoptim` is the tuning of machine learning hyperparameters, where each function evaluation corresponds to training and validating a model with a specific configuration. This section demonstrates a complete neural network tuning workflow using the diabetes regression dataset, a multi-layer perceptron architecture, and the `spotoptim` optimization loop. To keep execution time manageable, the number of training epochs and optimization iterations has been reduced. In practice, longer training runs (50--200 epochs per evaluation) and larger evaluation budgets (`max_iter` $\geq 30$) are necessary to obtain reliable results. The short configuration used here is intended solely as a demonstration of the workflow and API; the best hyperparameters found in such a short run should not be considered representative.
 
 The workflow follows five steps: define the search space, prepare the dataset, define the objective function, run the optimization, and analyze the results. This structure mirrors the hyperparameter tuning methodology described in @bart21i and @bart21ic3, now implemented entirely in Python.
 
@@ -557,23 +600,26 @@ The workflow follows five steps: define the search space, prepare the dataset, d
 
 The search space is defined using a `ParameterSet` that specifies the hyperparameters to tune, their types, bounds, and transformations:
 
-```python
+```{python}
 from spotoptim.hyperparameters.parameters import ParameterSet
 
-ps = ParameterSet()
-ps.add_float("lr", low=-5, high=-1, default=-3, transform="log10")
-ps.add_int("l1", low=8, high=128, default=32)
-ps.add_int("num_hidden_layers", low=1, high=4, default=2)
-ps.add_float("dropout", low=0.0, high=0.5, default=0.1)
+ps_hpt = ParameterSet()
+ps_hpt.add_float("lr", low=1e-5, high=0.1, default=0.001, transform="log10")
+ps_hpt.add_int("l1", low=8, high=128, default=32)
+ps_hpt.add_int("num_hidden_layers", low=1, high=4, default=2)
+ps_hpt.add_float("dropout", low=0.0, high=0.5, default=0.1)
+print(f"Search space: {ps_hpt.names()}")
+print(f"Bounds: {ps_hpt.bounds}")
+print(f"Variable types: {ps_hpt.var_type}")
 ```
 
-The learning rate is specified in $\log_{10}$ scale with bounds $[10^{-5}, 10^{-1}]$, while `l1` (neurons per hidden layer) and `num_hidden_layers` are integer-valued. The `ParameterSet` properties (`ps.bounds`, `ps.var_type`, `ps.names()`, `ps.var_trans`) map directly to the `SpotOptim` constructor arguments.
+The learning rate bounds are specified in natural scale ($[10^{-5}, 10^{-1}]$); the `log10` transformation tells SpotOptim to work internally in log space, so the surrogate models a smooth landscape. SpotOptim automatically converts back to natural scale before calling the objective function. The `ParameterSet` properties (`ps_hpt.bounds`, `ps_hpt.var_type`, `ps_hpt.names()`, `ps_hpt.var_trans`) map directly to the `SpotOptim` constructor arguments.
 
 ## Preparing the Dataset
 
 The diabetes dataset is loaded and split into training and test sets using the provided data loader utility:
 
-```python
+```{python}
 from spotoptim.data import get_diabetes_dataloaders
 
 train_loader, test_loader, scaler = get_diabetes_dataloaders(
@@ -582,24 +628,27 @@ train_loader, test_loader, scaler = get_diabetes_dataloaders(
     scale_features=True,
     random_state=0,
 )
+print(f"Training batches: {len(train_loader)}, test batches: {len(test_loader)}")
 ```
 
 The `scale_features=True` option standardizes input features to zero mean and unit variance, which is important for neural network training stability.
 
 ## Defining the Objective Function
 
-The objective function decodes hyperparameters from the search vector, constructs a `LinearRegressor`, trains it on the training set, and returns the mean squared error on the test set:
+The objective function decodes hyperparameters from the search vector, constructs a `LinearRegressor`, trains it on the training set, and returns the mean squared error on the test set. Because SpotOptim applies the inverse of `var_trans` before calling the objective, the learning rate arrives in natural scale and can be used directly. The number of epochs is set to 10 for this demo; production runs should use 50--200.
 
-```python
+```{python}
 import numpy as np
 import torch
 from spotoptim.nn import LinearRegressor
+
+N_EPOCHS = 10  # short for demo; use 50-200 in practice
 
 def nn_objective(X):
     X = np.atleast_2d(X)
     results = np.zeros(X.shape[0])
     for i in range(X.shape[0]):
-        lr = 10 ** X[i, 0]        # log10 transform
+        lr = X[i, 0]            # already in natural scale
         l1 = int(X[i, 1])
         n_layers = int(X[i, 2])
         dropout = X[i, 3]
@@ -613,7 +662,7 @@ def nn_objective(X):
         loss_fn = torch.nn.MSELoss()
 
         model.train()
-        for epoch in range(50):
+        for epoch in range(N_EPOCHS):
             for X_batch, y_batch in train_loader:
                 optimizer.zero_grad()
                 pred = model(X_batch)
@@ -633,44 +682,71 @@ def nn_objective(X):
     return results
 ```
 
-The function follows `spotoptim`'s convention: it accepts a 2-D array where each row is a configuration and returns a 1-D array of objective values. The hyperparameter vector encodes the learning rate (in log scale), layer width, number of hidden layers, and dropout rate.
+The function follows `spotoptim`'s convention: it accepts a 2-D array where each row is a configuration and returns a 1-D array of objective values.
 
 ## Running the Optimization
 
-With the search space and objective function defined, the optimization is launched with a single call:
+With the search space and objective function defined, the optimization is launched with a single call. The optimizer is configured with Expected Improvement and a small budget suitable for a demo. Production runs should increase `max_iter` to 30 or more.
 
-```python
+```{python}
 from spotoptim import SpotOptim
 
-opt = SpotOptim(
+opt_hpt = SpotOptim(
     fun=nn_objective,
-    bounds=ps.bounds,
-    var_type=ps.var_type,
-    var_name=ps.names(),
-    var_trans=ps.var_trans,
+    bounds=ps_hpt.bounds,
+    var_type=ps_hpt.var_type,
+    var_name=ps_hpt.names(),
+    var_trans=ps_hpt.var_trans,
     acquisition="ei",
-    max_iter=30,
-    n_initial=10,
+    max_iter=15,
+    n_initial=8,
     seed=0,
 )
-result = opt.optimize()
+result_hpt = opt_hpt.optimize()
+
+print(f"Best MSE: {result_hpt.fun:.4f}")
+print(f"Best config: {dict(zip(ps_hpt.names(), result_hpt.x))}")
+print(f"Total evaluations: {result_hpt.nfev}")
 ```
 
 The Kriging surrogate builds a model of the validation loss as a function of the hyperparameters, and Expected Improvement guides the search toward configurations that are either predicted to perform well or that have high uncertainty.
 
 ## Analyzing the Results
 
-After optimization, the reporting utilities summarize which hyperparameters were most influential and display the best configuration:
+After optimization, the reporting utilities summarize which hyperparameters were most influential and display the best configuration. The progress plot (@fig-hpt-progress) shows the convergence of the optimization.
 
-```python
-from spotoptim.reporting.results import print_best
-from spotoptim.reporting.analysis import sensitivity_spearman
+```{python}
+#| label: fig-hpt-progress
+#| fig-cap: "Hyperparameter tuning progress (demo run with reduced epochs and budget). The red curve shows the best validation MSE found so far."
+from spotoptim.plot.visualization import plot_progress
+plot_progress(opt_hpt, show=False)
+```
 
-print_best(opt, result)
-sensitivity_spearman(opt)
+The feature importances (@fig-hpt-importances) reveal which hyperparameters had the strongest influence on the validation loss.
+
+```{python}
+#| label: fig-hpt-importances
+#| fig-cap: "Feature importances for the hyperparameter tuning demo. Left: impurity-based (Gini) importances. Right: permutation importances on the test set."
+from sklearn.model_selection import train_test_split
+from spotoptim.inspection import generate_mdi, generate_imp, plot_importances
+
+X_tr, X_te, y_tr, y_te = train_test_split(
+    opt_hpt.X_, opt_hpt.y_, test_size=0.3, random_state=42
+)
+df_mdi = generate_mdi(X_tr, y_tr, feature_names=ps_hpt.names())
+perm_imp = generate_imp(X_tr, X_te, y_tr, y_te)
+plot_importances(
+    df_mdi, perm_imp, X_te,
+    feature_names=ps_hpt.names(), show=False,
+)
 ```
 
 The `sensitivity_spearman` function reports Spearman rank correlations between each hyperparameter and the objective value, with significance stars indicating statistical confidence. This helps the practitioner understand which hyperparameters merit further investigation and which can be fixed at their default values.
+
+```{python}
+from spotoptim.reporting.analysis import sensitivity_spearman
+sensitivity_spearman(opt_hpt)
+```
 
 The complete workflow described here can be compared with the corresponding Ray Tune setup documented by @bart23e. While Ray Tune provides distributed scheduling across multiple machines, `spotoptim` offers a more transparent, model-centric approach where the user controls the surrogate model, acquisition function, and experimental design. For single-machine workflows with moderate evaluation budgets (tens to hundreds of configurations), the surrogate-based approach is typically more sample-efficient than the random or bandit-based strategies employed by Ray Tune's default schedulers.
 
@@ -680,6 +756,8 @@ The complete workflow described here can be compared with the corresponding Ray 
 The design of `spotoptim` reflects a specific set of priorities that distinguish it from the frameworks reviewed in @sec-related. This section examines the practical benefits of these design choices, their trade-offs, and the limitations of the current implementation.
 
 A central design principle is simplicity. The package exposes a single entry point, the `SpotOptim` class, with a flat constructor that accepts all configuration as keyword arguments. There is no distinction between "study" and "trial" objects, no database backend to configure, and no server process to manage. The user provides a callable, a list of bounds, and an evaluation budget; everything else has sensible defaults. The result is a standard `scipy.optimize.OptimizeResult`, the same type returned by `scipy.optimize.minimize`, which means that `spotoptim` results can be consumed by any tool in the scipy ecosystem without conversion or adaptation.
+
+Observability during long-running optimization campaigns is provided through integrated TensorBoard logging (see @sec-utils). Enabling `tensorboard_log=True` requires no code changes to the objective function; the optimizer automatically records convergence curves, per-variable best coordinates, success rates, and hyperparameter configurations at each iteration. For noisy optimization, additional statistics such as the best mean objective and variance are tracked. The TensorBoard HParams dashboard then allows interactive filtering and comparison of configurations across multiple runs, which is valuable when tuning neural network hyperparameters over extended budgets. Because the logging is handled inside the optimization loop rather than in the objective function, it works transparently with both synchronous and steady-state parallel execution modes.
 
 The surrogate interface is designed for extensibility. Any object that implements `fit(X, y)` and `predict(X)` can serve as a surrogate model, following the scikit-learn estimator convention. This makes it straightforward to experiment with different surrogate architectures: scikit-learn's `GaussianProcessRegressor` with custom kernels, gradient-boosted trees, random forests, or neural network regressors. The `SpotOptimProtocol` further decouples internal modules from the concrete `SpotOptim` class, allowing extracted functions (storage management, acquisition computation, reporting) to be tested independently with mock objects.
 
@@ -698,14 +776,12 @@ It is worth noting that `spotoptim` does provide convergence detection through i
 
 This paper has presented `spotoptim`, a Python package for surrogate-model-based optimization of expensive black-box functions. The package implements the Sequential Parameter Optimization methodology with Kriging as the default surrogate, Expected Improvement and related acquisition functions, native support for mixed variable types, noise-aware evaluation through repeated evaluations and OCBA, and multi-objective extensions via Pareto analysis and desirability functions. The architecture is designed around scikit-learn compatibility for surrogates and scipy compatibility for results, making the package interoperable with the broader Python scientific computing ecosystem.
 
-`spotoptim` represents the current generation of a two-decade research lineage. The SPO methodology was introduced in 2005 [@BLP05] and first implemented as the R package SPOT, which is available on CRAN. The R implementation served as the algorithmic foundation for the Springer volume "Hyperparameter Tuning for Machine and Deep Learning with R" [@bart21i], which introduced the methodology to a broad audience of practitioners and researchers. The transition to Python began with SpotPython, which added PyTorch integration and a hyperparameter tuning cookbook [@bart23iArXiv]. `spotoptim` is a complete rewrite that preserves the core algorithm while modernizing the codebase with a modular architecture, structural typing protocols, and comprehensive documentation.
+`spotoptim` represents the current generation of a two-decade research lineage. The SPO methodology was introduced in 2005 [@BLP05] and first implemented as the R package SPOT, which was available on CRAN. The R implementation served as the algorithmic foundation for the Springer volume "Hyperparameter Tuning for Machine and Deep Learning with R" [@bart21i], which introduced the methodology to a broad audience of practitioners and researchers. The transition to Python began with SpotPython, which added PyTorch integration and a hyperparameter tuning cookbook [@bart23iArXiv]. `spotoptim` is a complete rewrite that preserves the core algorithm while modernizing the codebase with a modular architecture, structural typing protocols, and comprehensive documentation.
 
-The package is part of an ecosystem of related tools. `spotdesirability` provides desirability functions for multi-objective optimization, enabling the user to express preferences over multiple objectives through individual desirability curves and overall aggregation [@bart25a; @bart25b]. `spotforecast2` extends the optimization framework to time series forecasting, where the objective function evaluates forecasting models on temporal cross-validation splits. `spotforecast2_safe` adds safety constraints for applications where forecast errors have asymmetric consequences.
-
-Several directions for future development are under consideration. Multi-fidelity optimization, in which cheap approximations of the objective (for example, training with fewer epochs or on a subset of the data) inform the surrogate model at reduced cost, would address one of the current limitations identified in @sec-discussion. Scalable surrogate models based on sparse Gaussian processes or Nystroem approximations would extend the practical range of the optimizer to larger evaluation budgets. Transfer learning across optimization tasks, where knowledge from previous tuning runs on related problems or datasets is used to warm-start the surrogate, could further improve sample efficiency. Integration with modern ML frameworks such as JAX and MLX would broaden the applicability of the hyperparameter tuning workflow. Finally, the emergence of free-threaded Python (PEP 703) opens the possibility of true thread-level parallelism for objective evaluation; `spotoptim` already includes a `is_gil_disabled()` check that detects free-threaded builds and can adapt its parallelism strategy accordingly.
+The package is part of an ecosystem of related tools. For example, `spotdesirability` provides desirability functions for multi-objective optimization, enabling the user to express preferences over multiple objectives through individual desirability curves and overall aggregation [@bart25a; @bart25b], `spotforecast2` extends the optimization framework to time-series forecasting, and `spotforecast2_safe` adds robustness guarantees for safety-critical forecasting applications.
+The emergence of free-threaded Python (PEP 703) opens the possibility of true thread-level parallelism for objective evaluation; `spotoptim` already includes a `is_gil_disabled()` check that detects free-threaded builds and can adapt its parallelism strategy accordingly.
 
 The development of principled benchmarking protocols for comparing hyperparameter optimization frameworks remains an important open problem [@bart20gArxiv]. The built-in test functions and reporting utilities in `spotoptim` provide a foundation for such comparisons, and the scipy-compatible result format facilitates standardized evaluation across tools.
-
 The `spotoptim` package is open-source and available at <https://github.com/sequential-parameter-optimization/spotoptim> under the AGPL-3.0 license. Documentation, including an API reference and a comprehensive user guide with executable code examples, is hosted at <https://sequential-parameter-optimization.github.io/spotoptim/>.
 
 
@@ -715,3 +791,4 @@ The `spotoptim` package is open-source and available at <https://github.com/sequ
 
 ::: {#refs}
 :::
+
