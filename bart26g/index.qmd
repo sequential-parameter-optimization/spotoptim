@@ -9,18 +9,24 @@ authors:
     url: https://www.spotseven.de
     corresponding: true
     roles: writing, conceptualization, supervision
+runninghead: "SpotOptim"
 abstract: |
-    The `spotoptim` package implements surrogate-model-based optimization of expensive black-box functions in Python. Building on two decades of Sequential Parameter Optimization (SPO) methodology, it provides a Kriging-based optimization loop with Expected Improvement and related acquisition functions, support for continuous, integer, and categorical variables, noise-aware evaluation via Optimal Computing Budget Allocation, and multi-objective extensions through desirability functions. The package returns scipy-compatible `OptimizeResult` objects and accepts any scikit-learn-compatible surrogate model, making it straightforward to integrate into existing scientific computing workflows. This paper describes the architecture, algorithm, and module structure of spotoptim, provides worked examples ranging from analytical test functions to neural network hyperparameter tuning, and compares the framework with Optuna, Ray Tune, BOHB, SMAC, and Hyperopt.
-keywords:
-  - Surrogate modeling
-  - Sequential parameter optimization
-  - Bayesian optimization
-  - Hyperparameter tuning
-  - Kriging
-bibliography: bart26g.bib
+    The `spotoptim` package implements surrogate-model-based optimization of expensive black-box functions in Python. Building on two decades of Sequential Parameter Optimization (SPO) methodology, it provides a Kriging-based optimization loop with Expected Improvement, support for continuous, integer, and categorical variables, noise-aware evaluation via Optimal Computing Budget Allocation (OCBA), and multi-objective extensions. A steady-state parallelization strategy overlaps surrogate search with objective evaluation on multi-core hardware, and a success-rate-based restart mechanism detects stagnation while preserving the best solution found. The package returns scipy-compatible `OptimizeResult` objects and accepts any scikit-learn-compatible surrogate model. Built-in TensorBoard logging provides real-time monitoring of convergence and surrogate quality. This paper describes the architecture and module structure of spotoptim, provides worked examples including neural network hyperparameter tuning, and compares the framework with Optuna, Ray Tune, BOHB, SMAC, and Hyperopt. The package is open-source (AGPL-3.0).
+
+    \textbf{Keywords:} Surrogate modeling, Sequential parameter optimization, Bayesian optimization, Hyperparameter tuning, Kriging
 jupyter: spotoptim
 header-includes: |
   \usepackage{dirtree}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\small}
+format:
+  arxiv-pdf:
+    keep-tex: true
+    mainfont: "TeX Gyre Termes"
+    mathfont: "TeX Gyre Termes Math"
+    number-sections: true
+    toc: false
+    classoption:
+      - twocolumn
 ---
 
 # Introduction {#sec-introduction}
@@ -78,20 +84,23 @@ opt = SpotOptim(
 )
 result = opt.optimize()
 
-# result.x   -> best point found (numpy array)
-# result.fun -> best objective value (float)
-# result.nfev -> total function evaluations (int)
+# result.x   -> best point
+# result.fun -> best objective value
+# result.nfev -> total evaluations
 ```
 
-Three ingredients are required: a callable `fun` that accepts an $(n_s, d)$ array (where $n_s$ is the number of samples to evaluate) and returns an $(n_s,)$ array, a list of `bounds` as `(lower, upper)` tuples, and an evaluation budget via `max_iter`. The `n_initial` parameter controls how many points are evaluated in the initial Latin Hypercube design before the surrogate-based sequential phase begins. The `optimize()` method returns a `scipy.optimize.OptimizeResult`, which carries the best point (`result.x`), the corresponding objective value (`result.fun`), and the total number of function evaluations (`result.nfev`), among other fields.
+Three ingredients are required: a callable `fun` that accepts an $(n, d)$ array (where $n$ is the number of samples to evaluate) and returns an $(n,)$ array, a list of `bounds` as `(lower, upper)` tuples, and an evaluation budget via `max_iter`. The `n_initial` parameter controls how many points are evaluated in the initial Latin Hypercube design before the surrogate-based sequential phase begins. The `optimize()` method returns a `scipy.optimize.OptimizeResult`, which carries the best point (`result.x`), the corresponding objective value (`result.fun`), and the total number of function evaluations (`result.nfev`), among other fields.
 
 ## Expected Improvement with Explicit Kriging
 
 The default acquisition function is `"y"` (predicted value), which performs pure exploitation by selecting the point where the surrogate predicts the lowest value. For problems with multiple local minima, Expected Improvement (EI) provides a better exploration-exploitation trade-off. EI accounts for both the predicted value and the surrogate's uncertainty:
 
 $$
-\text{EI}(\mathbf{x}) = (y_{\min} - \mu(\mathbf{x})) \, \Phi(Z) + \sigma(\mathbf{x}) \, \phi(Z), \quad Z = \frac{y_{\min} - \mu(\mathbf{x})}{\sigma(\mathbf{x})}
-$$
+\begin{aligned}
+\text{EI}(\mathbf{x}) &= (y_{\min} - \mu(\mathbf{x})) \, \Phi(Z) + \sigma(\mathbf{x}) \, \phi(Z), \\
+Z &= \frac{y_{\min} - \mu(\mathbf{x})}{\sigma(\mathbf{x})}
+\end{aligned}
+$$ {#eq-ei}
 
 where $\mu(\mathbf{x})$ and $\sigma(\mathbf{x})$ are the Kriging mean and standard deviation, $y_{\min}$ is the best observed value, and $\Phi$ and $\phi$ are the standard normal cumulative distribution function and probability density function, respectively [@Forr08a].
 ```python
@@ -99,7 +108,10 @@ from spotoptim import SpotOptim
 from spotoptim.surrogate import Kriging
 from spotoptim.function import rosenbrock
 
-kriging = Kriging(method="regression", noise=1e-3, seed=0)
+kriging = Kriging(
+    method="regression",
+    noise=1e-3, seed=0,
+)
 
 opt = SpotOptim(
     fun=rosenbrock,
@@ -112,7 +124,7 @@ opt = SpotOptim(
 )
 result = opt.optimize()
 
-# result.x   -> approximately [1, 1] (Rosenbrock minimum)
+# result.x   -> approx. [1, 1]
 # result.fun -> close to 0
 ```
 
@@ -131,7 +143,9 @@ def mixed_objective(X):
     continuous = X[:, 0]
     integer_val = X[:, 1]
     factor_val = X[:, 2]
-    return continuous**2 + (integer_val - 3)**2 + factor_val
+    return (continuous**2
+            + (integer_val - 3)**2
+            + factor_val)
 
 opt = SpotOptim(
     fun=mixed_objective,
@@ -154,7 +168,7 @@ The three supported variable types are `"float"` (continuous), `"int"` (integer-
 
 The default optimization loop implemented in `SpotOptim.optimize()` follows the general structure of surrogate-model-based optimization, also known as Bayesian optimization when the surrogate is a Gaussian process. The algorithm proceeds in two phases: an initial design phase that builds a preliminary picture of the response surface, and a sequential phase that iteratively refines the surrogate model and proposes new evaluation points.
 
-In the initial design phase, `n_initial` points are generated according to a space-filling design. The default is a quasi-Monte Carlo Latin Hypercube design (QMC-LHS), which ensures that the marginal distribution of each variable is well-covered. Alternative designs include Sobol sequences, regular grids, uniform random sampling, and clustered designs. The user may also provide a custom initial design via the `X0` argument. All initial points are evaluated on the true objective function, and the results form the initial training set for the surrogate.
+In the initial design phase, `n_initial` points are generated according to a space-filling design. The default is a quasi-Monte Carlo Latin Hypercube Sampling (LHS) design (QMC-LHS), which ensures that the marginal distribution of each variable is well-covered. Alternative designs include Sobol sequences, regular grids, uniform random sampling, and clustered designs. The user may also provide a custom initial design via the `X0` argument. All initial points are evaluated on the true objective function, and the results form the initial training set for the surrogate.
 In the sequential phase, the algorithm repeats the following steps until the evaluation budget (`max_iter`) or the wall-clock time limit (`max_time`) is reached:
 
 1. Fit the surrogate model to all observed data $(X, \mathbf{y})$.
@@ -168,9 +182,15 @@ Three acquisition functions are supported: predicted value (`"y"`), Expected Imp
 
 When more than one worker is available (`n_jobs > 1`), `spotoptim` switches from the default sequential loop to a steady-state parallelization strategy. In the sequential mode, the surrogate is refitted after every single evaluation; in steady-state mode, surrogate search and objective evaluation overlap asynchronously. A thread pool generates candidate points by optimizing the acquisition function (under a lock that serializes surrogate reads), while a separate executor pool evaluates the objective function in parallel. Candidates are collected into batches of size `eval_batch_size` and dispatched together. As soon as a batch of evaluations returns, the results are incorporated into the data set, the surrogate is refitted, and new search tasks are launched to fill the freed worker slots. This design keeps all workers busy: while one batch is being evaluated, the next batch of candidates is already being generated.
 
-@fig-steady-state illustrates this two-phase pipeline. In Phase 1, the initial design points are evaluated in parallel and the surrogate is fitted for the first time. In Phase 2, the steady-state loop checks the evaluation budget, dispatches search tasks to the thread pool, collects candidates into batches, and sends them to the evaluation pool. After each batch completes, the storage is updated, the surrogate is refitted under a lock, and new search tasks fill the freed worker slots.
+Figure \ref{fig-steady-state} illustrates this two-phase pipeline. In Phase 1, the initial design points are evaluated in parallel and the surrogate is fitted for the first time. In Phase 2, the steady-state loop checks the evaluation budget, dispatches search tasks to the thread pool, collects candidates into batches, and sends them to the evaluation pool. After each batch completes, the storage is updated, the surrogate is refitted under a lock, and new search tasks fill the freed worker slots.
 
-![Steady-state parallelization in `spotoptim`. Phase 1 evaluates the initial design in parallel and fits the first surrogate. Phase 2 overlaps surrogate search (thread pool) with objective evaluation (process or thread pool) in a steady-state loop until the budget is exhausted.](steady-state.pdf){#fig-steady-state width=95%}
+```{=latex}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{steady-state.pdf}
+\caption{Steady-state parallelization in \texttt{spotoptim}. Phase~1 evaluates the initial design in parallel and fits the first surrogate. Phase~2 overlaps surrogate search (thread pool) with objective evaluation (process or thread pool) in a steady-state loop until the budget is exhausted.}\label{fig-steady-state}
+\end{figure*}
+```
 
 On standard CPython builds^[With the Global Interpreter Lock (GIL) enabled.], the evaluation pool uses processes (`ProcessPoolExecutor`) so that CPU-bound objective functions achieve true parallelism, while the search pool uses threads to avoid serialization overhead for surrogate access. On free-threaded Python builds^[Python Enhancement Proposal 703, `python3.13t`.], both pools use threads, eliminating `dill` serialization entirely and reducing dispatch latency. The runtime detects the GIL state automatically via `is_gil_disabled()` and selects the appropriate executor. The following example runs a parallel optimization with four workers:
 
@@ -184,8 +204,8 @@ opt = SpotOptim(
     max_iter=50,
     n_initial=10,
     seed=0,
-    n_jobs=4,            # four parallel workers
-    eval_batch_size=2,   # dispatch candidates in pairs
+    n_jobs=4,           # parallel workers
+    eval_batch_size=2,  # batch size
 )
 result = opt.optimize()
 
@@ -208,16 +228,15 @@ opt = SpotOptim(
     max_iter=200,
     n_initial=10,
     seed=42,
-    window_size=5,         # sliding window for success rate
-    restart_after_n=20,    # restart after 20 zero-success iterations
-    restart_inject_best=True,  # seed restart with best point found
+    window_size=5,
+    restart_after_n=20,
+    restart_inject_best=True,
 )
 result = opt.optimize()
 
-# Access the current success rate after optimization
-print(f"Final success rate: {opt.success_rate:.2f}")
+print(f"Success rate: {opt.success_rate:.2f}")
 print(f"Best value: {result.fun:.6f}")
-print(f"Total evaluations: {result.nfev}")
+print(f"Evaluations: {result.nfev}")
 ```
 
 A small `window_size` makes the success rate sensitive to short bursts of improvement, while a larger window smooths out isolated lucky evaluations. A low `restart_after_n` triggers frequent restarts, which favours exploration over exploitation; a high value allows the optimizer to persist longer in a region before restarting. The success rate is also available programmatically via the `success_rate` attribute, enabling custom termination logic or logging.
@@ -233,7 +252,7 @@ each responsible for a specific aspect of the optimization workflow.
 Figure \ref{fig-dirtree} shows the top-level directory structure.
 
 ```{=latex}
-\begin{figure}[ht]
+\begin{figure*}[ht]
 \dirtree{%
 .1 src/spotoptim/.
 .2 SpotOptim.py\DTcomment{Core optimizer}.
@@ -241,13 +260,13 @@ Figure \ref{fig-dirtree} shows the top-level directory structure.
 .2 optimizer/\DTcomment{Acquisition, steady-state, scipy wrapper}.
 .2 surrogate/\DTcomment{Kriging, MLP surrogate, Nystroem}.
 .2 nn/\DTcomment{PyTorch MLP, LinearRegressor}.
-.2 function/\DTcomment{Objective functions (SO, MO, remote, torch)}.
+.2 function/\DTcomment{Objective functions (single-/multi-objective, remote, torch)}.
 .2 sampling/\DTcomment{LHS, Sobol, grid, clustered designs}.
 .2 reporting/\DTcomment{Results extraction, analysis utilities}.
-.2 plot/\DTcomment{Surrogate visualization, contour, MO plots}.
-.2 utils/\DTcomment{Boundaries, transforms, PCA, OCBA, parallel}.
+.2 plot/\DTcomment{Surrogate visualization, contour, multi-objective plots}.
+.2 utils/\DTcomment{Boundaries, transforms, PCA, OCBA, TensorBoard, parallel}.
 .2 mo/\DTcomment{Multi-objective: Morris--Mitchell, Pareto front}.
-.2 hyperparameters/\DTcomment{Parameter set management for NN tuning}.
+.2 hyperparameters/\DTcomment{Parameter set management for neural network tuning}.
 .2 data/\DTcomment{Dataset loaders (e.g., DiabetesDataset)}.
 .2 inspection/\DTcomment{Model/surrogate inspection}.
 .2 factor\_analyzer/\DTcomment{Factor analysis}.
@@ -255,10 +274,10 @@ Figure \ref{fig-dirtree} shows the top-level directory structure.
 .2 tricands/\DTcomment{Triangulation-based candidate generation}.
 }
 \caption{Top-level directory structure of the \texttt{spotoptim} package.}\label{fig-dirtree}
-\end{figure}
+\end{figure*}
 ```
 
- This section describes each module, its purpose, and its key components. All modules are imported from the top-level `spotoptim` namespace or from the corresponding subpackage.
+This section describes each module, its purpose, and its key components. Key abbreviations used in the figure and throughout this section include multi-layer perceptron (MLP), principal component analysis (PCA), and Optimal Computing Budget Allocation (OCBA). All modules are imported from the top-level `spotoptim` namespace or from the corresponding subpackage.
 
 ## The SpotOptim Class {#sec-spotoptim-class}
 
@@ -291,8 +310,9 @@ model = Kriging(method="regression", seed=0)
 model.fit(X_train, y_train)
 
 X_test = np.array([[0.5], [2.0], [3.5]])
-y_pred, y_std = model.predict(X_test, return_std=True)
-# y_std is large at x=2.0 (unexplored gap) and small near training points
+y_pred, y_std = model.predict(
+    X_test, return_std=True
+)
 ```
 
 `SimpleKriging` is a lightweight alternative for simple continuous problems where computational speed takes priority over flexibility. `MLPSurrogate` uses a multi-layer perceptron (MLP), which is useful when the response surface is highly non-linear or when the number of data points exceeds the practical limits of Kriging's $\mathcal{O}(n^3)$ fitting cost. Alternatively, a Nystroem approximation module (`surrogate/nystroem.py`) provides further scalability for large datasets. Uncertainty estimates from `MLPSurrogate` are obtained by performing multiple forward passes with dropout enabled and computing the empirical variance across passes.
@@ -308,7 +328,9 @@ from sklearn.ensemble import RandomForestRegressor
 from spotoptim.function import sphere
 
 kriging = Kriging(method="regression", seed=0)
-rf = RandomForestRegressor(n_estimators=50, random_state=0)
+rf = RandomForestRegressor(
+    n_estimators=50, random_state=0
+)
 
 opt = SpotOptim(
     fun=sphere,
@@ -318,7 +340,8 @@ opt = SpotOptim(
     seed=0,
     surrogate=[kriging, rf],
     prob_surrogate=[0.7, 0.3],
-    max_surrogate_points=[None, 50],  # no cap for Kriging, 50 for RF
+    max_surrogate_points=[None, 50],
+    # no cap for Kriging, 50 for RF
 )
 result = opt.optimize()
 
@@ -334,8 +357,8 @@ The `optimizer` subpackage implements the acquisition functions and their optimi
 **Acquisition functions.** The `acquisition_function` parameter selects which criterion is used to propose the next evaluation point. Three options are available:
 
 - *Predicted value* (`"y"`): selects the point where the surrogate predicts the lowest (or highest, for maximization) objective value. This is the simplest strategy and amounts to pure exploitation of the current model. It is computationally cheap but can become trapped in local minima because it does not account for surrogate uncertainty.
-- *Expected Improvement* (`"ei"`): balances exploitation and exploration by weighting the predicted improvement over the current best value $y_{\min}$ against the surrogate's predictive uncertainty $\sigma(\mathbf{x})$. The EI formula was introduced in @sec-examples; points with high predicted quality *or* high uncertainty receive large EI values, which encourages the optimizer to explore under-sampled regions.
-- *Probability of Improvement* (`"pi"`): selects the point with the highest probability of producing an objective value below the current best $y_{\min}$. Formally, $\text{PI}(\mathbf{x}) = \Phi\bigl((y_{\min} - \mu(\mathbf{x}))/\sigma(\mathbf{x})\bigr)$, where $\Phi$ is the standard normal cumulative distribution function. PI tends to be more exploitative than EI, because it only measures the probability of any improvement, not its expected magnitude.
+- *Expected Improvement* (`"ei"`): balances exploitation and exploration by weighting the predicted improvement over the current best value $y_{\min}$ against the surrogate's predictive uncertainty $\sigma(\mathbf{x})$. The EI formula (@eq-ei) was introduced in @sec-examples; points with high predicted quality *or* high uncertainty receive large EI values, which encourages the optimizer to explore under-sampled regions.
+- *Probability of Improvement* (`"pi"`): selects the point with the highest probability of producing an objective value below the current best $y_{\min}$. Probability of Improvement tends to be more exploitative than EI, because it only measures the probability of any improvement, not its expected magnitude.
 
 **Acquisition optimizers.** The `acquisition_optimizer` parameter determines how the acquisition function is maximized over the search space. Differential evolution (the default) performs a global search and is robust across a wide range of problem structures [@Stor96a]. The triangulation candidates approach generates candidate points geometrically from the Delaunay triangulation of existing evaluations, producing both interior candidates at simplex centroids and fringe candidates that extend toward the search space boundary. The hybrid `de_tricands` mode, which is still experimental and has not been analyzed so far, alternates between the two methods with probability controlled by `prob_de_tricands`. Standard scipy minimizers are also supported for local refinement.
 
@@ -373,11 +396,18 @@ Multi-objective functions include the ZDT family (`zdt1` through `zdt6`), DTLZ p
 The `sampling.design` module provides space-filling designs for the initial evaluation phase. The default quasi-Monte Carlo Latin Hypercube design (`generate_qmc_lhs_design`) ensures that each variable's marginal distribution is uniformly covered. Sobol sequences (`generate_sobol_design`) provide quasi-random low-discrepancy coverage that is particularly effective in higher dimensions. Regular grids (`generate_grid_design`) place points at equal intervals; the actual number of grid points is $\lfloor n_\text{design}^{1/d} \rfloor^d$, where $n_\text{design}$ is the requested number of points. Uniform random sampling (`generate_uniform_design`) serves as a baseline, and clustered designs (`generate_clustered_design`) produce non-uniform distributions for testing optimizer robustness and generating so-called "ill-conditioned" designs.
 
 ```python
-from spotoptim.sampling.design import generate_qmc_lhs_design, generate_sobol_design
+from spotoptim.sampling.design import (
+    generate_qmc_lhs_design,
+    generate_sobol_design,
+)
 
 bounds = [(-5, 5), (-5, 5)]
-X_lhs = generate_qmc_lhs_design(bounds, n_design=20, seed=0)
-X_sobol = generate_sobol_design(bounds, n_design=32, seed=0)
+X_lhs = generate_qmc_lhs_design(
+    bounds, n_design=20, seed=0
+)
+X_sobol = generate_sobol_design(
+    bounds, n_design=32, seed=0
+)
 ```
 
 A pre-computed initial design can be passed to `SpotOptim.optimize()` via the `X0` parameter, allowing the user to incorporate prior knowledge or to resume an optimization from a previous set of evaluations.
@@ -500,16 +530,18 @@ result = opt.optimize()
 
 ## Multi-Objective Optimization {#sec-mo}
 
-The `mo` subpackage supports multi-objective optimization through Pareto front analysis and scalarization. The `is_pareto_efficient` function accepts a cost array of shape $(n_s, m)$, where $n_s$ is the number of solutions and $m$ is the number of objectives, and returns a boolean mask identifying the non-dominated points. It works for any number of objectives and supports both minimization and maximization.
+The `mo` subpackage supports multi-objective optimization through Pareto front analysis and scalarization. The `is_pareto_efficient` function accepts a cost array of shape $(n, m)$, where $n$ is the number of solutions and $m$ is the number of objectives, and returns a boolean mask identifying the non-dominated points. It works for any number of objectives and supports both minimization and maximization.
 
-Since the surrogate model operates on scalar objectives, multi-objective functions must be scalarized before fitting. The `fun_mo2so` parameter of `SpotOptim` converts the $(n_\text{samples}, n_\text{objectives})$ output of the objective function into a scalar $(n_\text{samples},)$ vector. The simplest scalarization is a weighted sum:
+Since the surrogate model operates on scalar objectives, multi-objective functions must be scalarized before fitting. The `fun_mo2so` parameter of `SpotOptim` converts the $(n, m)$ output of the objective function into a scalar $(n,)$ vector. The simplest scalarization is a weighted sum:
 
 ```python
 import numpy as np
 from spotoptim import SpotOptim
 from spotoptim.function import fonseca_fleming
 
-fun_mo2so = lambda y: np.sum(y * np.array([0.5, 0.5]), axis=1)
+fun_mo2so = lambda y: np.sum(
+    y * np.array([0.5, 0.5]), axis=1
+)
 
 opt = SpotOptim(
     fun=fonseca_fleming,
@@ -532,9 +564,19 @@ The `hyperparameters` subpackage provides the `ParameterSet` class, a fluent API
 from spotoptim.hyperparameters.parameters import ParameterSet
 
 ps = ParameterSet()
-ps.add_float("learning_rate", low=-5, high=-1, default=-3, transform="log10")
-ps.add_int("num_layers", low=1, high=5, default=2)
-ps.add_float("dropout", low=0.0, high=0.5, default=0.1)
+ps.add_float(
+    "learning_rate",
+    low=-5, high=-1, default=-3,
+    transform="log10",
+)
+ps.add_int(
+    "num_layers",
+    low=1, high=5, default=2,
+)
+ps.add_float(
+    "dropout",
+    low=0.0, high=0.5, default=0.1,
+)
 ```
 
 The properties `ps.bounds`, `ps.var_type`, `ps.names()`, and `ps.var_trans` map directly to the corresponding `SpotOptim` constructor arguments, providing a clean separation between search space definition and optimizer configuration. The `MLP` and `LinearRegressor` classes provide `get_default_parameters()` class methods that return pre-configured `ParameterSet` instances with sensible bounds for their hyperparameters.
@@ -579,7 +621,7 @@ plot_actual_vs_predicted(opt.y_, y_pred, show=False)
 
 ## Factor Analysis {#sec-factor}
 
-The `factor_analyzer` subpackage provides tools for exploratory factor analysis (EFA) of high-dimensional optimization data. Before running the analysis, suitability tests (`calculate_kmo` for the Kaiser-Meyer-Olkin measure, `calculate_bartlett_sphericity` for Bartlett's test) check whether the data has sufficient correlational structure. The `FactorAnalyzer` class extracts latent factors with optional varimax or promax rotation, helping to reveal the latent structure in large parameter spaces.
+The `factor_analyzer` subpackage provides tools for exploratory factor analysis of high-dimensional optimization data. Before running the analysis, suitability tests (`calculate_kmo` for the Kaiser-Meyer-Olkin measure, `calculate_bartlett_sphericity` for Bartlett's test) check whether the data has sufficient correlational structure. The `FactorAnalyzer` class extracts latent factors with optional varimax or promax rotation, helping to reveal the latent structure in large parameter spaces.
 
 ## Exploratory Data Analysis {#sec-eda}
 
@@ -601,16 +643,26 @@ The workflow follows five steps: define the search space, prepare the dataset, d
 The search space is defined using a `ParameterSet` that specifies the hyperparameters to tune, their types, bounds, and transformations:
 
 ```{python}
-from spotoptim.hyperparameters.parameters import ParameterSet
+#| echo: true
+#| code-overflow: wrap
+from spotoptim.hyperparameters \
+    .parameters import ParameterSet
 
 ps_hpt = ParameterSet()
-ps_hpt.add_float("lr", low=1e-5, high=0.1, default=0.001, transform="log10")
-ps_hpt.add_int("l1", low=8, high=128, default=32)
-ps_hpt.add_int("num_hidden_layers", low=1, high=4, default=2)
-ps_hpt.add_float("dropout", low=0.0, high=0.5, default=0.1)
-print(f"Search space: {ps_hpt.names()}")
-print(f"Bounds: {ps_hpt.bounds}")
-print(f"Variable types: {ps_hpt.var_type}")
+ps_hpt.add_float("lr", low=1e-5, high=0.1,
+    default=0.001, transform="log10")
+ps_hpt.add_int("l1", low=8, high=128,
+    default=32)
+ps_hpt.add_int("num_hidden_layers",
+    low=1, high=4, default=2)
+ps_hpt.add_float("dropout", low=0.0,
+    high=0.5, default=0.1)
+for n, t, b in zip(
+    ps_hpt.names(),
+    ps_hpt.var_type,
+    ps_hpt.bounds,
+):
+    print(f"{n} ({t}): {b}")
 ```
 
 The learning rate bounds are specified in natural scale ($[10^{-5}, 10^{-1}]$); the `log10` transformation tells SpotOptim to work internally in log space, so the surrogate models a smooth landscape. SpotOptim automatically converts back to natural scale before calling the objective function. The `ParameterSet` properties (`ps_hpt.bounds`, `ps_hpt.var_type`, `ps_hpt.names()`, `ps_hpt.var_trans`) map directly to the `SpotOptim` constructor arguments.
@@ -620,15 +672,22 @@ The learning rate bounds are specified in natural scale ($[10^{-5}, 10^{-1}]$); 
 The diabetes dataset is loaded and split into training and test sets using the provided data loader utility:
 
 ```{python}
-from spotoptim.data import get_diabetes_dataloaders
-
-train_loader, test_loader, scaler = get_diabetes_dataloaders(
-    test_size=0.2,
-    batch_size=32,
-    scale_features=True,
-    random_state=0,
+#| echo: true
+#| code-overflow: wrap
+from spotoptim.data import (
+    get_diabetes_dataloaders,
 )
-print(f"Training batches: {len(train_loader)}, test batches: {len(test_loader)}")
+
+train_loader, test_loader, scaler = (
+    get_diabetes_dataloaders(
+        test_size=0.2,
+        batch_size=32,
+        scale_features=True,
+        random_state=0,
+    )
+)
+print(f"Training batches: {len(train_loader)}")
+print(f"Test batches: {len(test_loader)}")
 ```
 
 The `scale_features=True` option standardizes input features to zero mean and unit variance, which is important for neural network training stability.
@@ -638,46 +697,46 @@ The `scale_features=True` option standardizes input features to zero mean and un
 The objective function decodes hyperparameters from the search vector, constructs a `LinearRegressor`, trains it on the training set, and returns the mean squared error on the test set. Because SpotOptim applies the inverse of `var_trans` before calling the objective, the learning rate arrives in natural scale and can be used directly. The number of epochs is set to 10 for this demo; production runs should use 50--200.
 
 ```{python}
+#| echo: true
+#| code-overflow: wrap
 import numpy as np
 import torch
 from spotoptim.nn import LinearRegressor
 
-N_EPOCHS = 10  # short for demo; use 50-200 in practice
+N_EPOCHS = 10  # short demo; use 50-200
 
 def nn_objective(X):
     X = np.atleast_2d(X)
     results = np.zeros(X.shape[0])
     for i in range(X.shape[0]):
-        lr = X[i, 0]            # already in natural scale
+        lr = X[i, 0]
         l1 = int(X[i, 1])
         n_layers = int(X[i, 2])
         dropout = X[i, 3]
-
         model = LinearRegressor(
             input_dim=10, output_dim=1,
-            l1=l1, num_hidden_layers=n_layers,
+            l1=l1,
+            num_hidden_layers=n_layers,
             activation="ReLU",
         )
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        opt = torch.optim.Adam(
+            model.parameters(), lr=lr)
         loss_fn = torch.nn.MSELoss()
-
         model.train()
         for epoch in range(N_EPOCHS):
-            for X_batch, y_batch in train_loader:
-                optimizer.zero_grad()
-                pred = model(X_batch)
-                loss = loss_fn(pred, y_batch)
+            for xb, yb in train_loader:
+                opt.zero_grad()
+                loss = loss_fn(model(xb), yb)
                 loss.backward()
-                optimizer.step()
-
+                opt.step()
         model.eval()
-        total_loss = 0.0
-        n = 0
+        total_loss, n = 0.0, 0
         with torch.no_grad():
-            for X_batch, y_batch in test_loader:
-                pred = model(X_batch)
-                total_loss += loss_fn(pred, y_batch).item() * len(y_batch)
-                n += len(y_batch)
+            for xb, yb in test_loader:
+                total_loss += (
+                    loss_fn(model(xb), yb)
+                    .item() * len(yb))
+                n += len(yb)
         results[i] = total_loss / n
     return results
 ```
@@ -689,6 +748,8 @@ The function follows `spotoptim`'s convention: it accepts a 2-D array where each
 With the search space and objective function defined, the optimization is launched with a single call. The optimizer is configured with Expected Improvement and a small budget suitable for a demo. Production runs should increase `max_iter` to 30 or more.
 
 ```{python}
+#| echo: true
+#| code-overflow: wrap
 from spotoptim import SpotOptim
 
 opt_hpt = SpotOptim(
@@ -698,15 +759,17 @@ opt_hpt = SpotOptim(
     var_name=ps_hpt.names(),
     var_trans=ps_hpt.var_trans,
     acquisition="ei",
-    max_iter=15,
-    n_initial=8,
-    seed=0,
+    max_iter=15, n_initial=8, seed=0,
 )
 result_hpt = opt_hpt.optimize()
 
 print(f"Best MSE: {result_hpt.fun:.4f}")
-print(f"Best config: {dict(zip(ps_hpt.names(), result_hpt.x))}")
-print(f"Total evaluations: {result_hpt.nfev}")
+print(f"Evaluations: {result_hpt.nfev}")
+print("Best config:")
+for n, v in zip(
+    ps_hpt.names(), result_hpt.x
+):
+    print(f"  {n}: {v:.6g}")
 ```
 
 The Kriging surrogate builds a model of the validation loss as a function of the hyperparameters, and Expected Improvement guides the search toward configurations that are either predicted to perform well or that have high uncertainty.
@@ -716,35 +779,57 @@ The Kriging surrogate builds a model of the validation loss as a function of the
 After optimization, the reporting utilities summarize which hyperparameters were most influential and display the best configuration. The progress plot (@fig-hpt-progress) shows the convergence of the optimization.
 
 ```{python}
+#| echo: true
+#| code-overflow: wrap
 #| label: fig-hpt-progress
 #| fig-cap: "Hyperparameter tuning progress (demo run with reduced epochs and budget). The red curve shows the best validation MSE found so far."
-from spotoptim.plot.visualization import plot_progress
+from spotoptim.plot.visualization import (
+    plot_progress,
+)
 plot_progress(opt_hpt, show=False)
 ```
 
 The feature importances (@fig-hpt-importances) reveal which hyperparameters had the strongest influence on the validation loss.
 
 ```{python}
+#| echo: true
+#| code-overflow: wrap
 #| label: fig-hpt-importances
 #| fig-cap: "Feature importances for the hyperparameter tuning demo. Left: impurity-based (Gini) importances. Right: permutation importances on the test set."
-from sklearn.model_selection import train_test_split
-from spotoptim.inspection import generate_mdi, generate_imp, plot_importances
+from sklearn.model_selection import (
+    train_test_split,
+)
+from spotoptim.inspection import (
+    generate_mdi, generate_imp,
+    plot_importances,
+)
 
 X_tr, X_te, y_tr, y_te = train_test_split(
-    opt_hpt.X_, opt_hpt.y_, test_size=0.3, random_state=42
+    opt_hpt.X_, opt_hpt.y_,
+    test_size=0.3, random_state=42,
 )
-df_mdi = generate_mdi(X_tr, y_tr, feature_names=ps_hpt.names())
-perm_imp = generate_imp(X_tr, X_te, y_tr, y_te)
+df_mdi = generate_mdi(
+    X_tr, y_tr,
+    feature_names=ps_hpt.names(),
+)
+perm_imp = generate_imp(
+    X_tr, X_te, y_tr, y_te,
+)
 plot_importances(
     df_mdi, perm_imp, X_te,
-    feature_names=ps_hpt.names(), show=False,
+    feature_names=ps_hpt.names(),
+    show=False,
 )
 ```
 
 The `sensitivity_spearman` function reports Spearman rank correlations between each hyperparameter and the objective value, with significance stars indicating statistical confidence. This helps the practitioner understand which hyperparameters merit further investigation and which can be fixed at their default values.
 
 ```{python}
-from spotoptim.reporting.analysis import sensitivity_spearman
+#| echo: true
+#| code-overflow: wrap
+from spotoptim.reporting.analysis import (
+    sensitivity_spearman,
+)
 sensitivity_spearman(opt_hpt)
 ```
 

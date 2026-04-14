@@ -162,10 +162,18 @@
               \labelwidth\leftmarginvi
               \advance\labelwidth-\labelsep}
 
+% Boxes for deferred twocolumn title+abstract output
+\newsavebox{\spot@titlebox}
+\newsavebox{\spot@absbox}
+\newif\ifspot@twocol
+
 % create title
 \providecommand{\maketitle}{}
 \renewcommand{\maketitle}{%
   \par
+  \if@twocolumn
+    \global\spot@twocoltrue
+  \fi
   \begingroup
     \renewcommand{\thefootnote}{\fnsymbol{footnote}}
     % for perfect author name centering
@@ -177,7 +185,12 @@
       \hbox to 1.8em{\hss $\m@th ^{\@thefnmark}$}##1
     }
     \thispagestyle{empty}
-    \@maketitle
+    \ifspot@twocol
+      % Save title for deferred output with abstract
+      \global\setbox\spot@titlebox=\vbox{\@maketitle}%
+    \else
+      \@maketitle
+    \fi
     \@thanks
     %\@notice
   \endgroup
@@ -236,13 +249,26 @@
 
 % abstract styling
 \renewenvironment{abstract}
-{
-  \centerline
-  {\large \bfseries \scshape Abstract}
-  \begin{quote}
+{%
+  \ifspot@twocol
+    \global\setbox\spot@absbox=\vbox\bgroup
+    \hsize\textwidth
+    \linewidth\hsize
+  \fi
+  \centerline{\large \bfseries \scshape Abstract}%
+  \begin{quote}%
 }
-{
-  \end{quote}
+{%
+  \end{quote}%
+  \ifspot@twocol
+    \egroup% ends the \vbox
+    \twocolumn[%
+      \unvbox\spot@titlebox
+      \vskip 0.5em%
+      \unvbox\spot@absbox
+      \vskip 1em%
+    ]%
+  \fi
 }
 
 \endinput
