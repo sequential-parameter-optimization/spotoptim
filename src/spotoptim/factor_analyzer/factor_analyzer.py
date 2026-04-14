@@ -250,7 +250,7 @@ class FactorAnalyzer(BaseEstimator, TransformerMixin):
 
     def _arg_checker(self):
         """
-        Check the input parameters to make sure they're properly formattted.
+        Check the input parameters to make sure they're properly formatted.
 
         We need to do this to ensure that the FactorAnalyzer class can be
         properly cloned when used with grid search CV, for example.
