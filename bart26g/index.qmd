@@ -18,12 +18,14 @@ keywords:
   - Hyperparameter tuning
   - Kriging
 bibliography: bart26g.bib
+jupyter: spotoptim
+header-includes: |
+  \usepackage{dirtree}
 ---
 
 # Introduction {#sec-introduction}
 
 Problems in engineering, simulation, and machine and deep learning (or generally in artificial intelligence) require the optimization of functions that are expensive to evaluate. Training a deep neural network to convergence, running a computational fluid dynamics simulation, or evaluating a reinforcement learning policy may take minutes to hours per function call, making exhaustive search or gradient-based methods impractical. Surrogate-model-based optimization addresses this challenge by constructing a cheap statistical approximation of the objective function and using it to guide the search toward promising regions of the parameter space [@Forr08a].
-
 The Sequential Parameter Optimization (SPO) methodology was introduced by @BLP05 as a principled framework for tuning the parameters of metaheuristic algorithms. Rather than relying on default settings or ad-hoc parameter sweeps, SPO fits a Kriging (Gaussian process) model to the observed function evaluations, selects the next evaluation point by optimizing an acquisition function such as Expected Improvement [@jones98a], and iterates until the evaluation budget is exhausted. This approach generalizes the Efficient Global Optimization (EGO) algorithm to a broader class of tuning and optimization problems, including noisy objectives and mixed variable types.
 
 The SPO methodology has been implemented in several software packages over the past two decades. The original R package SPOT, which was available on the Comprehensive R Archive Network (CRAN, <https://cran.r-project.org/web/packages/SPOT/index.html>), provided the first publicly available implementation and was used extensively in the companion volume "Hyperparameter Tuning for Machine and Deep Learning with R" [@bart21i]^[With more than 150k accesses, it is one of the most popular publications in the field. See \url{https://link.springer.com/book/10.1007/978-981-19-5170-1}.]. An overview of the SPOT methodology and its R implementation is given by @bart21b. The R package was subsequently ported to Python as SpotPython, which extended the framework with PyTorch integration and a hyperparameter tuning cookbook [@bart23iArXiv]. The `spotoptim` package (<https://github.com/sequential-parameter-optimization/spotoptim>) is the current generation of this lineage. It is a complete rewrite that preserves the core SPO algorithm while modernizing the architecture, improving extensibility, and integrating with the Python scientific computing ecosystem.
@@ -162,9 +164,7 @@ In the sequential phase, the algorithm repeats the following steps until the eva
 
 The default surrogate is Kriging with regression [@Forr08a], which models the objective as a Gaussian process with a Gaussian radial basis function (RBF) correlation kernel. The kernel hyperparameters $\boldsymbol{\theta}$ are estimated by maximizing the concentrated log-likelihood using differential evolution. Based on ideas presented by @Forr08a, three fitting modes are available: regression Kriging (the default), which fits a generalized least-squares model; interpolation Kriging, which passes exactly through the data points; and re-interpolation Kriging, which applies Forrester's correction for noisy data. The surrogate provides both a mean prediction $\mu(\mathbf{x})$ and a standard deviation $\sigma(\mathbf{x})$, the latter being essential for uncertainty-aware acquisition functions. Importantly, the Kriging implementation in SPO uses flexible kernel functions that extend naturally to non-continuous parameter spaces. For categorical and combinatorial variables, appropriate distance or similarity measures replace the standard Euclidean distance in the correlation function, enabling the surrogate to model landscapes over discrete, permutation, or mixed search spaces [@Bart16n; @Zaef16b]. This line of research has produced kernels for permutation-based problems using tailored distance measures with automated selection via maximum likelihood estimation [@Zaef14c; @Zaef14b], as well as kernels for hierarchical and conditional parameter spaces arising in algorithm configuration [@Gent18a; @Gent18b].
 
-Three acquisition functions are supported. The predicted value (`"y"`) simply selects the point where the surrogate predicts the lowest objective value. This is computationally cheap and effective when the surrogate is accurate, but it performs pure exploitation and may get trapped in local minima. Expected Improvement (`"ei"`) balances exploitation and exploration by accounting for the surrogate's uncertainty, as described in @sec-examples. Probability of Improvement (`"pi"`) selects the point with the highest probability of improving upon the current best value.
-
-The acquisition function is itself optimized over the search space using one of several methods. The default is differential evolution (DE), a global optimizer that is robust across a wide range of landscapes [@Stor96a]. An alternative is the triangulation candidates (`tricands`) approach, which computes the Delaunay triangulation of the existing data points and generates candidate points at simplex centroids and along the boundary of the convex hull [@gram22a]. This geometry-aware strategy is particularly effective in low-to-moderate dimensions. A hybrid mode (`de_tricands`) randomly alternates between DE and tricands with a configurable probability, combining the strengths of both methods. Standard scipy methods such as L-BFGS-B and Nelder-Mead are also available.
+Three acquisition functions are supported: predicted value (`"y"`), Expected Improvement (`"ei"`), and Probability of Improvement (`"pi"`). These are described in detail in @sec-optimizer. The acquisition function is optimized over the search space using one of several methods, including differential evolution (DE), triangulation candidates (`tricands`), and standard scipy minimizers; see @sec-optimizer for details.
 
 When more than one worker is available (`n_jobs > 1`), `spotoptim` switches from the default sequential loop to a steady-state parallelization strategy. In the sequential mode, the surrogate is refitted after every single evaluation; in steady-state mode, surrogate search and objective evaluation overlap asynchronously. A thread pool generates candidate points by optimizing the acquisition function (under a lock that serializes surrogate reads), while a separate executor pool evaluates the objective function in parallel. Candidates are collected into batches of size `eval_batch_size` and dispatched together. As soon as a batch of evaluations returns, the results are incorporated into the data set, the surrogate is refitted, and new search tasks are launched to fill the freed worker slots. This design keeps all workers busy: while one batch is being evaluated, the next batch of candidates is already being generated.
 
@@ -172,7 +172,7 @@ When more than one worker is available (`n_jobs > 1`), `spotoptim` switches from
 
 ![Steady-state parallelization in `spotoptim`. Phase 1 evaluates the initial design in parallel and fits the first surrogate. Phase 2 overlaps surrogate search (thread pool) with objective evaluation (process or thread pool) in a steady-state loop until the budget is exhausted.](steady-state.pdf){#fig-steady-state width=75%}
 
-On standard CPython builds (with the Global Interpreter Lock, GIL), the evaluation pool uses processes (`ProcessPoolExecutor`) so that CPU-bound objective functions achieve true parallelism, while the search pool uses threads to avoid serialization overhead for surrogate access. On free-threaded Python builds (Python Enhancement Proposal 703, `python3.13t`), both pools use threads, eliminating `dill` serialization entirely and reducing dispatch latency. The runtime detects the GIL state automatically via `is_gil_disabled()` and selects the appropriate executor. The following example runs a parallel optimization with four workers:
+On standard CPython builds^[With the Global Interpreter Lock (GIL) enabled.], the evaluation pool uses processes (`ProcessPoolExecutor`) so that CPU-bound objective functions achieve true parallelism, while the search pool uses threads to avoid serialization overhead for surrogate access. On free-threaded Python builds^[Python Enhancement Proposal 703, `python3.13t`.], both pools use threads, eliminating `dill` serialization entirely and reducing dispatch latency. The runtime detects the GIL state automatically via `is_gil_disabled()` and selects the appropriate executor. The following example runs a parallel optimization with four workers:
 
 ```python
 from spotoptim import SpotOptim
@@ -227,7 +227,38 @@ For problems with many evaluation points, the `max_surrogate_points` parameter l
 
 # Modules {#sec-modules}
 
-The `spotoptim` codebase is organized into focused subpackages, each responsible for a specific aspect of the optimization workflow. This section describes each module, its purpose, and its key components. All modules are imported from the top-level `spotoptim` namespace or from the corresponding subpackage.
+
+The `spotoptim` codebase is organized into focused subpackages,
+each responsible for a specific aspect of the optimization workflow.
+Figure \ref{fig-dirtree} shows the top-level directory structure.
+
+```{=latex}
+\begin{figure}[ht]
+\dirtree{%
+.1 src/spotoptim/.
+.2 SpotOptim.py\DTcomment{Core optimizer}.
+.2 core/\DTcomment{Protocol, storage, experiment control}.
+.2 optimizer/\DTcomment{Acquisition, steady-state, scipy wrapper}.
+.2 surrogate/\DTcomment{Kriging, MLP surrogate, Nystroem}.
+.2 nn/\DTcomment{PyTorch MLP, LinearRegressor}.
+.2 function/\DTcomment{Objective functions (SO, MO, remote, torch)}.
+.2 sampling/\DTcomment{LHS, Sobol, grid, clustered designs}.
+.2 reporting/\DTcomment{Results extraction, analysis utilities}.
+.2 plot/\DTcomment{Surrogate visualization, contour, MO plots}.
+.2 utils/\DTcomment{Boundaries, transforms, PCA, OCBA, parallel}.
+.2 mo/\DTcomment{Multi-objective: Morris--Mitchell, Pareto front}.
+.2 hyperparameters/\DTcomment{Parameter set management for NN tuning}.
+.2 data/\DTcomment{Dataset loaders (e.g., DiabetesDataset)}.
+.2 inspection/\DTcomment{Model/surrogate inspection}.
+.2 factor\_analyzer/\DTcomment{Factor analysis}.
+.2 eda/\DTcomment{Exploratory data analysis}.
+.2 tricands/\DTcomment{Triangulation-based candidate generation}.
+}
+\caption{Top-level directory structure of the \texttt{spotoptim} package.}\label{fig-dirtree}
+\end{figure}
+```
+
+ This section describes each module, its purpose, and its key components. All modules are imported from the top-level `spotoptim` namespace or from the corresponding subpackage.
 
 ## The SpotOptim Class {#sec-spotoptim-class}
 
@@ -239,12 +270,15 @@ Variable transformations can be applied through the `var_trans` parameter. For e
 
 ## Core Infrastructure {#sec-core}
 
-The `core` subpackage provides foundational components. `SpotOptimProtocol` (defined in `core/protocol.py`) is a structural typing protocol (PEP 544) that declares the interface extracted modules expect from the optimizer. Modules such as `optimizer.steady_state` and `reporting.analysis` accept any object matching this protocol rather than importing the concrete `SpotOptim` class, avoiding circular imports and facilitating independent testing.
+The `core` subpackage provides foundational components. `SpotOptimProtocol` (defined in `core/protocol.py`) is a structural typing protocol^[PEP 544] that declares the interface extracted modules expect from the optimizer. Modules such as `optimizer.steady_state` and `reporting.analysis` accept any object matching this protocol rather than importing the concrete `SpotOptim` class, avoiding circular imports and facilitating independent testing.
 The `core.storage` module manages the optimizer's internal data arrays through functions like `init_storage()` and `update_storage()`, which handle appending new evaluation results, updating running statistics, and tracking the best solution found so far. `ExperimentControl` is a dataclass that bundles dataset, model class, hyperparameters, device settings, and training parameters into a single object for PyTorch-based experiment workflows.
 
 ## Surrogate Models {#sec-surrogate}
 
 The `surrogate` subpackage contains three surrogate implementations. `Kriging` is the default and models the objective as a Gaussian process with a Gaussian (RBF) kernel. Its key parameters include `method` (`"regression"`, `"interpolation"`, or `"reinterpolation"`), `noise` (regularization term), `min_theta` and `max_theta` (bounds for log-scaled kernel hyperparameters), and `seed`. Calling `predict(X, return_std=True)` returns both mean predictions and standard deviations, enabling uncertainty-aware acquisition.
+This implementation follows @Forr08a^[Specific references to @Forr08a: Section 2.4 "Kriging" for the core implementation of the Kriging predictor and likelihood and Section 6 "Surrogate Modeling of Noisy Data" for the implementation of "regression" and "reinterpolation" methods. `spotoptim`'s Python code iss based on `likelihood.m` (concentrated log-likelihood calculation) and `pred.m` (Prediction and error estimation) from the book's codebase.]
+It is validated against the Matlab implementation from @Forr08a and includes extensions for non-continuous variables based on the work of @Bart16n and @Zaef16b.
+
 
 ```python
 import numpy as np
@@ -261,17 +295,51 @@ y_pred, y_std = model.predict(X_test, return_std=True)
 # y_std is large at x=2.0 (unexplored gap) and small near training points
 ```
 
-`SimpleKriging` is a lightweight alternative for simple continuous problems where computational speed takes priority over flexibility. `MLPSurrogate` uses a multi-layer perceptron (MLP), which is useful when the response surface is highly non-linear or when the number of data points exceeds the practical limits of Kriging's $\mathcal{O}(n^3)$ fitting cost. Uncertainty estimates from `MLPSurrogate` are obtained by performing multiple forward passes with dropout enabled and computing the empirical variance across passes.
+`SimpleKriging` is a lightweight alternative for simple continuous problems where computational speed takes priority over flexibility. `MLPSurrogate` uses a multi-layer perceptron (MLP), which is useful when the response surface is highly non-linear or when the number of data points exceeds the practical limits of Kriging's $\mathcal{O}(n^3)$ fitting cost. Alternatively, a Nystroem approximation module (`surrogate/nystroem.py`) provides further scalability for large datasets. Uncertainty estimates from `MLPSurrogate` are obtained by performing multiple forward passes with dropout enabled and computing the empirical variance across passes.
 
 The surrogate interface follows the scikit-learn estimator convention. Any model that implements `fit(X, y)` and `predict(X)` can be passed as the `surrogate` argument to `SpotOptim`. For acquisition functions that require uncertainty (`"ei"`, `"pi"`), the model should additionally support `predict(X, return_std=True)`. This makes it straightforward to use scikit-learn's `GaussianProcessRegressor` with custom kernels, or any other regression model, as a drop-in replacement for Kriging.
 
+Beyond single-surrogate optimization, `spotoptim` supports multi-surrogate scheduling. The `surrogate` parameter accepts a list of surrogate models together with a `prob_surrogate` vector that specifies the selection probability for each model. At every surrogate refit step, one model is drawn at random according to these weights and used for the next acquisition cycle. This introduces diversity into the search: different surrogate types may fit different regions of the landscape better, and alternating between them can reduce the risk of systematic model bias. Each surrogate can also have its own `max_surrogate_points` budget, passed as a list of the same length. If `prob_surrogate` is omitted, uniform weights are assigned automatically. The following example combines a Kriging model (selected with probability 0.7) and a random forest (selected with probability 0.3):
+
+```python
+from spotoptim import SpotOptim
+from spotoptim.surrogate import Kriging
+from sklearn.ensemble import RandomForestRegressor
+from spotoptim.function import sphere
+
+kriging = Kriging(method="regression", seed=0)
+rf = RandomForestRegressor(n_estimators=50, random_state=0)
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=30,
+    n_initial=10,
+    seed=0,
+    surrogate=[kriging, rf],
+    prob_surrogate=[0.7, 0.3],
+    max_surrogate_points=[None, 50],  # no cap for Kriging, 50 for RF
+)
+result = opt.optimize()
+
+print(f"Best value: {result.fun:.6f}")
+```
+
+This multi-surrogate mechanism is particularly useful when the computational cost of different surrogates varies: a cheap model such as a random forest can be used for the majority of iterations, while an expensive but more accurate Kriging model is used occasionally to provide high-quality uncertainty estimates.
+
 ## Acquisition and Infill {#sec-optimizer}
 
-The `optimizer` subpackage implements the acquisition functions and their optimizers. The three acquisition functions (predicted value, Expected Improvement, Probability of Improvement) are described in @sec-algorithm. The acquisition optimizer is controlled by `acquisition_optimizer` and determines how the acquisition function is maximized over the search space.
+The `optimizer` subpackage implements the acquisition functions and their optimizers.
 
-Differential evolution (the default) performs a global search and is robust across a wide range of problem structures. The triangulation candidates approach generates candidate points geometrically from the Delaunay triangulation of existing evaluations, producing both interior candidates at simplex centroids and fringe candidates that extend toward the search space boundary. The hybrid `de_tricands` mode alternates between the two methods with probability controlled by `prob_de_tricands`. Standard scipy minimizers are also supported for local refinement.
+**Acquisition functions.** The `acquisition_function` parameter selects which criterion is used to propose the next evaluation point. Three options are available:
 
-Multiple infill points can be proposed per iteration by setting `n_infill_points`, which is useful for batch-parallel evaluation. When the acquisition optimizer fails to find a valid new point (for example due to a flat surrogate surface), a random fallback point is generated within bounds. The `max_surrogate_points` parameter limits the number of data points used for surrogate fitting, keeping computational cost manageable as the number of evaluations grows.
+- *Predicted value* (`"y"`): selects the point where the surrogate predicts the lowest (or highest, for maximization) objective value. This is the simplest strategy and amounts to pure exploitation of the current model. It is computationally cheap but can become trapped in local minima because it does not account for surrogate uncertainty.
+- *Expected Improvement* (`"ei"`): balances exploitation and exploration by weighting the predicted improvement over the current best value $y_{\min}$ against the surrogate's predictive uncertainty $\sigma(\mathbf{x})$. The EI formula was introduced in @sec-examples; points with high predicted quality *or* high uncertainty receive large EI values, which encourages the optimizer to explore under-sampled regions.
+- *Probability of Improvement* (`"pi"`): selects the point with the highest probability of producing an objective value below the current best $y_{\min}$. Formally, $\text{PI}(\mathbf{x}) = \Phi\bigl((y_{\min} - \mu(\mathbf{x}))/\sigma(\mathbf{x})\bigr)$, where $\Phi$ is the standard normal cumulative distribution function. PI tends to be more exploitative than EI, because it only measures the probability of any improvement, not its expected magnitude.
+
+**Acquisition optimizers.** The `acquisition_optimizer` parameter determines how the acquisition function is maximized over the search space. Differential evolution (the default) performs a global search and is robust across a wide range of problem structures [@Stor96a]. The triangulation candidates approach generates candidate points geometrically from the Delaunay triangulation of existing evaluations, producing both interior candidates at simplex centroids and fringe candidates that extend toward the search space boundary. The hybrid `de_tricands` mode, which is still experimental and has not been analyzed so far, alternates between the two methods with probability controlled by `prob_de_tricands`. Standard scipy minimizers are also supported for local refinement.
+
+**Infill points.** Multiple infill points can be proposed per iteration by setting `n_infill_points`, which is useful for batch-parallel evaluation. When the acquisition optimizer fails to find a valid new point (for example due to a flat surrogate surface), a random fallback point is generated within bounds. The `max_surrogate_points` parameter limits the number of data points used for surrogate fitting, keeping computational cost manageable as the number of evaluations grows.
 
 ## Neural Network Models {#sec-nn}
 
@@ -291,19 +359,18 @@ model = MLP(
 # Creates: 10 -> 64 -> 64 -> 1 with dropout between layers
 ```
 
-`LinearRegressor` is a `torch.nn.Module` for regression tasks that ranges from pure linear regression (with `num_hidden_layers=0`) to a deep network with configurable activation functions. Both classes provide a `get_default_parameters()` class method that returns a `ParameterSet` with sensible bounds for hyperparameter tuning, and a `get_optimizer()` method that maps string names to `torch.optim` optimizer classes. Beyond standard PyTorch optimizers, spotoptim bundles `AdamWScheduleFree`, a schedule-free variant of AdamW that does not require a learning-rate scheduler.
+`LinearRegressor` is a `torch.nn.Module` for regression tasks that ranges from pure linear regression (with `num_hidden_layers=0`) to a deep network with configurable activation functions. Both classes provide a `get_default_parameters()` class method that returns a `ParameterSet` with sensible bounds for hyperparameter tuning, and a `get_optimizer()` method that maps string names to `torch.optim` optimizer classes. Beyond standard PyTorch optimizers, `spotoptim` bundles `AdamWScheduleFree`, a schedule-free variant of AdamW that does not require a learning-rate scheduler.
 
 ## Built-in Test Functions {#sec-functions}
 
 The `function` subpackage contains analytical test functions for benchmarking and testing. All functions accept a 2-D array of shape $(n_\text{samples}, n_\text{features})$ and return a 1-D array of shape $(n_\text{samples},)$ for single-objective functions, or $(n_\text{samples}, n_\text{objectives})$ for multi-objective functions.
 
-The single-objective functions include sphere ($f = \sum x_i^2$), noisy sphere (sphere with additive Gaussian noise), Rosenbrock (narrow curved valley, minimum at $\mathbf{1}$), Ackley (multi-modal with many local minima), and Michalewicz (steep valleys with a tunable steepness parameter). Engineering benchmark functions include `wingwt` (wing weight estimation, 9--10 dimensions), `robot_arm_hard` (10-link robot arm maze navigation), and `lennard_jones` (atomic cluster potential, 39 dimensions for 13 atoms).
-
+The single-objective functions include sphere ($f = \sum x_i^2$), noisy sphere (sphere with additive Gaussian noise), Rosenbrock (narrow curved valley, minimum at $\mathbf{1}$), Ackley (multi-modal with many local minima), and Michalewicz (steep valleys with a tunable steepness parameter). Engineering benchmark functions include `wingwt` (wing weight estimation, 9--10 dimensions from @Forr08a), `robot_arm_hard` (10-link robot arm maze navigation), and `lennard_jones` (atomic cluster potential, 39 dimensions for 13 atoms).
 Multi-objective functions include the ZDT family (`zdt1` through `zdt6`), DTLZ problems (`dtlz1`, `dtlz2`), Fonseca-Fleming, Schaffer N1, and Kursawe. Custom objective functions can be defined by the user following the same array convention.
 
 ## Sampling and Experimental Designs {#sec-sampling}
 
-The `sampling.design` module provides space-filling designs for the initial evaluation phase. The default quasi-Monte Carlo Latin Hypercube design (`generate_qmc_lhs_design`) ensures that each variable's marginal distribution is uniformly covered. Sobol sequences (`generate_sobol_design`) provide quasi-random low-discrepancy coverage that is particularly effective in higher dimensions. Regular grids (`generate_grid_design`) place points at equal intervals; the actual number of grid points is $\lfloor n_\text{design}^{1/d} \rfloor^d$, where $n_\text{design}$ is the requested number of points. Uniform random sampling (`generate_uniform_design`) serves as a baseline, and clustered designs (`generate_clustered_design`) produce non-uniform distributions for testing optimizer robustness.
+The `sampling.design` module provides space-filling designs for the initial evaluation phase. The default quasi-Monte Carlo Latin Hypercube design (`generate_qmc_lhs_design`) ensures that each variable's marginal distribution is uniformly covered. Sobol sequences (`generate_sobol_design`) provide quasi-random low-discrepancy coverage that is particularly effective in higher dimensions. Regular grids (`generate_grid_design`) place points at equal intervals; the actual number of grid points is $\lfloor n_\text{design}^{1/d} \rfloor^d$, where $n_\text{design}$ is the requested number of points. Uniform random sampling (`generate_uniform_design`) serves as a baseline, and clustered designs (`generate_clustered_design`) produce non-uniform distributions for testing optimizer robustness and generating so-called "ill-conditioned" designs.
 
 ```python
 from spotoptim.sampling.design import generate_qmc_lhs_design, generate_sobol_design
@@ -318,12 +385,99 @@ A pre-computed initial design can be passed to `SpotOptim.optimize()` via the `X
 ## Reporting and Analysis {#sec-reporting}
 
 The `reporting` subpackage extracts and formats optimization results. `print_best` displays the best parameter vector and objective value in a human-readable format, with factor variables mapped back to their string labels. `get_results_table` produces a formatted table showing each variable's name, type, bounds, default value, and tuned (best) value, with an optional importance score column. `get_design_table` summarizes the search space before optimization, listing variable types, bounds, and transformations.
-
 For post-hoc analysis, `get_importance` computes a correlation-based importance score for each variable on a 0--100 scale, and `sensitivity_spearman` reports Spearman rank correlations between each parameter and the objective value, together with p-values and significance stars. These tools help identify which hyperparameters have the strongest influence on performance, guiding subsequent refinements to the search space.
 
 ## Visualization {#sec-plotting}
 
-The `plot` subpackage provides four main visualization functions. `plot_progress` displays the full evaluation history as a scatter plot with a best-so-far curve overlaid, distinguishing initial design points from sequential evaluations. `plot_surrogate` renders a 2x2 panel showing the fitted surrogate model for a selected pair of dimensions: the top row contains 3-D surfaces of predictions and prediction uncertainty, while the bottom row shows the corresponding contour plots with evaluated points overlaid. `simple_contour` draws a quick 2-D filled contour of any callable over a rectangular region, and `plot_design_points` creates a scatter plot of evaluated points with hidden-dimension aggregation. Multi-objective visualization is provided through `mo_pareto_optx_plot`, which shows Pareto-optimal points in the input space, and `mo_xy_contour` and `mo_xy_surface` for surrogate-based objective-space visualization.
+The `plot` subpackage provides several visualization functions. `plot_progress` displays the full evaluation history as a scatter plot with a best-so-far curve overlaid, distinguishing initial design points from sequential evaluations. `plot_surrogate` renders a 2x2 panel showing the fitted surrogate model for a selected pair of dimensions: the top row contains 3-D surfaces of predictions and prediction uncertainty, while the bottom row shows the corresponding contour plots with evaluated points overlaid. `simple_contour` draws a quick 2-D filled contour of any callable over a rectangular region, and `plot_design_points` creates a scatter plot of evaluated points with hidden-dimension aggregation. Multi-objective visualization is provided through `mo_pareto_optx_plot`, which shows Pareto-optimal points in the input space, and `mo_xy_contour` and `mo_xy_surface` for surrogate-based objective-space visualization.
+
+The following examples use the sphere function optimized over $[-5, 5]^2$ with 25 iterations. @fig-progress shows a typical progress plot. The initial design points appear as grey dots in a shaded background region; sequential evaluations are connected by a line, and the red curve traces the best objective value found so far.
+
+```{python}
+#| label: fig-progress
+#| fig-cap: "Optimization progress for the sphere function. Grey dots mark the initial Latin Hypercube design; subsequent evaluations are connected by a line. The red curve shows the best objective value found so far."
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+from spotoptim.plot.visualization import plot_progress
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=25,
+    n_initial=10,
+    seed=0,
+)
+result = opt.optimize()
+plot_progress(opt, show=False, log_y=True)
+```
+
+@fig-surrogate shows the surrogate model fitted after optimization. The top row displays 3-D surfaces of the predicted objective value and the prediction uncertainty; the bottom row shows the corresponding contour maps with the evaluated points overlaid as red dots.
+
+```{python}
+#| label: fig-surrogate
+#| fig-cap: "Surrogate model for dimensions $x_0$ and $x_1$. Top row: 3-D surfaces of predictions (left) and prediction uncertainty (right). Bottom row: contour plots with evaluated points overlaid."
+from spotoptim.plot.visualization import plot_surrogate
+plot_surrogate(opt, i=0, j=1, show=False)
+```
+
+@fig-contour illustrates `simple_contour` applied to the Rosenbrock function. The function accepts any callable that maps a $(1, 2)$ array to a scalar, making it convenient for quick inspection of objective landscapes independently of an optimization run.
+
+```{python}
+#| label: fig-contour
+#| fig-cap: "Filled contour plot of the Rosenbrock function over $[-2, 2] \\times [-1, 3]$."
+from spotoptim.function import rosenbrock
+from spotoptim.plot.contour import simple_contour
+simple_contour(rosenbrock, min_x=-2, max_x=2, min_y=-1, max_y=3, n_levels=30)
+```
+
+@fig-design-points projects the evaluated design points onto the two input dimensions. When the problem has more than two dimensions, the remaining dimensions are aggregated and used to colour the markers.
+
+```{python}
+#| label: fig-design-points
+#| fig-cap: "Evaluated design points projected onto dimensions $x_0$ and $x_1$."
+from spotoptim.plot.visualization import plot_design_points
+_ = plot_design_points(opt.X_, i=0, j=1, show=False, figsize=(4, 3.5))
+```
+
+For multi-objective problems, `mo_pareto_optx_plot` visualizes Pareto-optimal points in the input space. @fig-pareto shows the result for the Fonseca--Fleming bi-objective function: non-dominated points are marked in orange, dominated points in blue.
+
+```{python}
+#| label: fig-pareto
+#| fig-cap: "Pareto-optimal points for the Fonseca--Fleming function projected onto the input space. Orange markers indicate non-dominated solutions."
+import numpy as np
+from spotoptim.function import fonseca_fleming
+from spotoptim.mo.pareto import mo_pareto_optx_plot
+
+np.random.seed(42)
+X_mo = np.random.uniform(-4, 4, size=(50, 2))
+Y_mo = fonseca_fleming(X_mo)
+mo_pareto_optx_plot(
+    X_mo, Y_mo, minimize=True,
+    feature_names=["x0", "x1"],
+    target_names=["f1", "f2"],
+)
+```
+
+The surrogate-based visualization functions `mo_xy_contour` and `mo_xy_surface` generate contour and surface plots for each objective from fitted surrogate models. @fig-mo-contour shows the contour view for two Kriging surrogates fitted to the Fonseca--Fleming objectives.
+
+```{python}
+#| label: fig-mo-contour
+#| fig-cap: "Surrogate contour plots for both Fonseca--Fleming objectives, fitted from 50 random evaluations."
+from spotoptim.surrogate import Kriging
+from spotoptim.mo.pareto import mo_xy_contour
+
+m1 = Kriging()
+m1.fit(X_mo, Y_mo[:, 0])
+m2 = Kriging()
+m2.fit(X_mo, Y_mo[:, 1])
+mo_xy_contour(
+    [m1, m2],
+    bounds=[(-4, 4), (-4, 4)],
+    target_names=["f1", "f2"],
+    feature_names=["x0", "x1"],
+    resolution=50,
+)
+```
 
 ## Utilities {#sec-utils}
 

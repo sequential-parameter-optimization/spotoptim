@@ -135,7 +135,7 @@ wheels = [
 ]
 
 [[package]]
-name = "bart26c-mcdm"
+name = "bart26g"
 version = "0.0.1"
 source = { virtual = "." }
 dependencies = [

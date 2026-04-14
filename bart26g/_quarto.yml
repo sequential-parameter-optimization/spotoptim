@@ -3,12 +3,14 @@ project:
 
 manuscript:
   article: index.qmd
+  code-links: false
 
 execute:
-  freeze: true
+  freeze: auto
 
 format:
   arxiv-pdf:
+    notebook-links: false
     toc: False
     toc-depth: 3
     number-sections: true
