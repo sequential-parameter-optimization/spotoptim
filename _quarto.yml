@@ -91,6 +91,8 @@ website:
         file: docs/optimize_seq.qmd
       - text: Parallel Optimization
         file: docs/optimize_parallel.qmd
+      - text: Running on Slurm (GWDG NHR)
+        file: docs/slurm.qmd
       - section: API Reference
         contents:
           - text: Overview

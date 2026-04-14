@@ -1,0 +1,293 @@
+---
+title: "Running spotoptim on the GWDG NHR Cluster (Slurm)"
+description: "End-to-end recipe for running a parallel spotoptim experiment on the GWDG NHR login node glogin-p3 with 16 CPUs / n_jobs=16."
+execute:
+  eval: false
+---
+
+This chapter shows how to run a parallel `spotoptim` optimization on the
+[GWDG NHR](https://docs.hpc.gwdg.de/) cluster from the
+`glogin-p3.hpc.gwdg.de` login node, using the `standard96s:shared` CPU
+partition with 16 cores and `n_jobs=16`.
+
+The flow has three phases:
+
+1. **Locally** — build a `SpotOptim` instance, freeze it with
+   `save_experiment(...)`. The pickle holds the objective, bounds, surrogate,
+   `n_jobs`, seed, and everything else needed to resume.
+2. **On the cluster** — `sbatch` a thin shell script that loads `uv`, then
+   calls `SpotOptim.load_experiment(...)`, runs `optimize()`, and writes the
+   result with `save_result(...)`.
+3. **Locally again** — `scp` the result back and analyse it with
+   `SpotOptim.load_result(...)`.
+
+::: {.callout-note}
+### What changed compared to the spotpython workflow
+
+The legacy `a_06_slurm.qmd` chapter (`spotpython`) needed two scripts on the
+remote machine: `startSlurm.sh` plus a `startPython.py` wrapper that called
+`load_and_run_spot_python_experiment(...)`. With `spotoptim` the wrapper is
+unnecessary: `SpotOptim.load_experiment(...)` and `opt.optimize()` are the
+public API, and parallelism is configured by setting `n_jobs` on the
+`SpotOptim` constructor — there is no separate "control" object.
+:::
+
+## Prerequisites
+
+* SSH access to `glogin-p3.hpc.gwdg.de` as your project user `uxxxxx`
+  (NHR account names follow the pattern `u` + five digits; your public key
+  registered via [id.academiccloud.de](https://id.academiccloud.de/) →
+  Security → SSH Public Keys). The login pattern follows the standard GWDG
+  documentation — see
+  [docs.hpc.gwdg.de/start_here/connecting](https://docs.hpc.gwdg.de/start_here/connecting/index.html).
+* A `~/.ssh/config` host alias makes the rest of the chapter copy-pastable:
+
+```bash
+# ~/.ssh/config (local machine)
+Host glogin-p3
+    Hostname glogin-p3.hpc.gwdg.de
+    User uxxxxx
+```
+
+## One-time cluster setup
+
+Log in once and clone the `spotoptim` repository under `$HOME/workspace`. The
+GWDG environment provides `uv` as a module, so no `conda` step is needed.
+
+```bash
+ssh glogin-p3
+mkdir -p ~/workspace && cd ~/workspace
+git clone https://github.com/sequential-parameter-optimization/spotoptim.git
+cd spotoptim
+
+# Compute nodes need an explicit proxy when downloading dependencies.
+export http_proxy=http://www-cache.gwdg.de:3128
+export https_proxy=http://www-cache.gwdg.de:3128
+
+module purge
+module load gcc uv
+uv python pin 3.13
+uv sync                           # creates .venv/, installs spotoptim editable
+uv run python -c "from spotoptim import SpotOptim; print('ok')"
+```
+
+After `uv sync` succeeds, `~/workspace/spotoptim/.venv/` is the environment
+the Slurm script will activate via `uv run`. There is no per-job environment
+setup — the lock file makes resync only-on-change.
+
+## Build the experiment locally
+
+Create a `SpotOptim` instance with `n_jobs=16` and freeze it. The example
+uses the built-in 3-D `sphere` test function so that the chapter is
+reproducible without external data:
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+PREFIX = "a06"
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5.0, 5.0)] * 3,
+    n_initial=16,        # one batch fills all 16 workers in parallel
+    max_iter=80,         # total evaluation budget (incl. the initial design)
+    n_jobs=16,           # process pool size on the compute node
+    eval_batch_size=1,   # set > 1 if the objective accepts a batch
+    seed=0,
+    verbose=True,
+)
+
+opt.save_experiment(prefix=PREFIX, path=".")
+# → writes ./a06_exp.pkl
+```
+
+`save_experiment` uses `dill` so that closures and lambdas survive the
+round-trip. The output file is named `<PREFIX>_exp.pkl`. Replace the body of
+`fun=...` with any picklable callable to plug your own problem in.
+
+::: {.callout-tip}
+### `n_jobs` and `eval_batch_size`
+
+`n_jobs > 1` activates `optimize_steady_state()` — see
+[Parallel Optimization](optimize_parallel.qmd) for the full data flow. Use
+`-1` to mean "all CPU cores on the worker node". `eval_batch_size` collects
+that many candidate points before a single dispatch to the pool, which is
+worth setting only when your objective natively handles batched input.
+:::
+
+## Copy the experiment to the cluster
+
+```bash
+ssh glogin-p3 'mkdir -p ~/runs/spotoptim/logs'
+scp a06_exp.pkl glogin-p3:~/runs/spotoptim/
+```
+
+`~/runs/spotoptim/` is a convention used in this chapter; pick any
+directory — just keep `logs/` as a sub-directory because the Slurm script
+writes its `.out`/`.err` files there.
+
+## The Slurm submission script
+
+The repository ships a reference batch script at
+`scripts/slurm/run_spotoptim.sh`. Inline:
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=spotoptim
+#SBATCH --partition=standard96s:shared
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=16G
+#SBATCH --time=24:00:00
+#SBATCH --output=logs/spotoptim_%j.out
+#SBATCH --error=logs/spotoptim_%j.err
+#SBATCH --constraint=inet
+
+set -euo pipefail
+EXP_PKL="$1"
+
+# GWDG proxy + thread pinning (one BLAS thread per worker process).
+export http_proxy=http://www-cache.gwdg.de:3128
+export https_proxy=http://www-cache.gwdg.de:3128
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export PYTHONUNBUFFERED=1
+
+mkdir -p logs
+module purge 2>/dev/null || true
+module load gcc uv
+
+cd "${SPOTOPTIM_REPO:-$HOME/workspace/spotoptim}"
+uv run python scripts/slurm/run_spotoptim.py "$EXP_PKL"
+```
+
+::: {.callout-warning}
+### Why `OMP_NUM_THREADS=1` is mandatory
+
+The 16 worker processes inherit `OMP_NUM_THREADS` from the batch
+environment. Without pinning, each worker would launch its own BLAS
+thread-pool of `cpu_count()` threads, leading to 16 × 16 = 256 threads on a
+shared node and severe contention. The graph-elites benchmark in
+`~/workspace/graph-elites/gwdg/slurm/run_spot_monet.sh` uses the same
+pinning for the same reason.
+:::
+
+The Python runner `scripts/slurm/run_spotoptim.py` is a 30-line wrapper:
+
+```python
+import argparse
+from pathlib import Path
+from spotoptim import SpotOptim
+
+p = argparse.ArgumentParser()
+p.add_argument("exp_pkl", type=Path)
+args = p.parse_args()
+
+exp_path = args.exp_pkl.resolve()
+prefix = exp_path.name.removesuffix("_exp.pkl")
+
+opt = SpotOptim.load_experiment(str(exp_path))
+result = opt.optimize()
+opt.save_result(prefix=prefix, path=str(exp_path.parent))
+
+print(f"nfev={result.nfev}  fun={result.fun:.6g}  x={result.x}")
+```
+
+`optimize()` honours the `n_jobs` value baked into the experiment, so the
+runner itself never mentions parallelism — it does load → run → save.
+
+## Submit the job
+
+```bash
+ssh glogin-p3
+cd ~/runs/spotoptim
+sbatch ~/workspace/spotoptim/scripts/slurm/run_spotoptim.sh \
+       ~/runs/spotoptim/a06_exp.pkl
+# → Submitted batch job 12345678
+```
+
+Pass the experiment path as an absolute path; the Slurm script `cd`s into the
+spotoptim repo, so a relative path would resolve there instead of in
+`~/runs/spotoptim/`.
+
+::: {.callout-tip}
+### Faster scheduling for small jobs
+
+Add `--qos=2h` to the `sbatch` call when your run fits in 2 hours; the
+high-priority QoS usually starts within minutes but rejects walltime > 2 h.
+Override the time at submit-time, not in the script header:
+
+```bash
+sbatch --qos=2h --time=00:30:00 \
+       ~/workspace/spotoptim/scripts/slurm/run_spotoptim.sh ...
+```
+:::
+
+## Monitor the job
+
+```bash
+squeue --me
+sacct -j <JOBID> --format=JobID,State,Elapsed,MaxRSS,ExitCode
+tail -f ~/runs/spotoptim/logs/spotoptim_<JOBID>.out
+```
+
+A successful run prints, near the end of the `.out` file:
+
+```
+=== spotoptim job ===
+Job ID    : 12345678
+CPUs      : 16
+Mem       : 16384 MB
+…
+nfev=80  fun=0.000123  x=[ 0.0089 -0.0083  0.0027]
+=== Job completed at … ===
+```
+
+If you see `OUT_OF_MEMORY` from `sacct`, raise `--mem` (the budget should be
+roughly `n_jobs × 1 GB`; spotoptim's surrogate adds a small constant on top).
+
+## Copy the result back and analyse
+
+```bash
+scp glogin-p3:~/runs/spotoptim/a06_res.pkl .
+```
+
+```{python}
+from spotoptim import SpotOptim
+
+opt = SpotOptim.load_result("a06_res.pkl")
+
+print("best fun :", opt.best_y_)
+print("best x   :", opt.best_x_)
+print("nfev     :", opt.X_.shape[0])
+
+opt.plot_progress(log_y=True)
+```
+
+`load_result` reinitialises the surrogate and the LHS sampler that were
+stripped before pickling, so all the analysis methods on `SpotOptim`
+(`plot_progress`, `print_results`, `get_importance`, …) work as if the
+experiment had been run locally.
+
+## Slurm command reference
+
+| Command | Description |
+| :-- | :-- |
+| `sbatch run_spotoptim.sh <prefix>_exp.pkl` | Submit a job that runs `optimize()` on the supplied pickle. |
+| `sbatch --qos=2h --time=02:00:00 …` | High-priority QoS; faster scheduling, max walltime 2 h. |
+| `squeue --me` | List your queued and running jobs. |
+| `sacct -j <JOBID> --format=JobID,State,Elapsed,MaxRSS,ExitCode` | Per-job accounting (use `MaxRSS` to right-size `--mem`). |
+| `scancel <JOBID>` | Cancel a job. |
+| `sinfo -p standard96s:shared` | Node availability on the CPU shared partition. |
+| `module load gcc uv` | Load `gcc` (often a `uv` dependency) plus the `uv` module on the login or compute node. |
+| `scp file glogin-p3:~/runs/spotoptim/` | Copy a file to the cluster. |
+| `scp glogin-p3:~/runs/spotoptim/<prefix>_res.pkl .` | Copy the result back. |
+| `show-quota` | Show your storage quotas (HOME, project, workspaces). |
+
+## See also
+
+* [Parallel Optimization](optimize_parallel.qmd) — internal control flow when
+  `n_jobs > 1`.
+* [GWDG HPC documentation](https://docs.hpc.gwdg.de/) — partitions, QoS,
+  module system, GPU partitions (`grete`).
