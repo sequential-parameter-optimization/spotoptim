@@ -7,7 +7,13 @@
 import numpy as np
 import os
 import shutil
+import pytest
 from spotoptim import SpotOptim
+
+
+@pytest.fixture(autouse=True)
+def _isolate_cwd(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
 
 
 class TestTensorBoardParameters:

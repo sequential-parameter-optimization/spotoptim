@@ -83,7 +83,9 @@ def test_example_4_ocba():
     assert optimizer_ocba.min_mean_y is not None
 
 
-def test_example_5_tensorboard():
+def test_example_5_tensorboard(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
     def objective(X):
         return np.sum(X**2, axis=1)
 
