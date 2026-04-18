@@ -1,0 +1,188 @@
+---
+title: "Early Stopping with `max_restarts`"
+description: "Patience-based early-stopping rule for spotoptim. Terminate the outer restart loop after N consecutive restarts without improvement to best_y_, saving evaluation budget when the optimizer has stopped making progress."
+---
+
+`SpotOptim` has two hard termination conditions — `max_iter` (evaluation
+budget) and `max_time` (wall clock). When the success-rate drops to zero for
+`restart_after_n` iterations, the optimizer **restarts** (fresh initial
+design, best-so-far injected). But restarting itself can plateau: the
+optimizer may resample similar regions over and over without ever improving
+the incumbent. The `max_restarts` parameter adds a patience rule on top of
+the existing restart machinery: after $N$ consecutive restarts without any
+improvement to `best_y_`, the run terminates cleanly.
+
+This chapter explains when to use `max_restarts`, how it interacts with the
+other stopping knobs, and shows an executable example on the built-in
+`sphere` function.
+
+::: {.callout-note}
+### How this compares to competitor toolkits
+
+| Toolkit | Name of equivalent mechanism | Notes |
+| :-- | :-- | :-- |
+| Hyperopt | [`no_progress_loss(iteration_stop_count=N)`](https://github.com/hyperopt/hyperopt/blob/master/hyperopt/early_stop.py) | Stops after N trials without improvement to the best loss. |
+| Ray Tune | [`ExperimentPlateauStopper`](https://docs.ray.io/en/latest/tune/api/doc/ray.tune.stopper.ExperimentPlateauStopper.html) | Stops when the standard deviation of the top results is below a threshold. |
+| SMAC3 | [`scenario.terminate_cost_threshold`](https://automl.github.io/SMAC3/) | Stops when a target cost is reached — a closely related absolute-value rule. |
+| spotoptim | `max_restarts` | Patience counted at the **restart** level, not the iteration level — reuses the existing success-rate signal. |
+
+The `max_restarts` rule deliberately counts at the *restart* level. The
+success-rate + restart machinery already embodies the "local search has
+stalled" signal; an iteration-level patience would just duplicate it.
+:::
+
+## When to enable `max_restarts`
+
+Enable `max_restarts` when you want the run to end *early* once the
+optimizer has clearly plateaued — for example:
+
+* Hyperparameter sweeps where a long idle tail would waste compute.
+* Noisy objectives where a single unlucky restart might not justify
+  doubling the budget.
+* Reproducible benchmarks where you want the run length to be
+  outcome-dependent rather than budget-dependent.
+
+Leave `max_restarts` at its default `None` (unlimited restarts) when you
+want the legacy behaviour: run until `max_iter` or `max_time` triggers.
+The default preserves byte-for-byte compatibility with runs created before
+the feature existed.
+
+::: {.callout-tip}
+### Choosing `max_restarts`
+
+A good starting point is `max_restarts=2` or `3`, paired with a moderate
+`restart_after_n` (e.g. `3`) and `window_size` (e.g. `3`). Two wasted
+restarts is usually enough evidence that the surrogate has nothing useful
+left to exploit. For strictly bounded ceilings — "never do more than five
+restarts total" — set `max_restarts=5` directly; the rule acts as a hard
+cap on total restarts because any non-improving restart increments the
+counter.
+
+`max_restarts=0` is the strictest setting: the very first restart that
+fails to improve the incumbent terminates the run. Use this as a
+one-chance gate for expensive objectives.
+:::
+
+## Minimal working example
+
+The example uses the 2-D `sphere` function with a configuration that is
+guaranteed to trigger early stopping quickly. The objective is simple
+enough that LHS plus a single surrogate round usually lands on the minimum,
+so any subsequent restart cannot improve it.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=200,       # generous budget — should NOT be exhausted
+    n_initial=5,
+    restart_after_n=3,  # trigger a restart after 3 stalled iterations
+    window_size=3,      # window for the success-rate signal
+    max_restarts=2,     # stop after 2 consecutive fruitless restarts
+    seed=0,
+    verbose=False,
+)
+result = opt.optimize()
+
+print(result.message.splitlines()[0])
+print(f"Evaluations used: {result.nfev}")
+print(f"Best objective  : {result.fun:.6g}")
+```
+
+The resulting `OptimizeResult` has:
+
+* `success=True` — plateau-termination is a *graceful* outcome. `False` is
+  reserved for hard failures (NaN/inf loops, surrogate fit errors, …).
+  This convention matches Ray Tune and SMAC.
+* `message` starts with `"Optimization early stopped: no improvement for
+  N consecutive restarts"`, letting downstream pipelines distinguish early
+  stop from budget exhaustion with a string check.
+* `nfev < max_iter` — the evaluation budget was *not* exhausted.
+
+## Programmatic inspection
+
+After the run, the private attribute `opt._early_stopped` is `True` iff
+early stopping fired, and `opt.restarts_results_` lists one
+`OptimizeResult` per restart:
+
+```{python}
+print(f"Early-stopped      : {opt._early_stopped}")
+print(f"Total restarts     : {len(opt.restarts_results_)}")
+print(f"Best fun per restart: {[round(r.fun, 6) for r in opt.restarts_results_]}")
+```
+
+## Interaction with `max_iter` and `max_time`
+
+The three termination rules are **all active simultaneously**. Whichever
+triggers first wins:
+
+| Rule | Triggered when | `success` | Typical message prefix |
+| :-- | :-- | :-- | :-- |
+| `max_iter` | `len(opt.y_) >= max_iter` | `True` | "Optimization terminated: reached max iterations" |
+| `max_time` | `time.time() - t_start >= max_time` | `True` | "Optimization terminated: reached max time" |
+| `max_restarts` | $N$ consecutive restarts with no improvement | `True` | "Optimization early stopped: no improvement for $N$ consecutive restarts" |
+
+`max_restarts` never *replaces* the other two — it only adds an
+earlier off-ramp. If you give the optimizer a tiny budget that cannot even
+reach `restart_after_n + 1` iterations, `max_iter` will terminate the run
+and `max_restarts` will never fire.
+
+::: {.callout-warning}
+### `max_restarts=0` does not disable the rule
+
+`max_restarts=None` disables the rule. `max_restarts=0` is the *strictest*
+setting: stop on the first non-improving restart. This mirrors how
+Hyperopt's `no_progress_loss(0)` behaves — zero means "zero tolerance".
+If you want to run without early stopping, pass `None` or omit the
+argument.
+:::
+
+## Parameter reference
+
+| Parameter | Default | Purpose |
+| :-- | :-- | :-- |
+| `max_restarts` | `None` | Stop after this many consecutive fruitless restarts. `None` = unlimited. |
+| `restart_after_n` | `3` | Number of iterations with zero success rate before a restart is attempted. |
+| `window_size` | `3` | Sliding-window width used by the success-rate statistic. |
+| `restart_inject_best` | `True` | Whether the incumbent is seeded into the initial design of each restart. |
+| `max_iter` | `20` | Evaluation budget (counts initial design + infill). |
+| `max_time` | `inf` | Wall-clock limit in seconds. |
+
+All of these live on `SpotOptimConfig` and can be passed as keyword
+arguments to the `SpotOptim(...)` constructor.
+
+## Future work — pluggable stopping criteria
+
+`max_restarts` is the first step of a broader roadmap. Planned phases:
+
+* **Phase 2** — pluggable `StoppingCriterion` protocol with built-in
+  `TargetValueStopper` (absolute fvalue threshold, mirroring SMAC's
+  `terminate_cost_threshold`), `ExpectedImprovementStopper` (based on
+  Makarova et al. 2022, [arxiv.org/abs/2104.08166](https://arxiv.org/abs/2104.08166)),
+  and `PlateauStopper` (standard-deviation window, mirroring Ray Tune's
+  `ExperimentPlateauStopper`). A user callback hook
+  `early_stop_fn: Callable[[SpotOptim], tuple[bool, str]]` will mirror
+  Hyperopt's `fmin(..., early_stop_fn=...)`.
+* **Phase 3** — research-grade log-EI convergence criterion with
+  theoretical guarantees (BoTorch community direction).
+
+Out of scope: multi-fidelity schedulers (Hyperband / BOHB successive
+halving) and bandit-style pruners (Optuna `HyperbandPruner`,
+`MedianPruner`). These are architectural initiatives, not early-stopping
+features — they prune *inside* a multi-trial ML training run, whereas
+`spotoptim`'s unit of work is a single function evaluation.
+
+## See also
+
+* [Sequential Optimization](optimize_seq.qmd) — outer restart loop and
+  `execute_optimization_run()`.
+* [Parallel Optimization](optimize_parallel.qmd) — `max_restarts` fires
+  identically under `n_jobs>1` steady-state parallelism.
+* [Running on Slurm (GWDG NHR)](slurm.qmd) — bake `max_restarts` into the
+  experiment pickle to avoid re-dispatching a job once the optimizer has
+  plateaued.
+* `SpotOptim.SpotOptimConfig` in the API reference — the authoritative
+  parameter list.
