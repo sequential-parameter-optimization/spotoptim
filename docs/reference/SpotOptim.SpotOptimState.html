@@ -487,6 +487,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/early-stopping.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Early Stopping</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/slurm.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Running on Slurm (GWDG NHR)</span></a>
   </div>
@@ -2141,7 +2147,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    min_X<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    min_y<span class="op">=</span><span class="va">None</span>,</span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    restarts_results_<span class="op">=</span><span class="bu">list</span>(),</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    _restarts_without_improvement<span class="op">=</span><span class="dv">0</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    _best_y_before_restart<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    _early_stopped<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Mutable state of the optimization process.</p>
 <section id="attributes" class="level2 doc-section doc-section-attributes">
 <h2 class="doc-section doc-section-attributes anchored" data-anchor-id="attributes">Attributes</h2>
@@ -2253,6 +2262,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>restarts_results_</td>
 <td><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a></td>
 <td>History of restarts.</td>
+</tr>
+<tr class="odd">
+<td>_restarts_without_improvement</td>
+<td><a href="https://docs.python.org/3/library/functions.html#int">int</a></td>
+<td>Count of consecutive restarts that did not improve the best objective value. Consumed by the <code>max_restarts</code> patience-based early-stopping rule.</td>
+</tr>
+<tr class="even">
+<td>_best_y_before_restart</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/functions.html#float">float</a>]</td>
+<td>Snapshot of the best objective value observed before the most recent restart, used to detect whether the latest restart improved on the incumbent.</td>
+</tr>
+<tr class="odd">
+<td>_early_stopped</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>Flag set to <code>True</code> when the patience-based early-stopping rule terminates the run.</td>
 </tr>
 </tbody>
 </table>
