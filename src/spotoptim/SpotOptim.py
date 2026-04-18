@@ -78,6 +78,10 @@ class SpotOptimConfig:
         acquisition_optimizer (Union[str, Callable]): Optimizer for the acquisition function.
         restart_after_n (int): Number of iterations after which to restart.
         restart_inject_best (bool): Whether to inject the best point after restart.
+        max_restarts (Optional[int]): Patience-based early-stopping. When set, the
+            optimizer terminates after this many consecutive restarts that fail to
+            improve the best objective value. ``None`` (default) disables the
+            check and preserves legacy behavior.
         x0 (Optional[np.ndarray]): Initial guess for the input variables.
         de_x0_prob (float): Probability of using differential evolution for initial guess.
         tricands_fringe (bool): Whether to use fringe for tricands.
@@ -152,6 +156,7 @@ class SpotOptimConfig:
              acquisition_optimizer="differential_evolution",
              restart_after_n=100,
              restart_inject_best=True,
+             max_restarts=None,
              x0=None,
              de_x0_prob=0.1,
              tricands_fringe=False,
@@ -197,6 +202,7 @@ class SpotOptimConfig:
     acquisition_optimizer: Union[str, Callable] = "differential_evolution"
     restart_after_n: int = 100
     restart_inject_best: bool = True
+    max_restarts: Optional[int] = None
     x0: Optional[np.ndarray] = None
     de_x0_prob: float = 0.1
     tricands_fringe: bool = False
@@ -240,6 +246,14 @@ class SpotOptimState:
         min_X (np.ndarray): Minimum of input data.
         min_y (float): Minimum of output data.
         restarts_results_ (List): History of restarts.
+        _restarts_without_improvement (int): Count of consecutive restarts that
+            did not improve the best objective value. Consumed by the
+            ``max_restarts`` patience-based early-stopping rule.
+        _best_y_before_restart (Optional[float]): Snapshot of the best objective
+            value observed before the most recent restart, used to detect
+            whether the latest restart improved on the incumbent.
+        _early_stopped (bool): Flag set to ``True`` when the patience-based
+            early-stopping rule terminates the run.
     """
 
     X_: Optional[np.ndarray] = None
@@ -270,6 +284,11 @@ class SpotOptimState:
 
     # Restart history
     restarts_results_: List = field(default_factory=list)
+
+    # Patience-based early stopping (max_restarts)
+    _restarts_without_improvement: int = 0
+    _best_y_before_restart: Optional[float] = None
+    _early_stopped: bool = False
 
 
 class SpotOptim(BaseEstimator):
@@ -401,6 +420,18 @@ class SpotOptim(BaseEstimator):
         restart_inject_best (bool, optional):
             Whether to inject the best solution found so far
             as a starting point for the next restart. Defaults to True.
+        max_restarts (Optional[int], optional):
+            Patience-based early-stopping threshold. When set to a non-negative
+            integer ``N``, the optimizer terminates after ``N`` consecutive
+            restarts that fail to improve the best objective value. The
+            returned :class:`scipy.optimize.OptimizeResult` has
+            ``success=True`` and a message of the form
+            ``"Optimization early stopped: no improvement for N consecutive
+            restarts"``. This rule complements ``restart_after_n`` and mirrors
+            the ``no_progress_loss`` pattern in Hyperopt and plateau-based
+            stopping in Ray Tune and SMAC. ``None`` (default) disables the
+            rule so the optimizer runs until ``max_iter`` or ``max_time`` is
+            reached.
         x0 (array-like, optional):
             Starting point for optimization, shape (n_features,).
             If provided, this point will be evaluated first and included in the initial design.
@@ -756,6 +787,7 @@ class SpotOptim(BaseEstimator):
         acquisition_optimizer: Union[str, Callable] = "differential_evolution",
         restart_after_n: int = 100,
         restart_inject_best: bool = True,
+        max_restarts: Optional[int] = None,
         x0: Optional[np.ndarray] = None,
         de_x0_prob: float = 0.1,
         tricands_fringe: bool = False,
@@ -847,6 +879,7 @@ class SpotOptim(BaseEstimator):
             acquisition_optimizer=acquisition_optimizer,
             restart_after_n=restart_after_n,
             restart_inject_best=restart_inject_best,
+            max_restarts=max_restarts,
             x0=x0,
             de_x0_prob=de_x0_prob,
             tricands_fringe=tricands_fringe,
@@ -2401,6 +2434,10 @@ class SpotOptim(BaseEstimator):
         """
         # Track results across restarts for final aggregation.
         self.restarts_results_ = []
+        # Reset patience-based early-stopping counters for this optimize() call.
+        self._restarts_without_improvement = 0
+        self._best_y_before_restart = None
+        self._early_stopped = False
         # Capture start time for timeout enforcement.
         timeout_start = time.time()
 
@@ -2452,6 +2489,32 @@ class SpotOptim(BaseEstimator):
             if status == "FINISHED":
                 break
             elif status == "RESTART":
+                # Patience-based early stopping: update the no-improvement counter
+                # and terminate if max_restarts is exceeded. We compare the best
+                # objective value seen across all completed runs against the
+                # snapshot from before the most recent restart.
+                current_best_y = min(r.fun for r in self.restarts_results_)
+                if (
+                    self._best_y_before_restart is None
+                    or current_best_y < self._best_y_before_restart
+                ):
+                    self._best_y_before_restart = current_best_y
+                    self._restarts_without_improvement = 0
+                else:
+                    self._restarts_without_improvement += 1
+
+                if (
+                    self.max_restarts is not None
+                    and self._restarts_without_improvement >= self.max_restarts
+                ):
+                    if self.verbose:
+                        print(
+                            f"Early stopping: no improvement for "
+                            f"{self._restarts_without_improvement} consecutive restarts."
+                        )
+                    self._early_stopped = True
+                    break
+
                 # Prepare for a clean restart: let get_initial_design() regenerate the full design.
                 current_X0 = None
 
@@ -2503,6 +2566,20 @@ class SpotOptim(BaseEstimator):
         # Update best solution found
         self.best_x_ = best_result.x
         self.best_y_ = best_result.fun
+
+        # If the patience-based early-stopping rule fired, rewrite the result
+        # message and mark the run as a successful plateau termination
+        # (matches Ray Tune and SMAC conventions for plateau stops).
+        if self._early_stopped:
+            n_restarts = self._restarts_without_improvement
+            best_result.success = True
+            best_result.message = (
+                f"Optimization early stopped: no improvement for "
+                f"{n_restarts} consecutive restarts\n"
+                f"         Current function value: {float(best_result.fun):.6f}\n"
+                f"         Iterations: {self.n_iter_}\n"
+                f"         Function evaluations: {len(self.y_)}"
+            )
 
         return best_result
 

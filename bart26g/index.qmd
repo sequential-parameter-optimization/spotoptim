@@ -239,6 +239,31 @@ print(f"Evaluations: {result.nfev}")
 
 A small `window_size` makes the success rate sensitive to short bursts of improvement, while a larger window smooths out isolated lucky evaluations. A low `restart_after_n` triggers frequent restarts, which favours exploration over exploitation; a high value allows the optimizer to persist longer in a region before restarting. The success rate is also available programmatically via the `success_rate` attribute, enabling custom termination logic or logging.
 
+Restarts alone cannot detect the situation in which the optimizer has exhausted the information content of the search space: repeated restarts may keep resampling similar regions without ever improving on the incumbent. To save evaluation budget in this situation, `spotoptim` implements a patience-based early-stopping rule through the `max_restarts` parameter. When set to a non-negative integer $N$, the outer loop terminates after $N$ consecutive restarts that fail to improve the best objective value. This rule is analogous to the `no_progress_loss` helper of Hyperopt [@berg11a], the `ExperimentPlateauStopper` of Ray Tune, and the `terminate_cost_threshold` scenario in SMAC [@hutt11a]. The resulting `OptimizeResult` has `success=True` and a message of the form "Optimization early stopped: no improvement for $N$ consecutive restarts", which lets downstream pipelines distinguish a graceful plateau termination from a budget exhaustion.
+
+```{python}
+from spotoptim import SpotOptim
+from spotoptim.function import sphere
+
+opt = SpotOptim(
+    fun=sphere,
+    bounds=[(-5, 5), (-5, 5)],
+    max_iter=200,
+    n_initial=5,
+    restart_after_n=3,
+    window_size=3,
+    max_restarts=2,
+    seed=0,
+    verbose=False,
+)
+result = opt.optimize()
+
+print(result.message.splitlines()[0])
+print(f"Evaluations used: {result.nfev}")
+```
+
+Setting `max_restarts=None` (the default) disables the rule and preserves the pre-existing behaviour in which the optimizer runs until `max_iter` or `max_time` is reached. A future release will generalise this single-purpose rule into a pluggable stopping-criterion framework that additionally supports absolute target values, expected-improvement thresholds, and user-supplied callbacks, covering the full spectrum of stopping patterns discussed in @sec-related.
+
 
 # Modules {#sec-modules}
 
