@@ -1,3 +1,14 @@
+## [0.12.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.5...v0.12.0) (2026-04-18)
+
+### Features
+
+* **spotoptim:** add max_restarts patience-based early stopping ([7d6fe70](https://github.com/sequential-parameter-optimization/spotoptim/commit/7d6fe70ee03bb1549b2fc098c995714aaf9219c2))
+
+### Documentation
+
+* **early-stopping:** add dedicated chapter for max_restarts ([73557cc](https://github.com/sequential-parameter-optimization/spotoptim/commit/73557ccd06b83b22bc6a5d7c87aed1ddedb5a5ba))
+* **slurm:** add GWDG NHR cluster recipe + reference scripts ([eca2cbc](https://github.com/sequential-parameter-optimization/spotoptim/commit/eca2cbcb338a41106bfec9db9e0e0c8d96f3a5cd))
+
 ## [0.11.5](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.4...v0.11.5) (2026-04-12)
 
 ### Bug Fixes
