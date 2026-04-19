@@ -1,3 +1,9 @@
+## [0.12.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.0...v0.12.1) (2026-04-19)
+
+### Bug Fixes
+
+* **deps:** bump scikit-learn floor in requirements-docs.txt to >=1.5.0 ([d9e776e](https://github.com/sequential-parameter-optimization/spotoptim/commit/d9e776efcafd884d1d74c5b7b894e9c1fd686cd2))
+
 ## [0.12.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.11.5...v0.12.0) (2026-04-18)
 
 ### Features
