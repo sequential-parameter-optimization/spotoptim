@@ -1,3 +1,9 @@
+## [0.12.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.1...v0.12.2) (2026-05-27)
+
+### Bug Fixes
+
+* **deps:** bump 8 transitive deps to clear Dependabot vulnerabilities ([6c210b0](https://github.com/sequential-parameter-optimization/spotoptim/commit/6c210b019d626ca51f1af8b3ccb730dedec8152d)), closes [#70](https://github.com/sequential-parameter-optimization/spotoptim/issues/70) [-#77](https://github.com/sequential-parameter-optimization/-/issues/77)
+
 ## [0.12.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.0...v0.12.1) (2026-04-19)
 
 ### Bug Fixes
