@@ -262,7 +262,31 @@ print(result.message.splitlines()[0])
 print(f"Evaluations used: {result.nfev}")
 ```
 
-Setting `max_restarts=None` (the default) disables the rule and preserves the pre-existing behaviour in which the optimizer runs until `max_iter` or `max_time` is reached. A future release will generalise this single-purpose rule into a pluggable stopping-criterion framework that additionally supports absolute target values, expected-improvement thresholds, and user-supplied callbacks, covering the full spectrum of stopping patterns discussed in @sec-related.
+The role of each parameter in the example is summarised in @tbl-early-stopping-params.
+
+```{=latex}
+\begin{table}[t]
+\caption{Role of each parameter in the early-stopping example.}
+\label{tbl-early-stopping-params}
+\centering
+\small
+\begin{tabular}{@{}lp{0.55\linewidth}@{}}
+\hline
+Parameter & Role \\
+\hline
+\texttt{max\_iter=200} & Hard evaluation budget. Stops the run if nothing else triggers first. \\
+\texttt{n\_initial=5} & Each LHS design (initial \emph{and} every restart) uses 5 points. \\
+\texttt{window\_size=3} & Success rate is averaged over the last 3 infill iterations. \\
+\texttt{restart\_after\_n=3} & 3 consecutive iterations with success-rate = 0 trigger a restart. \\
+\texttt{max\_restarts=2} & After 2 restarts in a row that fail to improve \texttt{best\_y\_}, stop early. \\
+\hline
+\end{tabular}
+\end{table}
+```
+
+The resulting execution trace on the `sphere` objective can be summarised as follows. The initial design (evaluations 1-5) draws an LHS sample in $[-5, 5]^2$. During the subsequent infill phase, the surrogate is refit on every iteration, and early infills typically improve the incumbent because `sphere` is smooth; the rate of improvement slows as the search approaches the minimum at $(0, 0)$. Once three infills in a row fail to improve the incumbent (the success-rate window is zero for three consecutive iterations), the first restart is triggered: the current best is injected, and a fresh five-point LHS design is drawn. Because the injected best is already near zero, neither the new LHS nor the next three infills can beat it, so `_restarts_without_improvement` is incremented to 1. Since $1 < 2$ the rule does not yet fire, and a second restart starts. Its outcome is the same, incrementing the counter to 2. The check $2 \geq 2$ now succeeds and the outer loop breaks before a third restart is executed. The typical evaluation count is therefore approximately $5 + 3 + 5 + 3 + 5 + 3 \approx 20\text{-}30$ evaluations, well below the `max_iter=200` budget. The returned `OptimizeResult` has `success = True` and a message starting with "Optimization early stopped: no improvement for 2 consecutive restarts"; `opt.restarts_results_` has length 3 (initial run plus two restarts) and `opt._early_stopped` is `True`.
+
+Several boundary cases follow directly from this logic. Setting `max_restarts=None` (the default) disables the rule and preserves the pre-existing behaviour in which the optimizer runs until `max_iter` or `max_time` is reached. Raising `restart_after_n` so that the first restart cannot be triggered within the evaluation budget has the same practical effect. If the objective is one on which restarts can genuinely improve the incumbent, the counter is reset on every productive restart and the rule may never fire. Conversely, `max_restarts=0` represents zero tolerance: the run stops after the very first non-improving restart — on `sphere`, this is usually immediately after the first restart cycle. A future release will generalise this single-purpose rule into a pluggable stopping-criterion framework that additionally supports absolute target values, expected-improvement thresholds, and user-supplied callbacks, covering the full spectrum of stopping patterns discussed in @sec-related.
 
 
 # Modules {#sec-modules}
