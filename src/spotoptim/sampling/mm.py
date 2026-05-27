@@ -1797,6 +1797,7 @@ def plot_mmphi_corrected_vs_n_lhs(
     n_step: int = 5,
     q_phi: float = 2.0,
     p_phi: float = 2.0,
+    plot_only_corrected: bool = False,
 ) -> None:
     """Generate LHS designs for varying n and plot the Corrected Morris-Mitchell
     Criterion against the standard criterion.
@@ -1807,6 +1808,11 @@ def plot_mmphi_corrected_vs_n_lhs(
     criterion ``hat_Phi_q`` (normalized by ``n^{1+q/k}``) are computed.  The
     two series are displayed on a shared x-axis with independent y-axes so
     their trends can be compared directly.
+
+    When ``plot_only_corrected`` is ``True``, the intensive criterion is
+    omitted: only ``hat_Phi_q`` is plotted on a single y-axis.  This is the
+    preferred form when illustrating the asymptotic size-invariance of the
+    corrected criterion on its own scale.
 
     The *corrected* criterion is asymptotically size-invariant: for large ``n``
     its expected value stabilizes at a finite constant that depends only on the
@@ -1821,41 +1827,73 @@ def plot_mmphi_corrected_vs_n_lhs(
         n_step (int): Step size for increasing n. Defaults to 5.
         q_phi (float): Exponent q for the Morris-Mitchell criteria. Defaults to 2.0.
         p_phi (float): Distance norm p for the Morris-Mitchell criteria. Defaults to 2.0.
+        plot_only_corrected (bool): If ``True``, plot only the corrected
+            criterion ``hat_Phi_q`` on a single y-axis and skip the intensive
+            criterion entirely. Defaults to ``False``, which preserves the
+            original dual-axis comparison plot.
 
     Returns:
-        None: Displays a dual-axis plot of ``mmphi_intensive`` and
-        ``mmphi_corrected`` vs. number of samples (n).
+        None: Displays the plot. When ``plot_only_corrected`` is ``False`` the
+        figure has dual y-axes showing ``mmphi_intensive`` and
+        ``mmphi_corrected``; when ``True`` only the corrected curve is shown.
 
     Examples:
         >>> from spotoptim.sampling.mm import plot_mmphi_corrected_vs_n_lhs
         >>> plot_mmphi_corrected_vs_n_lhs(k_dim=3, seed=42, n_min=10, n_max=50, n_step=5, q_phi=2.0, p_phi=2.0)
+        >>> plot_mmphi_corrected_vs_n_lhs(k_dim=3, seed=42, n_min=10, n_max=50, plot_only_corrected=True)
     """
     n_values = list(range(n_min, n_max + 1, n_step))
     if not n_values:
         print("Warning: n_values list is empty. Check n_min, n_max, and n_step.")
         return
-    mmphi_intensive_results = []
-    mmphi_corrected_results = []
+    mmphi_intensive_results: list[float] = []
+    mmphi_corrected_results: list[float] = []
     lhs_sampler = LatinHypercube(d=k_dim, rng=seed)
 
     for n_points in n_values:
         if n_points < 2:
             print(f"Skipping n={n_points} as it's less than 2.")
-            mmphi_intensive_results.append(np.nan)
+            if not plot_only_corrected:
+                mmphi_intensive_results.append(np.nan)
             mmphi_corrected_results.append(np.nan)
             continue
         try:
             X_design = lhs_sampler.random(n=n_points)
-            phi_intensive, _, _ = mmphi_intensive(X_design, q=q_phi, p=p_phi)
             phi_corrected, _, _ = mmphi_corrected(X_design, q=q_phi, p=p_phi)
-            mmphi_intensive_results.append(phi_intensive)
             mmphi_corrected_results.append(phi_corrected)
+            if not plot_only_corrected:
+                phi_intensive, _, _ = mmphi_intensive(X_design, q=q_phi, p=p_phi)
+                mmphi_intensive_results.append(phi_intensive)
         except Exception as e:
             print(f"Error calculating for n={n_points}: {e}")
-            mmphi_intensive_results.append(np.nan)
+            if not plot_only_corrected:
+                mmphi_intensive_results.append(np.nan)
             mmphi_corrected_results.append(np.nan)
 
     fig, ax1 = plt.subplots(figsize=(9, 6))
+
+    if plot_only_corrected:
+        color = "tab:blue"
+        ax1.set_xlabel("Number of Samples (n)")
+        ax1.set_ylabel("mmphi_corrected (hat_Phiq)", color=color)
+        ax1.plot(
+            n_values,
+            mmphi_corrected_results,
+            color=color,
+            marker="x",
+            linestyle="--",
+            label="mmphi_corrected (hat_Phiq)",
+        )
+        ax1.tick_params(axis="y", labelcolor=color)
+        ax1.grid(True, linestyle="--", alpha=0.7)
+        fig.tight_layout()
+        plt.title(
+            f"Corrected Morris-Mitchell Criterion vs. Number of Samples (n)\n"
+            f"LHS (k={k_dim}, q={q_phi}, p={p_phi})"
+        )
+        ax1.legend(loc="best")
+        plt.show()
+        return
 
     color = "tab:red"
     ax1.set_xlabel("Number of Samples (n)")
