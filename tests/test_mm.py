@@ -617,6 +617,56 @@ def test_plot_mmphi_corrected_vs_n_lhs_higher_dim(monkeypatch):
     plot_mmphi_corrected_vs_n_lhs(k_dim=5, seed=1, n_min=10, n_max=20, n_step=10)
 
 
+def test_plot_mmphi_corrected_vs_n_lhs_only_corrected(monkeypatch):
+    """plot_only_corrected=True draws a single-axis figure with just the corrected curve."""
+    import matplotlib.pyplot as plt
+
+    monkeypatch.setattr(plt, "show", lambda: None)
+    captured_figs: list = []
+    original_subplots = plt.subplots
+
+    def _capture_subplots(*args, **kwargs):
+        fig, ax = original_subplots(*args, **kwargs)
+        captured_figs.append((fig, ax))
+        return fig, ax
+
+    monkeypatch.setattr(plt, "subplots", _capture_subplots)
+    plot_mmphi_corrected_vs_n_lhs(
+        k_dim=2, seed=0, n_min=10, n_max=20, n_step=5, plot_only_corrected=True
+    )
+    assert captured_figs, "plt.subplots was never called"
+    fig, ax = captured_figs[-1]
+    # Single-axis figure: exactly one Axes on the figure.
+    assert len(fig.axes) == 1
+    # The single curve plotted is the corrected criterion.
+    assert len(ax.get_lines()) == 1
+    (line,) = ax.get_lines()
+    assert "corrected" in line.get_label().lower()
+    plt.close(fig)
+
+
+def test_plot_mmphi_corrected_vs_n_lhs_default_is_dual_axis(monkeypatch):
+    """Default plot_only_corrected=False still produces a dual-axis figure."""
+    import matplotlib.pyplot as plt
+
+    monkeypatch.setattr(plt, "show", lambda: None)
+    captured_figs: list = []
+    original_subplots = plt.subplots
+
+    def _capture_subplots(*args, **kwargs):
+        fig, ax = original_subplots(*args, **kwargs)
+        captured_figs.append((fig, ax))
+        return fig, ax
+
+    monkeypatch.setattr(plt, "subplots", _capture_subplots)
+    plot_mmphi_corrected_vs_n_lhs(k_dim=2, seed=0, n_min=10, n_max=20, n_step=5)
+    assert captured_figs, "plt.subplots was never called"
+    fig, _ = captured_figs[-1]
+    # twinx() adds a second Axes sharing the x-axis.
+    assert len(fig.axes) == 2
+    plt.close(fig)
+
+
 def test_plot_mmphi_corrected_vs_n_lhs_ratio_identity():
     """mmphi_corrected equals mmphi_intensive scaled by (M / n^{1+q/k})^{1/q}.
 
