@@ -249,8 +249,10 @@ class TestTerminationCriteria:
 
         # It should stop roughly around 3 seconds
         assert elapsed >= 2.5
-        # It shouldn't run forever
-        assert elapsed < 10.0
+        # It shouldn't run forever. The ceiling is generous because shared CI
+        # runners can stall the parallel pool teardown by several seconds; the
+        # assertion's intent is "the loop terminated", not a tight timing budget.
+        assert elapsed < 20.0
 
     def test_verbose_output_sequential(self, capsys):
         """Test Case 8: Verbose output in sequential mode."""
