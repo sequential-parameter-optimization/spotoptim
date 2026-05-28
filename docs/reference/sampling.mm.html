@@ -3602,9 +3602,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    n_step<span class="op">=</span><span class="dv">5</span>,</span>
 <span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>    q_phi<span class="op">=</span><span class="fl">2.0</span>,</span>
 <span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    p_phi<span class="op">=</span><span class="fl">2.0</span>,</span>
-<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    plot_only_corrected<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Generate LHS designs for varying n and plot the Corrected Morris-Mitchell Criterion against the standard criterion.</p>
 <p>For each sample size <code>n</code> in <code>range(n_min, n_max + 1, n_step)</code> a fresh Latin Hypercube design is drawn and both the intensive criterion <code>hat_Phi_q^I</code> (normalized by <code>M = n(n-1)/2</code>) and the corrected criterion <code>hat_Phi_q</code> (normalized by <code>n^{1+q/k}</code>) are computed. The two series are displayed on a shared x-axis with independent y-axes so their trends can be compared directly.</p>
+<p>When <code>plot_only_corrected</code> is <code>True</code>, the intensive criterion is omitted: only <code>hat_Phi_q</code> is plotted on a single y-axis. This is the preferred form when illustrating the asymptotic size-invariance of the corrected criterion on its own scale.</p>
 <p>The <em>corrected</em> criterion is asymptotically size-invariant: for large <code>n</code> its expected value stabilizes at a finite constant that depends only on the spatial distribution of the design, not on <code>n</code> itself. This plot makes that convergence behaviour visible.</p>
 <section id="parameters-15" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-15">Parameters</h4>
@@ -3660,6 +3662,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Distance norm p for the Morris-Mitchell criteria. Defaults to 2.0.</td>
 <td><code>2.0</code></td>
 </tr>
+<tr class="even">
+<td>plot_only_corrected</td>
+<td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
+<td>If <code>True</code>, plot only the corrected criterion <code>hat_Phi_q</code> on a single y-axis and skip the intensive criterion entirely. Defaults to <code>False</code>, which preserves the original dual-axis comparison plot.</td>
+<td><code>False</code></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -3667,9 +3675,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-14">Returns</h4>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 77%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 81%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -3682,12 +3690,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td>None</td>
 <td>None</td>
-<td>Displays a dual-axis plot of <code>mmphi_intensive</code> and</td>
+<td>Displays the plot. When <code>plot_only_corrected</code> is <code>False</code> the</td>
 </tr>
 <tr class="even">
 <td></td>
 <td>None</td>
-<td><code>mmphi_corrected</code> vs.&nbsp;number of samples (n).</td>
+<td>figure has dual y-axes showing <code>mmphi_intensive</code> and</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>None</td>
+<td><code>mmphi_corrected</code>; when <code>True</code> only the corrected curve is shown.</td>
 </tr>
 </tbody>
 </table>
@@ -3695,7 +3708,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="examples-15" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-15">Examples</h4>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="im">from</span> spotoptim.sampling.mm <span class="im">import</span> plot_mmphi_corrected_vs_n_lhs</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_mmphi_corrected_vs_n_lhs(k_dim<span class="op">=</span><span class="dv">3</span>, seed<span class="op">=</span><span class="dv">42</span>, n_min<span class="op">=</span><span class="dv">10</span>, n_max<span class="op">=</span><span class="dv">50</span>, n_step<span class="op">=</span><span class="dv">5</span>, q_phi<span class="op">=</span><span class="fl">2.0</span>, p_phi<span class="op">=</span><span class="fl">2.0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_mmphi_corrected_vs_n_lhs(k_dim<span class="op">=</span><span class="dv">3</span>, seed<span class="op">=</span><span class="dv">42</span>, n_min<span class="op">=</span><span class="dv">10</span>, n_max<span class="op">=</span><span class="dv">50</span>, n_step<span class="op">=</span><span class="dv">5</span>, q_phi<span class="op">=</span><span class="fl">2.0</span>, p_phi<span class="op">=</span><span class="fl">2.0</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> plot_mmphi_corrected_vs_n_lhs(k_dim<span class="op">=</span><span class="dv">3</span>, seed<span class="op">=</span><span class="dv">42</span>, n_min<span class="op">=</span><span class="dv">10</span>, n_max<span class="op">=</span><span class="dv">50</span>, plot_only_corrected<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
 <section id="spotoptim.sampling.mm.plot_mmphi_corrected_vs_points" class="level3">
