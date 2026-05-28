@@ -148,7 +148,10 @@
                         "path": "dist/*.tar.gz"
                     }
                 ],
-                "labels": false
+                "labels": false,
+                "successComment": false,
+                "failComment": false,
+                "releasedLabels": false
             }
         ],
         [
