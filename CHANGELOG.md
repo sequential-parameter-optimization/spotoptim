@@ -1,3 +1,9 @@
+## [0.12.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.2...v0.12.3) (2026-05-31)
+
+### Bug Fixes
+
+* **steady-state:** store evaluated points in natural scale ([264543d](https://github.com/sequential-parameter-optimization/spotoptim/commit/264543dd0ff1f9cdcd3459cd72a86bddb56a7717))
+
 ## [0.12.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.1...v0.12.2) (2026-05-27)
 
 ### Bug Fixes
