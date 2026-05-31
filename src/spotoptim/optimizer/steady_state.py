@@ -27,12 +27,24 @@ if TYPE_CHECKING:
 def update_storage_steady(optimizer: SpotOptimProtocol, x, y):
     """Helper to safely append single point (for steady state).
 
+    The evaluated point arrives in internal (transformed, reduced) scale -- the
+    representation produced by ``get_initial_design`` and
+    ``suggest_next_infill_point``. It is converted to natural scale via
+    ``inverse_transform_X`` before storage, mirroring the sequential
+    ``update_storage`` path (:mod:`spotoptim.core.storage`) so that ``X_`` and
+    ``best_x_`` hold user-facing original-scale values regardless of ``n_jobs``.
+    Without this conversion a transformed variable (e.g. ``log10``) is stored in
+    transformed space and then re-transformed when the surrogate is refit,
+    producing ``NaN`` and crashing the Gaussian-process fit.
+
     Args:
         optimizer: SpotOptim instance.
-        x (ndarray): New point(s) in original scale.
+        x (ndarray): New point(s) in internal scale, shape (n_features,) or
+            (N, n_features).
         y (float or ndarray): Corresponding function value(s).
     """
     x = np.atleast_2d(x)
+    x = optimizer.inverse_transform_X(x)
     if optimizer.X_ is None:
         optimizer.X_ = x
         optimizer.y_ = np.array([y])
