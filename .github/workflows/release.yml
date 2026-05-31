@@ -70,8 +70,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # ── Publish to PyPI (only when a new version was released) ────────
+      # NOTE: cycjimmy/semantic-release-action exposes its outputs with
+      # underscores (``new_release_published``), not hyphens. The previous
+      # ``new-release-published`` reference was always empty, so this step was
+      # silently skipped for every release since the action was adopted —
+      # which is why 0.11.x/0.12.x never reached PyPI.
       - name: Publish to PyPI
-        if: steps.release.outputs.new-release-published == 'true'
+        if: steps.release.outputs.new_release_published == 'true'
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
           packages-dir: dist/
