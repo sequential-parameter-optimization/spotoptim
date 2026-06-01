@@ -1,7 +1,10 @@
 # =============================================================================
 # .github/workflows/ci.yml  —  Continuous Integration
 # =============================================================================
-# Runs on pull requests to main. Fast feedback on tests + lint.
+# Pull requests to main: fast required gate (tests minus @pytest.mark.slow) + lint.
+# The full suite (including slow tests) runs nightly on a schedule and on demand
+# via workflow_dispatch. Dependencies are cached via setup-uv to avoid
+# re-downloading torch & friends on every run.
 # =============================================================================
 
 name: CI
@@ -9,17 +12,23 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Nightly full suite at 03:17 UTC (off-peak; avoids the top-of-hour cron herd).
+    - cron: "17 3 * * *"
 
 permissions: read-all
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # ── Fast required gate: everything except @pytest.mark.slow ────────────────
   test:
-    name: Tests
+    name: Tests (fast)
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     permissions:
       contents: read
 
@@ -31,16 +40,51 @@ jobs:
           python-version: "3.13"
 
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
 
       - name: Install dependencies
-        run: uv pip install --system -e ".[dev]"
+        run: uv sync --extra dev
 
-      - name: Run pytest
+      - name: Run pytest (fast — excludes @pytest.mark.slow)
+        run: uv run pytest tests/ -m "not slow" -n auto --tb=short
+
+  # ── Full suite: nightly schedule + manual dispatch ─────────────────────────
+  test-full:
+    name: Tests (full suite)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"
+
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run pytest (full suite, including slow)
         run: uv run pytest tests/ -v -n auto --tb=short
 
+  # ── Lint ───────────────────────────────────────────────────────────────────
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    if: github.event_name != 'schedule'
     permissions:
       contents: read
 
@@ -52,10 +96,15 @@ jobs:
           python-version: "3.13"
 
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
 
       - name: Install dependencies
-        run: uv pip install --system -e ".[dev]"
+        run: uv sync --extra dev
 
       - name: Ruff
-        run: ruff check src/ tests/
+        run: uv run ruff check src/ tests/
         continue-on-error: true

@@ -1,0 +1,42 @@
+# Pre-commit / pre-push hooks for spotoptim.
+#
+# Install once per clone (hooks live in .git/ and are never pushed):
+#   uv run pre-commit install --hook-type pre-push --hook-type pre-commit
+#
+# - on `git push`   : runs the FAST test suite and blocks the push if it fails
+# - on `git commit` : runs ruff + black --check on changed Python files
+#
+# Emergency bypass (skips all hooks): git push --no-verify
+#
+# Requires pre-commit >= 3.2.0 (stage was renamed `push` -> `pre-push`).
+minimum_pre_commit_version: "3.2.0"
+default_stages: [pre-commit]
+
+repos:
+  - repo: local
+    hooks:
+      # Core gate: block `git push` when the fast suite fails.
+      - id: pytest-fast
+        name: pytest (fast, excludes slow)
+        entry: uv run pytest -m "not slow" -n auto
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+
+      # Lightweight, non-mutating commit-time checks (project-pinned tools via uv).
+      - id: ruff
+        name: ruff check
+        entry: uv run ruff check
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+        stages: [pre-commit]
+
+      - id: black
+        name: black --check
+        entry: uv run black --check
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+        stages: [pre-commit]
