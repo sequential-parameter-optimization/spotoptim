@@ -49,6 +49,7 @@ dev = [
     "ruff>=0.3.0",
     "safety>=3.0.0",
     "bandit>=1.8.0",
+    "pre-commit>=3.7.0",
 ]
 
 [project.optional-dependencies]
@@ -56,11 +57,13 @@ dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-xdist>=3.5.0",
+    "pytest-timeout>=2.3.0",
     "black>=24.1.0",
     "isort>=5.13.0",
     "ruff>=0.3.0",
     "safety>=3.0.0",
     "bandit>=1.8.0",
+    "pre-commit>=3.7.0",
 ]
 docs = [
     # Quarto API documentation generator (replaces mkdocstrings)
@@ -79,6 +82,11 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+# Keep slow-test timings visible on every run; the registry lives in tests/conftest.py.
+addopts = ["--durations=15"]
+markers = [
+    "slow: heavy end-to-end test; deselect with -m \"not slow\". Runs in nightly/full CI.",
+]
 filterwarnings = [
     "ignore::UserWarning:matplotlib",
 ]

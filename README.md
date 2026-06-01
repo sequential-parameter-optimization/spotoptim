@@ -238,15 +238,41 @@ See docs/examples.md for more details and additional examples.
 git clone https://github.com/sequential-parameter-optimization/spotoptim.git
 cd spotoptim
 
-# Install with uv
-uv pip install -e .
+# Install with uv (editable, with dev dependencies)
+uv sync --extra dev
 
-# Run tests
-uv run pytest tests/
+# Run the fast suite (excludes slow end-to-end tests) — what CI/PRs gate on
+uv run pytest tests/ -m "not slow" -n auto
+
+# Run the full suite (everything, including slow tests)
+uv run pytest tests/ -n auto
 
 # Build package
 uv build
 ```
+
+### Fast vs. full tests
+
+Heavy end-to-end optimization tests are tagged `@pytest.mark.slow` (registered
+centrally in `tests/conftest.py`). The fast path skips them with `-m "not slow"`;
+the full suite and the nightly CI job run everything.
+
+### Git hooks (pre-push test gate)
+
+A `.pre-commit-config.yaml` runs the **fast** test suite before every `git push`
+and **blocks the push if any test fails**. Hooks are per-clone and are *not*
+installed automatically — install them once after cloning:
+
+```bash
+uv run pre-commit install --hook-type pre-push --hook-type pre-commit
+```
+
+- on `git push` → `uv run pytest -m "not slow" -n auto`
+- on `git commit` → `ruff check` + `black --check` on changed files
+
+Emergency bypass (use sparingly): `git push --no-verify`. Note that the bare
+`pre-commit install` only wires the commit stage — the `--hook-type pre-push`
+flag is required to enable the test gate.
 
 ## Release Troubleshooting
 
