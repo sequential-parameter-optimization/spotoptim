@@ -1,12 +1,12 @@
 # =============================================================================
 # .github/workflows/release.yml  —  Semantic Release + PyPI + Docs
 # =============================================================================
-# Triggers on every push to main.
-# 1. Runs tests to gate the pipeline.
-# 2. Semantic-release checks conventional commits — if a releasable change
+# Triggers on every push to main. Tests are NOT run here — they are gated on
+# PRs by ci.yml (the required fast check) and nightly (full suite).
+# 1. Semantic-release checks conventional commits — if a releasable change
 #    is found (feat:, fix:, etc.) it bumps version, publishes to PyPI,
 #    and creates a GitHub release.
-# 3. Builds and deploys quartodoc documentation to GitHub Pages.
+# 2. Builds and deploys quartodoc documentation to GitHub Pages.
 # =============================================================================
 
 name: Release
@@ -53,13 +53,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev --extra docs
 
-      # ── Tests ─────────────────────────────────────────────────────────
-      # Fast gate only: the full suite (incl. slow) already ran on the PR's
-      # required check and nightly. This is a quick pre-publish sanity check.
-      - name: Run tests (fast — excludes slow)
-        run: uv run pytest tests/ -m "not slow" -n auto --tb=short
-
       # ── Semantic Release ──────────────────────────────────────────────
+      # NOTE: tests are intentionally NOT run here. The fast suite is the
+      # required check on every PR to main (ci.yml) and the full suite runs
+      # nightly, so re-running them on the merge commit only duplicated cost
+      # without adding signal. This pipeline publishes; it does not re-test.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
