@@ -1,3 +1,9 @@
+## [0.12.5](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.4...v0.12.5) (2026-06-02)
+
+### Bug Fixes
+
+* **remote:** bound objective_remote request timeout to prevent CI hangs ([63b379b](https://github.com/sequential-parameter-optimization/spotoptim/commit/63b379bcd3b427e7d1fbb7586efeb22e913c05b6))
+
 ## [0.12.4](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.3...v0.12.4) (2026-06-01)
 
 ### Bug Fixes
