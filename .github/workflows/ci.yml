@@ -23,6 +23,16 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Pin native BLAS/OpenMP thread pools to 1. pytest-xdist (-n auto) already runs
+# one worker per core; without this each worker's numpy/scipy/torch pool spawns
+# more threads and they thrash, which made the suite ~50x slower on CI.
+env:
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+  MKL_NUM_THREADS: "1"
+  NUMEXPR_NUM_THREADS: "1"
+  VECLIB_MAXIMUM_THREADS: "1"
+
 jobs:
   # ── Fast required gate: everything except @pytest.mark.slow ────────────────
   test:

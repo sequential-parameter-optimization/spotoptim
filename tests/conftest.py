@@ -23,7 +23,23 @@ the entries below. Stale entries that no longer match anything are harmless.
 New slow tests may instead be decorated directly with ``@pytest.mark.slow``.
 """
 
-import pytest
+import os
+
+# Pin native thread pools to 1 thread per worker BEFORE numpy/scipy/torch are
+# imported. pytest-xdist runs one worker per core; without this, each worker's
+# BLAS/OpenMP pool spawns more threads and they thrash — on CI this made small
+# linear-algebra tests run ~50-80x slower. setdefault keeps any value the
+# environment already set (e.g. the CI workflow exports the same vars).
+for _thread_var in (
+    "OMP_NUM_THREADS",
+    "OPENBLAS_NUM_THREADS",
+    "MKL_NUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS",
+):
+    os.environ.setdefault(_thread_var, "1")
+
+import pytest  # noqa: E402  — must come after the thread-var setup above
 
 # Heaviest tests (>~8 s each), grouped by file. Class/file entries also cover
 # their faster sibling integration tests, which belong in the full suite too.
@@ -40,6 +56,9 @@ SLOW_NODEIDS = {
     "tests/test_transformations.py::TestTransformationOptimization",
     "tests/test_reproducibility_comprehensive.py::TestSpotOptimReproducibility",
     "tests/test_optimize_refactored_methods.py::TestOptimizeIntegration",
+    # --- networked integration test: skip from the fast gate (the request
+    #     timeout in remote.py bounds it; the nightly full run still exercises it) ---
+    "tests/test_objective_remote.py::test_objective_remote",
     # --- individual heavy tests ---
     "tests/test_early_stopping.py::test_max_restarts_does_not_trigger_with_improvement",
     "tests/test_parallel_optimization.py::TestParallelOptimization::test_parallel_execution_basic",
