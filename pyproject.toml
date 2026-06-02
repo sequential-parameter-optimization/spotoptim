@@ -84,6 +84,9 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 # Keep slow-test timings visible on every run; the registry lives in tests/conftest.py.
 addopts = ["--durations=15"]
+# Safety net: no single test may hang the suite (e.g. a stuck network call).
+# Provided by pytest-timeout (dev dependency).
+timeout = 300
 markers = [
     "slow: heavy end-to-end test; deselect with -m \"not slow\". Runs in nightly/full CI.",
 ]

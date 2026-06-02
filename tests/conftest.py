@@ -40,6 +40,9 @@ SLOW_NODEIDS = {
     "tests/test_transformations.py::TestTransformationOptimization",
     "tests/test_reproducibility_comprehensive.py::TestSpotOptimReproducibility",
     "tests/test_optimize_refactored_methods.py::TestOptimizeIntegration",
+    # --- networked integration test: skip from the fast gate (the request
+    #     timeout in remote.py bounds it; the nightly full run still exercises it) ---
+    "tests/test_objective_remote.py::test_objective_remote",
     # --- individual heavy tests ---
     "tests/test_early_stopping.py::test_max_restarts_does_not_trigger_with_improvement",
     "tests/test_parallel_optimization.py::TestParallelOptimization::test_parallel_execution_basic",
