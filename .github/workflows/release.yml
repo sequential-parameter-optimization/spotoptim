@@ -37,9 +37,15 @@ jobs:
 
     steps:
       # ── Checkout ──────────────────────────────────────────────────────
+      # ssh-key: the protect-main ruleset blocks direct pushes to main, with
+      # a bypass for deploy keys. Checking out with the DEPLOY_KEY secret
+      # makes git operate over SSH as that deploy key, so semantic-release's
+      # chore(release) push (see repositoryUrl in .releaserc.json) bypasses
+      # the ruleset. GITHUB_TOKEN stays for the GitHub API (release creation).
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       # ── Python + uv ──────────────────────────────────────────────────
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
