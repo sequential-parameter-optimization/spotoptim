@@ -1,0 +1,96 @@
+# =============================================================================
+# .github/workflows/quarto-build.yml  —  Reusable Documentation Build
+# =============================================================================
+# Single source of truth for the quartodoc + Quarto render + gh-pages deploy
+# sequence. Called via workflow_call from:
+#   - release.yml (docs job, after every release on main)
+#   - docs.yml    (manual rebuild via workflow_dispatch)
+# The `deploy` input allows render-only dry runs (CI verification of doc
+# changes on a branch) without publishing to the production gh-pages site.
+# =============================================================================
+
+name: Quarto Build
+
+on:
+  workflow_call:
+    inputs:
+      deploy:
+        description: "Publish the rendered site to gh-pages (false = render-only dry run)"
+        type: boolean
+        default: true
+      ref:
+        description: "Git ref to build from (empty = the triggering commit)"
+        type: string
+        default: ""
+
+# NOTE: no workflow-level `permissions:` here. A called workflow may not
+# request more than its caller's job grants; `read-all` would demand read on
+# every scope while callers grant only `contents: write` (startup_failure).
+# The job below declares exactly what it needs.
+
+env:
+  QUARTO_VERSION: "1.8.27"
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  build-docs:
+    name: Build & Deploy Documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Serialize every gh-pages push across ALL callers (release.yml and
+    # docs.yml). With per-workflow groups the two workflows can race on the
+    # gh-pages ref and the loser fails with "cannot lock ref".
+    concurrency:
+      group: gh-pages-deploy
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # setup-uv >= v6 enables caching by default on GitHub-hosted runners;
+      # key on the committed lockfile + pyproject so torch & friends are
+      # restored instead of re-downloaded.
+      - name: Set up uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          cache-dependency-glob: |
+            uv.lock
+            pyproject.toml
+
+      - name: Install dependencies
+        run: uv sync --extra dev --extra docs
+
+      - name: Install Quarto CLI ${{ env.QUARTO_VERSION }}
+        uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
+        with:
+          version: ${{ env.QUARTO_VERSION }}
+
+      - name: Generate API reference with quartodoc
+        run: |
+          uv run python docs/quartodoc_build.py
+          uv run quartodoc interlinks
+
+      # `freeze: auto` + the committed _freeze/ directory means unchanged
+      # {python} blocks reuse stored outputs instead of re-executing.
+      - name: Render Quarto site
+        run: uv run quarto render
+
+      - name: Deploy to GitHub Pages
+        if: inputs.deploy
+        uses: quarto-dev/quarto-actions/publish@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
+        with:
+          target: gh-pages
+          path: _site
+          render: "false"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -4,12 +4,13 @@
 
 name: Scorecard supply-chain security
 
+# Weekly schedule + branch-protection changes only. The previous push trigger
+# re-ran the full supply-chain scan on every merge to main, which added CI
+# minutes without changing the score between weekly runs.
 on:
   branch_protection_rule:
   schedule:
     - cron: '20 7 * * 2'
-  push:
-    branches: ["main"]
 
 # Declare default permissions as read only.
 permissions:
@@ -40,13 +41,13 @@ jobs:
           publish_results: true
 
       - name: Upload artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: SARIF file
           path: results.sarif
           retention-days: 5
 
       - name: Upload to code-scanning
-        uses: github/codeql-action/upload-sarif@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.5
+        uses: github/codeql-action/upload-sarif@820e3160e279568db735cee8ed8f8e77a6da7818 # v3.32.6
         with:
           sarif_file: results.sarif
