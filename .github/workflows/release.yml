@@ -3,10 +3,13 @@
 # =============================================================================
 # Triggers on every push to main. Tests are NOT run here — they are gated on
 # PRs by ci.yml (the required fast check) and nightly (full suite).
-# 1. Semantic-release checks conventional commits — if a releasable change
-#    is found (feat:, fix:, etc.) it bumps version, publishes to PyPI,
-#    and creates a GitHub release.
-# 2. Builds and deploys quartodoc documentation to GitHub Pages.
+# 1. release job: semantic-release checks conventional commits — if a
+#    releasable change is found (feat:, fix:, etc.) it bumps version,
+#    publishes to PyPI, and creates a GitHub release.
+# 2. docs job: delegates to the reusable quarto-build.yml workflow, which
+#    builds and deploys the quartodoc documentation to GitHub Pages
+#    (serialized against manual docs.yml runs via the shared
+#    gh-pages-deploy concurrency group).
 # =============================================================================
 
 name: Release
@@ -34,31 +37,30 @@ jobs:
 
     steps:
       # ── Checkout ──────────────────────────────────────────────────────
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
 
       # ── Python + uv ──────────────────────────────────────────────────
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.13"
 
-      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
-          enable-cache: true
           cache-dependency-glob: |
             uv.lock
             pyproject.toml
 
       - name: Install dependencies
-        run: uv sync --extra dev --extra docs
+        run: uv sync --extra dev
 
       # ── Semantic Release ──────────────────────────────────────────────
       # NOTE: tests are intentionally NOT run here. The fast suite is the
       # required check on every PR to main (ci.yml) and the full suite runs
       # nightly, so re-running them on the merge commit only duplicated cost
       # without adding signal. This pipeline publishes; it does not re-test.
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: 22
 
@@ -87,25 +89,18 @@ jobs:
           packages-dir: dist/
           skip-existing: true
 
-      # ── Documentation ─────────────────────────────────────────────────
-      - name: Install Quarto CLI
-        uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
-        with:
-          version: "1.8.27"
-
-      - name: Generate API reference
-        run: |
-          uv run --extra docs python docs/quartodoc_build.py
-          uv run --extra docs quartodoc interlinks
-
-      - name: Render documentation
-        run: uv run --extra docs quarto render
-
-      - name: Deploy to GitHub Pages
-        uses: quarto-dev/quarto-actions/publish@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
-        with:
-          target: gh-pages
-          path: _site
-          render: "false"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # ── Documentation (reusable workflow, shared with docs.yml) ───────────
+  # Builds from `main` rather than the triggering commit: by the time this
+  # job starts, semantic-release has already pushed its "chore(release)"
+  # version-bump commit, so the rendered docs show the just-released version
+  # (same behavior as the old in-place render after the bump).
+  docs:
+    name: Documentation
+    needs: release
+    uses: ./.github/workflows/quarto-build.yml
+    with:
+      deploy: true
+      ref: main
+    permissions:
+      contents: write
+    secrets: inherit
