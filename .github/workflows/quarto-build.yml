@@ -23,7 +23,10 @@ on:
         type: string
         default: ""
 
-permissions: read-all
+# NOTE: no workflow-level `permissions:` here. A called workflow may not
+# request more than its caller's job grants; `read-all` would demand read on
+# every scope while callers grant only `contents: write` (startup_failure).
+# The job below declares exactly what it needs.
 
 env:
   QUARTO_VERSION: "1.8.27"
