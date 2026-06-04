@@ -1,3 +1,9 @@
+## [0.12.6](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.5...v0.12.6) (2026-06-04)
+
+### Bug Fixes
+
+* **ci:** drop workflow-level permissions from reusable quarto-build.yml ([ac3c1dc](https://github.com/sequential-parameter-optimization/spotoptim/commit/ac3c1dcbec7e3c813cc74711256e9bd5753de935))
+
 ## [0.12.5](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.4...v0.12.5) (2026-06-02)
 
 ### Bug Fixes
