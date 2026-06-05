@@ -217,11 +217,25 @@ def transform_bounds(optimizer: SpotOptimProtocol) -> None:
                 optimizer.lower[i], optimizer.upper[i] = lower_t, upper_t
 
     # Update optimizer.bounds to reflect transformed bounds
-    # Convert numpy types to Python native types (int or float based on var_type)
+    # Convert numpy types to Python native types (int or float based on var_type).
+    #
+    # Integer dimensions with an ACTIVE transform keep float bounds in the
+    # internal (transformed) space: int-casting e.g. (log10(10), log10(5000))
+    # = (1.0, 3.699) to (1, 3) restricts the search to decade exponents
+    # {10, 100, 1000} in natural scale — and rounding internal proposals drawn
+    # from the un-cast lower/upper arrays can even reach 10**4 = 10000,
+    # exceeding the declared cap (issue #87). Such dimensions are searched
+    # continuously in transformed space; integrality is enforced in natural
+    # space by ``repair_natural_X`` (round, then clip to the declared bounds).
     optimizer.bounds = []
     for i in range(len(optimizer.lower)):
-        if i < len(optimizer.var_type) and (
-            optimizer.var_type[i] == "int" or optimizer.var_type[i] == "factor"
+        has_active_trans = (
+            i < len(optimizer.var_trans) and optimizer.var_trans[i] is not None
+        )
+        if (
+            i < len(optimizer.var_type)
+            and (optimizer.var_type[i] == "int" or optimizer.var_type[i] == "factor")
+            and not has_active_trans
         ):
             optimizer.bounds.append((int(optimizer.lower[i]), int(optimizer.upper[i])))
         else:

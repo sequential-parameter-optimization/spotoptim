@@ -24,7 +24,9 @@ def init_storage(optimizer: SpotOptimProtocol, X0: np.ndarray, y0: np.ndarray) -
         X0 (ndarray): Initial design points in internal scale, shape (n_samples, n_features).
         y0 (ndarray): Function values at X0, shape (n_samples,).
     """
-    optimizer.X_ = optimizer.inverse_transform_X(X0.copy())
+    # repair_natural_X rounds transformed int dims and clips them to the
+    # declared bounds (issue #87) so X_ matches what the objective saw.
+    optimizer.X_ = optimizer.repair_natural_X(optimizer.inverse_transform_X(X0.copy()))
     optimizer.y_ = y0.copy()
     optimizer.n_iter_ = 0
 
@@ -42,7 +44,9 @@ def update_storage(
         X_new (ndarray): New design points in internal scale, shape (n_new, n_features).
         y_new (ndarray): Function values at X_new, shape (n_new,).
     """
-    optimizer.X_ = np.vstack([optimizer.X_, optimizer.inverse_transform_X(X_new)])
+    # Natural-scale repair mirrors evaluate_function (issue #87).
+    X_new_natural = optimizer.repair_natural_X(optimizer.inverse_transform_X(X_new))
+    optimizer.X_ = np.vstack([optimizer.X_, X_new_natural])
     optimizer.y_ = np.append(optimizer.y_, y_new)
 
 

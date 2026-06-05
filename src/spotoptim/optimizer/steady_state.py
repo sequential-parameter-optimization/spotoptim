@@ -45,6 +45,9 @@ def update_storage_steady(optimizer: SpotOptimProtocol, x, y):
     """
     x = np.atleast_2d(x)
     x = optimizer.inverse_transform_X(x)
+    # Natural-scale repair mirrors evaluate_function (issue #87): transformed
+    # int dims are rounded and clipped to the declared bounds before storage.
+    x = optimizer.repair_natural_X(x)
     if optimizer.X_ is None:
         optimizer.X_ = x
         optimizer.y_ = np.array([y])

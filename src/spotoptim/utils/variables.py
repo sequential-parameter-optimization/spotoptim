@@ -78,6 +78,90 @@ def repair_non_numeric(X: np.ndarray, var_type: List[str]) -> np.ndarray:
     return X
 
 
+def internal_var_type(optimizer: SpotOptimProtocol) -> List[str]:
+    """Variable types effective in the internal (transformed) search space.
+
+    Integer dimensions with an active transform are searched *continuously* in
+    transformed space and only rounded after the inverse transform, in natural
+    space (see ``repair_natural_X``). Rounding their internal representation
+    would collapse e.g. a ``(10, 5000, "log10")`` dimension to the decade
+    exponents ``{10, 100, 1000, 10000}`` — four values, the last of which
+    exceeds the declared upper bound (issue #87). Factor dimensions keep their
+    integer-index representation regardless of transforms.
+
+    Args:
+        optimizer: SpotOptim instance.
+
+    Returns:
+        list of str: Per-dimension types for internal-space repair —
+        ``"float"`` for transformed integer dimensions, the declared type
+        otherwise.
+    """
+    return [
+        "float" if (vtype == "int" and trans is not None) else vtype
+        for vtype, trans in zip(optimizer.var_type, optimizer.var_trans)
+    ]
+
+
+def repair_natural_X(optimizer: SpotOptimProtocol, X: np.ndarray) -> np.ndarray:
+    """Enforce integrality and declared bounds in natural (original) space.
+
+    Companion to ``repair_non_numeric`` for the *natural* scale: integer
+    dimensions are rounded to the nearest integer, and integer dimensions with
+    an active transform are additionally clipped to their declared natural
+    bounds — the inverse transform of a continuous internal proposal can land
+    marginally outside them (e.g. ``10 ** 3.69897 = 4999.99...`` rounds to
+    ``5000``, while floating-point error can also yield ``5000.0000001``).
+    Float and factor dimensions are left untouched (factor indices are
+    integral already and are mapped to labels later).
+
+    Handles both full-dimensional input (e.g. ``evaluate_function`` after
+    ``to_all_dim``) and reduced-dimensional input (the storage paths) by
+    matching the column count against the optimizer's reduced and full
+    metadata. Input with an unrecognized width is returned unchanged.
+
+    Args:
+        optimizer: SpotOptim instance.
+        X (ndarray): Points in natural scale, shape (n_samples, n_features)
+            or (n_features,).
+
+    Returns:
+        ndarray: Repaired copy of ``X`` (same shape as the input).
+    """
+    X_in = np.asarray(X, dtype=float)
+    one_dim = X_in.ndim == 1
+    X_rep = np.atleast_2d(X_in).copy()
+    n_cols = X_rep.shape[1]
+
+    nat_lower = getattr(optimizer, "_original_lower", None)
+    nat_upper = getattr(optimizer, "_original_upper", None)
+    if nat_lower is None or nat_upper is None:
+        return X_in
+
+    if n_cols == len(optimizer.var_type):
+        var_type = optimizer.var_type
+        var_trans = optimizer.var_trans
+        if getattr(optimizer, "red_dim", False) and len(nat_lower) != n_cols:
+            ident = optimizer.ident
+            nat_lower = nat_lower[~ident]
+            nat_upper = nat_upper[~ident]
+    elif n_cols == len(getattr(optimizer, "all_var_type", [])):
+        var_type = optimizer.all_var_type
+        var_trans = optimizer.all_var_trans
+    else:
+        # Unknown column layout: do not guess, return the input unchanged.
+        return X_in
+
+    for i, (vtype, trans) in enumerate(zip(var_type, var_trans)):
+        if vtype != "int":
+            continue
+        X_rep[:, i] = np.around(X_rep[:, i])
+        if trans is not None:
+            X_rep[:, i] = np.clip(X_rep[:, i], nat_lower[i], nat_upper[i])
+
+    return X_rep[0] if one_dim else X_rep
+
+
 def handle_default_var_trans(optimizer: SpotOptimProtocol) -> None:
     """Handle default variable transformations.
 

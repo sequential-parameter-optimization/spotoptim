@@ -1073,6 +1073,8 @@ class SpotOptim(BaseEstimator):
     # * detect_var_type
     # * modify_bounds_based_on_var_type
     # * repair_non_numeric
+    # * internal_var_type (property)
+    # * repair_natural_X
     # * handle_default_var_trans
     # * process_factor_bounds
     # ====================
@@ -1156,6 +1158,66 @@ class SpotOptim(BaseEstimator):
             ```
         """
         return _vars.repair_non_numeric(X, var_type)
+
+    @property
+    def internal_var_type(self) -> List[str]:
+        """Variable types effective in the internal (transformed) search space.
+
+        Integer dimensions with an active transform are searched continuously
+        in transformed space and rounded only after the inverse transform, in
+        natural space (``repair_natural_X``). Rounding their internal
+        representation would collapse e.g. a ``(10, 5000, "log10")`` dimension
+        to the decade exponents — four values in natural scale, the largest of
+        which exceeds the declared upper bound (issue #87). Use this property
+        instead of ``var_type`` whenever repairing points in internal scale.
+
+        Returns:
+            list of str: Per-dimension types for internal-space repair —
+            ``"float"`` for transformed integer dimensions, the declared
+            type otherwise.
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(10, 5000), (-5, 5)],
+                            var_type=['int', 'int'],
+                            var_trans=['log10', None])
+            print(opt.internal_var_type)
+            ```
+        """
+        return _vars.internal_var_type(self)
+
+    def repair_natural_X(self, X: np.ndarray) -> np.ndarray:
+        """Enforce integrality and declared bounds in natural (original) space.
+
+        Integer dimensions are rounded to the nearest integer; integer
+        dimensions with an active transform are additionally clipped to their
+        declared natural bounds, because the inverse transform of a continuous
+        internal proposal can land marginally outside them (issue #87). Float
+        and factor dimensions pass through unchanged.
+
+        Args:
+            X (ndarray): Points in natural scale, shape (n_samples, n_features)
+                or (n_features,).
+
+        Returns:
+            ndarray: Repaired copy of ``X`` (same shape as the input).
+
+        Examples:
+            ```{python}
+            import numpy as np
+            from spotoptim import SpotOptim
+            opt = SpotOptim(fun=lambda X: np.sum(X**2, axis=1),
+                            bounds=[(10, 5000)],
+                            var_type=['int'],
+                            var_trans=['log10'])
+            X_nat = np.array([[4999.99999], [10.4], [5000.2]])
+            print(opt.repair_natural_X(X_nat))
+            ```
+        """
+        return _vars.repair_natural_X(self, X)
 
     def handle_default_var_trans(self) -> None:
         """Handle default variable transformations. Does not perform any transformations,
@@ -1734,7 +1796,8 @@ class SpotOptim(BaseEstimator):
             # If X0 is in full dimensions and we have dimension reduction, reduce it
             if self.red_dim and X0.shape[1] == len(self.ident):
                 X0 = self.to_red_dim(X0)
-            X0 = self.repair_non_numeric(X0, self.var_type)
+            # Internal scale: transformed int dims stay continuous (issue #87).
+            X0 = self.repair_non_numeric(X0, self.internal_var_type)
 
         return X0
 
@@ -1764,7 +1827,8 @@ class SpotOptim(BaseEstimator):
         # Scale to [lower, upper]
         X0 = self.lower + X0_unit * (self.upper - self.lower)
 
-        return self.repair_non_numeric(X0, self.var_type)
+        # Internal scale: transformed int dims stay continuous (issue #87).
+        return self.repair_non_numeric(X0, self.internal_var_type)
 
     def curate_initial_design(self, X0: np.ndarray) -> np.ndarray:
         """Remove duplicates and ensure sufficient unique points in initial design.
@@ -1839,7 +1903,8 @@ class SpotOptim(BaseEstimator):
                         n=n_additional * 2
                     )  # Generate extras
                     X_extra = self.lower + X_extra_unit * (self.upper - self.lower)
-                    X_extra = self.repair_non_numeric(X_extra, self.var_type)
+                    # Internal scale (issue #87).
+                    X_extra = self.repair_non_numeric(X_extra, self.internal_var_type)
 
                     # Combine and get unique
                     X_combined = np.vstack([X0_unique, X_extra])
@@ -2707,6 +2772,11 @@ class SpotOptim(BaseEstimator):
 
         # Apply inverse transformations to get original scale for function evaluation
         X_original = self.inverse_transform_X(X)
+
+        # Natural-scale repair (issue #87): transformed integer dimensions are
+        # continuous internally — round them here and clip to the declared
+        # bounds so the objective only ever sees admissible integer values.
+        X_original = self.repair_natural_X(X_original)
 
         # Map factor variables to original string values
         X_for_eval = self.map_to_factor_values(X_original)
@@ -3809,9 +3879,13 @@ class SpotOptim(BaseEstimator):
         current_best = np.min(y_next)
         if current_best < self.best_y_:
             best_idx_in_new = np.argmin(y_next)
-            # x_next_repeated is in transformed space, convert to original for storage
-            self.best_x_ = self.inverse_transform_X(
-                x_next_repeated[best_idx_in_new].reshape(1, -1)
+            # x_next_repeated is in transformed space, convert to original for
+            # storage; repair_natural_X rounds transformed int dims and clips
+            # them to the declared bounds (issue #87).
+            self.best_x_ = self.repair_natural_X(
+                self.inverse_transform_X(
+                    x_next_repeated[best_idx_in_new].reshape(1, -1)
+                )
             )[0]
             self.best_y_ = current_best
 

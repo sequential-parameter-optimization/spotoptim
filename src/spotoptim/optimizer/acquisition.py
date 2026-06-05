@@ -281,9 +281,10 @@ def try_optimizer_candidates(
 
     # Helper to check if a point is valid
     def is_valid(p, reference_set):
-        p_rounded = optimizer.repair_non_numeric(p.reshape(1, -1), optimizer.var_type)[
-            0
-        ]
+        # Internal scale: transformed int dims stay continuous (issue #87).
+        p_rounded = optimizer.repair_non_numeric(
+            p.reshape(1, -1), optimizer.internal_var_type
+        )[0]
         p_2d = p_rounded.reshape(1, -1)
         x_new, _ = optimizer.select_new(
             A=p_2d, X=reference_set, tolerance=optimizer.tolerance_x
@@ -370,7 +371,10 @@ def handle_acquisition_failure(optimizer: SpotOptimProtocol) -> np.ndarray:
         x_new_unit = optimizer.lhs_sampler.random(n=1)[0]
         x_new = optimizer.lower + x_new_unit * (optimizer.upper - optimizer.lower)
 
-    return optimizer.repair_non_numeric(x_new.reshape(1, -1), optimizer.var_type)[0]
+    # Internal scale: transformed int dims stay continuous (issue #87).
+    return optimizer.repair_non_numeric(
+        x_new.reshape(1, -1), optimizer.internal_var_type
+    )[0]
 
 
 def try_fallback_strategy(
@@ -403,8 +407,9 @@ def try_fallback_strategy(
             )
         x_next = optimizer._handle_acquisition_failure()
 
+        # Internal scale: transformed int dims stay continuous (issue #87).
         x_next_rounded = optimizer.repair_non_numeric(
-            x_next.reshape(1, -1), optimizer.var_type
+            x_next.reshape(1, -1), optimizer.internal_var_type
         )[0]
         x_last = x_next_rounded
 
