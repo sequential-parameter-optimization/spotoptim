@@ -11,6 +11,8 @@ description: "Structure of the Methods"
 * detect_var_type
 * modify_bounds_based_on_var_type
 * repair_non_numeric
+* internal_var_type (property)
+* repair_natural_X
 * handle_default_var_trans
 * process_factor_bounds
 

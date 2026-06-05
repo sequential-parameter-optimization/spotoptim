@@ -247,7 +247,15 @@ class TestTransformBoundsVarType:
         assert isinstance(opt.bounds[1][1], float)
 
     def test_transform_bounds_mixed_var_types(self):
-        """Test transform_bounds() with mixed variable types."""
+        """Test transform_bounds() with mixed variable types.
+
+        Integer dimensions with an ACTIVE transform keep float internal
+        bounds (issue #87): int-casting the transformed bounds restricted
+        such dimensions to the transform's integer pre-images (perfect
+        squares for ``sqrt``, decades for ``log10``) and could exceed the
+        declared natural bounds after internal rounding. Integrality is now
+        enforced in natural space by ``repair_natural_X``.
+        """
         opt = SpotOptim(
             fun=lambda X: np.sum(X**2, axis=1),
             bounds=[(1, 100), (0.1, 10.0), (1, 16)],
@@ -257,19 +265,33 @@ class TestTransformBoundsVarType:
             n_initial=1,
         )
 
-        # First dimension: int
-        assert isinstance(opt.bounds[0][0], int)
-        assert isinstance(opt.bounds[0][1], int)
-        assert opt.bounds[0] == (1, 10)
+        # First dimension: int WITH transform -> continuous internal bounds
+        assert isinstance(opt.bounds[0][0], float)
+        assert isinstance(opt.bounds[0][1], float)
+        assert opt.bounds[0] == pytest.approx((1.0, 10.0))
 
         # Second dimension: float
         assert isinstance(opt.bounds[1][0], float)
         assert isinstance(opt.bounds[1][1], float)
 
-        # Third dimension: int
-        assert isinstance(opt.bounds[2][0], int)
-        assert isinstance(opt.bounds[2][1], int)
-        assert opt.bounds[2] == (1, 4)
+        # Third dimension: int WITH transform -> continuous internal bounds
+        assert isinstance(opt.bounds[2][0], float)
+        assert isinstance(opt.bounds[2][1], float)
+        assert opt.bounds[2] == pytest.approx((1.0, 4.0))
+
+    def test_transform_bounds_int_without_transform_stays_int(self):
+        """Int dimensions WITHOUT a transform keep int-cast internal bounds."""
+        opt = SpotOptim(
+            fun=lambda X: np.sum(X**2, axis=1),
+            bounds=[(1, 100), (0.1, 10.0)],
+            var_trans=[None, "log10"],
+            var_type=["int", "float"],
+            max_iter=1,
+            n_initial=1,
+        )
+        assert isinstance(opt.bounds[0][0], int)
+        assert isinstance(opt.bounds[0][1], int)
+        assert opt.bounds[0] == (1, 100)
 
 
 class TestTransformBoundsBoundSwapping:
