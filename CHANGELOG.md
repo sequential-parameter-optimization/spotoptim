@@ -1,3 +1,9 @@
+## [0.12.7](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.6...v0.12.7) (2026-06-05)
+
+### Bug Fixes
+
+* **transform:** search transformed int dims continuously, repair in natural space ([60a6991](https://github.com/sequential-parameter-optimization/spotoptim/commit/60a69918de4023d1421ad477e2b6a70faca10d04)), closes [#87](https://github.com/sequential-parameter-optimization/spotoptim/issues/87)
+
 ## [0.12.6](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.5...v0.12.6) (2026-06-04)
 
 ### Bug Fixes
