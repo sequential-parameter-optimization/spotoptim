@@ -1,3 +1,9 @@
+## [0.12.8](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.7...v0.12.8) (2026-06-07)
+
+### Bug Fixes
+
+* **optimizer:** log infill evaluations to TensorBoard in steady-state parallel runs ([b335959](https://github.com/sequential-parameter-optimization/spotoptim/commit/b335959051e67b24af25d8b9d056dc143530b613))
+
 ## [0.12.7](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.6...v0.12.7) (2026-06-05)
 
 ### Bug Fixes
