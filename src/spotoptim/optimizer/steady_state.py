@@ -322,6 +322,23 @@ def optimize_steady_state(
                                 optimizer._update_storage_steady(xi, yi)
                                 optimizer.n_iter_ += 1
 
+                            # TensorBoard: this result loop runs only in the
+                            # parent main thread (workers carry tb_writer=None,
+                            # search threads never touch the writer), so the
+                            # single SummaryWriter needs no lock. update_stats()
+                            # refreshes ``counter`` (the TB step) which the
+                            # steady-state loop otherwise never advances; it is
+                            # kept inside the guard so the no-TB path stays
+                            # byte-identical. Mirrors the sequential per-eval
+                            # logging in the main optimize loop.
+                            if optimizer.tb_writer is not None:
+                                optimizer.update_stats()
+                                for xi, yi in zip(X_done, y_done):
+                                    optimizer._write_tensorboard_hparams(
+                                        np.asarray(xi, dtype=float), float(yi)
+                                    )
+                                optimizer._write_tensorboard_scalars()
+
                             if optimizer.verbose:
                                 if optimizer.max_time != np.inf:
                                     prog_val = (
