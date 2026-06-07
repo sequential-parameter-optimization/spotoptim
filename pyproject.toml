@@ -32,7 +32,6 @@ dependencies = [
     "spotdesirability>=0.0.1",
     "statsmodels>=0.14.6",
     "dill>=0.4.1",
-    "flake8>=7.3.0",
     "black>=26.1.0",
     "importlib-metadata>=8.7.1",
     "ty>=0.0.29",
@@ -116,3 +115,31 @@ packages = ["src/spotoptim"]
 
 [tool.hatch.build]
 include = ["src/spotoptim/datasets/*.csv"]
+
+# ── Tooling baseline (roadmap #6): converge on the spot* standard ────────────
+# Ruff replaces the removed legacy .flake8. Line length matches black; CI runs
+# `ruff check` non-blocking.
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.black]
+target-version = ["py313"]
+
+[tool.isort]
+profile = "black"
+
+[tool.coverage.run]
+branch = true
+source = ["src/spotoptim"]
+
+[tool.coverage.report]
+# Ratchet: lock in the current ~71% fast-suite coverage so it cannot regress;
+# 68 leaves margin for platform variance. Raise deliberately as coverage
+# improves. The fast CI gate runs pytest with --cov, enforcing this.
+fail_under = 68
+
+# Astral `ty` type checker. Run non-blocking in CI (continue-on-error) so it
+# surfaces type debt without failing the build; tighten to a gate later.
+[tool.ty.environment]
+python-version = "3.13"

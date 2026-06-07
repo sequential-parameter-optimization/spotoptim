@@ -5,7 +5,6 @@ SPDX-PackageDownloadLocation = "https://github.com/sequential-parameter-optimiza
 
 [[annotations]]
 path = [
-    ".flake8",
     ".gitignore",
     ".python-version",
     ".releaserc.json",
