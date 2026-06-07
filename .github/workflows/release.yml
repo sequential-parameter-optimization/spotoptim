@@ -95,6 +95,43 @@ jobs:
           packages-dir: dist/
           skip-existing: true
 
+  # ── Back-merge main into develop ──────────────────────────────────────
+  # After a release on main, merge main back into develop so that
+  # CHANGELOG.md and pyproject.toml stay in sync (same job as in
+  # spotforecast2/spotforecast2-safe release.yml). Without it, develop
+  # silently falls behind after every release (e.g. 0.12.9 lived only on
+  # main until a manual fast-forward on 2026-06-07).
+  back-merge:
+    name: Sync main into develop
+    runs-on: ubuntu-latest
+    needs: release
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          # Same deploy-key auth as the release job: develop is unprotected,
+          # but the key guarantees push rights independent of token policy.
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge main into develop
+        run: |
+          git fetch origin
+          git checkout develop
+          # -X theirs: when CHANGELOG.md / pyproject.toml conflict (both were
+          # updated from the same base), keep main's final release version.
+          git merge origin/main -X theirs --no-ff \
+            -m "chore: sync main into develop [skip ci]"
+          git push origin develop
+
   # ── Documentation (reusable workflow, shared with docs.yml) ───────────
   # Builds from `main` rather than the triggering commit: by the time this
   # job starts, semantic-release has already pushed its "chore(release)"
