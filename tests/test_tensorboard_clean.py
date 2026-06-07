@@ -230,12 +230,15 @@ class TestTensorBoardCleanEdgeCases:
             shutil.rmtree("runs")
 
     def test_clean_with_custom_tensorboard_path(self):
-        """Test that clean doesn't interfere with custom paths."""
-        # Create custom directory
+        """Test that clean targets the custom path and leaves 'runs' alone."""
+        # Create custom directory with a stale event file from a prior run
         custom_path = "my_logs/experiment_1"
         os.makedirs(custom_path, exist_ok=True)
+        stale_file = os.path.join(custom_path, "events.out.tfevents.stale")
+        with open(stale_file, "w") as f:
+            f.write("stale")
 
-        # Create some old logs in runs
+        # Create some old logs in runs (unrelated to the configured path)
         os.makedirs("runs/old_log", exist_ok=True)
 
         try:
@@ -251,21 +254,55 @@ class TestTensorBoardCleanEdgeCases:
                 verbose=False,
             )
 
-            # Runs directory should be cleaned
-            if os.path.exists("runs"):
-                subdirs = [
-                    d
-                    for d in os.listdir("runs")
-                    if os.path.isdir(os.path.join("runs", d))
-                ]
-                assert len(subdirs) == 0
+            # Custom directory exists (re-created by the writer) but the
+            # stale event file from the previous run is gone
+            assert os.path.isdir(custom_path)
+            assert not os.path.exists(stale_file)
 
-            # Custom directory should still exist
-            assert os.path.exists(custom_path)
+            # The unrelated 'runs' directory is untouched
+            assert os.path.isdir("runs/old_log")
 
         finally:
             if os.path.exists("my_logs"):
                 shutil.rmtree("my_logs")
+
+    def test_clean_with_custom_path_without_logging(self):
+        """Clean honors a custom path even when logging is disabled."""
+        custom_path = "my_logs/experiment_2"
+        os.makedirs(custom_path, exist_ok=True)
+        with open(os.path.join(custom_path, "events.out.tfevents.stale"), "w") as f:
+            f.write("stale")
+
+        try:
+            _ = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                max_iter=10,
+                n_initial=5,
+                tensorboard_path=custom_path,
+                tensorboard_clean=True,
+                verbose=False,
+            )
+
+            # Directory removed and not re-created (no writer without logging)
+            assert not os.path.exists(custom_path)
+
+        finally:
+            if os.path.exists("my_logs"):
+                shutil.rmtree("my_logs")
+
+    def test_clean_with_missing_custom_path(self):
+        """Clean handles a non-existent custom path gracefully."""
+        optimizer = SpotOptim(
+            fun=lambda X: np.sum(X**2, axis=1),
+            bounds=[(-5, 5), (-5, 5)],
+            max_iter=10,
+            n_initial=5,
+            tensorboard_path="my_logs/does_not_exist",
+            tensorboard_clean=True,
+            verbose=False,
+        )
+        assert optimizer.tensorboard_clean is True
 
     def test_clean_with_nested_directories(self):
         """Test that clean handles nested structures correctly."""
