@@ -1,3 +1,9 @@
+## [0.12.9](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.8...v0.12.9) (2026-06-07)
+
+### Bug Fixes
+
+* **utils:** clean the configured tensorboard_path, not only the runs/ dir ([2b6eeac](https://github.com/sequential-parameter-optimization/spotoptim/commit/2b6eeac1d526c9a40866891acc574c9299c6a221))
+
 ## [0.12.8](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.7...v0.12.8) (2026-06-07)
 
 ### Bug Fixes
