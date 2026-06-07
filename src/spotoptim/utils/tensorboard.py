@@ -21,14 +21,31 @@ if TYPE_CHECKING:
 
 
 def clean_tensorboard_logs(optimizer: SpotOptimProtocol) -> None:
-    """Clean old TensorBoard log directories from the runs folder.
+    """Clean old TensorBoard logs if tensorboard_clean is True.
 
-    Removes all subdirectories in the 'runs' directory if tensorboard_clean is True.
+    When ``tensorboard_path`` is set, removes that directory (the writer
+    re-creates it empty afterwards), so every run starts with a fresh
+    dashboard. When ``tensorboard_path`` is None, falls back to the legacy
+    behavior of removing all subdirectories of the default ``runs``
+    directory.
 
     Args:
         optimizer: SpotOptim instance.
     """
     if optimizer.tensorboard_clean:
+        if optimizer.tensorboard_path is not None:
+            path = optimizer.tensorboard_path
+            if os.path.isdir(path):
+                try:
+                    shutil.rmtree(path)
+                    if optimizer.verbose:
+                        print(f"Removed old TensorBoard logs: {path}")
+                except Exception as e:
+                    if optimizer.verbose:
+                        print(f"Warning: Could not remove {path}: {e}")
+            elif optimizer.verbose:
+                print(f"No old TensorBoard logs to clean at '{path}'")
+            return
         runs_dir = "runs"
         if os.path.exists(runs_dir) and os.path.isdir(runs_dir):
             subdirs = [

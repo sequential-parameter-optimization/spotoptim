@@ -63,7 +63,8 @@ class SpotOptimConfig:
         ocba_delta (int): Delta for OCBA.
         tensorboard_log (bool): Whether to log to TensorBoard.
         tensorboard_path (Optional[str]): Path to TensorBoard logs.
-        tensorboard_clean (bool): Whether to clean TensorBoard logs.
+        tensorboard_clean (bool): Whether to clean old TensorBoard logs (the
+            configured tensorboard_path, or the 'runs' folder if no path is set).
         fun_mo2so (Optional[Callable]): Function to convert multi-objective to single-objective.
         seed (Optional[int]): Seed for random number generator.
         verbose (bool): Whether to print verbose output.
@@ -360,9 +361,12 @@ class SpotOptim(BaseEstimator):
             Path for TensorBoard log files. If None and tensorboard_log
             is True, creates a default path: runs/spotoptim_YYYYMMDD_HHMMSS. Defaults to None.
         tensorboard_clean (bool, optional):
-            If True, removes all old TensorBoard log directories from
-            the 'runs' folder before starting optimization. Use with caution as this permanently
-            deletes all subdirectories in 'runs'. Defaults to False.
+            If True, removes old TensorBoard logs before starting optimization
+            so every run begins with a fresh dashboard. With tensorboard_path
+            set, the configured directory itself is removed (and re-created
+            empty by the writer); without a path, all subdirectories of the
+            default 'runs' folder are removed. Use with caution as this
+            permanently deletes the affected log directories. Defaults to False.
         fun_mo2so (callable, optional):
             Function to convert multi-objective values to single-objective.
             Takes an array of shape (n_samples, n_objectives) and returns array of shape (n_samples,).
