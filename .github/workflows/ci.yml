@@ -60,7 +60,7 @@ jobs:
         run: uv sync --extra dev
 
       - name: Run pytest (fast — excludes @pytest.mark.slow)
-        run: uv run pytest tests/ -m "not slow" -n auto --tb=short
+        run: uv run pytest tests/ -m "not slow" -n auto --tb=short --cov=src/spotoptim --cov-branch --cov-report=term
 
   # ── Full suite: nightly schedule + manual dispatch ─────────────────────────
   test-full:
@@ -117,4 +117,8 @@ jobs:
 
       - name: Ruff
         run: uv run ruff check src/ tests/
+        continue-on-error: true
+
+      - name: Type check with ty (non-blocking)
+        run: uv run ty check src/
         continue-on-error: true
