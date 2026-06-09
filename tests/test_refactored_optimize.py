@@ -25,15 +25,12 @@ class TestRefactoredOptimize:
             bounds=[(-5, 5), (-5, 5)],
             n_initial=5,
             max_iter=10,
-            n_jobs=1,
             seed=42,
             verbose=False,
         )
 
     def test_optimize_structure_sequential(self, spot_optim):
         """Test that optimize calls execute_optimization_run and loop works for sequential."""
-        spot_optim.n_jobs = 1
-
         # Mock execute_optimization_run to return a finished result immediately
         mock_result = OptimizeResult(
             x=np.zeros(2),
@@ -59,7 +56,6 @@ class TestRefactoredOptimize:
 
     def test_optimize_structure_restart(self, spot_optim):
         """Test restart logic in optimize loop."""
-        spot_optim.n_jobs = 1
         spot_optim.max_iter = 20
         spot_optim.n_initial = 5
         spot_optim.restart_inject_best = True
@@ -101,30 +97,14 @@ class TestRefactoredOptimize:
         assert args2[1]["y0_known"] == 1.0
 
     def test_dispatch_sequential(self, spot_optim):
-        """Verify dispatch calls optimize_sequential_run when n_jobs=1."""
-        spot_optim.n_jobs = 1
+        """Verify execute_optimization_run always calls optimize_sequential_run."""
         spot_optim.optimize_sequential_run = MagicMock(
             return_value=("FINISHED", MagicMock())
         )
-        spot_optim.optimize_steady_state = MagicMock()
 
         spot_optim.execute_optimization_run(timeout_start=time.time())
 
         spot_optim.optimize_sequential_run.assert_called_once()
-        spot_optim.optimize_steady_state.assert_not_called()
-
-    def test_dispatch_parallel(self, spot_optim):
-        """Verify dispatch calls optimize_steady_state when n_jobs>1."""
-        spot_optim.n_jobs = 2
-        spot_optim.optimize_sequential_run = MagicMock()
-        spot_optim.optimize_steady_state = MagicMock(
-            return_value=("FINISHED", MagicMock())
-        )
-
-        spot_optim.execute_optimization_run(timeout_start=time.time())
-
-        spot_optim.optimize_steady_state.assert_called_once()
-        spot_optim.optimize_sequential_run.assert_not_called()
 
     def test_initialize_run_calls(self, spot_optim):
         """Verify _initialize_run calls necessary setup methods."""

@@ -47,11 +47,7 @@ SLOW_NODEIDS = {
     # --- whole files (every test is a full optimization run) ---
     "tests/test_x0_starting_point.py",
     # --- integration test classes ---
-    "tests/test_batch_eval.py::TestBatchEvalEndToEnd",
     "tests/test_termination_criteria.py::TestTerminationCriteria",
-    "tests/test_thread_pool_search.py::TestHybridExecutorEndToEnd",
-    "tests/test_no_gil_awareness.py::TestSimulatedNoGilPath",
-    "tests/test_no_gil_awareness.py::TestGilBuildEndToEnd",
     "tests/test_multiobjective.py::TestMultiObjectiveOptimization",
     "tests/test_transformations.py::TestTransformationOptimization",
     "tests/test_reproducibility_comprehensive.py::TestSpotOptimReproducibility",
@@ -61,7 +57,6 @@ SLOW_NODEIDS = {
     "tests/test_objective_remote.py::test_objective_remote",
     # --- individual heavy tests ---
     "tests/test_early_stopping.py::test_max_restarts_does_not_trigger_with_improvement",
-    "tests/test_parallel_optimization.py::TestParallelOptimization::test_parallel_execution_basic",
     "tests/test_multiobjective.py::TestMultiObjectiveEdgeCases::test_many_objectives",
     "tests/test_initial_design_nan_handling.py::test_initial_design_with_mixed_nan_inf",
     "tests/test_cookbook_examples.py::test_example_4_nelder_mead",
@@ -77,8 +72,6 @@ SLOW_NODEIDS = {
     "tests/test_tolerance_x.py::TestToleranceXFloatVariables::test_no_duplicate_evaluations_float",
     "tests/test_tolerance_x.py::TestToleranceXFactorVariables::test_no_duplicate_evaluations_factors",
     "tests/test_spotoptim.py::TestSpotOptimOptimize::test_optimize_with_seed_reproducibility",
-    "tests/test_parallel_reporting.py::test_parallel_reporting",
-    "tests/test_parallel_merging.py::test_parallel_merging",
     "tests/test_deterministic.py::TestDeterministicBehavior::test_deterministic_with_provided_initial_design",
     "tests/test_acquisition_failure.py::TestAcquisitionFailureWithVariableTypes::test_acquisition_failure_with_mixed_variables",
     "tests/test_spot_optim_args.py::test_kwargs_only",

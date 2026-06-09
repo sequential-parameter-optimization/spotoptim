@@ -127,14 +127,6 @@ class TestNaturalValues:
         assert LOW <= opt.best_x_[0] <= HIGH
         assert opt.best_x_[0] == round(opt.best_x_[0])
 
-    def test_parallel_path_respects_bounds(self):
-        seen = []
-        opt = _make_optimizer(seen, n_jobs=2, max_iter=30, n_initial=15)
-        opt.optimize()
-        col = np.asarray(opt.X_)[:, 0]
-        assert np.all(col >= LOW) and np.all(col <= HIGH)
-        np.testing.assert_array_equal(col, np.around(col))
-
 
 class TestRepairNaturalX:
     """Unit behaviour of the natural-scale repair."""

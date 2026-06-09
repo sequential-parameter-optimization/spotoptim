@@ -16,7 +16,6 @@ def test_run_sequential_loop_example():
         n_initial=5,
         max_iter=20,
         seed=0,
-        n_jobs=1,
         verbose=True,
     )
 

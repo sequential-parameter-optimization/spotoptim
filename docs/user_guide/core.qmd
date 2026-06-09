@@ -15,8 +15,7 @@ extending the package or building custom workflows.
 `SpotOptimProtocol` is a structural typing protocol (PEP 544) that
 defines the interface extracted modules expect. Instead of importing
 the concrete `SpotOptim` class (which would create circular imports),
-modules like `optimizer.steady_state` and `reporting.analysis` accept
-any object matching this protocol.
+modules like `reporting.analysis` accept any object matching this protocol.
 
 The protocol declares configuration attributes (`bounds`, `max_iter`,
 `acquisition`, `surrogate`, etc.) and mutable state attributes (`X_`,

@@ -125,7 +125,6 @@ def test_robot_arm_scenario():
         acquisition_optimizer="de_tricands",
         repeats_initial=1,
         repeats_surrogate=1,
-        n_jobs=2,  # Parallel, but slightly fewer workers
     )
 
     opt.optimize()

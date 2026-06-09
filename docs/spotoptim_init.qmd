@@ -148,28 +148,17 @@ print("Parameter inference check passed.")
 ```python
 if max_iter < n_initial:
     raise ValueError(...)
-if n_jobs == -1:
-    n_jobs = os.cpu_count() or 1
-elif n_jobs == 0 or n_jobs < -1:
-    raise ValueError(...)
-if eval_batch_size < 1:
-    raise ValueError(...)
 if acquisition_optimizer_kwargs is None:
     acquisition_optimizer_kwargs = {"maxiter": 10000, "gtol": 1e-9}
 ```
 
-Four checks run before the configuration object is assembled. `max_iter`
+Two checks run before the configuration object is assembled. `max_iter`
 must be at least `n_initial` because the total budget must accommodate the
-initial design. `n_jobs` follows the scikit-learn convention: `-1` is
-resolved to `os.cpu_count()`, while `0` and values below `-1` are rejected.
-`eval_batch_size` controls how many candidate points accumulate before a
-single vectorised call is dispatched to the process pool and must be at
-least `1`. Finally, when `acquisition_optimizer_kwargs` is not supplied it
+initial design. When `acquisition_optimizer_kwargs` is not supplied it
 is initialised to `{"maxiter": 10000, "gtol": 1e-9}`, providing tight
 convergence tolerances for the default differential-evolution run.
 
 ```{python}
-import os
 from spotoptim import SpotOptim
 from spotoptim.function import sphere
 
@@ -180,18 +169,6 @@ print(f"max_iter={opt.max_iter}, n_initial={opt.n_initial}  — valid.")
 # invalid: max_iter < n_initial must raise
 try:
     SpotOptim(fun=sphere, bounds=[(-5, 5)], max_iter=5, n_initial=10)
-    raise AssertionError("Expected ValueError was not raised")
-except ValueError as e:
-    print(f"Caught expected error: {e}")
-
-# n_jobs=-1 resolves to all available CPU cores
-opt_p = SpotOptim(fun=sphere, bounds=[(-5, 5)], n_jobs=-1)
-assert opt_p.n_jobs == (os.cpu_count() or 1)
-print(f"n_jobs=-1 resolved to: {opt_p.n_jobs}")
-
-# n_jobs=0 is rejected
-try:
-    SpotOptim(fun=sphere, bounds=[(-5, 5)], n_jobs=0)
     raise AssertionError("Expected ValueError was not raised")
 except ValueError as e:
     print(f"Caught expected error: {e}")
@@ -893,7 +870,7 @@ print("TensorBoard no-op check passed.")
 | 2 | Machine epsilon | `self.eps` |
 | 3 | `tolerance_x` default | `tolerance_x` |
 | 4 | Parameter inference from `fun` | `bounds`, `var_type`, `var_name`, `var_trans` |
-| 5 | Validate `max_iter`, `n_jobs`, `eval_batch_size`; default `acquisition_optimizer_kwargs` | — |
+| 5 | Validate `max_iter`; default `acquisition_optimizer_kwargs` | — |
 | 6 | Create `SpotOptimConfig` | `self.config` |
 | 7 | Create `SpotOptimState` | `self.state` |
 | 8 | Store callable and `objective_names` | `self.fun`, `self.objective_names` |

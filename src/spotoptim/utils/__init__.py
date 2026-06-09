@@ -18,12 +18,6 @@ from .pca import (
     plot_loading_scores,
 )
 from .scaler import TorchStandardScaler
-from .parallel import (
-    is_gil_disabled,
-    remote_eval_wrapper,
-    remote_batch_eval_wrapper,
-    remote_search_task,
-)
 
 __all__ = [
     "get_boundaries",
@@ -43,8 +37,4 @@ __all__ = [
     "get_loading_scores",
     "plot_loading_scores",
     "TorchStandardScaler",
-    "is_gil_disabled",
-    "remote_eval_wrapper",
-    "remote_batch_eval_wrapper",
-    "remote_search_task",
 ]

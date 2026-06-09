@@ -70,8 +70,6 @@ class SpotOptimProtocol(Protocol):
     window_size: Optional[int]
     min_tol_metric: str
     prob_surrogate: Optional[List[float]]
-    n_jobs: int
-    eval_batch_size: int
     acquisition_optimizer_kwargs: Optional[Dict[str, Any]]
     args: Tuple
     kwargs: Optional[Dict[str, Any]]
@@ -172,7 +170,6 @@ class SpotOptimProtocol(Protocol):
 
     def update_stats(self) -> None: ...
     def update_success_rate(self, y_new: np.ndarray) -> None: ...
-    def _update_storage_steady(self, x: np.ndarray, y: float) -> None: ...
 
     def _init_tensorboard(self) -> None: ...
     def _close_and_del_tensorboard_writer(self) -> None: ...

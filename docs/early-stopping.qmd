@@ -179,10 +179,5 @@ features — they prune *inside* a multi-trial ML training run, whereas
 
 * [Sequential Optimization](optimize_seq.qmd) — outer restart loop and
   `execute_optimization_run()`.
-* [Parallel Optimization](optimize_parallel.qmd) — `max_restarts` fires
-  identically under `n_jobs>1` steady-state parallelism.
-* [Running on Slurm (GWDG NHR)](slurm.qmd) — bake `max_restarts` into the
-  experiment pickle to avoid re-dispatching a job once the optimizer has
-  plateaued.
 * `SpotOptim.SpotOptimConfig` in the API reference — the authoritative
   parameter list.

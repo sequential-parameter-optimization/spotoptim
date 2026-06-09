@@ -94,12 +94,6 @@ description: "Structure of the Methods"
 
 
 
-### TASK_OPTIM_PARALLEL:
-
-* _update_storage_steady()
-* optimize_steady_state()
-
-
 ### TASK_MO:
 
 * store_mo()
@@ -149,7 +143,7 @@ description: "Structure of the Methods"
 
 ## The Surrogate-model-based Optimization Process
 
-In the following, we will consider the `optimize` method as the main entry point for the surrogate-model-based optimization process. `optimize` calls the dispatcher for the sequential and the parallel (steady-state) optimization runs, which are the main optimization loops. We consider the sequential run, which is started via the method `optimize_sequential_run`. We list all the calls to `self.*` methods that are made in the sequential optimization loop and enumerate the dependencies. Every time, a self-method is called, the numbering goes down by one level. If the method is finished, we go back up one level.
+In the following, we will consider the `optimize` method as the main entry point for the surrogate-model-based optimization process. `optimize` runs the sequential optimization loop, which is started via the method `optimize_sequential_run`. We list all the calls to `self.*` methods that are made in the sequential optimization loop and enumerate the dependencies. Every time, a self-method is called, the numbering goes down by one level. If the method is finished, we go back up one level.
 This results in a tree-like structure of method calls, which we will use to improve (refactor) the structure of the code in the `SpotOptim` class in @SpotOptim.py.
 
 1. _initialize_run()
