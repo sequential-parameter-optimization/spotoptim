@@ -1,3 +1,35 @@
+## [1.0.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.9...v1.0.0) (2026-06-09)
+
+### ⚠ BREAKING CHANGES
+
+* the following symbols are no longer re-exported from the
+top-level `spotoptim` namespace and must be imported from their subpackages
+(and require the matching extra): MLPSurrogate (spotoptim.surrogate),
+MLP / LinearRegressor (spotoptim.nn), DiabetesDataset /
+get_diabetes_dataloaders (spotoptim.data), TorchStandardScaler
+(spotoptim.utils.scaler), and the PCA/plot helpers (spotoptim.utils.pca).
+Installing torch-, plotting-, stats-, or remote-objective features now
+requires `pip install 'spotoptim[torch]'` (or [viz] / [stats] / [remote] / [all]).
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+* SpotOptim no longer accepts the `n_jobs` or `eval_batch_size`
+constructor arguments — passing either now raises TypeError. The methods
+`optimize_steady_state` and `_update_storage_steady` are removed, as are
+`spotoptim.utils.is_gil_disabled`, `remote_eval_wrapper`,
+`remote_batch_eval_wrapper`, and `remote_search_task`. Seeded sequential
+`optimize()` results are unchanged.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* remove parallel-evaluation subsystem; collapse to a single sequential engine ([6cc5633](https://github.com/sequential-parameter-optimization/spotoptim/commit/6cc56334064a406e7cac59b0342e9a52fa286511))
+* slim core dependencies; move torch/viz/stats/remote behind optional extras ([4c9046c](https://github.com/sequential-parameter-optimization/spotoptim/commit/4c9046c6419be458091408eb52f6f4659afd0f3a))
+
+### Documentation
+
+* refresh API reference and _freeze after parallelism removal and dependency slimming ([55c480c](https://github.com/sequential-parameter-optimization/spotoptim/commit/55c480c29e5a3e593ec00e6ac5567fa9e78ba972))
+
 ## [0.12.9](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.8...v0.12.9) (2026-06-07)
 
 ### Bug Fixes
