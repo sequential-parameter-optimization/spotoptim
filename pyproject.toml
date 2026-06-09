@@ -17,27 +17,15 @@ dependencies = [
     "numpy>=1.24.3",
     "scipy>=1.10.1",
     "scikit-learn>=1.5.0",
-    # MkDocs dependencies removed — documentation now uses Quarto + quartodoc.
-    # Install doc-build tools via: pip install spotoptim[docs]
-    # or: pip install -r requirements-docs.txt
-    "jupyter>=1.1.1",
-    "matplotlib>=3.10.7",
     "pandas>=2.1.0",
-    "requests>=2.32.3",
-    "torch>=2.9.1",
-    "tensorboard>=2.20.0",
     "tabulate>=0.9.0",
-    "xgboost>=3.1.1",
-    "seaborn>=0.13.2",
-    "spotdesirability>=0.0.1",
-    "statsmodels>=0.14.6",
     "dill>=0.4.1",
-    "flake8>=7.3.0",
-    "black>=26.1.0",
-    "importlib-metadata>=8.7.1",
-    "ty>=0.0.29",
 ]
 
+# Default-installed dev tooling (plain `uv sync`). The canonical dev command
+# is `uv sync --extra dev`, whose `dev` extra additionally pulls the runtime
+# extras (`spotoptim[all]`) and `spotdesirability` needed to run the full
+# test suite — those cannot be expressed in a PEP 735 group.
 [dependency-groups]
 dev = [
     "pytest>=7.4.0",
@@ -50,9 +38,27 @@ dev = [
     "safety>=3.0.0",
     "bandit>=1.8.0",
     "pre-commit>=3.7.0",
+    "ty>=0.0.29",
 ]
 
 [project.optional-dependencies]
+torch = [
+    "torch>=2.9.1",
+    "tensorboard>=2.20.0",
+]
+viz = [
+    "matplotlib>=3.10.7",
+    "seaborn>=0.13.2",
+]
+stats = [
+    "statsmodels>=0.14.6",
+]
+remote = [
+    "requests>=2.32.3",
+]
+all = [
+    "spotoptim[torch,viz,stats,remote]",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -64,6 +70,9 @@ dev = [
     "safety>=3.0.0",
     "bandit>=1.8.0",
     "pre-commit>=3.7.0",
+    "ty>=0.0.29",
+    "spotoptim[all]",
+    "spotdesirability>=0.0.1",
 ]
 docs = [
     # Quarto API documentation generator (replaces mkdocstrings)
@@ -72,9 +81,9 @@ docs = [
     "griffe>=1.7.3",
     # Quarto Jupyter integration
     "jupyter>=1.1.1",
-    # Transitive dependencies for griffe CLI 
+    # Transitive dependencies for griffe CLI
     "colorama>=0.4.6",
-    "importlib_metadata"
+    "importlib_metadata",
 ]
 
 [tool.pytest.ini_options]
@@ -116,3 +125,31 @@ packages = ["src/spotoptim"]
 
 [tool.hatch.build]
 include = ["src/spotoptim/datasets/*.csv"]
+
+# ── Tooling baseline (roadmap #6): converge on the spot* standard ────────────
+# Ruff replaces the removed legacy .flake8. Line length matches black; CI runs
+# `ruff check` non-blocking.
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.black]
+target-version = ["py313"]
+
+[tool.isort]
+profile = "black"
+
+[tool.coverage.run]
+branch = true
+source = ["src/spotoptim"]
+
+[tool.coverage.report]
+# Ratchet: lock in the current ~71% fast-suite coverage so it cannot regress;
+# 68 leaves margin for platform variance. Raise deliberately as coverage
+# improves. The fast CI gate runs pytest with --cov, enforcing this.
+fail_under = 68
+
+# Astral `ty` type checker. Run non-blocking in CI (continue-on-error) so it
+# surfaces type debt without failing the build; tighten to a gate later.
+[tool.ty.environment]
+python-version = "3.13"

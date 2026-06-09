@@ -89,12 +89,8 @@ website:
         file: docs/spotoptim_init.qmd
       - text: Sequential Optimization
         file: docs/optimize_seq.qmd
-      - text: Parallel Optimization
-        file: docs/optimize_parallel.qmd
       - text: Early Stopping
         file: docs/early-stopping.qmd
-      - text: Running on Slurm (GWDG NHR)
-        file: docs/slurm.qmd
       - section: API Reference
         contents:
           - text: Overview

@@ -13,13 +13,8 @@ within the SpotOptim framework.
 
 from typing import List, Optional, Tuple, Union
 import numpy as np
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.preprocessing import StandardScaler
-
-from spotoptim.nn.mlp import MLP
 
 
 class MLPSurrogate(BaseEstimator, RegressorMixin):
@@ -116,6 +111,17 @@ class MLPSurrogate(BaseEstimator, RegressorMixin):
         Returns:
             MLPSurrogate: The fitted model.
         """
+        try:
+            import torch
+            import torch.nn as nn
+            from torch.utils.data import DataLoader, TensorDataset
+        except ImportError as e:
+            raise ImportError(
+                "MLPSurrogate requires PyTorch. Install with: pip install 'spotoptim[torch]'"
+            ) from e
+
+        from spotoptim.nn.mlp import MLP
+
         # Set seeds for reproducibility
         torch.manual_seed(self.seed)
         np.random.seed(self.seed)
@@ -229,6 +235,13 @@ class MLPSurrogate(BaseEstimator, RegressorMixin):
             np.ndarray: Predicted mean values, shape (n_samples,).
             tuple: (mean, std) if return_std is True.
         """
+        try:
+            import torch
+        except ImportError as e:
+            raise ImportError(
+                "MLPSurrogate requires PyTorch. Install with: pip install 'spotoptim[torch]'"
+            ) from e
+
         if self.model_ is None:
             raise RuntimeError("Model is not fitted yet. Call 'fit' first.")
 

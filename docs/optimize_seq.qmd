@@ -4,13 +4,13 @@ description: "Step-by-step walkthrough of execute_optimization_run() and every m
 ---
 
 This document traces every step executed by `SpotOptim.execute_optimization_run()` along
-the sequential code path (`n_jobs=1`), in the order they occur.
+the sequential optimization path, in the order they occur.
 Each section describes one method with a `{python}` code block that can be executed directly.
 
 The public entry point is `optimize()`, which manages the outer restart loop and delegates
 each cycle to `execute_optimization_run()`.
-When `n_jobs == 1` (the default), that dispatcher routes to `optimize_sequential_run()`,
-which coordinates initialisation, storage setup, and the main iteration loop.
+That method routes to `optimize_sequential_run()`, which coordinates initialisation,
+storage setup, and the main iteration loop.
 This document covers that path in full.
 
 Run all related tests with:
@@ -23,21 +23,11 @@ uv run pytest tests/test_spotoptim_deep.py -v
 
 ## Step 1 — Dispatch (`execute_optimization_run()`)
 
-```python
-if self.n_jobs > 1:
-    return self.optimize_steady_state(...)
-else:
-    return self.optimize_sequential_run(...)
-```
-
-`execute_optimization_run()` is the routing layer between the outer restart loop in
-`optimize()` and the actual optimisation engine.
-Its sole responsibility is to examine `n_jobs` and forward all arguments to either
-`optimize_steady_state()` (parallel) or `optimize_sequential_run()` (sequential).
-It returns a `(status, OptimizeResult)` tuple in both cases, which `optimize()` uses to
-decide whether to restart or terminate.
-The optional `shared_best_y` and `shared_lock` parameters support inter-worker
-coordination in the parallel path; they are `None` in sequential mode.
+`execute_optimization_run()` is the thin pass-through between the outer restart loop in
+`optimize()` and the sequential optimisation engine.
+It forwards all arguments to `optimize_sequential_run()` and returns a
+`(status, OptimizeResult)` tuple, which `optimize()` uses to decide whether to restart
+or terminate.
 
 ```{python}
 import time
@@ -46,7 +36,7 @@ from spotoptim import SpotOptim
 from spotoptim.function import sphere
 
 opt = SpotOptim(fun=sphere, bounds=[(-5, 5), (-5, 5)],
-                n_initial=5, max_iter=10, seed=0, n_jobs=1)
+                n_initial=5, max_iter=10, seed=0)
 status, result = opt.execute_optimization_run(timeout_start=time.time())
 print(f"status : {status}")
 print(f"best   : {result.fun:.6f}")
@@ -702,7 +692,7 @@ print("determine_termination check passed.")
 
 | Step | Method | Purpose |
 |-----:|--------|---------|
-| 1 | `execute_optimization_run()` | Dispatch to sequential or parallel path |
+| 1 | `execute_optimization_run()` | Entry point, delegates to optimize_sequential_run() |
 | 2 | `optimize_sequential_run()` | Sequential orchestrator |
 | 3 | `_initialize_run()` | Seed RNG, generate and evaluate initial design |
 | 4 | `rm_initial_design_NA_values()` | Remove NaN/inf from initial evaluations |

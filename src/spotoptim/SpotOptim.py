@@ -4,7 +4,6 @@
 
 import numpy as np
 import random
-import torch
 from functools import partial
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Tuple, List, Any, Dict, Union, Literal
@@ -15,19 +14,9 @@ from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
 import warnings
-import matplotlib.pyplot as plt
 from numpy import append
 import time
-import os
 from sklearn.cluster import KMeans
-from spotoptim.plot.visualization import (
-    plot_surrogate,
-    plot_progress,
-    plot_important_hyperparameter_contour,
-    _plot_surrogate_with_factors,
-    _generate_mesh_grid,
-    _generate_mesh_grid_with_factors,
-)
 from spotoptim.utils.convert import safe_float
 from spotoptim.utils import tensorboard as _tb
 from spotoptim.utils import ocba as _ocba
@@ -39,7 +28,6 @@ from spotoptim.utils import transform as _trans
 from spotoptim.utils import dimreduction as _dimred
 from spotoptim.optimizer import acquisition as _acq
 from spotoptim.core import storage as _storage
-from spotoptim.optimizer import steady_state as _steady
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
 
 
@@ -90,26 +78,6 @@ class SpotOptimConfig:
         window_size (Optional[int]): Size of the window for tricands.
         min_tol_metric (str): Metric for minimum tolerance.
         prob_surrogate (Optional[List[float]]): Probability of using surrogate.
-        n_jobs (int): Number of parallel workers. ``1`` runs sequentially.
-            Values ``> 1`` activate steady-state parallel optimization.
-            On standard GIL builds a hybrid executor is used:
-            ``ProcessPoolExecutor`` for objective evaluations (process
-            isolation; supports lambdas and closures via ``dill``) and
-            ``ThreadPoolExecutor`` for surrogate search tasks (shared heap;
-            zero serialization overhead).
-            On free-threaded Python builds (``python3.13t``,
-            ``--disable-gil``), both pools are ``ThreadPoolExecutor``
-            instances, achieving true CPU-level parallelism without ``dill``
-            for eval tasks.
-            ``-1`` resolves to ``os.cpu_count()`` (all available CPU cores).
-            ``0`` and values ``< -1`` raise ``ValueError``.
-            Defaults to ``1``.
-        eval_batch_size (int): Number of candidate points to accumulate before
-            dispatching a single ``fun(X_batch)`` call to the process pool.
-            ``1`` (default) dispatches each candidate immediately, preserving
-            current behavior. Values ``> 1`` reduce process-spawn and IPC
-            overhead when ``fun`` supports vectorized batch input.
-            Must be ``>= 1``. Defaults to ``1``.
         acquisition_optimizer_kwargs (Optional[Dict[str, Any]]): Keyword arguments for the acquisition function optimizer.
         args (Tuple): Arguments for the objective function.
         kwargs (Optional[Dict[str, Any]]): Keyword arguments for the objective function.
@@ -165,7 +133,6 @@ class SpotOptimConfig:
              window_size=None,
              min_tol_metric="chebyshev",
              prob_surrogate=None,
-             n_jobs=1,
              acquisition_optimizer_kwargs=None,
              args=(),
              kwargs=None,
@@ -211,8 +178,6 @@ class SpotOptimConfig:
     window_size: Optional[int] = None
     min_tol_metric: str = "chebyshev"
     prob_surrogate: Optional[List[float]] = None
-    n_jobs: int = 1
-    eval_batch_size: int = 1
     acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
@@ -450,20 +415,6 @@ class SpotOptim(BaseEstimator):
         prob_de_tricands (float, optional):
             Probability of using differential evolution as an optimizer
             on the surrogate model. 1 - prob_de_tricands is the probability of using tricands. Defaults to 0.8.
-        n_jobs (int, optional):
-            Number of parallel workers. ``1`` (default) runs sequentially.
-            Values ``> 1`` activate steady-state parallel optimization:
-            objective evaluations and acquisition searches are dispatched
-            across ``n_jobs`` processes. Pass ``-1`` to use all available
-            CPU cores (``os.cpu_count()``). ``0`` and values ``< -1`` raise
-            ``ValueError``. Defaults to ``1``.
-        eval_batch_size (int, optional):
-            Number of candidate points gathered from search tasks before a
-            single ``fun(X_batch)`` call is dispatched to the process pool.
-            ``1`` (default) preserves one-point-per-call behavior.
-            Set to ``n_jobs`` or higher to exploit vectorized objective
-            functions and reduce process-spawn overhead. Ignored when
-            ``n_jobs == 1``. Must be ``>= 1``. Defaults to ``1``.
         window_size (int, optional):
             Window size for success rate calculation.
         min_tol_metric (str, optional):
@@ -799,8 +750,6 @@ class SpotOptim(BaseEstimator):
         window_size: Optional[int] = None,
         min_tol_metric: str = "chebyshev",
         prob_surrogate: Optional[List[float]] = None,
-        n_jobs: int = 1,
-        eval_batch_size: int = 1,
         acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
@@ -835,18 +784,6 @@ class SpotOptim(BaseEstimator):
                 f"max_iter ({max_iter}) must be >= n_initial ({n_initial}). "
                 f"max_iter represents the total function evaluation budget including initial design."
             )
-
-        # Resolve n_jobs: -1 means "use all available CPU cores" (scikit-learn convention).
-        if n_jobs == -1:
-            n_jobs = os.cpu_count() or 1
-        elif n_jobs == 0 or n_jobs < -1:
-            raise ValueError(
-                f"n_jobs must be a positive integer or -1 (all CPU cores), got {n_jobs}."
-            )
-
-        # Validate eval_batch_size.
-        if eval_batch_size < 1:
-            raise ValueError(f"eval_batch_size must be >= 1, got {eval_batch_size}.")
 
         if acquisition_optimizer_kwargs is None:
             acquisition_optimizer_kwargs = {"maxiter": 10000, "gtol": 1e-9}
@@ -891,8 +828,6 @@ class SpotOptim(BaseEstimator):
             window_size=window_size,
             min_tol_metric=min_tol_metric,
             prob_surrogate=prob_surrogate,
-            n_jobs=n_jobs,
-            eval_batch_size=eval_batch_size,
             acquisition_optimizer_kwargs=acquisition_optimizer_kwargs,
             args=args,
             kwargs=kwargs,
@@ -1067,10 +1002,16 @@ class SpotOptim(BaseEstimator):
         if self.seed is not None:
             random.seed(self.seed)
             np.random.seed(self.seed)
-            torch.manual_seed(self.seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed(self.seed)
-                torch.cuda.manual_seed_all(self.seed)
+            # Only seed torch if it is already loaded (avoids eager-importing it
+            # when the caller is using a non-PyTorch surrogate).
+            import sys as _sys
+
+            if "torch" in _sys.modules:
+                _torch = _sys.modules["torch"]
+                _torch.manual_seed(self.seed)
+                if _torch.cuda.is_available():
+                    _torch.cuda.manual_seed(self.seed)
+                    _torch.cuda.manual_seed_all(self.seed)
 
     # ====================
     # TASK_VARS:
@@ -2545,8 +2486,7 @@ class SpotOptim(BaseEstimator):
                     print("Global budget exhausted. Stopping restarts.")
                 break
 
-            # Execute one optimization run using the remaining budget; dispatcher
-            # selects sequential vs parallel based on `n_jobs` and returns status/result.
+            # Execute one sequential optimization run using the remaining budget.
             status, result = self.execute_optimization_run(
                 timeout_start,
                 current_X0,
@@ -2604,9 +2544,8 @@ class SpotOptim(BaseEstimator):
                                 f"Restart injection: Using best found point so far as starting point (f(x)={best_res.fun:.6f})."
                             )
 
-                if self.seed is not None and self.n_jobs == 1:
-                    # In sequential mode we advance the seed between restarts to diversify the LHS.
-                    # Parallel mode increments seeds per worker during dispatch.
+                if self.seed is not None:
+                    # Advance the seed between restarts to diversify the LHS.
                     self.seed += 1
                 # Continue loop
             else:
@@ -2620,7 +2559,7 @@ class SpotOptim(BaseEstimator):
         # Find best result based on 'fun'
         best_result = min(self.restarts_results_, key=lambda r: r.fun)
 
-        # Merge results from all parallel runs (and sequential runs if any)
+        # Merge results from all restart runs
         X_all_list = [res.X for res in self.restarts_results_]
         y_all_list = [res.y for res in self.restarts_results_]
 
@@ -2658,19 +2597,15 @@ class SpotOptim(BaseEstimator):
         X0: Optional[np.ndarray] = None,
         y0_known: Optional[float] = None,
         max_iter_override: Optional[int] = None,
-        shared_best_y=None,  # New arg
-        shared_lock=None,  # New arg
     ) -> Tuple[str, OptimizeResult]:
-        """Dispatcher for optimization run (Sequential vs Steady-State Parallel).
-        Depending on n_jobs, calls optimize_steady_state (n_jobs > 1) or optimize_sequential_run (n_jobs == 1).
+        """Entry point for a single sequential optimization run.
+        Delegates to optimize_sequential_run with the provided arguments.
 
         Args:
             timeout_start (float): Start time for timeout.
             X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
             y0_known (Optional[float]): Known best value for initial design.
             max_iter_override (Optional[int]): Override for maximum number of iterations.
-            shared_best_y (Optional[float]): Shared best value for parallel runs.
-            shared_lock (Optional[Lock]): Shared lock for parallel runs.
 
         Returns:
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
@@ -2687,7 +2622,6 @@ class SpotOptim(BaseEstimator):
                 n_initial=5,
                 max_iter=10,
                 seed=0,
-                n_jobs=1,  # Use sequential optimization for deterministic output
                 verbose=True
             )
             status, result = opt.execute_optimization_run(timeout_start=time.time())
@@ -2695,24 +2629,12 @@ class SpotOptim(BaseEstimator):
             print(result.message.splitlines()[0])
             ```
         """
-
-        # Dispatch to steady-state optimizer if proper parallelization is requested
-        if self.n_jobs > 1:
-            return self.optimize_steady_state(
-                timeout_start,
-                X0,
-                y0_known=y0_known,
-                max_iter_override=max_iter_override,
-            )
-        else:
-            return self.optimize_sequential_run(
-                timeout_start,
-                X0,
-                y0_known=y0_known,
-                max_iter_override=max_iter_override,
-                shared_best_y=shared_best_y,
-                shared_lock=shared_lock,
-            )
+        return self.optimize_sequential_run(
+            timeout_start,
+            X0,
+            y0_known=y0_known,
+            max_iter_override=max_iter_override,
+        )
 
     def evaluate_function(self, X: np.ndarray) -> np.ndarray:
         """Evaluate objective function at points X.
@@ -3134,8 +3056,6 @@ class SpotOptim(BaseEstimator):
         X0: Optional[np.ndarray] = None,
         y0_known: Optional[float] = None,
         max_iter_override: Optional[int] = None,
-        shared_best_y=None,
-        shared_lock=None,
     ) -> Tuple[str, OptimizeResult]:
         """Perform a single sequential optimization run.
         Calls _initialize_run, rm_initial_design_NA_values, check_size_initial_design, init_storage, get_best_xy_initial_design, and _run_sequential_loop.
@@ -3145,8 +3065,6 @@ class SpotOptim(BaseEstimator):
             X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
             y0_known (Optional[float]): Known best value for initial design.
             max_iter_override (Optional[int]): Override for maximum number of iterations.
-            shared_best_y (Optional[float]): Shared best value for parallel runs.
-            shared_lock (Optional[Lock]): Shared lock for parallel runs.
 
         Returns:
             Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
@@ -3165,7 +3083,6 @@ class SpotOptim(BaseEstimator):
                             n_initial=5,
                             max_iter=10,
                             seed=0,
-                            n_jobs=1,  # Use sequential optimization for deterministic output
                             verbose=True
              )
             status, result = opt.optimize_sequential_run(timeout_start=time.time())
@@ -3173,10 +3090,6 @@ class SpotOptim(BaseEstimator):
             print(result.message.splitlines()[0])
             ```
         """
-
-        # Store shared variable if provided
-        self.shared_best_y = shared_best_y
-        self.shared_lock = shared_lock
 
         # Initialize: Set seed, Design, Evaluate Initial Design, Init Storage & TensorBoard
         X0, y0 = self._initialize_run(X0, y0_known)
@@ -3455,7 +3368,6 @@ class SpotOptim(BaseEstimator):
              ...     n_initial=5,
              ...     max_iter=10,
              ...     seed=0,
-             ...     n_jobs=1,  # Use sequential optimization for deterministic output
              ...     verbose=True
              ... )
              >>> X0, y0 = opt._initialize_run(X0=None, y0_known=None)
@@ -3861,25 +3773,6 @@ class SpotOptim(BaseEstimator):
             Iteration 1: New best f(x) = 0.500000, mean best: f(x) = 1.500000
         """
         # Update best
-        # Determine global best value for printing if shared variable exists
-        global_best_val = None
-        if hasattr(self, "shared_best_y") and self.shared_best_y is not None:
-            # Sync with global shared value
-            lock_obj = getattr(self, "shared_lock", None)
-            if lock_obj is not None:
-                with lock_obj:
-                    if (
-                        self.best_y_ is not None
-                        and self.best_y_ < self.shared_best_y.value
-                    ):
-                        self.shared_best_y.value = self.best_y_
-
-                    min_y_next = np.min(y_next)
-                    if min_y_next < self.shared_best_y.value:
-                        self.shared_best_y.value = min_y_next
-
-                    global_best_val = self.shared_best_y.value
-
         current_best = np.min(y_next)
         if current_best < self.best_y_:
             best_idx_in_new = np.argmin(y_next)
@@ -3904,8 +3797,6 @@ class SpotOptim(BaseEstimator):
                     progress_str = f"Evals: {progress:.1f}%"
 
                 msg = f"Iter {self.n_iter_}"
-                if global_best_val is not None:
-                    msg += f" | GlobalBest: {global_best_val:.6f}"
                 msg += f" | Best: {self.best_y_:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
 
                 if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
@@ -3923,8 +3814,6 @@ class SpotOptim(BaseEstimator):
 
             current_val = np.min(y_next)
             msg = f"Iter {self.n_iter_}"
-            if global_best_val is not None:
-                msg += f" | GlobalBest: {global_best_val:.6f}"
             msg += f" | Best: {self.best_y_:.6f} | Curr: {current_val:.6f} | Rate: {self.success_rate:.2f} | {progress_str}"
 
             if (self.repeats_initial > 1) or (self.repeats_surrogate > 1):
@@ -4092,146 +3981,6 @@ class SpotOptim(BaseEstimator):
         else:
             x_next_repeated = x_next
         return x_next_repeated
-
-    # ====================
-    # TASK_OPTIM_PARALLEL:
-    # * _update_storage_steady()
-    # * optimize_steady_state()
-    # ====================
-
-    def _update_storage_steady(self, x, y):
-        """Helper to safely append single point (for steady state).
-            This method is designed for the steady-state parallel optimization scenario, where new points are evaluated and returned asynchronously.
-            It safely appends new points to the existing storage of evaluated points and their function values,
-            while also updating the current best solution if the new point is better.
-
-        Args:
-            x (ndarray):
-                New point(s) in original scale, shape (n_features,) or (N, n_features).
-            y (float or ndarray):
-                Corresponding function value(s).
-
-        Returns:
-            None. This method updates the internal state of the optimizer.
-
-        Note:
-           - This method assumes that the caller handles any necessary synchronization if used in a parallel context
-           (e.g., using locks when updating shared state).
-
-        Raises:
-            ValueError: If the input shapes are inconsistent or if y is not a scalar when x is a single point.
-
-        Examples:
-            >>> import numpy as np
-            >>> from spotoptim import SpotOptim
-            >>> opt = SpotOptim(
-            ...     fun=lambda X: np.sum(X**2, axis=1),
-            ...     bounds=[(-5, 5), (-5, 5)],
-            ...     n_jobs=2
-            ... )
-            >>> opt._update_storage_steady(np.array([1.0, 2.0]), 5.0)
-            >>> print(opt.X_)
-            [[1. 2.]]
-            >>> print(opt.y_)
-            [5.]
-            >>> print(opt.best_x_)
-            [1. 2.]
-            >>> print(opt.best_y_)
-            5.0
-
-        """
-        _steady.update_storage_steady(self, x, y)
-
-    def optimize_steady_state(
-        self,
-        timeout_start: float,
-        X0: Optional[np.ndarray],
-        y0_known: Optional[float] = None,
-        max_iter_override: Optional[int] = None,
-    ) -> Tuple[str, OptimizeResult]:
-        """Perform steady-state asynchronous optimization (n_jobs > 1).
-        This method implements a hybrid steady-state parallelization strategy.
-        The executor types are selected at runtime based on GIL availability:
-        Standard GIL build (Python ≤ 3.12 or GIL-enabled 3.13+):
-            * ``ProcessPoolExecutor`` (``eval_pool``) — objective function evaluations.
-            Process isolation ensures arbitrary callables (lambdas, closures)
-            serialized with ``dill`` run safely without touching shared state.
-            * ``ThreadPoolExecutor`` (``search_pool``) — surrogate search tasks.
-            Threads share the main-process heap; zero ``dill`` overhead.
-            A ``threading.Lock`` (``_surrogate_lock``) prevents a surrogate refit
-            from racing with an in-flight search thread.
-        Free-threaded build (``python3.13t`` / ``--disable-gil``):
-            * Both ``eval_pool`` and ``search_pool`` are ``ThreadPoolExecutor``
-                instances.  Threads achieve true CPU-level parallelism without the GIL.
-                The ``dill`` serialization step for eval tasks is eliminated — ``fun``
-                is called directly from the shared heap.  The ``_surrogate_lock`` is
-                still used to serialize surrogate reads and refits.
-        Pipeline:
-            1.  Parallel Initial Design:
-                ``n_initial`` points are dispatched to ``eval_pool``.  Results are
-                collected via ``FIRST_COMPLETED`` until all initial evaluations finish.
-            2.  First Surrogate Fit:
-                Called on the main thread once all initial evaluations are in.
-                No lock is needed here because no search threads are active yet.
-            3.  Parallel Search (Thread Pool):
-                Up to ``n_jobs`` search tasks are submitted to ``search_pool``.
-                Each acquires ``_surrogate_lock`` before calling
-                ``suggest_next_infill_point()``, serializing concurrent surrogate reads.
-            4.  Steady-State Loop with Batch Dispatch:
-                - Search completes → candidate appended to ``pending_cands``.
-                - When ``len(pending_cands) >= eval_batch_size`` (or no search tasks
-                remain), all pending candidates are stacked into ``X_batch`` and
-                dispatched as a single eval call to ``eval_pool``.
-                On GIL builds this calls ``remote_batch_eval_wrapper`` (dill);
-                on free-threaded builds it calls ``fun`` directly in a thread.
-                - Batch eval completes → storage updated for every point, surrogate
-                refit once under ``_surrogate_lock``, new search slots filled.
-                - ``eval_batch_size=1`` (default) dispatches immediately on each
-                search completion, preserving the original one-point behavior.
-                - This cycle continues until ``max_iter`` evaluations or ``max_time``
-                minutes is reached.
-        The optimization terminates when either:
-        - Total function evaluations reach ``max_iter`` (including initial design), OR
-        - Runtime exceeds ``max_time`` minutes
-
-        Args:
-            timeout_start (float): Start time for timeout.
-            X0 (Optional[np.ndarray]): Initial design points in Natural Space, shape (n_initial, n_features).
-            y0_known (Optional[float]): Known best objective value from a previous run.
-                When provided together with ``self.x0``, the matching point in the initial
-                design is pre-filled with this value and not re-submitted to the worker
-                pool, saving one evaluation per restart (restart injection).
-            max_iter_override (Optional[int]): Override for maximum number of iterations.
-
-        Raises:
-            RuntimeError: If all initial design evaluations fail, likely due to
-                pickling issues or missing imports in the worker process.
-                The error message provides guidance on how to address this issue.
-
-        Returns:
-            Tuple[str, OptimizeResult]: Tuple containing status and optimization result.
-
-        Examples:
-            ```{python}
-            import time
-            from spotoptim import SpotOptim
-            from spotoptim.function import sphere
-            opt = SpotOptim(
-                 fun=sphere,
-                 bounds=[(-5, 5), (-5, 5)],
-                 n_initial=5,
-                 max_iter=10,
-                 seed=0,
-                 n_jobs=2,
-            )
-            status, result = opt.optimize_steady_state(timeout_start=time.time(), X0=None)
-            print(status)
-            print(result.message.splitlines()[0])
-            ```
-        """
-        return _steady.optimize_steady_state(
-            self, timeout_start, X0, y0_known, max_iter_override
-        )
 
     # ====================
     # TASK_MO:
@@ -5228,6 +4977,8 @@ class SpotOptim(BaseEstimator):
             opt.plot_progress()
             ```
         """
+        from spotoptim.plot.visualization import plot_progress
+
         plot_progress(
             self, show=show, log_y=log_y, figsize=figsize, ylabel=ylabel, mo=mo
         )
@@ -5289,6 +5040,8 @@ class SpotOptim(BaseEstimator):
             opt.plot_surrogate()
             ```
         """
+        from spotoptim.plot.visualization import plot_surrogate
+
         plot_surrogate(
             self,
             i=i,
@@ -5355,6 +5108,8 @@ class SpotOptim(BaseEstimator):
             opt.plot_important_hyperparameter_contour(max_imp=2)
             ```
         """
+        from spotoptim.plot.visualization import plot_important_hyperparameter_contour
+
         plot_important_hyperparameter_contour(
             self,
             max_imp=max_imp,
@@ -5382,6 +5137,8 @@ class SpotOptim(BaseEstimator):
         figsize: Tuple[int, int] = (12, 10),
     ) -> None:
         """Delegates to spotoptim.plot.visualization._plot_surrogate_with_factors."""
+        from spotoptim.plot.visualization import _plot_surrogate_with_factors
+
         _plot_surrogate_with_factors(
             self,
             i=i,
@@ -5444,6 +5201,13 @@ class SpotOptim(BaseEstimator):
             return
 
         names, values = zip(*filtered_data)
+
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as e:
+            raise ImportError(
+                "plot_importance requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+            ) from e
 
         plt.figure(figsize=figsize)
         y_pos = np.arange(len(names))
@@ -5512,21 +5276,15 @@ class SpotOptim(BaseEstimator):
         """
         try:
             import matplotlib.pyplot as plt
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
-                "matplotlib is required for plot_parameter_scatter(). "
-                "Install it with: pip install matplotlib"
-            )
+                "plot_parameter_scatter() requires matplotlib. "
+                "Install it with: pip install 'spotoptim[viz]'"
+            ) from e
 
-        # Import scipy if correlation is requested
+        # scipy is a core dependency
         if show_correlation:
-            try:
-                from scipy.stats import spearmanr
-            except ImportError:
-                raise ImportError(
-                    "scipy is required for show_correlation=True. "
-                    "Install it with: pip install scipy"
-                )
+            from scipy.stats import spearmanr
 
         if self.X_ is None or self.y_ is None or len(self.y_) == 0:
             raise ValueError("No optimization data available. Run optimize() first.")
@@ -5689,12 +5447,16 @@ class SpotOptim(BaseEstimator):
 
     def _generate_mesh_grid(self, i: int, j: int, num: int = 100):
         # Wrapper for _generate_mesh_grid from visualization module.
+        from spotoptim.plot.visualization import _generate_mesh_grid
+
         return _generate_mesh_grid(self, i, j, num)
 
     def _generate_mesh_grid_with_factors(
         self, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
     ):
         # Wrapper for _generate_mesh_grid_with_factors from visualization module.
+        from spotoptim.plot.visualization import _generate_mesh_grid_with_factors
+
         return _generate_mesh_grid_with_factors(
             self, i, j, num, is_factor_i, is_factor_j
         )

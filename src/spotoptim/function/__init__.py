@@ -35,8 +35,6 @@ from .mo import (
     zdt6,
 )
 from .forr08a import aerofoilcd, branin, onevar
-from .torch_objective import TorchObjective
-from .remote import objective_remote
 
 __all__ = [
     "sphere",
@@ -69,3 +67,22 @@ __all__ = [
     "TorchObjective",
     "objective_remote",
 ]
+
+_lazy_map = {
+    "TorchObjective": ("spotoptim.function.torch_objective", "TorchObjective"),
+    "objective_remote": ("spotoptim.function.remote", "objective_remote"),
+}
+
+
+def __getattr__(name: str):
+    if name in _lazy_map:
+        module_path, attr = _lazy_map[name]
+        import importlib
+
+        module = importlib.import_module(module_path)
+        return getattr(module, attr)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__():
+    return sorted(__all__)
