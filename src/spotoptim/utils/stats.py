@@ -9,11 +9,6 @@ from scipy.stats import norm, t
 from numpy.linalg import pinv, inv, LinAlgError
 import copy
 import itertools
-import matplotlib.pyplot as plt
-import seaborn as sns
-from statsmodels.formula.api import ols
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-import statsmodels.api as sm
 from sklearn.preprocessing import OneHotEncoder
 
 
@@ -464,6 +459,12 @@ def fit_all_lm(basic, xlist, data, remove_na=True) -> dict:
         0    basic  1.000000  1.000000   1.000000  0.0  0.000000  3
         1       x2  1.000000  1.000000   1.000000  0.0  0.000000  3}
     """
+    try:
+        from statsmodels.formula.api import ols
+    except ImportError as e:
+        raise ImportError(
+            "fit_all_lm requires statsmodels. Install with: pip install 'spotoptim[stats]'"
+        ) from e
     # Prepare the data frame
     data = copy.deepcopy(data)
     data_cols = get_all_vars_from_formula(basic) + xlist
@@ -593,6 +594,13 @@ def plot_coeff_vs_pvals(
         >>> estimates = fit_all_lm("y ~ x1", ["x2"], data)
         >>> plot_coeff_vs_pvals(estimates)
     """
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+    except ImportError as e:
+        raise ImportError(
+            "plot_coeff_vs_pvals requires matplotlib and seaborn. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     data = copy.deepcopy(data)
     if xlabels is None:
         xlabels = [0, 0.001, 0.01, 0.05, 0.2, 0.5, 1]
@@ -693,6 +701,13 @@ def plot_coeff_vs_pvals_by_included(
         }
         plot_coeff_vs_pvals_by_included(data)
     """
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+    except ImportError as e:
+        raise ImportError(
+            "plot_coeff_vs_pvals_by_included requires matplotlib and seaborn. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     if xlabels is None:
         xlabels = [0, 0.001, 0.01, 0.05, 0.2, 0.5, 1]
     xbreaks = np.power(xlabels, np.log(0.5) / np.log(0.05))
@@ -810,6 +825,12 @@ def vif(X, sorted=True) -> pd.DataFrame:
         1      x2         0.000000
         2      x3   630.000000
     """
+    try:
+        from statsmodels.stats.outliers_influence import variance_inflation_factor
+    except ImportError as e:
+        raise ImportError(
+            "vif requires statsmodels. Install with: pip install 'spotoptim[stats]'"
+        ) from e
     vif_data = pd.DataFrame()
     vif_data["feature"] = X.columns
     vif_data["VIF"] = [
@@ -977,6 +998,12 @@ def compute_coefficients_table(model, X_encoded, y, vif_table=None) -> pd.DataFr
 
     """
 
+    try:
+        import statsmodels.api as sm
+    except ImportError as e:
+        raise ImportError(
+            "compute_coefficients_table requires statsmodels. Install with: pip install 'spotoptim[stats]'"
+        ) from e
     # Full-model R^2 and residual df
     r2_full = model.rsquared
 
@@ -1065,6 +1092,12 @@ def preprocess_df_for_ols(df, independent_var_columns, target_col) -> tuple:
         y (pd.Series): Target variable.
 
     """
+    try:
+        import statsmodels.api as sm
+    except ImportError as e:
+        raise ImportError(
+            "preprocess_df_for_ols requires statsmodels. Install with: pip install 'spotoptim[stats]'"
+        ) from e
     # Ensure the target column is numeric and 1D
     y = pd.to_numeric(df[target_col], errors="coerce").fillna(0).squeeze()
     if y.ndim != 1:

@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay, ConvexHull
 import numpy as np
 
@@ -166,6 +165,14 @@ def tricands(
         raise Exception("can only subset for BO or CL, not both")
     if np.min(X) < lower or np.max(X) > upper:
         raise Exception("X outside of lower/upper bounds")
+
+    if vis:
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as e:
+            raise ImportError(
+                "tricands visualization requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+            ) from e
 
     # possible visual
     if vis:

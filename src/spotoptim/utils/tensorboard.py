@@ -84,10 +84,16 @@ def init_tensorboard_writer(optimizer: SpotOptimProtocol) -> None:
     Args:
         optimizer: SpotOptim instance.
     """
-    from torch.utils.tensorboard import SummaryWriter
     from datetime import datetime
 
     if optimizer.tensorboard_log:
+        try:
+            from torch.utils.tensorboard import SummaryWriter
+        except ImportError as e:
+            raise ImportError(
+                "TensorBoard logging requires PyTorch and tensorboard. "
+                "Install with: pip install 'spotoptim[torch]'"
+            ) from e
         if optimizer.tensorboard_path is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             optimizer.tensorboard_path = f"runs/spotoptim_{timestamp}"

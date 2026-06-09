@@ -5,7 +5,6 @@
 import numpy as np
 import pandas as pd
 from typing import Tuple, Optional
-import matplotlib.pyplot as plt
 from spotoptim.utils.stats import normalize_X
 from spotoptim.sampling.lhs import rlh
 from scipy.stats.qmc import LatinHypercube
@@ -498,6 +497,12 @@ def mmlhs(
 
         # Simple visualization of the first two dimensions
         if plot and (X_best.shape[1] >= 2):
+            try:
+                import matplotlib.pyplot as plt
+            except ImportError as e:
+                raise ImportError(
+                    "mmlhs visualization requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+                ) from e
             plt.clf()
             plt.scatter(X_best[:, 0], X_best[:, 1], marker="o")
             plt.grid(True)
@@ -1414,6 +1419,12 @@ def bestlh(
 
     # Plot the first two dimensions
     if plot and (k >= 2):
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as e:
+            raise ImportError(
+                "bestlh visualization requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+            ) from e
         plt.scatter(X[:, 0], X[:, 1], c="r", marker="o")
         plt.title(f"Morris-Mitchell optimum plan found using q={q_list[best_idx]}")
         plt.xlabel("x_1")
@@ -1453,6 +1464,12 @@ def plot_mmphi_vs_n_lhs(
         >>> from spotoptim.sampling.mm import plot_mmphi_vs_n_lhs
         >>> plot_mmphi_vs_n_lhs(k_dim=3, seed=42, n_min=10, n_max=50, n_step=5, q_phi=2.0, p_phi=2.0)
     """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        raise ImportError(
+            "plot_mmphi_vs_n_lhs requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     n_values = list(range(n_min, n_max + 1, n_step))
     if not n_values:
         print("Warning: n_values list is empty. Check n_min, n_max, and n_step.")
@@ -1557,6 +1574,12 @@ def plot_mmphi_vs_points(
         >>> # Plot mmphi vs number of added points
         >>> df_summary = plot_mmphi_vs_points(X_base, x_min, x_max, p_min=10, p_max=50, p_step=10, n_repeats=3)
     """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        raise ImportError(
+            "plot_mmphi_vs_points requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     n, m = X_base.shape
     p_values = range(p_min, p_max + 1, p_step)
 
@@ -1689,6 +1712,12 @@ def plot_mmphi_corrected_vs_points(
         >>> x_max = np.array([1.0, 1.0])
         >>> df_summary = plot_mmphi_corrected_vs_points(X_base, x_min, x_max, p_min=10, p_max=50, p_step=10, n_repeats=3)
     """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        raise ImportError(
+            "plot_mmphi_corrected_vs_points requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     _, m = X_base.shape
     p_values = range(p_min, p_max + 1, p_step)
 
@@ -1770,6 +1799,12 @@ def mm_improvement_contour(
             mm_improvement_contour(X_base)
     """
 
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        raise ImportError(
+            "mm_improvement_contour requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     _, J_base, d_base = mmphi_intensive(X_base, q=2, p=2)
     X1, X2 = np.meshgrid(x1, x2)
     improvement_grid = np.zeros(X1.shape)
@@ -1842,6 +1877,12 @@ def plot_mmphi_corrected_vs_n_lhs(
         >>> plot_mmphi_corrected_vs_n_lhs(k_dim=3, seed=42, n_min=10, n_max=50, n_step=5, q_phi=2.0, p_phi=2.0)
         >>> plot_mmphi_corrected_vs_n_lhs(k_dim=3, seed=42, n_min=10, n_max=50, plot_only_corrected=True)
     """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        raise ImportError(
+            "plot_mmphi_corrected_vs_n_lhs requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     n_values = list(range(n_min, n_max + 1, n_step))
     if not n_values:
         print("Warning: n_values list is empty. Check n_min, n_max, and n_step.")

@@ -4,7 +4,6 @@
 
 import numpy as np
 import random
-import torch
 from functools import partial
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Tuple, List, Any, Dict, Union, Literal
@@ -15,18 +14,9 @@ from sklearn.base import BaseEstimator
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, ConstantKernel
 import warnings
-import matplotlib.pyplot as plt
 from numpy import append
 import time
 from sklearn.cluster import KMeans
-from spotoptim.plot.visualization import (
-    plot_surrogate,
-    plot_progress,
-    plot_important_hyperparameter_contour,
-    _plot_surrogate_with_factors,
-    _generate_mesh_grid,
-    _generate_mesh_grid_with_factors,
-)
 from spotoptim.utils.convert import safe_float
 from spotoptim.utils import tensorboard as _tb
 from spotoptim.utils import ocba as _ocba
@@ -1012,10 +1002,16 @@ class SpotOptim(BaseEstimator):
         if self.seed is not None:
             random.seed(self.seed)
             np.random.seed(self.seed)
-            torch.manual_seed(self.seed)
-            if torch.cuda.is_available():
-                torch.cuda.manual_seed(self.seed)
-                torch.cuda.manual_seed_all(self.seed)
+            # Only seed torch if it is already loaded (avoids eager-importing it
+            # when the caller is using a non-PyTorch surrogate).
+            import sys as _sys
+
+            if "torch" in _sys.modules:
+                _torch = _sys.modules["torch"]
+                _torch.manual_seed(self.seed)
+                if _torch.cuda.is_available():
+                    _torch.cuda.manual_seed(self.seed)
+                    _torch.cuda.manual_seed_all(self.seed)
 
     # ====================
     # TASK_VARS:
@@ -4981,6 +4977,8 @@ class SpotOptim(BaseEstimator):
             opt.plot_progress()
             ```
         """
+        from spotoptim.plot.visualization import plot_progress
+
         plot_progress(
             self, show=show, log_y=log_y, figsize=figsize, ylabel=ylabel, mo=mo
         )
@@ -5042,6 +5040,8 @@ class SpotOptim(BaseEstimator):
             opt.plot_surrogate()
             ```
         """
+        from spotoptim.plot.visualization import plot_surrogate
+
         plot_surrogate(
             self,
             i=i,
@@ -5108,6 +5108,8 @@ class SpotOptim(BaseEstimator):
             opt.plot_important_hyperparameter_contour(max_imp=2)
             ```
         """
+        from spotoptim.plot.visualization import plot_important_hyperparameter_contour
+
         plot_important_hyperparameter_contour(
             self,
             max_imp=max_imp,
@@ -5135,6 +5137,8 @@ class SpotOptim(BaseEstimator):
         figsize: Tuple[int, int] = (12, 10),
     ) -> None:
         """Delegates to spotoptim.plot.visualization._plot_surrogate_with_factors."""
+        from spotoptim.plot.visualization import _plot_surrogate_with_factors
+
         _plot_surrogate_with_factors(
             self,
             i=i,
@@ -5197,6 +5201,13 @@ class SpotOptim(BaseEstimator):
             return
 
         names, values = zip(*filtered_data)
+
+        try:
+            import matplotlib.pyplot as plt
+        except ImportError as e:
+            raise ImportError(
+                "plot_importance requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+            ) from e
 
         plt.figure(figsize=figsize)
         y_pos = np.arange(len(names))
@@ -5265,21 +5276,15 @@ class SpotOptim(BaseEstimator):
         """
         try:
             import matplotlib.pyplot as plt
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
-                "matplotlib is required for plot_parameter_scatter(). "
-                "Install it with: pip install matplotlib"
-            )
+                "plot_parameter_scatter() requires matplotlib. "
+                "Install it with: pip install 'spotoptim[viz]'"
+            ) from e
 
-        # Import scipy if correlation is requested
+        # scipy is a core dependency
         if show_correlation:
-            try:
-                from scipy.stats import spearmanr
-            except ImportError:
-                raise ImportError(
-                    "scipy is required for show_correlation=True. "
-                    "Install it with: pip install scipy"
-                )
+            from scipy.stats import spearmanr
 
         if self.X_ is None or self.y_ is None or len(self.y_) == 0:
             raise ValueError("No optimization data available. Run optimize() first.")
@@ -5442,12 +5447,16 @@ class SpotOptim(BaseEstimator):
 
     def _generate_mesh_grid(self, i: int, j: int, num: int = 100):
         # Wrapper for _generate_mesh_grid from visualization module.
+        from spotoptim.plot.visualization import _generate_mesh_grid
+
         return _generate_mesh_grid(self, i, j, num)
 
     def _generate_mesh_grid_with_factors(
         self, i: int, j: int, num: int, is_factor_i: bool, is_factor_j: bool
     ):
         # Wrapper for _generate_mesh_grid_with_factors from visualization module.
+        from spotoptim.plot.visualization import _generate_mesh_grid_with_factors
+
         return _generate_mesh_grid_with_factors(
             self, i, j, num, is_factor_i, is_factor_j
         )
