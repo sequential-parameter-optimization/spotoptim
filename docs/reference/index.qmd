@@ -122,7 +122,7 @@
 
 | | |
 | --- | --- |
-| [plot](plot.qmd#spotoptim.plot) |  |
+| [plot](plot.qmd#spotoptim.plot) | Plotting and visualization utilities for SpotOptim. |
 | [plot.contour](plot.contour.qmd#spotoptim.plot.contour) |  |
 | [plot.contour.contourf_plot](plot.contour.contourf_plot.qmd#spotoptim.plot.contour.contourf_plot) | Creates contour plots (single or faceted) using matplotlib. |
 | [plot.contour.mo_generate_plot_grid](plot.contour.mo_generate_plot_grid.qmd#spotoptim.plot.contour.mo_generate_plot_grid) | Generate a grid of input variables and apply objective functions. |
