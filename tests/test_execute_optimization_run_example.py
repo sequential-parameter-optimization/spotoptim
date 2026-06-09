@@ -14,7 +14,6 @@ def testexecute_optimization_run_example():
         n_initial=5,
         max_iter=10,
         seed=0,
-        n_jobs=1,
         verbose=False,
     )
 

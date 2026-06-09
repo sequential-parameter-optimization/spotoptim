@@ -1,6 +1,6 @@
 ---
 title: "Utilities"
-description: "Boundaries, transformations, PCA, OCBA, scaling, and parallel helpers."
+description: "Boundaries, transformations, PCA, OCBA, and scaling helpers."
 ---
 
 spotoptim ships a collection of utility functions that support the
@@ -173,19 +173,3 @@ print(f"Shape: {X_scaled.shape}")
 print(f"Mean after scaling: {X_scaled.mean(dim=0)}")
 ```
 
----
-
-## Parallel Evaluation
-
-`is_gil_disabled` checks whether the current Python interpreter is a
-free-threaded build (PEP 703). On standard CPython the GIL is enabled
-and this returns `False`. spotoptim uses this check internally to decide
-whether thread-based parallelism is safe for objective evaluation.
-
-```{python}
-from spotoptim.utils import is_gil_disabled
-
-result = is_gil_disabled()
-print(f"GIL disabled: {result}")
-print(f"Return type: {type(result).__name__}")
-```

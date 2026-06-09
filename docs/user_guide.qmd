@@ -72,7 +72,7 @@ then explore the modules that match your use case.
 
 ### Utilities
 
-- [Utilities](user_guide/utils.qmd) --- Boundaries, transforms, PCA, OCBA, parallel helpers
+- [Utilities](user_guide/utils.qmd) --- Boundaries, transforms, PCA, OCBA, TensorBoard logging
 - [Neural Networks](user_guide/nn.qmd) --- PyTorch MLP and LinearRegressor for building objectives
 - [Datasets](user_guide/data.qmd) --- DiabetesDataset and data loaders for PyTorch workflows
 
@@ -93,14 +93,14 @@ then explore the modules that match your use case.
 src/spotoptim/
 ├── SpotOptim.py          # Core optimizer
 ├── core/                 # Protocol, storage, experiment control
-├── optimizer/            # Acquisition, steady-state, scipy wrapper
+├── optimizer/            # Acquisition, scipy wrapper
 ├── surrogate/            # Kriging, MLP surrogate, Nystroem, sklearn pipeline
 ├── nn/                   # PyTorch MLP, LinearRegressor
 ├── function/             # Objective functions (single/multi-objective, remote, torch)
 ├── sampling/             # LHS, Sobol, grid, clustered designs
 ├── reporting/            # Results extraction, analysis utilities
 ├── plot/                 # Surrogate visualization, contour, multi-objective
-├── utils/                # Boundaries, transforms, PCA, OCBA, TensorBoard, parallel
+├── utils/                # Boundaries, transforms, PCA, OCBA, TensorBoard
 ├── mo/                   # Multi-objective: Morris-Mitchell, Pareto front
 ├── hyperparameters/      # Parameter set management for NN tuning
 ├── data/                 # Dataset loaders (e.g., DiabetesDataset)

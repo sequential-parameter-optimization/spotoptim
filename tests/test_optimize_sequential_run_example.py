@@ -16,7 +16,6 @@ def testoptimize_sequential_run_example():
         n_initial=5,
         max_iter=20,
         seed=0,
-        n_jobs=1,
         verbose=False,
     )
 

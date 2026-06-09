@@ -324,32 +324,6 @@ is injected into the new initial design after each restart.
 
 ---
 
-## Parallel Evaluation
-
-Set `n_jobs` to evaluate multiple points in parallel. Use `n_jobs=-1`
-to use all available CPU cores:
-
-```{python}
-from spotoptim import SpotOptim
-from spotoptim.function import sphere
-
-opt = SpotOptim(
-    fun=sphere,
-    bounds=[(-5, 5), (-5, 5)],
-    n_jobs=2,
-    eval_batch_size=2,
-    max_iter=20,
-    n_initial=10,
-    seed=0,
-)
-result = opt.optimize()
-
-print(f"Best f(x) : {result.fun:.6f}")
-print(f"Evaluations: {result.nfev}")
-```
-
----
-
 ## Configuration Access
 
 All constructor parameters are stored in `opt.config` (a `SpotOptimConfig`
