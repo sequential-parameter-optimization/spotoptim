@@ -482,20 +482,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/optimize_parallel.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Parallel Optimization</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../docs/early-stopping.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Early Stopping</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../docs/slurm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Running on Slurm (GWDG NHR)</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -2150,7 +2138,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 <section id="spotoptimprotocol" class="level2">
 <h2 class="anchored" data-anchor-id="spotoptimprotocol">SpotOptimProtocol</h2>
-<p><code>SpotOptimProtocol</code> is a structural typing protocol (PEP 544) that defines the interface extracted modules expect. Instead of importing the concrete <code>SpotOptim</code> class (which would create circular imports), modules like <code>optimizer.steady_state</code> and <code>reporting.analysis</code> accept any object matching this protocol.</p>
+<p><code>SpotOptimProtocol</code> is a structural typing protocol (PEP 544) that defines the interface extracted modules expect. Instead of importing the concrete <code>SpotOptim</code> class (which would create circular imports), modules like <code>reporting.analysis</code> accept any object matching this protocol.</p>
 <p>The protocol declares configuration attributes (<code>bounds</code>, <code>max_iter</code>, <code>acquisition</code>, <code>surrogate</code>, etc.) and mutable state attributes (<code>X_</code>, <code>y_</code>, <code>best_x_</code>, <code>best_y_</code>, etc.). This makes it straightforward to test extracted functions with mock objects or to use them outside the main <code>SpotOptim</code> class.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Signature (not executable — for illustration)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SpotOptimProtocol(Protocol):</span>
@@ -2173,7 +2161,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="experimentcontrol" class="level2">
 <h2 class="anchored" data-anchor-id="experimentcontrol">ExperimentControl</h2>
 <p><code>ExperimentControl</code> is a dataclass for managing PyTorch-based experiment configurations. It bundles dataset, model class, hyperparameters, device settings, and training parameters into a single object.</p>
-<div id="dd717344" class="cell" data-execution_count="1">
+<div id="8564fc75" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.core.data <span class="im">import</span> SpotDataFromArray</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.core.experiment <span class="im">import</span> ExperimentControl</span>

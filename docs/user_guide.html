@@ -482,20 +482,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/optimize_parallel.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Parallel Optimization</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../docs/early-stopping.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Early Stopping</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/slurm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Running on Slurm (GWDG NHR)</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -2163,7 +2151,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 <section id="quick-start" class="level2">
 <h2 class="anchored" data-anchor-id="quick-start">Quick Start</h2>
-<div id="4263f8c7" class="cell" data-execution_count="1">
+<div id="329530c1" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
@@ -2221,7 +2209,7 @@ Evaluations: 20</code></pre>
 <section id="utilities" class="level3">
 <h3 class="anchored" data-anchor-id="utilities">Utilities</h3>
 <ul>
-<li><a href="../docs/user_guide/utils.html">Utilities</a> — Boundaries, transforms, PCA, OCBA, parallel helpers</li>
+<li><a href="../docs/user_guide/utils.html">Utilities</a> — Boundaries, transforms, PCA, OCBA, TensorBoard logging</li>
 <li><a href="../docs/user_guide/nn.html">Neural Networks</a> — PyTorch MLP and LinearRegressor for building objectives</li>
 <li><a href="../docs/user_guide/data.html">Datasets</a> — DiabetesDataset and data loaders for PyTorch workflows</li>
 </ul>
@@ -2244,14 +2232,14 @@ Evaluations: 20</code></pre>
 <pre><code>src/spotoptim/
 ├── SpotOptim.py          # Core optimizer
 ├── core/                 # Protocol, storage, experiment control
-├── optimizer/            # Acquisition, steady-state, scipy wrapper
+├── optimizer/            # Acquisition, scipy wrapper
 ├── surrogate/            # Kriging, MLP surrogate, Nystroem, sklearn pipeline
 ├── nn/                   # PyTorch MLP, LinearRegressor
 ├── function/             # Objective functions (single/multi-objective, remote, torch)
 ├── sampling/             # LHS, Sobol, grid, clustered designs
 ├── reporting/            # Results extraction, analysis utilities
 ├── plot/                 # Surrogate visualization, contour, multi-objective
-├── utils/                # Boundaries, transforms, PCA, OCBA, TensorBoard, parallel
+├── utils/                # Boundaries, transforms, PCA, OCBA, TensorBoard
 ├── mo/                   # Multi-objective: Morris-Mitchell, Pareto front
 ├── hyperparameters/      # Parameter set management for NN tuning
 ├── data/                 # Dataset loaders (e.g., DiabetesDataset)

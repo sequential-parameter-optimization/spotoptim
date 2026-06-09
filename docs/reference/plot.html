@@ -446,20 +446,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../docs/optimize_parallel.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Parallel Optimization</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../../docs/early-stopping.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Early Stopping</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../docs/slurm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Running on Slurm (GWDG NHR)</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -2089,6 +2077,8 @@ ul.task-list li input[type="checkbox"] {
 <section id="spotoptim.plot" class="level1">
 <h1>plot</h1>
 <p><code>plot</code></p>
+<p>Plotting and visualization utilities for SpotOptim.</p>
+<p>Plotting helpers live in submodules (<code>contour</code>, <code>mo</code>, <code>visualization</code>) and import matplotlib lazily, so importing this package does not pull in matplotlib. Import the helper you need directly from its submodule, e.g. <code>from spotoptim.plot.visualization import plot_progress</code>.</p>
 
 
 </section>

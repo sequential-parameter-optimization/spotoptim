@@ -511,20 +511,8 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/optimize_parallel.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Parallel Optimization</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../docs/early-stopping.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Early Stopping</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/slurm.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Running on Slurm (GWDG NHR)</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -2251,7 +2239,7 @@ window.Quarto = {
 <section id="minimal-working-example" class="level2">
 <h2 class="anchored" data-anchor-id="minimal-working-example">Minimal working example</h2>
 <p>The example uses the 2-D <code>sphere</code> function with a configuration that is guaranteed to trigger early stopping quickly. The objective is simple enough that LHS plus a single surrogate round usually lands on the minimum, so any subsequent restart cannot improve it.</p>
-<div id="5b145cf2" class="cell" data-execution_count="1">
+<div id="2079d857" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim <span class="im">import</span> SpotOptim</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2287,7 +2275,7 @@ Best objective  : 4.19661e-07</code></pre>
 <section id="programmatic-inspection" class="level2">
 <h2 class="anchored" data-anchor-id="programmatic-inspection">Programmatic inspection</h2>
 <p>After the run, the private attribute <code>opt._early_stopped</code> is <code>True</code> iff early stopping fired, and <code>opt.restarts_results_</code> lists one <code>OptimizeResult</code> per restart:</p>
-<div id="944793bb" class="cell" data-execution_count="2">
+<div id="4861a0aa" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Early-stopped      : </span><span class="sc">{</span>opt<span class="sc">.</span>_early_stopped<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total restarts     : </span><span class="sc">{</span><span class="bu">len</span>(opt.restarts_results_)<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Best fun per restart: </span><span class="sc">{</span>[<span class="bu">round</span>(r.fun, <span class="dv">6</span>) <span class="cf">for</span> r <span class="kw">in</span> opt.restarts_results_]<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -2415,8 +2403,6 @@ Best fun per restart: [np.float64(0.0), np.float64(0.0), np.float64(0.0)]</code>
 <h2 class="anchored" data-anchor-id="see-also">See also</h2>
 <ul>
 <li><a href="../docs/optimize_seq.html">Sequential Optimization</a> — outer restart loop and <code>execute_optimization_run()</code>.</li>
-<li><a href="../docs/optimize_parallel.html">Parallel Optimization</a> — <code>max_restarts</code> fires identically under <code>n_jobs&gt;1</code> steady-state parallelism.</li>
-<li><a href="../docs/slurm.html">Running on Slurm (GWDG NHR)</a> — bake <code>max_restarts</code> into the experiment pickle to avoid re-dispatching a job once the optimizer has plateaued.</li>
 <li><code>SpotOptim.SpotOptimConfig</code> in the API reference — the authoritative parameter list.</li>
 </ul>
 
