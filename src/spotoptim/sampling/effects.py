@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.inspection import PartialDependenceDisplay
@@ -295,6 +294,12 @@ def screening_plot(X, fun, xi, p, labels, bounds=None, show=True) -> None:
                 print=False,
             )
     """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        raise ImportError(
+            "screening_plot requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     k = X.shape[1]
     sm, ssd = _screening(X=X, fun=fun, xi=xi, p=p, labels=labels, bounds=bounds)
     plt.figure()
@@ -346,6 +351,12 @@ def plot_all_partial_dependence(
 
     """
 
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        raise ImportError(
+            "plot_all_partial_dependence requires matplotlib. Install with: pip install 'spotoptim[viz]'"
+        ) from e
     # Separate features and target
     X = df
     y = df_target  # Target variable is now a Series

@@ -2,11 +2,15 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Tuple, Optional, Union
-import numpy as np
-import torch
-from torch.utils.data import Dataset
+from typing import Any, Tuple, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy as np
+    import torch
+    from torch.utils.data import Dataset
 
 
 class SpotDataSet(ABC):
@@ -74,25 +78,15 @@ class SpotDataFromArray(SpotDataSet):
         self.x_test = x_test
         self.y_test = y_test
 
-    def get_train_data(
-        self,
-    ) -> Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]:
+    def get_train_data(self) -> Tuple:
         return self.x_train, self.y_train
 
-    def get_validation_data(
-        self,
-    ) -> Optional[
-        Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]
-    ]:
+    def get_validation_data(self) -> Optional[Tuple]:
         if self.x_val is not None:
             return self.x_val, self.y_val
         return None
 
-    def get_test_data(
-        self,
-    ) -> Optional[
-        Tuple[Union[np.ndarray, torch.Tensor], Union[np.ndarray, torch.Tensor]]
-    ]:
+    def get_test_data(self) -> Optional[Tuple]:
         if self.x_test is not None:
             return self.x_test, self.y_test
         return None
@@ -105,11 +99,11 @@ class SpotDataFromTorchDataset(SpotDataSet):
 
     def __init__(
         self,
-        train_dataset: Dataset,
+        train_dataset,
         input_dim: int,
         output_dim: int,
-        val_dataset: Optional[Dataset] = None,
-        test_dataset: Optional[Dataset] = None,
+        val_dataset=None,
+        test_dataset=None,
         target_column: Optional[str] = None,
     ):
         super().__init__(input_dim, output_dim, target_column)

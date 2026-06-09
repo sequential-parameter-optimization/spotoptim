@@ -2,5 +2,10 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from .contour import *  # noqa: F401, F403
-from .mo import *  # noqa: F401, F403
+"""Plotting and visualization utilities for SpotOptim.
+
+Plotting helpers live in submodules (``contour``, ``mo``, ``visualization``)
+and import matplotlib lazily, so importing this package does not pull in
+matplotlib. Import the helper you need directly from its submodule, e.g.
+``from spotoptim.plot.visualization import plot_progress``.
+"""

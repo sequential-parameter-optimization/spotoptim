@@ -2,8 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import torch
-
 
 class TorchStandardScaler:
     """
@@ -39,7 +37,7 @@ class TorchStandardScaler:
         self.mean = None
         self.std = None
 
-    def fit(self, x: torch.Tensor) -> None:
+    def fit(self, x) -> None:
         """
         Compute the mean and standard deviation of the input tensor.
 
@@ -47,14 +45,21 @@ class TorchStandardScaler:
             x (torch.Tensor): The input tensor, expected shape [n_samples, n_features]
 
         Raises:
+            ImportError: If PyTorch is not installed.
             TypeError: If the input is not a torch tensor.
         """
+        try:
+            import torch
+        except ImportError as e:
+            raise ImportError(
+                "TorchStandardScaler requires PyTorch. Install with: pip install 'spotoptim[torch]'"
+            ) from e
         if not torch.is_tensor(x):
             raise TypeError("Input should be a torch tensor")
         self.mean = x.mean(dim=0, keepdim=True)
         self.std = x.std(dim=0, unbiased=False, keepdim=True)
 
-    def transform(self, x: torch.Tensor) -> torch.Tensor:
+    def transform(self, x):
         """
         Scale the input tensor using the computed mean and standard deviation.
 
@@ -65,9 +70,16 @@ class TorchStandardScaler:
             torch.Tensor: The scaled tensor.
 
         Raises:
+            ImportError: If PyTorch is not installed.
             TypeError: If the input is not a torch tensor.
             RuntimeError: If the scaler has not been fitted before transforming data.
         """
+        try:
+            import torch
+        except ImportError as e:
+            raise ImportError(
+                "TorchStandardScaler requires PyTorch. Install with: pip install 'spotoptim[torch]'"
+            ) from e
         if not torch.is_tensor(x):
             raise TypeError("Input should be a torch tensor")
         if self.mean is None or self.std is None:
@@ -75,7 +87,7 @@ class TorchStandardScaler:
         x = (x - self.mean) / (self.std + 1e-7)
         return x
 
-    def fit_transform(self, x: torch.Tensor) -> torch.Tensor:
+    def fit_transform(self, x):
         """
         Fit the scaler to the input tensor and then scale the tensor.
 
@@ -86,6 +98,7 @@ class TorchStandardScaler:
             torch.Tensor: The scaled tensor.
 
         Raises:
+            ImportError: If PyTorch is not installed.
             TypeError: If the input is not a torch tensor.
         """
         self.fit(x)

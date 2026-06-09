@@ -4,7 +4,6 @@
 
 from dataclasses import dataclass, field
 from typing import Any, List, Optional, Dict
-import torch
 from spotoptim.core.data import SpotDataSet
 
 
@@ -116,11 +115,14 @@ class ExperimentControl:
         return self.__dict__.copy()
 
     @property
-    def torch_device(self) -> torch.device:
+    def torch_device(self):
         """Returns the torch.device object.
 
         Returns:
             torch.device: The torch device object.
+
+        Raises:
+            ImportError: If PyTorch is not installed.
 
         Examples:
         ```{python}
@@ -139,4 +141,10 @@ class ExperimentControl:
             print(exp.torch_device)
         ```
         """
+        try:
+            import torch
+        except ImportError as e:
+            raise ImportError(
+                "ExperimentControl.torch_device requires PyTorch. Install with: pip install 'spotoptim[torch]'"
+            ) from e
         return torch.device(self.device)
