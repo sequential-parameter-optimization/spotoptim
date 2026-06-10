@@ -1,3 +1,13 @@
+## [1.0.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.0...v1.0.1) (2026-06-10)
+
+### Bug Fixes
+
+* **optimizer:** restore max_surrogate_points default of 30 ([6657646](https://github.com/sequential-parameter-optimization/spotoptim/commit/665764635f9c9f009a6478066eecbf83975d304b))
+
+### Documentation
+
+* **optimizer:** refresh frozen reference for max_surrogate_points default ([21731f4](https://github.com/sequential-parameter-optimization/spotoptim/commit/21731f45c2f0b5ea5256741b36c4530660d7d424))
+
 ## [1.0.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v0.12.9...v1.0.0) (2026-06-09)
 
 ### ⚠ BREAKING CHANGES
