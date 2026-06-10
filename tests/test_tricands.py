@@ -17,6 +17,13 @@ class TestTricands:
     """Test suite for tricands module."""
 
     def setup_method(self):
+        # Close figures leaked by earlier tests on the same xdist worker:
+        # test_visualization_2d mocks plt.figure, so tricands draws into
+        # whatever Axes gca() finds — a leaked 3D Axes makes scatter fail
+        # with "s must be a scalar, or float array-like ...".
+        import matplotlib.pyplot as plt
+
+        plt.close("all")
         # Create invalid (too few points) X
         self.X_small = np.array([[0.1, 0.1]])
         # Create valid 2D X
