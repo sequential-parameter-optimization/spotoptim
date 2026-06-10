@@ -130,7 +130,7 @@ result = optimizer.optimize()
 - `tolerance_x` (float, optional): Minimum distance between points
 - `seed` (int, optional): Random seed for reproducibility
 - `verbose` (bool, default=False): Print progress information
-- `max_surrogate_points` (int, optional): Maximum number of points for surrogate fitting (default: None, use all points)
+- `max_surrogate_points` (int, optional): Maximum number of points for surrogate fitting (default: 30; set to None to use all points)
 - `selection_method` (str, default='distant'): Point selection method ('distant' or 'best')
 
 **Methods:**
