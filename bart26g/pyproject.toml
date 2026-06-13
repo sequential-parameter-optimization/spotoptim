@@ -14,4 +14,4 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-spotoptim = { path = "../../spotoptim", editable = true }
+spotoptim = { path = "..", editable = true }
