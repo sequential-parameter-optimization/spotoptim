@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.1...v1.0.2) (2026-06-13)
+
+### Bug Fixes
+
+* **bart26g:** correct spotoptim path dependency from ../../spotoptim to .. ([e130e5b](https://github.com/sequential-parameter-optimization/spotoptim/commit/e130e5bf1ec4764abfe12d5266d2a1a3bfb7e31f))
+
 ## [1.0.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.0...v1.0.1) (2026-06-10)
 
 ### Bug Fixes
