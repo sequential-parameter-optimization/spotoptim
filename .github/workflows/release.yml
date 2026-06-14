@@ -128,8 +128,16 @@ jobs:
           git checkout develop
           # -X theirs: when CHANGELOG.md / pyproject.toml conflict (both were
           # updated from the same base), keep main's final release version.
+          #
+          # Do NOT add a "[skip ci]" marker to this commit message. No workflow
+          # triggers on pushes to develop, so it would skip nothing here — but
+          # it stays on the merge commit, and when develop is later opened as a
+          # PR to main that commit becomes the PR head. The marker then
+          # suppresses the pull_request CI run, so the required "Tests (fast)"
+          # and "Lint" checks never report and the develop->main PR is stuck
+          # BLOCKED forever (this is exactly what happened to PR #106).
           git merge origin/main -X theirs --no-ff \
-            -m "chore: sync main into develop [skip ci]"
+            -m "chore: sync main into develop"
           git push origin develop
 
   # ── Documentation (reusable workflow, shared with docs.yml) ───────────
