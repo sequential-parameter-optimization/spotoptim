@@ -58,7 +58,14 @@ class SpotOptimConfig:
         verbose (bool): Whether to print verbose output.
         warnings_filter (Literal["default", "error", "ignore"]): Filter for warnings.
         n_infill_points (int): Number of infill points.
-        max_surrogate_points (Optional[Union[int, List[int]]]): Maximum number of surrogate points. Defaults to 30.
+        max_surrogate_points (Optional[Union[int, List[int]]]): Maximum number of
+            points used to fit the surrogate. Defaults to ``300`` -- large enough
+            that typical Bayesian-optimization budgets (a few hundred evaluations)
+            are fit on all points (full surrogate quality), while bounding the
+            O(n^3) GP-fit cost on very long runs. Once the evaluation count exceeds
+            the cap the training set is subsampled via ``selection_method``. Pass
+            ``None`` to always fit on all points, or a smaller int to bound cost
+            further.
         selection_method (str): Method for selecting infill points.
         acquisition_failure_strategy (str): Strategy for handling acquisition function failures.
         penalty (bool): Whether to use penalty.
@@ -116,7 +123,7 @@ class SpotOptimConfig:
              verbose=False,
              warnings_filter="ignore",
              n_infill_points=1,
-             max_surrogate_points=30,
+             max_surrogate_points=300,
              selection_method="distant",
              acquisition_failure_strategy="random",
              penalty=False,
@@ -161,7 +168,7 @@ class SpotOptimConfig:
     verbose: bool = False
     warnings_filter: Literal["default", "error", "ignore"] = "ignore"
     n_infill_points: int = 1
-    max_surrogate_points: Optional[Union[int, List[int]]] = 30
+    max_surrogate_points: Optional[Union[int, List[int]]] = 300
     selection_method: str = "distant"
     acquisition_failure_strategy: str = "random"
     penalty: bool = False
@@ -351,7 +358,8 @@ class SpotOptim(BaseEstimator):
         max_surrogate_points (int, optional):
             Maximum number of points to use for surrogate model fitting.
             If None, all points are used. If the number of evaluated points exceeds this limit,
-            a subset is selected using the selection method. Defaults to 30.
+            a subset is selected using the selection method. Defaults to 300 (covers
+            typical budgets at full quality while bounding GP-fit cost; pass None for all points).
         selection_method (str, optional):
             Method for selecting points when max_surrogate_points is exceeded.
             Options: 'distant' (Select points that are distant from each other via K-means clustering) or
@@ -733,7 +741,7 @@ class SpotOptim(BaseEstimator):
         verbose: bool = False,
         warnings_filter: Literal["default", "error", "ignore"] = "ignore",
         n_infill_points: int = 1,
-        max_surrogate_points: Optional[Union[int, List[int]]] = 30,
+        max_surrogate_points: Optional[Union[int, List[int]]] = 300,
         selection_method: str = "distant",
         acquisition_failure_strategy: str = "random",
         penalty: bool = False,
