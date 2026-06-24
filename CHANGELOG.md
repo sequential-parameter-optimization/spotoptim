@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.2...v1.0.3) (2026-06-24)
+
+### Bug Fixes
+
+* **optimizer:** set runtime-aware max_surrogate_points default (300) ([94ee100](https://github.com/sequential-parameter-optimization/spotoptim/commit/94ee100fbc9d4072dd563eb88b75f978ca158662))
+
 ## [1.0.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.1...v1.0.2) (2026-06-13)
 
 ### Bug Fixes
