@@ -394,43 +394,32 @@ class TestFactorVariables:
 
 
 class TestFactorAwareKriging:
-    """Tests for the factor-aware Kriging path (B1-B4)."""
+    """Tests for factor/surrogate compatibility: reduced var_type propagation (B3)
+    and the factor-blind-surrogate warning (B4).
+
+    The default surrogate is NEVER auto-switched to a Kriging for factor problems —
+    the user keeps full control and responsibility, guided by the B4 warning.
+    """
 
     # ------------------------------------------------------------------
-    # B1/B2: auto-Kriging for factor problems
+    # No auto-switch: the default surrogate stays a GaussianProcessRegressor
     # ------------------------------------------------------------------
 
-    def test_auto_kriging_for_factor_problem(self):
-        """surrogate=None with factors auto-selects factor-aware Kriging."""
-        opt = SpotOptim(
-            fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[(-5, 5), ("A", "B", "C")],
-            n_initial=5,
-            max_iter=7,
-            seed=42,
+    def test_no_auto_kriging_for_factor_problem(self):
+        """surrogate=None with factors keeps the GaussianProcessRegressor default
+        (no auto-switch) and emits a UserWarning pointing at a factor-aware Kriging."""
+        with pytest.warns(UserWarning, match="factor"):
+            opt = SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), ("A", "B", "C")],
+                n_initial=5,
+                max_iter=7,
+                seed=42,
+            )
+        assert isinstance(opt.surrogate, GaussianProcessRegressor), (
+            f"Expected GaussianProcessRegressor (no auto-switch), "
+            f"got {type(opt.surrogate).__name__}"
         )
-        assert isinstance(
-            opt.surrogate, Kriging
-        ), f"Expected Kriging for factor problem, got {type(opt.surrogate).__name__}"
-        assert (
-            "factor" in opt.surrogate.var_type
-        ), f"Expected 'factor' in surrogate var_type, got {opt.surrogate.var_type}"
-        assert (
-            opt.surrogate.metric_factorial == "hamming"
-        ), f"Expected metric_factorial='hamming', got {opt.surrogate.metric_factorial!r}"
-
-    def test_custom_metric_factorial_propagated(self):
-        """metric_factorial parameter on SpotOptim is forwarded to the Kriging."""
-        opt = SpotOptim(
-            fun=lambda X: np.sum(X**2, axis=1),
-            bounds=[(-5, 5), ("A", "B", "C")],
-            n_initial=5,
-            max_iter=7,
-            seed=42,
-            metric_factorial="matching",
-        )
-        assert isinstance(opt.surrogate, Kriging)
-        assert opt.surrogate.metric_factorial == "matching"
 
     def test_no_auto_kriging_for_numeric_problem(self):
         """surrogate=None with no factors keeps the GaussianProcessRegressor default."""
@@ -554,13 +543,17 @@ class TestFactorAwareKriging:
     def test_factor_quadratic_end_to_end(self):
         """End-to-end optimisation of factor_quadratic completes without error.
 
-        Global optimum: x=0.0, level='c04', f=0.0. The default (factor-aware,
-        hamming) Kriging surrogate should reach a near-optimal solution.
+        Global optimum: x=0.0, level='c04', f=0.0. Uses an explicit factor-aware
+        Kriging (the recommended path for nominal factors) — the default surrogate
+        is not auto-switched.
         """
         levels = FACTOR_QUADRATIC_LEVELS
         opt = SpotOptim(
             fun=factor_quadratic,
             bounds=[(-3.0, 3.0), levels],
+            surrogate=Kriging(
+                var_type=["float", "factor"], metric_factorial="hamming", seed=42
+            ),
             max_iter=40,
             n_initial=12,
             seed=42,
