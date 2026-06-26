@@ -1,3 +1,13 @@
+## [2.0.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.3...v2.0.0) (2026-06-26)
+
+### ⚠ BREAKING CHANGES
+
+* **surrogate:** order-agnostic factor handling + factor-kernel benchmark
+
+### Features
+
+* **surrogate:** order-agnostic factor handling + factor-kernel benchmark ([faed6b9](https://github.com/sequential-parameter-optimization/spotoptim/commit/faed6b9ce504e7bcd2b2683aff015ccd24b62ce0))
+
 ## [1.0.3](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.2...v1.0.3) (2026-06-24)
 
 ### Bug Fixes
