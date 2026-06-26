@@ -68,7 +68,7 @@ class SpotOptimKernel(Kernel):
 
     where:
     D_ordered = sum_j theta_j * |x_ij - y_lj|^p  (for ordered variables)
-    D_factor  = sum_j theta_j * d(x_ij, y_lj)    (for factor variables, d is metric like Canberra)
+    D_factor  = sum_j theta_j * d(x_ij, y_lj)    (for factor variables, d is metric like Hamming)
 
     Args:
         theta (np.ndarray): The correlation parameters (weights).
@@ -77,7 +77,9 @@ class SpotOptimKernel(Kernel):
         var_type (list of str): List of variable types, e.g. ['float', 'int', 'factor'].
         p_val (float, optional): Power parameter for ordered distance. Defaults to 2.0.
         metric_factorial (str, optional): Metric for factor distance (passed to cdist/pdist).
-            Defaults to 'canberra'.
+            Defaults to 'hamming'. Hamming is a true nominal (order-agnostic) metric;
+            canberra distance on integer level indices is order-dependent and singles out
+            index 0. Any scipy distance metric remains selectable via this kwarg.
     """
 
     def __init__(
@@ -85,7 +87,7 @@ class SpotOptimKernel(Kernel):
         theta,
         var_type,
         p_val=2.0,
-        metric_factorial="canberra",
+        metric_factorial="hamming",
     ):
         self.theta = np.asanyarray(theta)
         self.var_type = var_type

@@ -8,6 +8,8 @@ Analytical single-objective test functions for optimization benchmarking.
 This module provides well-known analytical test functions commonly used for evaluating and benchmarking optimization algorithms.
 """
 
+from functools import lru_cache
+
 import numpy as np
 
 
@@ -621,6 +623,106 @@ def robot_arm_obstacle(X: np.ndarray) -> np.ndarray:
             penalty += 1000 * violation**2
 
     return dist_sq + penalty
+
+
+#: Default factor levels for :func:`factor_quadratic` — 16 unordered nominal levels.
+FACTOR_QUADRATIC_LEVELS = tuple(f"c{i:02d}" for i in range(16))
+
+
+@lru_cache(maxsize=None)
+def _factor_quadratic_offsets(n_levels: int) -> np.ndarray:
+    """Fixed, index-scrambled per-level offsets in ``[0, 1]``.
+
+    Built from a deterministic permutation (fixed seed) so that adjacency in the
+    integer level index carries *no* information about the objective value — the
+    defining property that makes an ordinal/continuous encoding of the factor
+    misleading.  Deterministic across calls and processes; the result is cached
+    and returned read-only (callers must not mutate it).
+
+    Args:
+        n_levels (int): Number of factor levels.
+
+    Returns:
+        np.ndarray: Offsets of shape ``(n_levels,)``; exactly one entry is ``0.0``
+        (the optimal level) and one is ``1.0`` (the worst).
+    """
+    perm = np.random.default_rng(0).permutation(n_levels)
+    offsets = perm.astype(float) / (n_levels - 1)
+    offsets.setflags(write=False)  # cached array — prevent accidental mutation
+    return offsets
+
+
+def factor_quadratic(X, levels=FACTOR_QUADRATIC_LEVELS, amp: float = 8.0) -> np.ndarray:
+    """Mixed continuous + nominal-factor benchmark with index-scrambled level structure.
+
+    A deliberately adversarial test function with 1 continuous dimension and 1
+    *nominal* (unordered) factor with many levels (16 by default).  The continuous
+    part is a simple bowl shared by all levels; each level adds a vertical offset
+    drawn from a fixed index-scrambled permutation, so that **adjacency in the
+    integer level index carries no information about the objective value**.
+
+    A surrogate that treats the factor as an ordinal/continuous integer (Euclidean
+    or Canberra distance on the codes) wrongly assumes neighbouring indices behave
+    similarly and is systematically misled — most strongly in the data-sparse
+    regime typical of expensive black-box optimization, where most levels are
+    observed only a few times.  A nominal (Hamming) kernel treats all distinct
+    levels as equidistant and learns each level's contribution independently, so it
+    builds a more accurate surrogate from the same budget.
+
+    Mathematical definition (with ``n = len(levels)``)::
+
+        offset = perm / (n - 1)          # perm = fixed permutation of {0, .., n-1}
+        f(x, c) = x**2 + amp * offset[idx(c)]
+
+    where ``idx`` maps a factor label to its integer index.
+
+    Args:
+        X (array-like): Input array of shape ``(n_samples, 2)`` or ``(2,)``.
+            Column 0 is the continuous variable ``x ∈ [-3, 3]``.
+            Column 1 is the factor column, accepted as either string labels (the
+            entries of ``levels``) or numeric indices ``0 .. n-1`` — enabling both
+            standalone unit testing and direct use by SpotOptim (which passes the
+            factor column as string labels).
+        levels (tuple of str, optional): Ordered sequence of factor labels. Its
+            length sets the number of levels. Defaults to
+            :data:`FACTOR_QUADRATIC_LEVELS` (16 levels ``"c00" .. "c15"``).
+        amp (float, optional): Scale of the per-level offset term. Defaults to ``8.0``.
+
+    Returns:
+        np.ndarray: Function values of shape ``(n_samples,)`` with dtype ``float``.
+
+    Note:
+        **Global optimum** (default 16 levels): ``f(x=0, c="c04") = 0.0``. The
+        optimal level is the index where the scrambled offset is ``0``.
+
+        **Why ordinal encoding fails**: with the default levels the optimum
+        (index 4) is flanked in index space by a *bad* level (index 3, offset
+        ``≈0.67``).  An ordinal kernel interpolates between adjacent indices and
+        therefore under-ranks the optimal level; a Hamming kernel does not.  The
+        benefit of the nominal kernel is largest when the number of levels is large
+        relative to the evaluation budget — see ``scripts/factor_kernel_benchmark.py``.
+
+    Examples:
+        ```{python}
+        import numpy as np
+        from spotoptim.function import factor_quadratic
+        # global optimum: x=0 at level "c04"
+        print(factor_quadratic(np.array([[0.0, "c04"]], dtype=object)))
+        # a different level is worse
+        print(factor_quadratic(np.array([[0.0, "c15"]], dtype=object)))
+        ```
+
+    """
+    X = np.atleast_2d(X)
+    x = X[:, 0].astype(float)  # continuous column
+    col = X[:, 1]  # factor column: string labels or numeric indices
+    lut = {lab: i for i, lab in enumerate(levels)}
+    idx = np.array(
+        [lut[v] if isinstance(v, str) else int(round(float(v))) for v in col],
+        dtype=int,
+    )
+    offset = _factor_quadratic_offsets(len(levels))
+    return x**2 + amp * offset[idx]
 
 
 def robot_arm_hard(X: np.ndarray) -> np.ndarray:

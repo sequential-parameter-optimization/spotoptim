@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 bartzbeielstein
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
 """Shared pytest configuration for the spotoptim test suite.
 
 Slow-test registry
@@ -64,6 +68,7 @@ SLOW_NODEIDS = {
     "tests/test_save_load.py::TestEdgeCases::test_reproducibility_after_load",
     "tests/test_run_sequential_loop_example.py::test_run_sequential_loop_example",
     "tests/test_factor_variables.py::TestFactorVariables::test_many_factor_levels",
+    "tests/test_factor_variables.py::TestFactorAwareKriging::test_factor_quadratic_end_to_end",
     "tests/test_spotoptim_deep.py::TestConvergenceQuality::test_sphere_2d_converges_near_origin",
     "tests/test_spotoptim_deep.py::TestSeedReproducibility::test_same_seed_same_results",
     "tests/test_max_iter_validation.py::TestMaxIterValidation::test_max_iter_greater_than_n_initial_works",
@@ -77,6 +82,7 @@ SLOW_NODEIDS = {
     "tests/test_spot_optim_args.py::test_kwargs_only",
     "tests/test_tensorboard.py::TestTensorBoardIntegration::test_tensorboard_with_custom_var_names",
     "tests/test_tensorboard_clean.py::TestTensorBoardClean::test_clean_with_optimization_run",
+    "tests/test_factor_kernel_benchmark.py::test_factor_kernel_benchmark",
 }
 
 

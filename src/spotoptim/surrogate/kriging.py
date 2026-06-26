@@ -78,7 +78,9 @@ class Kriging(BaseEstimator, RegressorMixin):
         min_Lambda (float, optional): Minimum log10(Lambda) bound. Defaults to -9.0.
         max_Lambda (float, optional): Maximum log10(Lambda) bound. Defaults to 0.0.
         metric_factorial (str, optional): Distance metric for factor variables.
-            Defaults to "canberra".
+            Defaults to ``"hamming"``. Hamming is a true nominal (order-agnostic) metric;
+            canberra distance on integer level indices is order-dependent and singles out
+            index 0. Any scipy distance metric remains selectable via this kwarg.
         isotropic (bool, optional): Use single theta for all dimensions. Defaults to False.
         theta (np.ndarray, optional): Initial theta values (log10 scale). Defaults to None.
 
@@ -163,7 +165,7 @@ class Kriging(BaseEstimator, RegressorMixin):
         optim_p: bool = False,
         min_Lambda: float = -9.0,
         max_Lambda: float = 0.0,
-        metric_factorial: str = "canberra",
+        metric_factorial: str = "hamming",
         isotropic: bool = False,
         theta: Optional[np.ndarray] = None,
         **kwargs,

@@ -4,9 +4,15 @@
 
 """Tests for factor variable handling in SpotOptim."""
 
+import warnings
+
 import numpy as np
 import pytest
+from sklearn.gaussian_process import GaussianProcessRegressor
+
 from spotoptim import SpotOptim
+from spotoptim.function import factor_quadratic, FACTOR_QUADRATIC_LEVELS
+from spotoptim.surrogate import Kriging, SimpleKriging
 
 
 class TestFactorVariables:
@@ -385,3 +391,186 @@ class TestFactorVariables:
             f"layers={result.x[2]}, activation={result.x[3]}"
         )
         print(f"Best score: {result.fun:.4f}")
+
+
+class TestFactorAwareKriging:
+    """Tests for the factor-aware Kriging path (B1-B4)."""
+
+    # ------------------------------------------------------------------
+    # B1/B2: auto-Kriging for factor problems
+    # ------------------------------------------------------------------
+
+    def test_auto_kriging_for_factor_problem(self):
+        """surrogate=None with factors auto-selects factor-aware Kriging."""
+        opt = SpotOptim(
+            fun=lambda X: np.sum(X**2, axis=1),
+            bounds=[(-5, 5), ("A", "B", "C")],
+            n_initial=5,
+            max_iter=7,
+            seed=42,
+        )
+        assert isinstance(
+            opt.surrogate, Kriging
+        ), f"Expected Kriging for factor problem, got {type(opt.surrogate).__name__}"
+        assert (
+            "factor" in opt.surrogate.var_type
+        ), f"Expected 'factor' in surrogate var_type, got {opt.surrogate.var_type}"
+        assert (
+            opt.surrogate.metric_factorial == "hamming"
+        ), f"Expected metric_factorial='hamming', got {opt.surrogate.metric_factorial!r}"
+
+    def test_custom_metric_factorial_propagated(self):
+        """metric_factorial parameter on SpotOptim is forwarded to the Kriging."""
+        opt = SpotOptim(
+            fun=lambda X: np.sum(X**2, axis=1),
+            bounds=[(-5, 5), ("A", "B", "C")],
+            n_initial=5,
+            max_iter=7,
+            seed=42,
+            metric_factorial="matching",
+        )
+        assert isinstance(opt.surrogate, Kriging)
+        assert opt.surrogate.metric_factorial == "matching"
+
+    def test_no_auto_kriging_for_numeric_problem(self):
+        """surrogate=None with no factors keeps the GaussianProcessRegressor default."""
+        opt = SpotOptim(
+            fun=lambda X: np.sum(X**2, axis=1),
+            bounds=[(-5, 5), (-5, 5)],
+            n_initial=5,
+            max_iter=7,
+            seed=42,
+        )
+        assert isinstance(opt.surrogate, GaussianProcessRegressor), (
+            f"Expected GaussianProcessRegressor for numeric problem, "
+            f"got {type(opt.surrogate).__name__}"
+        )
+
+    # ------------------------------------------------------------------
+    # B3: var_type propagated to user-provided Kriging before fitting
+    # ------------------------------------------------------------------
+
+    def test_var_type_propagated_to_user_kriging(self):
+        """A user-provided Kriging without var_type gets it set before the first fit."""
+        user_kriging = Kriging(seed=42)
+        assert user_kriging.var_type == [
+            "float"
+        ], "Kriging default var_type should be ['float']"
+
+        opt = SpotOptim(
+            fun=lambda X: np.array([1.0] * len(X)),
+            bounds=[(-5, 5), ("A", "B", "C")],
+            n_initial=5,
+            max_iter=8,
+            surrogate=user_kriging,
+            seed=42,
+        )
+
+        # Provide minimal training data to trigger a fit
+        X = np.array([[1.0, 0], [2.0, 1], [3.0, 2], [0.0, 0], [1.5, 2]])
+        y = np.array([1.0, 2.0, 3.0, 0.5, 2.5])
+        opt.fit_surrogate(X, y)
+
+        assert opt.surrogate.var_type == ["float", "factor"], (
+            f"Expected ['float', 'factor'] after B3 propagation, "
+            f"got {opt.surrogate.var_type}"
+        )
+
+    # ------------------------------------------------------------------
+    # B4: validation warning for factor + factor-blind surrogate
+    # ------------------------------------------------------------------
+
+    def test_warn_factor_blind_simple_kriging(self):
+        """pytest.warns(UserWarning) when a SimpleKriging is used with factor variables."""
+        with pytest.warns(UserWarning, match="factor"):
+            SpotOptim(
+                fun=lambda X: np.array([1.0] * len(X)),
+                bounds=[(-5, 5), ("A", "B", "C")],
+                n_initial=5,
+                max_iter=7,
+                surrogate=SimpleKriging(),
+            )
+
+    def test_warn_factor_blind_gpr(self):
+        """pytest.warns(UserWarning) when a sklearn GPR is used with factor variables."""
+        with pytest.warns(UserWarning, match="factor"):
+            SpotOptim(
+                fun=lambda X: np.array([1.0] * len(X)),
+                bounds=[(-5, 5), ("A", "B", "C")],
+                n_initial=5,
+                max_iter=7,
+                surrogate=GaussianProcessRegressor(),
+            )
+
+    def test_warn_kriging_canberra_metric(self):
+        """pytest.warns(UserWarning) when Kriging uses canberra metric with factor variables."""
+        with pytest.warns(UserWarning, match="canberra"):
+            SpotOptim(
+                fun=lambda X: np.array([1.0] * len(X)),
+                bounds=[(-5, 5), ("A", "B", "C")],
+                n_initial=5,
+                max_iter=7,
+                surrogate=Kriging(metric_factorial="canberra"),
+            )
+
+    def test_no_warn_for_hamming_kriging(self):
+        """No UserWarning when Kriging uses hamming metric (the correct choice)."""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            SpotOptim(
+                fun=lambda X: np.array([1.0] * len(X)),
+                bounds=[(-5, 5), ("A", "B", "C")],
+                n_initial=5,
+                max_iter=7,
+                surrogate=Kriging(metric_factorial="hamming"),
+            )
+        user_warnings = [x for x in w if issubclass(x.category, UserWarning)]
+        assert len(user_warnings) == 0, (
+            f"Unexpected UserWarning with hamming Kriging: "
+            f"{[str(x.message) for x in user_warnings]}"
+        )
+
+    def test_no_warn_for_numeric_only_problem(self):
+        """No UserWarning for a pure-numeric problem with default GPR surrogate."""
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            SpotOptim(
+                fun=lambda X: np.sum(X**2, axis=1),
+                bounds=[(-5, 5), (-5, 5)],
+                n_initial=5,
+                max_iter=7,
+            )
+        user_warnings = [x for x in w if issubclass(x.category, UserWarning)]
+        assert len(user_warnings) == 0, (
+            f"Unexpected UserWarning for numeric-only problem: "
+            f"{[str(x.message) for x in user_warnings]}"
+        )
+
+    # ------------------------------------------------------------------
+    # End-to-end: factor_quadratic via SpotOptim
+    # ------------------------------------------------------------------
+
+    @pytest.mark.slow
+    def test_factor_quadratic_end_to_end(self):
+        """End-to-end optimisation of factor_quadratic completes without error.
+
+        Global optimum: x=0.0, level='c04', f=0.0. The default (factor-aware,
+        hamming) Kriging surrogate should reach a near-optimal solution.
+        """
+        levels = FACTOR_QUADRATIC_LEVELS
+        opt = SpotOptim(
+            fun=factor_quadratic,
+            bounds=[(-3.0, 3.0), levels],
+            max_iter=40,
+            n_initial=12,
+            seed=42,
+        )
+        result = opt.optimize()
+
+        assert np.isfinite(result.fun), "result.fun must be finite"
+        assert isinstance(result.x[0], (float, np.floating)), "x[0] must be numeric"
+        assert (
+            result.x[1] in levels
+        ), f"x[1] must be a valid factor level, got {result.x[1]!r}"
+        # The function minimum is 0.0 (at x=0, level c04); allow generous slack.
+        assert result.fun <= 6.0, f"Expected result.fun <= 6.0, got {result.fun}"

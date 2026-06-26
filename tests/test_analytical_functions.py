@@ -6,7 +6,7 @@
 
 import pytest
 import numpy as np
-from spotoptim.function import rosenbrock
+from spotoptim.function import rosenbrock, factor_quadratic
 
 
 class TestRosenbrock:
@@ -555,3 +555,132 @@ class TestRobotArmHard:
             result = robot_arm_hard(X)
             assert np.isfinite(result[0]), f"Result should be finite for input {X[0]}"
             assert result[0] >= 0, f"Cost should be non-negative for input {X[0]}"
+
+
+class TestFactorQuadratic:
+    """Test suite for the factor_quadratic mixed continuous+nominal benchmark."""
+
+    # Deterministic scrambled offsets for the default 16 levels (perm/15).
+    OFFSET = np.random.default_rng(0).permutation(16).astype(float) / 15.0
+    AMP = 8.0
+    BEST_IDX = int(np.argmin(OFFSET))  # == 4 ("c04")
+
+    def test_global_minimum_string_label(self):
+        """Global optimum: level 'c04', x=0.0 → f=0.0."""
+        X = np.array([[0.0, "c04"]], dtype=object)
+        result = factor_quadratic(X)
+        assert np.isclose(
+            result[0], 0.0, atol=1e-12
+        ), f"Global minimum should be 0, got {result[0]}"
+        assert self.BEST_IDX == 4
+
+    def test_global_minimum_numeric_index(self):
+        """Global optimum expressed as numeric index 4 (== 'c04') → f=0.0."""
+        X = np.array([[0.0, 4]], dtype=object)
+        result = factor_quadratic(X)
+        assert np.isclose(
+            result[0], 0.0, atol=1e-12
+        ), f"Global minimum via numeric index should be 0, got {result[0]}"
+
+    def test_string_and_numeric_equivalence(self):
+        """String labels and equivalent numeric indices must give identical results."""
+        xs = [-3.0, 0.0, 2.5, -1.0, 1.0, 3.0]
+        idxs = [0, 4, 7, 3, 14, 15]
+        for x, i in zip(xs, idxs):
+            X_str = np.array([[x, f"c{i:02d}"]], dtype=object)
+            X_num = np.array([[x, i]], dtype=object)
+            r_str = factor_quadratic(X_str)
+            r_num = factor_quadratic(X_num)
+            assert np.isclose(r_str[0], r_num[0]), (
+                f"String 'c{i:02d}' and numeric {i} disagree at x={x}: "
+                f"{r_str[0]} vs {r_num[0]}"
+            )
+
+    def test_known_per_level_values(self):
+        """At x=0, each level's value equals amp * scrambled offset."""
+        for idx in range(16):
+            X = np.array([[0.0, idx]], dtype=float)
+            result = factor_quadratic(X)
+            expected = self.AMP * self.OFFSET[idx]
+            assert np.isclose(
+                result[0], expected, atol=1e-12
+            ), f"Level idx {idx}: expected {expected} at x=0, got {result[0]}"
+
+    def test_continuous_bowl(self):
+        """At a fixed level the function is a quadratic bowl: f = x**2 + const."""
+        for x in (-3.0, -1.0, 2.0):
+            X = np.array([[x, "c04"]], dtype=object)  # optimal level → const 0
+            assert np.isclose(factor_quadratic(X)[0], x**2, atol=1e-12)
+
+    def test_non_optimal_level_is_strictly_worse(self):
+        """Any level other than 'c04' at x=0 must give a strictly larger value."""
+        for idx in range(16):
+            if idx == self.BEST_IDX:
+                continue
+            X = np.array([[0.0, idx]], dtype=float)
+            assert factor_quadratic(X)[0] > 0.0, f"Level idx {idx} at x=0 should be > 0"
+
+    def test_optimum_flanked_by_bad_level_in_index_space(self):
+        """The order-misleading property: the optimal level (idx 4) is index-adjacent
+        to a much worse level (idx 3), and an index-distant level (idx 14) is closer
+        in value — so index adjacency carries no information about objective value.
+        """
+        best = self.BEST_IDX
+        neighbour = self.OFFSET[best - 1]  # idx 3, a bad level
+        distant = self.OFFSET[14]  # index-distant but near-optimal
+        assert neighbour > distant, (
+            "Index-adjacent neighbour should be worse than an index-distant level — "
+            "this is what makes an ordinal encoding misleading."
+        )
+
+    def test_single_point_evaluation(self):
+        """Single-point (2,)-shaped 1D input is handled correctly."""
+        X = np.array([0.0, "c04"], dtype=object)
+        result = factor_quadratic(X)
+        assert result.shape == (1,), f"Expected shape (1,), got {result.shape}"
+        assert np.isclose(result[0], 0.0, atol=1e-12)
+
+    def test_batch_evaluation(self):
+        """Batch evaluation returns (n_samples,) array with correct values."""
+        X = np.array(
+            [[0.0, "c04"], [0.0, "c00"], [0.0, "c15"], [2.0, "c04"]],
+            dtype=object,
+        )
+        result = factor_quadratic(X)
+        assert result.shape == (4,), f"Expected shape (4,), got {result.shape}"
+        expected = np.array(
+            [
+                0.0,
+                self.AMP * self.OFFSET[0],
+                self.AMP * self.OFFSET[15],
+                4.0,
+            ]
+        )
+        np.testing.assert_allclose(result, expected, atol=1e-12)
+
+    def test_output_shape_and_dtype(self):
+        """Output shape is (n_samples,) and dtype is float."""
+        X = np.array([[0.0, "c00"], [1.0, "c01"], [2.0, "c02"]], dtype=object)
+        result = factor_quadratic(X)
+        assert result.shape == (3,), f"Expected shape (3,), got {result.shape}"
+        assert np.issubdtype(
+            result.dtype, np.floating
+        ), f"Expected float dtype, got {result.dtype}"
+
+    def test_numeric_only_array(self):
+        """Pure numeric array (no strings) is accepted and produces correct values."""
+        for idx in range(16):
+            X = np.array([[0.0, idx]], dtype=float)
+            result = factor_quadratic(X)
+            expected = self.AMP * self.OFFSET[idx]
+            assert np.isclose(
+                result[0], expected, atol=1e-12
+            ), f"Numeric index {idx}: expected {expected}, got {result[0]}"
+
+    def test_custom_levels(self):
+        """A custom levels tuple sets the number of levels and label mapping."""
+        levels = ("low", "mid", "high")
+        X = np.array([[0.0, "mid"]], dtype=object)
+        r_str = factor_quadratic(X, levels=levels)
+        r_idx = factor_quadratic(np.array([[0.0, 1]], dtype=float), levels=levels)
+        assert np.isclose(r_str[0], r_idx[0])
