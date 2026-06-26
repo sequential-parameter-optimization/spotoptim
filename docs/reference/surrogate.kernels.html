@@ -2340,12 +2340,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    theta,</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    var_type,</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    p_val<span class="op">=</span><span class="fl">2.0</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    metric_factorial<span class="op">=</span><span class="st">'canberra'</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    metric_factorial<span class="op">=</span><span class="st">'hamming'</span>,</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Kernel designed for SpotOptim’s Kriging with mixed variable support.</p>
 <p>It handles continuous (‘float’), integer (‘int’), and categorical (‘factor’) variables similarly to the internal logic of the Kriging class.</p>
 <p>The correlation function is defined as: Psi = exp(- (D_ordered + D_factor))</p>
-<p>where: D_ordered = sum_j theta_j * |x_ij - y_lj|^p (for ordered variables) D_factor = sum_j theta_j * d(x_ij, y_lj) (for factor variables, d is metric like Canberra)</p>
+<p>where: D_ordered = sum_j theta_j * |x_ij - y_lj|^p (for ordered variables) D_factor = sum_j theta_j * d(x_ij, y_lj) (for factor variables, d is metric like Hamming)</p>
 <section id="parameters-4" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
 <table class="caption-top table">
@@ -2379,8 +2379,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td>metric_factorial</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
-<td>Metric for factor distance (passed to cdist/pdist). Defaults to ‘canberra’.</td>
-<td><code>'canberra'</code></td>
+<td>Metric for factor distance (passed to cdist/pdist). Defaults to ‘hamming’. Hamming is a true nominal (order-agnostic) metric; canberra distance on integer level indices is order-dependent and singles out index 0. Any scipy distance metric remains selectable via this kwarg.</td>
+<td><code>'hamming'</code></td>
 </tr>
 </tbody>
 </table>

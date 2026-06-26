@@ -2101,6 +2101,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#functions" id="toc-functions" class="nav-link active" data-scroll-target="#functions">Functions</a>
   <ul class="collapse">
   <li><a href="#spotoptim.function.so.ackley" id="toc-spotoptim.function.so.ackley" class="nav-link" data-scroll-target="#spotoptim.function.so.ackley">ackley</a></li>
+  <li><a href="#spotoptim.function.so.factor_quadratic" id="toc-spotoptim.function.so.factor_quadratic" class="nav-link" data-scroll-target="#spotoptim.function.so.factor_quadratic">factor_quadratic</a></li>
   <li><a href="#spotoptim.function.so.lennard_jones" id="toc-spotoptim.function.so.lennard_jones" class="nav-link" data-scroll-target="#spotoptim.function.so.lennard_jones">lennard_jones</a></li>
   <li><a href="#spotoptim.function.so.michalewicz" id="toc-spotoptim.function.so.michalewicz" class="nav-link" data-scroll-target="#spotoptim.function.so.michalewicz">michalewicz</a></li>
   <li><a href="#spotoptim.function.so.noisy_sphere" id="toc-spotoptim.function.so.noisy_sphere" class="nav-link" data-scroll-target="#spotoptim.function.so.noisy_sphere">noisy_sphere</a></li>
@@ -2154,34 +2155,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>N-dimensional Ackley function.</td>
 </tr>
 <tr class="even">
+<td><a href="#spotoptim.function.so.factor_quadratic">factor_quadratic</a></td>
+<td>Mixed continuous + nominal-factor benchmark with index-scrambled level structure.</td>
+</tr>
+<tr class="odd">
 <td><a href="#spotoptim.function.so.lennard_jones">lennard_jones</a></td>
 <td>Lennard-Jones Atomic Cluster Potential Energy.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#spotoptim.function.so.michalewicz">michalewicz</a></td>
 <td>N-dimensional Michalewicz function.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#spotoptim.function.so.noisy_sphere">noisy_sphere</a></td>
 <td>N-dimensional Sphere function with noise.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#spotoptim.function.so.robot_arm_hard">robot_arm_hard</a></td>
 <td>10-Link Robot Arm with Maze-Like Hard Constraints.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#spotoptim.function.so.robot_arm_obstacle">robot_arm_obstacle</a></td>
 <td>10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#spotoptim.function.so.rosenbrock">rosenbrock</a></td>
 <td>N-dimensional Rosenbrock function.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><a href="#spotoptim.function.so.sphere">sphere</a></td>
 <td>N-dimensional Sphere function.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><a href="#spotoptim.function.so.wingwt">wingwt</a></td>
 <td>Aircraft Wing Weight function.</td>
 </tr>
@@ -2257,7 +2262,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="examples" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
 <p>Single point evaluation at global minimum:</p>
-<div id="a9168744" class="cell" data-execution_count="1">
+<div id="faec335c" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> ackley</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>])</span>
@@ -2267,7 +2272,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Multiple points evaluation:</p>
-<div id="4ba37c1a" class="cell" data-execution_count="2">
+<div id="5c1c01d7" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> ackley</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="op">-</span><span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
@@ -2284,17 +2289,100 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Ackley, D. H. (1987). “A connectionist machine for genetic hillclimbing”. Kluwer Academic Publishers.</p>
 </section>
 </section>
+<section id="spotoptim.function.so.factor_quadratic" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.so.factor_quadratic">factor_quadratic</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>function.so.factor_quadratic(X, levels<span class="op">=</span>FACTOR_QUADRATIC_LEVELS, amp<span class="op">=</span><span class="fl">8.0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Mixed continuous + nominal-factor benchmark with index-scrambled level structure.</p>
+<p>A deliberately adversarial test function with 1 continuous dimension and 1 <em>nominal</em> (unordered) factor with many levels (16 by default). The continuous part is a simple bowl shared by all levels; each level adds a vertical offset drawn from a fixed index-scrambled permutation, so that <strong>adjacency in the integer level index carries no information about the objective value</strong>.</p>
+<p>A surrogate that treats the factor as an ordinal/continuous integer (Euclidean or Canberra distance on the codes) wrongly assumes neighbouring indices behave similarly and is systematically misled — most strongly in the data-sparse regime typical of expensive black-box optimization, where most levels are observed only a few times. A nominal (Hamming) kernel treats all distinct levels as equidistant and learns each level’s contribution independently, so it builds a more accurate surrogate from the same budget.</p>
+<p>Mathematical definition (with <code>n = len(levels)</code>)::</p>
+<pre><code>offset = perm / (n - 1)          # perm = fixed permutation of {0, .., n-1}
+f(x, c) = x**2 + amp * offset[idx(c)]</code></pre>
+<p>where <code>idx</code> maps a factor label to its integer index.</p>
+<section id="parameters-1" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input array of shape <code>(n_samples, 2)</code> or <code>(2,)</code>. Column 0 is the continuous variable <code>x ∈ [-3, 3]</code>. Column 1 is the factor column, accepted as either string labels (the entries of <code>levels</code>) or numeric indices <code>0 .. n-1</code> — enabling both standalone unit testing and direct use by SpotOptim (which passes the factor column as string labels).</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>levels</td>
+<td>tuple of str</td>
+<td>Ordered sequence of factor labels. Its length sets the number of levels. Defaults to :data:<code>FACTOR_QUADRATIC_LEVELS</code> (16 levels <code>"c00" .. "c15"</code>).</td>
+<td><code>FACTOR_QUADRATIC_LEVELS</code></td>
+</tr>
+<tr class="odd">
+<td>amp</td>
+<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
+<td>Scale of the per-level offset term. Defaults to <code>8.0</code>.</td>
+<td><code>8.0</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Function values of shape <code>(n_samples,)</code> with dtype <code>float</code>.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-1" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-1">Note</h4>
+<p><strong>Global optimum</strong> (default 16 levels): <code>f(x=0, c="c04") = 0.0</code>. The optimal level is the index where the scrambled offset is <code>0</code>.</p>
+<p><strong>Why ordinal encoding fails</strong>: with the default levels the optimum (index 4) is flanked in index space by a <em>bad</em> level (index 3, offset <code>≈0.67</code>). An ordinal kernel interpolates between adjacent indices and therefore under-ranks the optimal level; a Hamming kernel does not. The benefit of the nominal kernel is largest when the number of levels is large relative to the evaluation budget — see <code>scripts/factor_kernel_benchmark.py</code>.</p>
+</section>
+<section id="examples-1" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<div id="3acb2220" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> factor_quadratic</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># global optimum: x=0 at level "c04"</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(factor_quadratic(np.array([[<span class="fl">0.0</span>, <span class="st">"c04"</span>]], dtype<span class="op">=</span><span class="bu">object</span>)))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># a different level is worse</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(factor_quadratic(np.array([[<span class="fl">0.0</span>, <span class="st">"c15"</span>]], dtype<span class="op">=</span><span class="bu">object</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[0.]
+[8.]</code></pre>
+</div>
+</div>
+</section>
+</section>
 <section id="spotoptim.function.so.lennard_jones" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.function.so.lennard_jones">lennard_jones</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>function.so.lennard_jones(X, n_atoms<span class="op">=</span><span class="dv">13</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>function.so.lennard_jones(X, n_atoms<span class="op">=</span><span class="dv">13</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Lennard-Jones Atomic Cluster Potential Energy.</p>
 <p>Calculates the potential energy of a cluster of N atoms interacting via the Lennard-Jones potential. The optimization problem involves finding the atomic coordinates that minimize the total potential energy. This is a classic benchmark problem known for its high difficulty due to the exponential growth of local minima with N.</p>
 <section id="input-domain-handling" class="level4 doc-section doc-section-input-domain-handling">
 <h4 class="doc-section doc-section-input-domain-handling anchored" data-anchor-id="input-domain-handling">Input Domain Handling</h4>
 <p>The function accepts inputs in the range [0, 1] and internally maps them to the search domain [-2, 2] for each coordinate.</p>
 </section>
-<section id="parameters-1" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-1">Parameters</h4>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2320,8 +2408,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-1" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<section id="returns-2" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2358,35 +2446,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="note-1" class="level4 doc-section doc-section-note">
-<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-1">Note</h4>
+<section id="note-2" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-2">Note</h4>
 <ul>
 <li>Global minimum for N=13: E ≈ -44.3268</li>
 <li>Search domain: [-2, 2]^(3N) (mapped from [0, 1])</li>
 <li>Characteristics: Extremely rugged landscape, non-convex, many local minima.</li>
 </ul>
 </section>
-<section id="examples-1" class="level4 doc-section doc-section-examples">
-<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
+<section id="examples-2" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
 <p>Single point evaluation (random configuration):</p>
-<div id="97cc1479" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> lennard_jones</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">42</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random(<span class="dv">39</span>)  <span class="co"># 13 atoms * 3 coords, in [0, 1]</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>lennard_jones(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="3">
+<div id="ff3a32cd" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> lennard_jones</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">42</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random(<span class="dv">39</span>)  <span class="co"># 13 atoms * 3 coords, in [0, 1]</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>lennard_jones(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
 <pre><code>array([74.35227958])</code></pre>
 </div>
 </div>
 <p>Batch evaluation:</p>
-<div id="d76ad881" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> lennard_jones</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">42</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random((<span class="dv">5</span>, <span class="dv">39</span>))</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>lennard_jones(X).shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="4">
+<div id="30d6afb1" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> lennard_jones</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">42</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random((<span class="dv">5</span>, <span class="dv">39</span>))</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>lennard_jones(X).shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>(5,)</code></pre>
 </div>
 </div>
@@ -2398,15 +2486,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="spotoptim.function.so.michalewicz" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.function.so.michalewicz">michalewicz</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>function.so.michalewicz(X, m<span class="op">=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>function.so.michalewicz(X, m<span class="op">=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>N-dimensional Michalewicz function.</p>
 <p>The Michalewicz function is a multimodal test function with steep ridges and valleys. The parameter m defines the steepness of the valleys and ridges. Larger values of m result in more difficult search problems. The number of local minima increases exponentially with the dimension.</p>
 <section id="mathematical-formula-1" class="level4 doc-section doc-section-mathematical-formula">
 <h4 class="doc-section doc-section-mathematical-formula anchored" data-anchor-id="mathematical-formula-1">Mathematical formula</h4>
 <p>f(X) = -sum_{i=1}^{n} sin(x_i) * [sin(i * x_i^2 / π)]^(2m)</p>
 </section>
-<section id="parameters-2" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2432,8 +2520,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-2" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-2">Returns</h4>
+<section id="returns-3" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2451,8 +2539,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="note-2" class="level4 doc-section doc-section-note">
-<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-2">Note</h4>
+<section id="note-3" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-3">Note</h4>
 <ul>
 <li>Global minimum depends on dimension:
 <ul>
@@ -2464,36 +2552,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Characteristics: Non-convex, multimodal, non-separable</li>
 </ul>
 </section>
-<section id="examples-2" class="level4 doc-section doc-section-examples">
-<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
+<section id="examples-3" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
 <p>Single point evaluation:</p>
-<div id="b8e656a2" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> michalewicz</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">2.20</span>, <span class="fl">1.57</span>])</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> michalewicz(X)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>result[<span class="dv">0</span>]  <span class="co"># Should be close to -1.8013</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="5">
+<div id="e6cfc10b" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> michalewicz</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">2.20</span>, <span class="fl">1.57</span>])</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> michalewicz(X)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>result[<span class="dv">0</span>]  <span class="co"># Should be close to -1.8013</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>np.float64(-1.801140718473825)</code></pre>
 </div>
 </div>
 <p>Multiple points evaluation:</p>
-<div id="9486032d" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> michalewicz</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">2.20</span>, <span class="fl">1.57</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>michalewicz(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="6">
+<div id="4ecefa22" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> michalewicz</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">2.20</span>, <span class="fl">1.57</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>]])</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>michalewicz(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
 <pre><code>array([-1.80114072e+00, -2.55738728e-05])</code></pre>
 </div>
 </div>
 <p>Using different steepness parameter:</p>
-<div id="7c42a138" class="cell" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> michalewicz</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">2.20</span>, <span class="fl">1.57</span>])</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>michalewicz(X, m<span class="op">=</span><span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="7">
+<div id="40222fa8" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> michalewicz</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">2.20</span>, <span class="fl">1.57</span>])</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>michalewicz(X, m<span class="op">=</span><span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
 <pre><code>array([-1.80481006])</code></pre>
 </div>
 </div>
@@ -2505,10 +2593,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="spotoptim.function.so.noisy_sphere" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.function.so.noisy_sphere">noisy_sphere</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>function.so.noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>function.so.noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>N-dimensional Sphere function with noise.</p>
-<section id="parameters-3" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<section id="parameters-4" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2534,8 +2622,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-3" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-3">Returns</h4>
+<section id="returns-4" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2572,39 +2660,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="note-3" class="level4 doc-section doc-section-note">
-<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-3">Note</h4>
+<section id="note-4" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-4">Note</h4>
 <ul>
 <li>Global minimum: f(0, 0, …, 0) = 0</li>
 <li>Typical search domain: [-5, 10]^N or [-2, 2]^N</li>
 <li>Characteristics: Convex, unimodal</li>
 </ul>
 </section>
-<section id="examples-3" class="level4 doc-section doc-section-examples">
-<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
-<div id="a9683e86" class="cell" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="8">
-<pre><code>array([2.01496085])</code></pre>
-</div>
-</div>
-<div id="9d808d6a" class="cell" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="examples-4" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h4>
+<div id="4d034342" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
-<pre><code>array([0.00945289, 1.94203069, 0.57166582])</code></pre>
+<pre><code>array([1.87958572])</code></pre>
+</div>
+</div>
+<div id="b1cf9277" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> noisy_sphere</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>noisy_sphere(X, sigma<span class="op">=</span><span class="fl">0.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>array([-0.10401092,  1.9529309 ,  0.5333263 ])</code></pre>
 </div>
 </div>
 </section>
 </section>
 <section id="spotoptim.function.so.robot_arm_hard" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.function.so.robot_arm_hard">robot_arm_hard</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>function.so.robot_arm_hard(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>function.so.robot_arm_hard(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>10-Link Robot Arm with Maze-Like Hard Constraints.</p>
 <p>A challenging constrained optimization problem where a 10-link planar robot arm must reach a target point (5.0, 5.0) while avoiding multiple obstacles forming a maze-like environment. This function tests an optimizer’s ability to handle hard constraints and navigate complex feasible regions.</p>
 <p>The problem features three main difficulty factors: 1. ‘The Great Wall’: A vertical barrier at x=2.5 blocking direct paths 2. ‘The Ceiling’: A horizontal bar at y=8.5 preventing high loop strategies 3. ‘The Target Trap’: Obstacles surrounding the target, requiring precise approach</p>
@@ -2620,8 +2708,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>energy_regularization = 0.01 * sum(angles^2)</li>
 </ul>
 </section>
-<section id="parameters-4" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-4">Parameters</h4>
+<section id="parameters-5" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2641,8 +2729,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-4" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-4">Returns</h4>
+<section id="returns-5" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2660,8 +2748,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="note-4" class="level4 doc-section doc-section-note">
-<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-4">Note</h4>
+<section id="note-5" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-5">Note</h4>
 <ul>
 <li>Dimension: 10 (one angle per link)</li>
 <li>Link length: L = 1.0 for all links</li>
@@ -2673,39 +2761,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Feasible region: Very small relative to search space</li>
 </ul>
 </section>
-<section id="examples-4" class="level4 doc-section doc-section-examples">
-<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h4>
+<section id="examples-5" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h4>
 <p>Single point evaluation with random configuration:</p>
-<div id="b9a7d913" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> robot_arm_hard</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.random.rand(<span class="dv">10</span>) <span class="op">*</span> <span class="fl">0.5</span>  <span class="co"># Conservative random angles</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> robot_arm_hard(X)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>result.shape</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>,)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="10">
+<div id="7e15a696" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> robot_arm_hard</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.random.rand(<span class="dv">10</span>) <span class="op">*</span> <span class="fl">0.5</span>  <span class="co"># Conservative random angles</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> robot_arm_hard(X)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>result.shape</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>(<span class="dv">1</span>,)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>(1,)</code></pre>
 </div>
 </div>
 <p>Multiple points evaluation:</p>
-<div id="84721a6f" class="cell" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> robot_arm_hard</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>],</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>              [<span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.5</span>, <span class="fl">0.4</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.0</span>]])</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>robot_arm_hard(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="11">
+<div id="126a92d0" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> robot_arm_hard</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>],</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>              [<span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="fl">0.5</span>, <span class="fl">0.4</span>, <span class="fl">0.3</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.0</span>]])</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>robot_arm_hard(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="12">
 <pre><code>array([269.77734305, 144.65586174])</code></pre>
 </div>
 </div>
 <p>Evaluating a straight configuration (all angles = 0.5, mapped to 0 radians):</p>
-<div id="f1e219d0" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> robot_arm_hard</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>X_straight <span class="op">=</span> np.full(<span class="dv">10</span>, <span class="fl">0.5</span>)</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>cost_straight <span class="op">=</span> robot_arm_hard(X_straight)</span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>cost_straight[<span class="dv">0</span>] <span class="op">&gt;</span> <span class="dv">1000</span>  <span class="co"># High cost due to obstacles</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="12">
+<div id="87b0b0a3" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> robot_arm_hard</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>X_straight <span class="op">=</span> np.full(<span class="dv">10</span>, <span class="fl">0.5</span>)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>cost_straight <span class="op">=</span> robot_arm_hard(X_straight)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>cost_straight[<span class="dv">0</span>] <span class="op">&gt;</span> <span class="dv">1000</span>  <span class="co"># High cost due to obstacles</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>np.False_</code></pre>
 </div>
 </div>
@@ -2721,15 +2809,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="spotoptim.function.so.robot_arm_obstacle" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.function.so.robot_arm_obstacle">robot_arm_obstacle</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>function.so.robot_arm_obstacle(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>function.so.robot_arm_obstacle(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>10-Link Planar Robot Arm Inverse Kinematics with Obstacle Avoidance.</p>
 <p>The goal is to minimize the distance of the end-effector to a target point while avoiding collision with a set of circular obstacles. This problem mimics a real-world inverse kinematics solver for a redundant manipulator.</p>
 <section id="input-domain-handling-1" class="level4 doc-section doc-section-input-domain-handling">
 <h4 class="doc-section doc-section-input-domain-handling anchored" data-anchor-id="input-domain-handling-1">Input Domain Handling</h4>
 <p>The function accepts inputs in the range [0, 1] and internally maps them to the search domain [-pi, pi] for each joint angle (radians).</p>
 </section>
-<section id="parameters-5" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-5">Parameters</h4>
+<section id="parameters-6" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2749,8 +2837,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="returns-5" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-5">Returns</h4>
+<section id="returns-6" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -2787,8 +2875,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="note-5" class="level4 doc-section doc-section-note">
-<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-5">Note</h4>
+<section id="note-6" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-6">Note</h4>
 <ul>
 <li>Target: (5.0, 5.0)</li>
 <li>Obstacles:
@@ -2802,26 +2890,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Characteristics: Multimodal, disjoint feasible regions, constrained.</li>
 </ul>
 </section>
-<section id="examples-5" class="level4 doc-section doc-section-examples">
-<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h4>
+<section id="examples-6" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-6">Examples</h4>
 <p>Single point evaluation:</p>
-<div id="df4cb641" class="cell" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> robot_arm_obstacle</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">42</span>)</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random(<span class="dv">10</span>)  <span class="co"># Random angles in [0, 1]</span></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>robot_arm_obstacle(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
+<div id="745acfdd" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> robot_arm_obstacle</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">42</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random(<span class="dv">10</span>)  <span class="co"># Random angles in [0, 1]</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>robot_arm_obstacle(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="14">
 <pre><code>array([60.85746763])</code></pre>
 </div>
 </div>
 <p>Batch evaluation:</p>
-<div id="77299bec" class="cell" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> robot_arm_obstacle</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random((<span class="dv">5</span>, <span class="dv">10</span>))</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>robot_arm_obstacle(X).shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="14">
+<div id="669f0e2a" class="cell" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> robot_arm_obstacle</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.random((<span class="dv">5</span>, <span class="dv">10</span>))</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>robot_arm_obstacle(X).shape</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="15">
 <pre><code>(5,)</code></pre>
 </div>
 </div>
@@ -2829,7 +2917,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="spotoptim.function.so.rosenbrock" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.function.so.rosenbrock">rosenbrock</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>function.so.rosenbrock(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>function.so.rosenbrock(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>N-dimensional Rosenbrock function.</p>
 <p>The Rosenbrock function is a classic test function for optimization algorithms. It is characterized by a long, narrow, parabolic-shaped valley. The global minimum is inside the valley and is hard to find for many algorithms.</p>
 <section id="for-the-2d-case" class="level4 doc-section doc-section-for-the-2d-case">
@@ -2839,114 +2927,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="the-generalized-form-for-n-dimensions" class="level4 doc-section doc-section-the-generalized-form-for-n-dimensions">
 <h4 class="doc-section doc-section-the-generalized-form-for-n-dimensions anchored" data-anchor-id="the-generalized-form-for-n-dimensions">The generalized form for N dimensions</h4>
 <p>f(X) = sum_{i=1}^{N-1} [100 * (x_{i+1} - x_i<sup>2)</sup>2 + (1 - x_i)^2]</p>
-</section>
-<section id="parameters-6" class="level4 doc-section doc-section-parameters">
-<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-6">Parameters</h4>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-<th>Default</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>X</td>
-<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
-<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points.</td>
-<td><em>required</em></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="returns-6" class="level4 doc-section doc-section-returns">
-<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-6">Returns</h4>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
-<td>np.ndarray: Function values at the input points with shape (n_samples,).</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="raises-3" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-3">Raises</h4>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Name</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td></td>
-<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
-<td>If X has fewer than 2 dimensions.</td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="note-6" class="level4 doc-section doc-section-note">
-<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-6">Note</h4>
-<ul>
-<li>Global minimum: f(1, 1, …, 1) = 0</li>
-<li>Typical search domain: [-5, 10]^N or [-2, 2]^N</li>
-<li>Characteristics: Non-convex, unimodal</li>
-</ul>
-</section>
-<section id="examples-6" class="level4 doc-section doc-section-examples">
-<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-6">Examples</h4>
-<p>Single point evaluation:</p>
-<div id="13dc6d63" class="cell" data-execution_count="15">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> rosenbrock</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>rosenbrock(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="15">
-<pre><code>array([0.])</code></pre>
-</div>
-</div>
-<p>Multiple points evaluation:</p>
-<div id="7556f534" class="cell" data-execution_count="16">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> rosenbrock</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>rosenbrock(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="16">
-<pre><code>array([1. , 0. , 6.5])</code></pre>
-</div>
-</div>
-</section>
-<section id="references-4" class="level4 doc-section doc-section-references">
-<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-4">References</h4>
-<p>Rosenbrock, H.H. (1960). “An automatic method for finding the greatest or least value of a function”. The Computer Journal. 3 (3): 175–184.</p>
-</section>
-</section>
-<section id="spotoptim.function.so.sphere" class="level3">
-<h3 class="anchored" data-anchor-id="spotoptim.function.so.sphere">sphere</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>function.so.sphere(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>N-dimensional Sphere function.</p>
-<p>The Sphere function is a simple test function for optimization algorithms. It is characterized by a parabolic-shaped valley. The global minimum is inside the valley and is easy to find for many algorithms.</p>
-<section id="for-the-2d-case-1" class="level4 doc-section doc-section-for-the-2d-case">
-<h4 class="doc-section doc-section-for-the-2d-case anchored" data-anchor-id="for-the-2d-case-1">For the 2D case</h4>
-<p>f(x, y) = x^2 + y^2</p>
-</section>
-<section id="the-generalized-form-for-n-dimensions-1" class="level4 doc-section doc-section-the-generalized-form-for-n-dimensions">
-<h4 class="doc-section doc-section-the-generalized-form-for-n-dimensions anchored" data-anchor-id="the-generalized-form-for-n-dimensions-1">The generalized form for N dimensions</h4>
-<p>f(X) = sum_{i=1}^{N} x_i^2</p>
 </section>
 <section id="parameters-7" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-7">Parameters</h4>
@@ -2988,8 +2968,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 </section>
-<section id="raises-4" class="level4 doc-section doc-section-raises">
-<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-4">Raises</h4>
+<section id="raises-3" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-3">Raises</h4>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -3002,7 +2982,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td></td>
 <td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
-<td>If X has fewer than 1 dimension.</td>
+<td>If X has fewer than 2 dimensions.</td>
 </tr>
 </tbody>
 </table>
@@ -3010,38 +2990,52 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="note-7" class="level4 doc-section doc-section-note">
 <h4 class="doc-section doc-section-note anchored" data-anchor-id="note-7">Note</h4>
 <ul>
-<li>Global minimum: f(0, 0, …, 0) = 0</li>
+<li>Global minimum: f(1, 1, …, 1) = 0</li>
 <li>Typical search domain: [-5, 10]^N or [-2, 2]^N</li>
-<li>Characteristics: Convex, unimodal</li>
+<li>Characteristics: Non-convex, unimodal</li>
 </ul>
 </section>
 <section id="examples-7" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-7">Examples</h4>
-<div id="c794a56e" class="cell" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>sphere(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Single point evaluation:</p>
+<div id="a63544e6" class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> rosenbrock</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>rosenbrock(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>array([0.])</code></pre>
+</div>
+</div>
+<p>Multiple points evaluation:</p>
+<div id="0391331b" class="cell" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> rosenbrock</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>rosenbrock(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
-<pre><code>array([2.])</code></pre>
-</div>
-</div>
-<div id="0dabc2b0" class="cell" data-execution_count="18">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>sphere(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="18">
-<pre><code>array([0. , 2. , 0.5])</code></pre>
+<pre><code>array([1. , 0. , 6.5])</code></pre>
 </div>
 </div>
 </section>
+<section id="references-4" class="level4 doc-section doc-section-references">
+<h4 class="doc-section doc-section-references anchored" data-anchor-id="references-4">References</h4>
+<p>Rosenbrock, H.H. (1960). “An automatic method for finding the greatest or least value of a function”. The Computer Journal. 3 (3): 175–184.</p>
 </section>
-<section id="spotoptim.function.so.wingwt" class="level3">
-<h3 class="anchored" data-anchor-id="spotoptim.function.so.wingwt">wingwt</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>function.so.wingwt(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Aircraft Wing Weight function.</p>
-<p>The example models the weight of an unpainted light aircraft wing. The function accepts inputs in the unit cube [0,1]^9 and returns the wing weight.</p>
+</section>
+<section id="spotoptim.function.so.sphere" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.so.sphere">sphere</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>function.so.sphere(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>N-dimensional Sphere function.</p>
+<p>The Sphere function is a simple test function for optimization algorithms. It is characterized by a parabolic-shaped valley. The global minimum is inside the valley and is easy to find for many algorithms.</p>
+<section id="for-the-2d-case-1" class="level4 doc-section doc-section-for-the-2d-case">
+<h4 class="doc-section doc-section-for-the-2d-case anchored" data-anchor-id="for-the-2d-case-1">For the 2D case</h4>
+<p>f(x, y) = x^2 + y^2</p>
+</section>
+<section id="the-generalized-form-for-n-dimensions-1" class="level4 doc-section doc-section-the-generalized-form-for-n-dimensions">
+<h4 class="doc-section doc-section-the-generalized-form-for-n-dimensions anchored" data-anchor-id="the-generalized-form-for-n-dimensions-1">The generalized form for N dimensions</h4>
+<p>f(X) = sum_{i=1}^{N} x_i^2</p>
+</section>
 <section id="parameters-8" class="level4 doc-section doc-section-parameters">
 <h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-8">Parameters</h4>
 <table class="caption-top table">
@@ -3057,7 +3051,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td>X</td>
 <td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
-<td>Input points with shape (n_samples, 9) or (9,) or (10,) or (n_samples, 10). Input variables order: [Sw, Wfw, A, L, q, l, Rtc, Nz, Wdg, Wp(optional)]</td>
+<td>Input points with shape (n_samples, n_features) or (n_features,). Can be a 1D array for a single point or 2D array for multiple points.</td>
 <td><em>required</em></td>
 </tr>
 </tbody>
@@ -3077,32 +3071,126 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td></td>
 <td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
+<td>np.ndarray: Function values at the input points with shape (n_samples,).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises-4" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises-4">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If X has fewer than 1 dimension.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="note-8" class="level4 doc-section doc-section-note">
+<h4 class="doc-section doc-section-note anchored" data-anchor-id="note-8">Note</h4>
+<ul>
+<li>Global minimum: f(0, 0, …, 0) = 0</li>
+<li>Typical search domain: [-5, 10]^N or [-2, 2]^N</li>
+<li>Characteristics: Convex, unimodal</li>
+</ul>
+</section>
+<section id="examples-8" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-8">Examples</h4>
+<div id="768fe693" class="cell" data-execution_count="18">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([<span class="fl">1.0</span>, <span class="fl">1.0</span>])</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>sphere(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="18">
+<pre><code>array([2.])</code></pre>
+</div>
+</div>
+<div id="34997eaf" class="cell" data-execution_count="19">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function <span class="im">import</span> sphere</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="fl">0.0</span>, <span class="fl">0.0</span>], [<span class="fl">1.0</span>, <span class="fl">1.0</span>], [<span class="fl">0.5</span>, <span class="fl">0.5</span>]])</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>sphere(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<pre><code>array([0. , 2. , 0.5])</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="spotoptim.function.so.wingwt" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.function.so.wingwt">wingwt</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>function.so.wingwt(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Aircraft Wing Weight function.</p>
+<p>The example models the weight of an unpainted light aircraft wing. The function accepts inputs in the unit cube [0,1]^9 and returns the wing weight.</p>
+<section id="parameters-9" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-9">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>X</td>
+<td><a href="https://docs.python.org/3/library/array.html#module-array">array</a> - <code>like</code></td>
+<td>Input points with shape (n_samples, 9) or (9,) or (10,) or (n_samples, 10). Input variables order: [Sw, Wfw, A, L, q, l, Rtc, Nz, Wdg, Wp(optional)]</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-9" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-9">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
 <td>np.ndarray: Wing weight values at the input points with shape (n_samples,).</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="examples-8" class="level4 doc-section doc-section-examples">
-<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-8">Examples</h4>
+<section id="examples-9" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-9">Examples</h4>
 <p>Single point evaluation (Baseline Cessna C172 - Unpainted):</p>
-<div id="a9f9adc4" class="cell" data-execution_count="19">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> wingwt</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Baseline configuration in unit cube</span></span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>x_base <span class="op">=</span> np.array([<span class="fl">0.48</span>, <span class="fl">0.4</span>, <span class="fl">0.38</span>, <span class="fl">0.5</span>, <span class="fl">0.62</span>, <span class="fl">0.344</span>, <span class="fl">0.4</span>, <span class="fl">0.37</span>, <span class="fl">0.38</span>])</span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>wingwt(x_base)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="19">
+<div id="6d555daa" class="cell" data-execution_count="20">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> wingwt</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Baseline configuration in unit cube</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>x_base <span class="op">=</span> np.array([<span class="fl">0.48</span>, <span class="fl">0.4</span>, <span class="fl">0.38</span>, <span class="fl">0.5</span>, <span class="fl">0.62</span>, <span class="fl">0.344</span>, <span class="fl">0.4</span>, <span class="fl">0.37</span>, <span class="fl">0.38</span>])</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>wingwt(x_base)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
 <pre><code>array([233.90840542])</code></pre>
 </div>
 </div>
 <p>Batch evaluation:</p>
-<div id="32adbdec" class="cell" data-execution_count="20">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> wingwt</span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>x_base <span class="op">=</span> np.array([<span class="fl">0.48</span>, <span class="fl">0.4</span>, <span class="fl">0.38</span>, <span class="fl">0.5</span>, <span class="fl">0.62</span>, <span class="fl">0.344</span>, <span class="fl">0.4</span>, <span class="fl">0.37</span>, <span class="fl">0.38</span>])</span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.vstack([x_base, x_base])</span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>wingwt(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="20">
+<div id="08d7412e" class="cell" data-execution_count="21">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.function.so <span class="im">import</span> wingwt</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>x_base <span class="op">=</span> np.array([<span class="fl">0.48</span>, <span class="fl">0.4</span>, <span class="fl">0.38</span>, <span class="fl">0.5</span>, <span class="fl">0.62</span>, <span class="fl">0.344</span>, <span class="fl">0.4</span>, <span class="fl">0.37</span>, <span class="fl">0.38</span>])</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.vstack([x_base, x_base])</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>wingwt(X)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="21">
 <pre><code>array([233.90840542, 233.90840542])</code></pre>
 </div>
 </div>
