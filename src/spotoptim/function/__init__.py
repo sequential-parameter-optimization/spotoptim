@@ -16,6 +16,8 @@ from .so import (
     lennard_jones,
     robot_arm_obstacle,
     wingwt,
+    factor_quadratic,
+    FACTOR_QUADRATIC_LEVELS,
 )
 from .mo import (
     activity_pred,
@@ -46,6 +48,8 @@ __all__ = [
     "lennard_jones",
     "robot_arm_obstacle",
     "wingwt",
+    "factor_quadratic",
+    "FACTOR_QUADRATIC_LEVELS",
     "mo_conv2_min",
     "fonseca_fleming",
     "kursawe",

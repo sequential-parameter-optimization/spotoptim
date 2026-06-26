@@ -473,7 +473,18 @@ class TestKrigingFull:
         assert np.all(model.theta_ <= 1.0)
 
     def test_kriging_metric_factorial_options(self):
-        """Test different distance metrics for factor variables."""
+        """Test different distance metrics for factor variables.
+
+        Checks that:
+        - Both 'canberra' and 'hamming' produce finite predictions.
+        - The default metric is 'hamming'.
+        - Hamming is order-agnostic: all distinct single-factor pairs are
+          equidistant (correlation(0,1) == correlation(0,2) == correlation(1,2)).
+        - Canberra is order-dependent: adjacent pairs can have different distances
+          (canberra(1,2) < canberra(0,1) on integer codes because 1/3 < 1).
+        """
+        from spotoptim.surrogate.kernels import SpotOptimKernel
+
         X = np.array([[0, 0], [1, 0], [0, 1], [1, 1], [2, 2], [2, 0]])
         y = np.array([1.0, 2.0, 1.5, 2.5, 3.0, 2.2])
 
@@ -493,6 +504,40 @@ class TestKrigingFull:
             y_pred = model.predict(X_test)
 
             assert np.isfinite(y_pred[0]), f"Prediction failed for metric {metric}"
+
+        # The default must be 'hamming' (changed from 'canberra').
+        assert Kriging().metric_factorial == "hamming"
+
+        # --- Behavioral assertion: nominal (hamming) vs ordinal (canberra) ---
+        # Use a single factor dimension with three levels: 0, 1, 2.
+        theta = np.array([1.0])
+        var_type = ["factor"]
+        X_levels = np.array([[0], [1], [2]], dtype=float)
+
+        # Hamming: every distinct pair has distance = 1 (fraction of mismatches
+        # for a length-1 vector → always 1 when values differ).
+        # Therefore all off-diagonal correlations must be identical.
+        k_hamming = SpotOptimKernel(
+            theta=theta, var_type=var_type, metric_factorial="hamming"
+        )
+        K_hamming = k_hamming(X_levels)
+        # corr(0,1) == corr(1,2) demonstrates order-agnostic equidistance
+        assert np.isclose(K_hamming[0, 1], K_hamming[1, 2]), (
+            "Hamming kernel must assign equal correlation to all distinct factor pairs "
+            f"(got {K_hamming[0, 1]:.6f} vs {K_hamming[1, 2]:.6f})"
+        )
+
+        # Canberra on integer codes: canberra(1,2)=|1-2|/(|1|+|2|)=1/3,
+        # but canberra(0,1)=|0-1|/(|0|+|1|)=1.  So corr(1,2) > corr(0,1).
+        k_canberra = SpotOptimKernel(
+            theta=theta, var_type=var_type, metric_factorial="canberra"
+        )
+        K_canberra = k_canberra(X_levels)
+        # corr(1,2) != corr(0,1) demonstrates order-dependence
+        assert not np.isclose(K_canberra[0, 1], K_canberra[1, 2]), (
+            "Canberra kernel should assign different correlations to pairs (0,1) and (1,2) "
+            f"(got {K_canberra[0, 1]:.6f} and {K_canberra[1, 2]:.6f})"
+        )
 
     def test_kriging_higher_dimensional(self):
         """Test Kriging on higher dimensional problem."""

@@ -29,6 +29,7 @@ from spotoptim.utils import dimreduction as _dimred
 from spotoptim.optimizer import acquisition as _acq
 from spotoptim.core import storage as _storage
 from spotoptim.optimizer.wrapper import gpr_minimize_wrapper
+from spotoptim.surrogate import Kriging
 
 
 @dataclass
@@ -88,6 +89,10 @@ class SpotOptimConfig:
         acquisition_optimizer_kwargs (Optional[Dict[str, Any]]): Keyword arguments for the acquisition function optimizer.
         args (Tuple): Arguments for the objective function.
         kwargs (Optional[Dict[str, Any]]): Keyword arguments for the objective function.
+        metric_factorial (str): Distance metric used by a factor-aware Kriging surrogate for
+            nominal (categorical) variables.  ``"hamming"`` (default) treats all distinct
+            factor levels as equidistant, which is correct for unordered factors.
+            Any scipy pairwise distance metric string is accepted.
 
 
     Examples:
@@ -188,6 +193,7 @@ class SpotOptimConfig:
     acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
+    metric_factorial: str = "hamming"
 
     def __post_init__(self):
         if self.kwargs is None:
@@ -436,6 +442,13 @@ class SpotOptim(BaseEstimator):
                 * "cosine": Cosine distance.
                 * "correlation": Correlation distance.
                 * "canberra", "braycurtis", "sqeuclidean", etc.
+        metric_factorial (str, optional):
+            Distance metric used for nominal (factor) variables by a factor-aware
+            Kriging surrogate. ``"hamming"`` (default) treats all distinct factor
+            levels as equidistant, which is correct for unordered factors; any
+            scipy pairwise distance metric string is accepted. Only takes effect
+            when factor variables are present and ``surrogate`` is left as ``None``
+            (an order-agnostic Kriging is then built automatically).
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -761,6 +774,7 @@ class SpotOptim(BaseEstimator):
         acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
+        metric_factorial: str = "hamming",
     ):
         warnings.filterwarnings(warnings_filter)
 
@@ -839,6 +853,7 @@ class SpotOptim(BaseEstimator):
             acquisition_optimizer_kwargs=acquisition_optimizer_kwargs,
             args=args,
             kwargs=kwargs,
+            metric_factorial=metric_factorial,
         )
 
         # Initialize State
@@ -908,6 +923,8 @@ class SpotOptim(BaseEstimator):
 
         # Initialize surrogate model(s)
         self.init_surrogate()
+        # Warn if factor variables are being modelled with a factor-blind surrogate
+        self._validate_factor_surrogate_compat()
 
         # Design generator (from scipy.stats.qmc)
         self.lhs_sampler = LatinHypercube(d=self.n_dim, rng=self.seed)
@@ -1645,24 +1662,89 @@ class SpotOptim(BaseEstimator):
             self._max_surrogate_points_list = None
             self._active_max_surrogate_points = self.config.max_surrogate_points
 
-            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
-                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
-            )
-
-            # Determine optimizer for GPR
-            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
-            if self.config.acquisition_optimizer_kwargs is not None:
-                optimizer = partial(
-                    gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
+            if self._factor_maps:
+                # Factor variables are present: use a nominal (order-agnostic) Kriging
+                # surrogate so the kernel treats factor levels as equidistant.
+                # var_type is already the reduced var_type (after setup_dimension_reduction).
+                self.surrogate = Kriging(
+                    var_type=list(self.var_type),
+                    metric_factorial=self.config.metric_factorial,
+                    seed=self.seed if self.seed is not None else 124,
+                )
+            else:
+                # No factor variables: use the standard GaussianProcessRegressor.
+                kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
+                    length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
                 )
 
-            self.surrogate = GaussianProcessRegressor(
-                kernel=kernel,
-                n_restarts_optimizer=100,
-                normalize_y=True,
-                random_state=self.seed,
-                optimizer=optimizer,
-            )
+                # Determine optimizer for GPR
+                optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
+                if self.config.acquisition_optimizer_kwargs is not None:
+                    optimizer = partial(
+                        gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
+                    )
+
+                self.surrogate = GaussianProcessRegressor(
+                    kernel=kernel,
+                    n_restarts_optimizer=100,
+                    normalize_y=True,
+                    random_state=self.seed,
+                    optimizer=optimizer,
+                )
+
+    def _validate_factor_surrogate_compat(self) -> None:
+        """Warn when factor variables are present but the surrogate is factor-blind.
+
+        Called once after ``init_surrogate`` — at that point ``self._factor_maps``
+        is fully populated and the surrogate is set.  Fires only when there is at
+        least one factor dimension.  Issues a ``UserWarning`` (not an exception) so
+        that users can still proceed but are informed of the mismatch.
+
+        Warns in two situations:
+
+        * The surrogate is not a :class:`~spotoptim.surrogate.Kriging` at all
+          (e.g. sklearn GPR, ``SimpleKriging``, ``RandomForestRegressor``).  Such
+          surrogates treat factor integer codes as ordinal numbers, which is
+          incorrect for unordered categorical variables.
+
+        * The surrogate IS a :class:`~spotoptim.surrogate.Kriging` but its
+          ``metric_factorial`` is ``"canberra"``, which is order-dependent and
+          singles out level index 0.
+
+        Returns:
+            None
+        """
+        if not self._factor_maps:
+            return  # No factor variables → nothing to validate
+
+        # Use a nested catch_warnings context to ensure this one-time configuration
+        # warning is always visible to the caller, even when the SpotOptim instance
+        # was created with warnings_filter="ignore" (the default).  Users who want to
+        # silence it permanently can use warnings.filterwarnings("ignore", ...) before
+        # calling SpotOptim.
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            if not isinstance(self.surrogate, Kriging):
+                warnings.warn(
+                    f"Factor variables detected (original bounds dimensions: "
+                    f"{sorted(self._factor_maps.keys())}) "
+                    f"but the active surrogate ({type(self.surrogate).__name__}) does not "
+                    f"support nominal (order-agnostic) factor metrics. Factor integer codes "
+                    f"will be treated as ordinal numbers, which may mislead the surrogate. "
+                    f"Consider using a factor-aware Kriging surrogate: "
+                    f"Kriging(metric_factorial='hamming').",
+                    UserWarning,
+                    stacklevel=3,
+                )
+            elif self.surrogate.metric_factorial == "canberra":
+                warnings.warn(
+                    "Factor variables detected but the Kriging surrogate uses "
+                    "metric_factorial='canberra', which is order-dependent and singles "
+                    "out factor level index 0. Use metric_factorial='hamming' for "
+                    "unordered (nominal) factor variables.",
+                    UserWarning,
+                    stacklevel=3,
+                )
 
     def get_initial_design(self, X0: Optional[np.ndarray] = None) -> np.ndarray:
         """Generate or process initial design points. Ensures that design points are in
@@ -2053,6 +2135,18 @@ class SpotOptim(BaseEstimator):
                     f"from {X.shape[0]} total points for surrogate fitting."
                 )
             X_fit, y_fit = self.fit_selection_dispatcher(X, y)
+
+        # B3: Propagate the reduced var_type to the surrogate before fitting.
+        # This activates the factor kernel mask on a user-provided Kriging whose
+        # var_type is still at its constructor default (None → ["float"]).
+        # self.var_type is already the reduced var_type here (dimension reduction
+        # runs in setup_dimension_reduction before fitting, and the fit selection
+        # only drops rows). The length guard is a defensive check against an
+        # externally-supplied X whose column count does not match the active space.
+        if hasattr(self.surrogate, "var_type") and len(self.var_type) == X_fit.shape[1]:
+            surrogate_vt = getattr(self.surrogate, "var_type", None)
+            if surrogate_vt is None or surrogate_vt == ["float"]:
+                self.surrogate.var_type = list(self.var_type)
 
         self.surrogate.fit(X_fit, y_fit)
 
