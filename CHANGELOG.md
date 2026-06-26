@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.0.0...v2.1.0) (2026-06-26)
+
+### Features
+
+* **surrogate:** remove auto factor-aware Kriging; keep user in control ([e41b849](https://github.com/sequential-parameter-optimization/spotoptim/commit/e41b8497045e5f89647c790f5bce9b00c766a5e5))
+
 ## [2.0.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v1.0.3...v2.0.0) (2026-06-26)
 
 ### ⚠ BREAKING CHANGES
