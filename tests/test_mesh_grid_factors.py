@@ -345,14 +345,12 @@ def test_plot_surrogate_with_factors_integration():
     var_type = ["int", "factor", "float"]
     var_name = ["l1", "activation", "lr"]
 
-    # max_iter > n_initial ensures at least one surrogate fit happens so the
-    # plot call (which calls surrogate.predict) works for both GPR and Kriging.
     opt = SpotOptim(
         fun=objective_with_factors,
         bounds=bounds,
         var_type=var_type,
         var_name=var_name,
-        max_iter=8,
+        max_iter=5,
         n_initial=5,
         seed=42,
     )

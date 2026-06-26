@@ -89,10 +89,6 @@ class SpotOptimConfig:
         acquisition_optimizer_kwargs (Optional[Dict[str, Any]]): Keyword arguments for the acquisition function optimizer.
         args (Tuple): Arguments for the objective function.
         kwargs (Optional[Dict[str, Any]]): Keyword arguments for the objective function.
-        metric_factorial (str): Distance metric used by a factor-aware Kriging surrogate for
-            nominal (categorical) variables.  ``"hamming"`` (default) treats all distinct
-            factor levels as equidistant, which is correct for unordered factors.
-            Any scipy pairwise distance metric string is accepted.
 
 
     Examples:
@@ -193,7 +189,6 @@ class SpotOptimConfig:
     acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None
     args: Tuple = ()
     kwargs: Optional[Dict[str, Any]] = None
-    metric_factorial: str = "hamming"
 
     def __post_init__(self):
         if self.kwargs is None:
@@ -442,13 +437,6 @@ class SpotOptim(BaseEstimator):
                 * "cosine": Cosine distance.
                 * "correlation": Correlation distance.
                 * "canberra", "braycurtis", "sqeuclidean", etc.
-        metric_factorial (str, optional):
-            Distance metric used for nominal (factor) variables by a factor-aware
-            Kriging surrogate. ``"hamming"`` (default) treats all distinct factor
-            levels as equidistant, which is correct for unordered factors; any
-            scipy pairwise distance metric string is accepted. Only takes effect
-            when factor variables are present and ``surrogate`` is left as ``None``
-            (an order-agnostic Kriging is then built automatically).
 
     Attributes:
         X_ (ndarray): All evaluated points, shape (n_samples, n_features).
@@ -774,7 +762,6 @@ class SpotOptim(BaseEstimator):
         acquisition_optimizer_kwargs: Optional[Dict[str, Any]] = None,
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
-        metric_factorial: str = "hamming",
     ):
         warnings.filterwarnings(warnings_filter)
 
@@ -853,7 +840,6 @@ class SpotOptim(BaseEstimator):
             acquisition_optimizer_kwargs=acquisition_optimizer_kwargs,
             args=args,
             kwargs=kwargs,
-            metric_factorial=metric_factorial,
         )
 
         # Initialize State
@@ -1662,35 +1648,29 @@ class SpotOptim(BaseEstimator):
             self._max_surrogate_points_list = None
             self._active_max_surrogate_points = self.config.max_surrogate_points
 
-            if self._factor_maps:
-                # Factor variables are present: use a nominal (order-agnostic) Kriging
-                # surrogate so the kernel treats factor levels as equidistant.
-                # var_type is already the reduced var_type (after setup_dimension_reduction).
-                self.surrogate = Kriging(
-                    var_type=list(self.var_type),
-                    metric_factorial=self.config.metric_factorial,
-                    seed=self.seed if self.seed is not None else 124,
-                )
-            else:
-                # No factor variables: use the standard GaussianProcessRegressor.
-                kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
-                    length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
+            # Default surrogate is the GaussianProcessRegressor for ALL problem
+            # types. Factor variables are NOT auto-switched to a Kriging: the user
+            # keeps full control over the surrogate (and is informed by
+            # _validate_factor_surrogate_compat that a factor-aware
+            # Kriging(metric_factorial="hamming") is available for nominal factors).
+            kernel = ConstantKernel(1.0, (1e-2, 1e12)) * Matern(
+                length_scale=1.0, length_scale_bounds=(1e-4, 1e2), nu=2.5
+            )
+
+            # Determine optimizer for GPR
+            optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
+            if self.config.acquisition_optimizer_kwargs is not None:
+                optimizer = partial(
+                    gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
                 )
 
-                # Determine optimizer for GPR
-                optimizer = "fmin_l_bfgs_b"  # Default used by sklearn
-                if self.config.acquisition_optimizer_kwargs is not None:
-                    optimizer = partial(
-                        gpr_minimize_wrapper, **self.config.acquisition_optimizer_kwargs
-                    )
-
-                self.surrogate = GaussianProcessRegressor(
-                    kernel=kernel,
-                    n_restarts_optimizer=100,
-                    normalize_y=True,
-                    random_state=self.seed,
-                    optimizer=optimizer,
-                )
+            self.surrogate = GaussianProcessRegressor(
+                kernel=kernel,
+                n_restarts_optimizer=100,
+                normalize_y=True,
+                random_state=self.seed,
+                optimizer=optimizer,
+            )
 
     def _validate_factor_surrogate_compat(self) -> None:
         """Warn when factor variables are present but the surrogate is factor-blind.
