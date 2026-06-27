@@ -117,6 +117,107 @@ def prepare_de_kwargs(optimizer: SpotOptimProtocol, x0=None):
     return filtered_kwargs
 
 
+# Normalized-space margin used to pull a warm-start x0 strictly inside the unit
+# interval that scipy's DifferentialEvolutionSolver validates against. It must
+# exceed the ~1e-16 rounding granularity of that rescaling by several orders of
+# magnitude (robust) while staying negligible in parameter space (faithful).
+_DE_X0_NORM_MARGIN = 1e-12
+
+
+def sanitize_de_x0(
+    x0: np.ndarray, bounds: Optional[List[Tuple[float, float]]]
+) -> Optional[np.ndarray]:
+    """Make a warm-start ``x0`` acceptable to scipy ``differential_evolution``.
+
+    ``DifferentialEvolutionSolver`` does not validate ``x0`` against the raw box
+    ``[lower, upper]``. It rescales every coordinate into a unit interval using
+    ``scaled = (x0 - mid) * recip + 0.5`` with ``mid = (lower + upper) / 2`` and
+    ``recip = 1 / |upper - lower|`` (``0`` when ``lower == upper``), then rejects
+    the whole run if any ``scaled`` falls outside ``[0, 1]``.
+
+    An incumbent that legitimately sits *on* a box bound (optimizers converge to
+    corners; clipped warm-starts and estimator defaults land exactly on a bound)
+    can rescale to a hair outside ``[0, 1]`` purely from floating-point rounding
+    — e.g. ``0.01`` on the bound ``(0.01, 100.0)`` normalizes to ``-1.1e-16``.
+    A raw-space nudge such as ``np.nextafter`` cannot repair this: one ULP at a
+    small bound (``~1.7e-18`` at ``0.01``) is far below the rounding granularity
+    of the rescaling at the span's magnitude, so the nudged value normalizes to
+    the same out-of-range number. The nudge is simply in the wrong metric.
+
+    This helper therefore clamps in scipy's *own* normalized metric and maps the
+    result back with scipy's exact inverse, leaving an already-valid ``x0``
+    untouched (bit-for-bit) and returning ``None`` only if a coordinate cannot be
+    made interior — in which case the caller drops the optional warm-start.
+
+    Args:
+        x0 (ndarray): Candidate warm-start point in internal (transformed) scale,
+            shape ``(n_features,)``.
+        bounds (list of tuple): Per-dimension ``(lower, upper)`` bounds in
+            internal scale, exactly as passed to ``differential_evolution``.
+
+    Returns:
+        Optional[ndarray]: ``x0`` unchanged when scipy already accepts it; a
+        minimally adjusted copy guaranteed to pass scipy's check; or ``None``
+        when no acceptable point exists — ``bounds`` is ``None``, ``x0`` is not
+        all finite, or a coordinate cannot be made interior. ``None`` simply
+        drops the optional warm-start for that infill.
+
+    Examples:
+        ```{python}
+        import numpy as np
+        from spotoptim.optimizer.acquisition import sanitize_de_x0
+
+        # An incumbent exactly on the lower bound of a wide span: the raw value
+        # normalizes just below 0 and scipy would reject it.
+        bounds = [(0.01, 100.0)]
+        x0 = np.array([0.01])
+        fixed = sanitize_de_x0(x0, bounds)
+        lb, ub = 0.01, 100.0
+        mid, span = 0.5 * (lb + ub), abs(ub - lb)
+        scaled = (fixed[0] - mid) / span + 0.5
+        print(f"accepted by scipy: {0.0 <= scaled <= 1.0}")
+        print(f"distance from incumbent: {fixed[0] - 0.01:.2e}")
+        ```
+    """
+    if bounds is None:
+        return None
+    x0 = np.asarray(x0, dtype=float).ravel()
+    # A non-finite incumbent is pathological; never use it as a warm-start.
+    if not np.all(np.isfinite(x0)):
+        return None
+    lower = np.array([b[0] for b in bounds], dtype=float)
+    upper = np.array([b[1] for b in bounds], dtype=float)
+
+    # scipy's exact rescaling constants (see DifferentialEvolutionSolver.__init__
+    # and _unscale_parameters): note span uses |upper - lower|, so reversed
+    # bounds are handled identically to scipy.
+    mid = 0.5 * (lower + upper)
+    span = np.abs(lower - upper)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        recip = np.where(span > 0.0, 1.0 / span, 0.0)
+
+    scaled = (x0 - mid) * recip + 0.5
+
+    # Fast path: scipy already accepts every coordinate -> leave x0 untouched so
+    # currently-working runs stay bit-for-bit identical.
+    if not np.any((scaled < 0.0) | (scaled > 1.0)):
+        return x0
+
+    # Clamp in scipy's normalized metric, then map back with its exact inverse
+    # (_scale_parameters: x = mid + (scaled - 0.5) * span).
+    scaled = np.clip(scaled, _DE_X0_NORM_MARGIN, 1.0 - _DE_X0_NORM_MARGIN)
+    x0_fixed = mid + (scaled - 0.5) * span
+
+    # Defense in depth: re-run scipy's exact check and drop x0 if any residual
+    # rounding still leaves a coordinate outside the unit interval. With finite
+    # x0 and finite bounds this is algebraically unreachable (the margin is far
+    # above the round-trip rounding error); it guards against future drift.
+    check = (x0_fixed - mid) * recip + 0.5
+    if not np.all(np.isfinite(x0_fixed)) or np.any((check < 0.0) | (check > 1.0)):
+        return None
+    return x0_fixed
+
+
 def optimize_acquisition_de(optimizer: SpotOptimProtocol) -> np.ndarray:
     """Optimize using differential evolution.
 
@@ -140,11 +241,17 @@ def optimize_acquisition_de(optimizer: SpotOptimProtocol) -> np.ndarray:
 
     if best_x is not None:
         best_x = optimizer.transform_X(best_x)
-        # Nudge x0 strictly inside DE bounds using nextafter
-        _lb = np.array([b[0] for b in optimizer.bounds])
-        _ub = np.array([b[1] for b in optimizer.bounds])
-        best_x = np.clip(best_x, np.nextafter(_lb, _ub), np.nextafter(_ub, _lb))
-        best_X = best_x if optimizer.rng.rand() < optimizer.de_x0_prob else None
+        # Make x0 acceptable to scipy's differential_evolution, which validates
+        # x0 in a NORMALIZED metric rather than the raw box. An incumbent on a
+        # box bound can otherwise be rejected by floating-point rounding; a
+        # raw-space nudge (np.nextafter) is in the wrong metric and too small to
+        # survive scipy's rescaling when |bound| << span (see sanitize_de_x0).
+        best_x = sanitize_de_x0(best_x, optimizer.bounds)
+        # Draw unconditionally within this branch so the RNG stream is identical
+        # whether or not sanitization succeeds; drop the optional warm-start if
+        # it could not be sanitized.
+        use_x0 = optimizer.rng.rand() < optimizer.de_x0_prob
+        best_X = best_x if (best_x is not None and use_x0) else None
     else:
         best_X = None
 
