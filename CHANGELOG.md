@@ -1,3 +1,9 @@
+## [2.1.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.1.1...v2.1.2) (2026-06-27)
+
+### Bug Fixes
+
+* **deps:** modernize minimum dependency floors ([de8a031](https://github.com/sequential-parameter-optimization/spotoptim/commit/de8a031a8554e950f0047be699dd61b2fe34a8e8))
+
 ## [2.1.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.1.0...v2.1.1) (2026-06-27)
 
 ### Bug Fixes
