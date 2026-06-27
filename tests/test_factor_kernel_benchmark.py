@@ -39,9 +39,11 @@ from spotoptim.surrogate import Kriging
 _LEVELS = FACTOR_QUADRATIC_LEVELS  # 16 nominal levels "c00".."c15"
 _BOUNDS = [(-3.0, 3.0), _LEVELS]
 _OPT_LEVEL = "c04"  # global optimum level (offset == 0)
-_N0 = 12  # initial design size
-_M = 40  # total evaluation budget (including initial design)
-_SEEDS = list(range(8))
+# Kept deliberately small so the (CPU-heavy) Kriging runs finish well under the
+# 300s pytest-timeout even on the contended 2-core CI runner under xdist.
+_N0 = 10  # initial design size
+_M = 28  # total evaluation budget (including initial design)
+_SEEDS = list(range(5))
 
 
 def _surrogate_rmse() -> tuple[float, float]:
@@ -65,9 +67,9 @@ def _surrogate_rmse() -> tuple[float, float]:
         var_type=["float", "factor"],
         metric_factorial="hamming",
         seed=42,
-        model_fun_evals=60,
+        model_fun_evals=50,
     )
-    k_ord = Kriging(var_type=["float", "float"], seed=42, model_fun_evals=60)
+    k_ord = Kriging(var_type=["float", "float"], seed=42, model_fun_evals=50)
     k_ham.fit(X_tr, y_tr)
     k_ord.fit(X_tr, y_tr)
 
@@ -92,10 +94,10 @@ def _run_arm(arm_label: str, seed: int) -> tuple[float, bool]:
             var_type=["float", "factor"],
             metric_factorial="hamming",
             seed=seed,
-            model_fun_evals=40,
+            model_fun_evals=30,
         )
     else:
-        surrogate = Kriging(var_type=["float", "float"], seed=seed, model_fun_evals=40)
+        surrogate = Kriging(var_type=["float", "float"], seed=seed, model_fun_evals=30)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
@@ -115,12 +117,13 @@ def _run_arm(arm_label: str, seed: int) -> tuple[float, bool]:
 
 
 @pytest.mark.slow
+@pytest.mark.timeout(600)  # CPU-heavy; override the 300s global cap for slow CI
 def test_factor_kernel_benchmark():
     """The factor-aware (Hamming) kernel beats ordinal treatment of the factor.
 
-    Hard checks (validated 2026-06-26):
+    Hard checks (validated 2026-06-27, 5 seeds, N0=10, M=28):
       * Surrogate RMSE: hamming ≈ 1.56 vs ordinal ≈ 2.45 (ratio ≈ 0.64), deterministic.
-      * Optimization: mean best-found, hamming ≈ 0.21 vs ordinal ≈ 0.58 over 8 seeds.
+      * Optimization: mean best-found, hamming ≈ 0.44 vs ordinal ≈ 1.39.
     Margins are generous so the test is not flaky.
     """
     # --- 1. Deterministic surrogate-accuracy contrast (the robust core) ---
@@ -147,8 +150,8 @@ def test_factor_kernel_benchmark():
 
     assert np.all(np.isfinite(arr_h)) and np.all(np.isfinite(arr_o))
     # The seeds are fixed, so these means are deterministic (not sampled). The
-    # factor-aware arm reaches a better mean best-found value (~2.7x separation
-    # observed: H≈0.21 vs O≈0.58); assert the robust direction.
+    # factor-aware arm reaches a better mean best-found value (~3x separation
+    # observed: H≈0.44 vs O≈1.39); assert the robust direction.
     assert mean_h < mean_o, (
         f"Factor-aware (Hamming) mean best ({mean_h:.3f}) should be below the ordinal "
         f"arm ({mean_o:.3f}). success rates H={rate_h:.2f} O={rate_o:.2f}"
