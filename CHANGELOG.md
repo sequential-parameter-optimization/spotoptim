@@ -1,3 +1,9 @@
+## [2.1.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.1.0...v2.1.1) (2026-06-27)
+
+### Bug Fixes
+
+* **acquisition:** sanitize DE warm-start x0 in scipy's normalized metric ([17241f8](https://github.com/sequential-parameter-optimization/spotoptim/commit/17241f8fb89ca8a9a0b40460d9c45f5ade0ef64c))
+
 ## [2.1.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.0.0...v2.1.0) (2026-06-26)
 
 ### Features
