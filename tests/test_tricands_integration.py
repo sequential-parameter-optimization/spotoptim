@@ -7,6 +7,7 @@ Tests for tricands integration in SpotOptim.
 """
 
 import numpy as np
+import pytest
 from unittest.mock import MagicMock, patch
 from spotoptim.SpotOptim import SpotOptim
 
@@ -129,3 +130,46 @@ class TestTricandsIntegration:
             # nmax should be max(100*2, 50*50) = 2500
             _, kwargs = mock_tricands.call_args
             assert kwargs["nmax"] >= 2500
+
+
+class TestTricandsMixedSpaceRegression:
+    """Regression test for the tricands OOB crash (ADR 3.0.0, bug 1).
+
+    ``optimize_acquisition_tricands`` normalized the NATURAL-scale
+    ``optimizer.X_`` against the TRANSFORMED-scale ``optimizer.lower/upper``.
+    On a log10 dimension the two scales differ, so the normalized candidates
+    land far outside ``[0, 1]`` and ``tricands()`` raises ``"X outside of
+    lower/upper bounds"`` at the first tricands infill (also reachable from
+    ``de_tricands`` whenever its ``(1 - prob_de_tricands)`` branch is drawn).
+    """
+
+    @staticmethod
+    def _quadratic(X):
+        """Cheap objective: quadratic on the numeric (float, int) columns,
+        ignoring the trailing factor column (a string label at this point)."""
+        arr = np.atleast_2d(X)
+        numeric = arr[:, :2].astype(float)
+        return np.sum(numeric**2, axis=1)
+
+    @pytest.mark.parametrize("acquisition_optimizer", ["tricands", "de_tricands"])
+    def test_mixed_space_runs_past_initial_design(self, acquisition_optimizer):
+        """A log10 float + int + factor problem completes without raising,
+        past the initial design, for both tricands-based acquisition
+        optimizers."""
+        opt = SpotOptim(
+            fun=self._quadratic,
+            bounds=[(1.0, 1000.0), (1, 10), ("a", "b", "c")],
+            var_type=["float", "int", "factor"],
+            var_trans=["log10", None, None],
+            acquisition_optimizer=acquisition_optimizer,
+            n_initial=4,
+            max_iter=8,
+            seed=2,  # reliably exercises the tricands infill pre-fix
+        )
+
+        result = opt.optimize()  # must not raise "X outside of lower/upper bounds"
+
+        assert result.nfev == 8
+        assert 1.0 <= float(result.x[0]) <= 1000.0
+        assert 1 <= float(result.x[1]) <= 10
+        assert result.x[2] in ("a", "b", "c")
