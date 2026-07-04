@@ -278,7 +278,13 @@ class SpotOptim(BaseEstimator):
             For example, max_iter=30 with n_initial=10 will perform 10 initial evaluations plus
             20 sequential optimization iterations. Defaults to 20.
         n_initial (int, optional):
-            Number of initial design points. Defaults to 10.
+            Number of initial design points. Defaults to 10. A ``UserWarning`` is
+            raised when ``n_initial < 2 * n_dim``: a cold-start design that small
+            tends to under-sample the search space and gives the surrogate too
+            little signal to model dimension interactions. The warning is
+            guidance only (existing scripts with a deliberately small
+            ``n_initial`` keep working unchanged); consider
+            ``n_initial=max(10, 2 * n_dim)`` for cold starts.
         surrogate (object, optional):
             Surrogate model with scikit-learn interface (fit/predict methods).
             If None, uses a Gaussian Process Regressor with Matern kernel. Default configuration::
@@ -873,6 +879,26 @@ class SpotOptim(BaseEstimator):
 
         # Derived attribute dimension n_dim
         self.n_dim = len(self.bounds)
+
+        # Guidance for cold-start designs (ADR 2026-07-05, decision 4): a
+        # design with n_initial < 2*n_dim tends to under-sample the search
+        # space, giving the surrogate too little signal to model dimension
+        # interactions. Warning-only — existing small-budget scripts keep
+        # working unchanged. Nested catch_warnings + "always" mirrors
+        # _validate_factor_surrogate_compat: makes the warning visible even
+        # under the default warnings_filter="ignore".
+        if self.n_initial < 2 * self.n_dim:
+            with warnings.catch_warnings():
+                warnings.simplefilter("always")
+                warnings.warn(
+                    f"n_initial ({self.n_initial}) is below 2 * n_dim "
+                    f"({2 * self.n_dim}) for a {self.n_dim}-dimensional problem. "
+                    f"Cold-start designs this small may under-sample the search "
+                    f"space; consider n_initial=max(10, 2 * n_dim) = "
+                    f"{max(10, 2 * self.n_dim)}.",
+                    UserWarning,
+                    stacklevel=2,
+                )
 
         # Default variable types
         if self.var_type is None:
