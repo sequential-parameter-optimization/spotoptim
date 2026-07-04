@@ -114,7 +114,8 @@ def inverse_transform_value(x: float, trans: Optional[str]) -> float:
     elif trans == "square":
         return np.sqrt(x)
     elif trans == "cube":
-        return np.power(x, 1.0 / 3.0)
+        # np.cbrt handles negative inputs; np.power(x, 1/3) returns NaN there.
+        return np.cbrt(x)
     elif trans == "inv" or trans == "reciprocal":
         return 1.0 / x
 

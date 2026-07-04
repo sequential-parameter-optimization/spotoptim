@@ -685,16 +685,6 @@ class TestTransformRoundTripProperties:
                 f"{x} -> {transformed} -> {back}"
             )
 
-    @pytest.mark.xfail(
-        reason=(
-            "BUG: inverse_transform_value(x, 'cube') uses np.power(x, 1/3), "
-            "which returns NaN for negative inputs. The forward 'cube' "
-            "transform accepts negative values (transform_bounds maps e.g. "
-            "(-2, 2) to (-8, 8)), so any negative internal proposal "
-            "inverse-transforms to NaN instead of its real cube root."
-        ),
-        strict=True,
-    )
     def test_round_trip_cube_negative_values(self):
         """Cube is bijective on all reals; the inverse must round-trip x < 0."""
         for x in (-2.0, -0.5):
