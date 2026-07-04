@@ -43,8 +43,17 @@ def optimize_acquisition_tricands(optimizer: SpotOptimProtocol) -> np.ndarray:
     # Generate candidates
     nmax = max(100 * optimizer.n_dim, optimizer.acquisition_fun_return_size * 50)
 
-    # Normalize X_ to [0, 1] relative to bounds
-    X_norm = (optimizer.X_ - optimizer.lower) / (optimizer.upper - optimizer.lower)
+    # optimizer.lower/upper are TRANSFORMED-scale bounds, so X_ (natural scale)
+    # must be transformed first before normalizing against them — otherwise any
+    # log10/sqrt/... dim lands far outside [0, 1] and tricands() raises "X
+    # outside of lower/upper bounds" (mirrors try_optimizer_candidates, which
+    # already calls optimizer.transform_X before comparing against bounds).
+    X_internal = optimizer.transform_X(optimizer.X_)
+    span = optimizer.upper - optimizer.lower
+
+    # Normalize to [0, 1] relative to the transformed bounds, clipping away any
+    # residual floating-point overshoot at the box edges.
+    X_norm = np.clip((X_internal - optimizer.lower) / span, 0.0, 1.0)
 
     # Generate candidates in [0, 1] space
     X_cands_norm = tricands(
@@ -55,8 +64,10 @@ def optimize_acquisition_tricands(optimizer: SpotOptimProtocol) -> np.ndarray:
         fringe=optimizer.tricands_fringe,
     )
 
-    # Denormalize candidates back to original space
-    X_cands = X_cands_norm * (optimizer.upper - optimizer.lower) + optimizer.lower
+    # Denormalize candidates back to transformed space, clipping into bounds.
+    X_cands = np.clip(
+        X_cands_norm * span + optimizer.lower, optimizer.lower, optimizer.upper
+    )
 
     # Evaluate acquisition function on all candidates
     acq_values = optimizer._acquisition_function(X_cands.T)
