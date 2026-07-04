@@ -2615,9 +2615,16 @@ class SpotOptim(BaseEstimator):
 
                     if self.restart_inject_best:
                         # Inject the current global best into the next run's initial design.
-                        # best_res.x is in natural scale; validate_x0 converts to internal scale
-                        # so the injected point can be mixed with LHS samples.
-                        self.x0 = self.validate_x0(best_res.x)
+                        # Use the pre-string-map numeric encoding (x_encoded) when available:
+                        # best_res.x has factor dims mapped to string labels, which
+                        # validate_x0's `low <= val <= high` bounds check cannot compare
+                        # (UFuncTypeError). x_encoded carries the same full-dim natural-scale
+                        # point with factor dims still as integer codes.
+                        # validate_x0 converts to internal scale so the injected point can be
+                        # mixed with LHS samples.
+                        self.x0 = self.validate_x0(
+                            getattr(best_res, "x_encoded", best_res.x)
+                        )
                         # Keep current_X0 unset so the initial design is rebuilt around the injected x0.
                         current_X0 = None
 
@@ -2641,8 +2648,13 @@ class SpotOptim(BaseEstimator):
         # Find best result based on 'fun'
         best_result = min(self.restarts_results_, key=lambda r: r.fun)
 
-        # Merge results from all restart runs
-        X_all_list = [res.X for res in self.restarts_results_]
+        # Merge results from all restart runs. Use the numeric encoding
+        # (X_encoded) rather than the string-mapped X: on a factor problem the
+        # latter has object dtype, which would leave self.X_ non-numeric after
+        # a restart and break the post-restart surrogate fit.
+        X_all_list = [
+            getattr(res, "X_encoded", res.X) for res in self.restarts_results_
+        ]
         y_all_list = [res.y for res in self.restarts_results_]
 
         # Concatenate all evaluations
@@ -2653,8 +2665,9 @@ class SpotOptim(BaseEstimator):
         # Aggregated iterations (sum of all runs)
         self.n_iter_ = sum(getattr(res, "nit", 0) for res in self.restarts_results_)
 
-        # Update best solution found
-        self.best_x_ = best_result.x
+        # Update best solution found. Same numeric-encoding rationale as X_
+        # above, for cross-path (x0 injection vs. best_x_) consistency.
+        self.best_x_ = getattr(best_result, "x_encoded", best_result.x)
         self.best_y_ = best_result.fun
 
         # If the patience-based early-stopping rule fired, rewrite the result
@@ -3563,6 +3576,14 @@ class SpotOptim(BaseEstimator):
                     message=status_message,
                     X=X_result,
                     y=self.y_,
+                    # Pre-string-map numeric form of x/X (full-dim, natural
+                    # scale, with factor dims as integer codes rather than
+                    # string labels). optimize()'s restart-inject path and the
+                    # cross-restart X_ merge use these instead of x/X, so a
+                    # factor problem's restart never feeds a string into
+                    # validate_x0()/the surrogate (UFuncTypeError).
+                    x_encoded=best_x_full,
+                    X_encoded=X_full,
                 )
                 return "RESTART", res
 
@@ -3621,6 +3642,10 @@ class SpotOptim(BaseEstimator):
             message=message,
             X=X_result,
             y=self.y_,
+            # See the RESTART branch above: pre-string-map numeric x/X, used
+            # by optimize()'s restart-inject path and cross-restart X_ merge.
+            x_encoded=best_x_full,
+            X_encoded=X_full,
         )
 
     def determine_termination(self, timeout_start: float) -> str:
