@@ -393,6 +393,55 @@ class TestFactorVariables:
         print(f"Best score: {result.fun:.4f}")
 
 
+class TestFactorDecodeProperties:
+    """Property tests: integer factor indices always decode to a valid level.
+
+    Complements ``test_factor_rounding_and_clipping`` (3 levels, mild
+    out-of-range values): checks the full index -> level bijection and
+    extreme out-of-range proposals across several level counts.
+    """
+
+    @pytest.mark.parametrize("n_levels", [2, 3, 5, 20])
+    def test_factor_bounds_and_index_level_bijection(self, n_levels):
+        """Bounds are exactly (0, n_levels-1) ints; index i decodes to level i."""
+        levels = tuple(f"lvl_{i:02d}" for i in range(n_levels))
+        opt = SpotOptim(
+            fun=lambda X: np.zeros(len(np.atleast_2d(X))),
+            bounds=[levels, (-5.0, 5.0)],
+            max_iter=5,
+            n_initial=3,
+        )
+        # Factor bounds are (0, n_levels - 1) as Python ints.
+        assert opt.bounds[0] == (0, n_levels - 1)
+        assert isinstance(opt.bounds[0][0], int)
+        assert isinstance(opt.bounds[0][1], int)
+
+        X = np.column_stack([np.arange(n_levels, dtype=float), np.zeros(n_levels)])
+        X_mapped = opt.map_to_factor_values(X)
+        decoded = [X_mapped[i, 0] for i in range(n_levels)]
+        assert decoded == list(levels)
+
+    @pytest.mark.parametrize("n_levels", [2, 3, 20])
+    def test_out_of_range_proposals_clamp_at_both_ends(self, n_levels):
+        """Arbitrarily far out-of-range proposals clamp to the first/last level."""
+        levels = tuple(f"lvl_{i:02d}" for i in range(n_levels))
+        opt = SpotOptim(
+            fun=lambda X: np.zeros(len(np.atleast_2d(X))),
+            bounds=[levels],
+            max_iter=5,
+            n_initial=3,
+        )
+        below = [-1e9, -100.0, -1.0, -0.51]
+        above = [n_levels - 0.49, float(n_levels), n_levels + 100.0, 1e9]
+        X = np.array(below + above, dtype=float).reshape(-1, 1)
+        X_mapped = opt.map_to_factor_values(X)
+        decoded = [X_mapped[i, 0] for i in range(X.shape[0])]
+        assert decoded[: len(below)] == [levels[0]] * len(below)
+        assert decoded[len(below) :] == [levels[-1]] * len(above)
+        # Every decoded value is a declared level.
+        assert set(decoded) <= set(levels)
+
+
 class TestFactorAwareKriging:
     """Tests for factor/surrogate compatibility: reduced var_type propagation (B3)
     and the factor-blind-surrogate warning (B4).

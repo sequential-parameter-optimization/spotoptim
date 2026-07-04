@@ -6,7 +6,9 @@
 
 import numpy as np
 import pytest
+
 from spotoptim import SpotOptim
+from spotoptim.utils.transform import inverse_transform_value, transform_value
 
 
 class TestTransformationBasics:
@@ -623,6 +625,85 @@ class TestTransformationIntegration:
         assert 0.001 <= result.x[0] <= 1.0
         assert result.x[1] == 5.0  # Fixed value
         assert 10 <= result.x[2] <= 100
+
+
+class TestTransformRoundTripProperties:
+    """Property: ``inverse_transform_value(transform_value(x, t), t) ≈ x``.
+
+    Single interior-value round-trips already exist elsewhere
+    (``test_spotoptim_deep.py`` for the static names,
+    ``test_parameter_transform.py`` for a few dynamic forms). This class
+    closes the remaining gaps: bound ENDPOINTS and values one ULP inside them
+    (``np.nextafter``) for every supported transform string, plus the
+    previously untested dynamic forms ``pow(b, x)``, non-integer ``pow(x, p)``,
+    and non-10 ``log(x, b)`` bases.
+    """
+
+    # (transform string, representative natural-scale bounds in its domain)
+    ROUND_TRIP_CASES = [
+        (None, (-5.0, 5.0)),
+        ("id", (-5.0, 5.0)),
+        ("log10", (0.001, 1.0)),
+        ("log10", (10.0, 4000.0)),
+        ("log", (0.1, 10.0)),
+        ("ln", (0.1, 10.0)),
+        ("sqrt", (1.0, 100.0)),
+        ("exp", (-2.0, 2.0)),
+        ("square", (0.5, 10.0)),
+        ("cube", (1.0, 8.0)),
+        ("inv", (0.1, 10.0)),
+        ("reciprocal", (0.01, 100.0)),
+        ("log(x)", (0.1, 10.0)),
+        ("sqrt(x)", (1.0, 100.0)),
+        ("pow(x, 2)", (0.5, 10.0)),
+        ("pow(x, 2.5)", (0.5, 10.0)),
+        ("pow(x, 3)", (0.5, 8.0)),
+        ("pow(2, x)", (-3.0, 8.0)),
+        ("pow(10, x)", (-4.0, -1.0)),
+        ("log(x, 2)", (0.5, 1024.0)),
+        ("log(x, 10)", (0.001, 1000.0)),
+    ]
+
+    @pytest.mark.parametrize(("trans", "bounds"), ROUND_TRIP_CASES)
+    def test_round_trip_at_endpoints_and_interior(self, trans, bounds):
+        """Round-trip holds at both endpoints, one ULP inside each, and mid."""
+        lower, upper = bounds
+        values = [
+            lower,
+            float(np.nextafter(lower, upper)),  # one ULP inside the lower bound
+            0.5 * (lower + upper),
+            float(np.nextafter(upper, lower)),  # one ULP inside the upper bound
+            upper,
+        ]
+        for x in values:
+            transformed = transform_value(x, trans)
+            assert np.isfinite(transformed), f"{trans!r}: transform({x}) not finite"
+            back = inverse_transform_value(float(transformed), trans)
+            assert np.isfinite(back), f"{trans!r}: inverse({transformed}) not finite"
+            assert back == pytest.approx(x, rel=1e-9, abs=1e-12), (
+                f"round-trip failed for trans={trans!r}: "
+                f"{x} -> {transformed} -> {back}"
+            )
+
+    @pytest.mark.xfail(
+        reason=(
+            "BUG: inverse_transform_value(x, 'cube') uses np.power(x, 1/3), "
+            "which returns NaN for negative inputs. The forward 'cube' "
+            "transform accepts negative values (transform_bounds maps e.g. "
+            "(-2, 2) to (-8, 8)), so any negative internal proposal "
+            "inverse-transforms to NaN instead of its real cube root."
+        ),
+        strict=True,
+    )
+    def test_round_trip_cube_negative_values(self):
+        """Cube is bijective on all reals; the inverse must round-trip x < 0."""
+        for x in (-2.0, -0.5):
+            transformed = transform_value(x, "cube")
+            back = inverse_transform_value(float(transformed), "cube")
+            assert np.isfinite(
+                back
+            ), f"inverse of cube({x}) = {transformed} is not finite"
+            assert back == pytest.approx(x, rel=1e-9)
 
 
 if __name__ == "__main__":
