@@ -385,7 +385,18 @@ def try_optimizer_candidates(
     if current_batch is None:
         current_batch = []
 
-    x_next_candidates = optimizer.optimize_acquisition_func()
+    try:
+        x_next_candidates = optimizer.optimize_acquisition_func()
+    except Exception as err:
+        # Any acquisition-optimizer failure (e.g. an out-of-bounds tricands
+        # candidate on a mixed-scale problem, or a restart-injected factor
+        # string reaching a numeric optimizer) degrades to an empty candidate
+        # set here, so suggest_next_infill_point() falls through to the
+        # existing acquisition_failure_strategy fallback instead of aborting
+        # optimize() entirely.
+        if optimizer.verbose:
+            print(f"Warning: Acquisition optimizer failed ({err}). Falling back.")
+        return []
 
     # Ensure iterable of 1D arrays
     if x_next_candidates.ndim == 1:
