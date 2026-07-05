@@ -2529,6 +2529,8 @@ class SpotOptim(BaseEstimator):
                 * message: termination message indicating reason for stopping, including statistics (function value, iterations, evaluations)
                 * X: all evaluated points in Natural Space
                 * y: all function values
+                * x_encoded: best point in full-dimension natural-NUMERIC encoding (factor dimensions as integer level indices) — the representation restart injection and ``validate_x0`` consume
+                * X_encoded: all evaluated points in the same numeric encoding (numeric dtype even when factor dimensions map to string labels in ``X``)
 
         Examples:
             ```{python}
