@@ -11,6 +11,7 @@ works correctly.
 """
 
 import numpy as np
+import pytest
 from spotoptim.SpotOptim import SpotOptim
 
 
@@ -340,3 +341,34 @@ class TestAcquisitionFailureEdgeCases:
             err_msg="Results with same seed should be identical",
         )
         assert abs(results[0].fun - results[1].fun) < 1e-10
+
+
+class TestAcquisitionOptimizerExceptionSafetyNet:
+    """Any acquisition-optimizer exception degrades to the failure fallback
+    instead of aborting optimize() (ADR 2026-07-05, D1 safety net)."""
+
+    def test_exception_falls_back_and_warns(self):
+        def func(X):
+            return np.sum(X**2, axis=1)
+
+        optimizer = SpotOptim(
+            fun=func,
+            bounds=[(-5, 5), (-5, 5)],
+            max_iter=8,
+            n_initial=4,
+            seed=42,
+            verbose=False,
+        )
+
+        def _boom():
+            raise RuntimeError("synthetic acquisition failure")
+
+        optimizer.optimize_acquisition_func = _boom
+
+        with pytest.warns(RuntimeWarning, match="Acquisition optimizer failed"):
+            result = optimizer.optimize()
+
+        # Every post-design infill degraded to the fallback strategy, yet the
+        # run completed its full budget.
+        assert result.nfev == 8
+        assert np.isfinite(result.fun)

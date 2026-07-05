@@ -71,8 +71,6 @@ class Kriging(BaseEstimator, RegressorMixin):
         min_theta (float, optional): Minimum log10(theta) bound. Defaults to -3.0.
         max_theta (float, optional): Maximum log10(theta) bound. Defaults to 2.0.
         theta_init_zero (bool, optional): Initialize theta to zero. Defaults to False.
-        p_val (float, optional): Power parameter for correlation (fixed at 2.0 for Gaussian).
-            Defaults to 2.0.
         n_p (int, optional): Number of p parameters (currently not optimized). Defaults to 1.
         optim_p (bool, optional): Optimize p parameters (currently not supported). Defaults to False.
         min_Lambda (float, optional): Minimum log10(Lambda) bound. Defaults to -9.0.
@@ -160,7 +158,6 @@ class Kriging(BaseEstimator, RegressorMixin):
         min_theta: float = -3.0,
         max_theta: float = 2.0,
         theta_init_zero: bool = False,
-        p_val: float = 2.0,
         n_p: int = 1,
         optim_p: bool = False,
         min_Lambda: float = -9.0,
@@ -188,7 +185,6 @@ class Kriging(BaseEstimator, RegressorMixin):
         self.max_Lambda = max_Lambda
         self.n_theta = n_theta
         self.isotropic = isotropic
-        self.p_val = p_val
         self.n_p = n_p
         self.optim_p = optim_p
         self.theta_init_zero = theta_init_zero
@@ -393,7 +389,6 @@ class Kriging(BaseEstimator, RegressorMixin):
             kernel = SpotOptimKernel(
                 theta=theta10,
                 var_type=self.var_type,
-                p_val=self.p_val,
                 metric_factorial=self.metric_factorial,
             )
 
@@ -506,7 +501,6 @@ class Kriging(BaseEstimator, RegressorMixin):
         kernel = SpotOptimKernel(
             theta=theta10,
             var_type=self.var_type,
-            p_val=self.p_val,
             metric_factorial=self.metric_factorial,
         )
 
@@ -614,7 +608,6 @@ class Kriging(BaseEstimator, RegressorMixin):
             "min_theta": self.min_theta,
             "max_theta": self.max_theta,
             "theta_init_zero": self.theta_init_zero,
-            "p_val": self.p_val,
             "n_p": self.n_p,
             "optim_p": self.optim_p,
             "min_Lambda": self.min_Lambda,
