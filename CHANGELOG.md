@@ -1,3 +1,32 @@
+## [3.0.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.1.2...v3.0.0) (2026-07-05)
+
+### ⚠ BREAKING CHANGES
+
+* SpotOptimKernel and SpotOptimKriging no longer accept
+p_val; the Gaussian correlation power is fixed at 2.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+### Features
+
+* **config:** warn when n_initial is below 2*n_dim for cold-start designs ([8d18942](https://github.com/sequential-parameter-optimization/spotoptim/commit/8d18942fbf5d3dcc99dd3725f849403071259ed5))
+
+### Bug Fixes
+
+* **acquisition:** normalize tricands candidates in transformed bounds, not natural X_ ([53a0739](https://github.com/sequential-parameter-optimization/spotoptim/commit/53a0739ef0e76cf116b19f6b7a341987bf700d14))
+* **acquisition:** route acquisition-optimizer exceptions through the failure fallback ([b8b259b](https://github.com/sequential-parameter-optimization/spotoptim/commit/b8b259bc931656d5aab22adc37261c70f0660de5))
+* **acquisition:** warn unconditionally when the acquisition optimizer fails ([93dca5d](https://github.com/sequential-parameter-optimization/spotoptim/commit/93dca5da36870786dcc872e5569b3451176b357f))
+* cube inverse transform returns NaN for negative inputs (use np.cbrt) ([17f891d](https://github.com/sequential-parameter-optimization/spotoptim/commit/17f891d59a31b1f917c6b79b8ee7aa579ce36dbb))
+* **optimize:** inject restart-best in internal encoding, not factor-string natural x ([b96e8e0](https://github.com/sequential-parameter-optimization/spotoptim/commit/b96e8e09fda54e1f08a5e235ad34ca80c8ec6c10))
+
+### Documentation
+
+* **optimize:** document the x_encoded/X_encoded result fields ([6af2548](https://github.com/sequential-parameter-optimization/spotoptim/commit/6af2548a9a9b081b5a3cd6f205dffa891c661ef1))
+
+### Code Refactoring
+
+* remove no-op p_val parameter from Kriging kernel ([6dbdfb4](https://github.com/sequential-parameter-optimization/spotoptim/commit/6dbdfb4f031ad1038af8dfe093bc745661c3123c))
+
 ## [2.1.2](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.1.1...v2.1.2) (2026-06-27)
 
 ### Bug Fixes
