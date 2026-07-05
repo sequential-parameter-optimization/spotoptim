@@ -2336,12 +2336,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="spotoptim.surrogate.kernels.SpotOptimKernel" class="level3">
 <h3 class="anchored" data-anchor-id="spotoptim.surrogate.kernels.SpotOptimKernel">SpotOptimKernel</h3>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.SpotOptimKernel(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    theta,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    var_type,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    p_val<span class="op">=</span><span class="fl">2.0</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    metric_factorial<span class="op">=</span><span class="st">'hamming'</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>surrogate.kernels.SpotOptimKernel(theta, var_type, metric_factorial<span class="op">=</span><span class="st">'hamming'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Kernel designed for SpotOptim’s Kriging with mixed variable support.</p>
 <p>It handles continuous (‘float’), integer (‘int’), and categorical (‘factor’) variables similarly to the internal logic of the Kriging class.</p>
 <p>The correlation function is defined as: Psi = exp(- (D_ordered + D_factor))</p>
@@ -2371,12 +2366,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
-<td>p_val</td>
-<td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
-<td>Power parameter for ordered distance. Defaults to 2.0.</td>
-<td><code>2.0</code></td>
-</tr>
-<tr class="even">
 <td>metric_factorial</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
 <td>Metric for factor distance (passed to cdist/pdist). Defaults to ‘hamming’. Hamming is a true nominal (order-agnostic) metric; canberra distance on integer level indices is order-dependent and singles out index 0. Any scipy distance metric remains selectable via this kwarg.</td>
