@@ -25,9 +25,7 @@ def test_spotoptim_kernel_mixed():
     theta = np.array([1.0, 0.5, 2.0])
 
     # Instantiate Kernel
-    kernel = SpotOptimKernel(
-        theta=theta, var_type=var_type, p_val=2.0, metric_factorial="hamming"
-    )
+    kernel = SpotOptimKernel(theta=theta, var_type=var_type, metric_factorial="hamming")
 
     # 1. Test __call__ (correlation matrix)
     K = kernel(X)

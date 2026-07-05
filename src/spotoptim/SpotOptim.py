@@ -278,7 +278,13 @@ class SpotOptim(BaseEstimator):
             For example, max_iter=30 with n_initial=10 will perform 10 initial evaluations plus
             20 sequential optimization iterations. Defaults to 20.
         n_initial (int, optional):
-            Number of initial design points. Defaults to 10.
+            Number of initial design points. Defaults to 10. A ``UserWarning`` is
+            raised when ``n_initial < 2 * n_dim``: a cold-start design that small
+            tends to under-sample the search space and gives the surrogate too
+            little signal to model dimension interactions. The warning is
+            guidance only (existing scripts with a deliberately small
+            ``n_initial`` keep working unchanged); consider
+            ``n_initial=max(10, 2 * n_dim)`` for cold starts.
         surrogate (object, optional):
             Surrogate model with scikit-learn interface (fit/predict methods).
             If None, uses a Gaussian Process Regressor with Matern kernel. Default configuration::
@@ -873,6 +879,26 @@ class SpotOptim(BaseEstimator):
 
         # Derived attribute dimension n_dim
         self.n_dim = len(self.bounds)
+
+        # Guidance for cold-start designs (ADR 2026-07-05, decision 4): a
+        # design with n_initial < 2*n_dim tends to under-sample the search
+        # space, giving the surrogate too little signal to model dimension
+        # interactions. Warning-only — existing small-budget scripts keep
+        # working unchanged. Nested catch_warnings + "always" mirrors
+        # _validate_factor_surrogate_compat: makes the warning visible even
+        # under the default warnings_filter="ignore".
+        if self.n_initial < 2 * self.n_dim:
+            with warnings.catch_warnings():
+                warnings.simplefilter("always")
+                warnings.warn(
+                    f"n_initial ({self.n_initial}) is below 2 * n_dim "
+                    f"({2 * self.n_dim}) for a {self.n_dim}-dimensional problem. "
+                    f"Cold-start designs this small may under-sample the search "
+                    f"space; consider n_initial=max(10, 2 * n_dim) = "
+                    f"{max(10, 2 * self.n_dim)}.",
+                    UserWarning,
+                    stacklevel=2,
+                )
 
         # Default variable types
         if self.var_type is None:
@@ -2503,6 +2529,8 @@ class SpotOptim(BaseEstimator):
                 * message: termination message indicating reason for stopping, including statistics (function value, iterations, evaluations)
                 * X: all evaluated points in Natural Space
                 * y: all function values
+                * x_encoded: best point in full-dimension natural-NUMERIC encoding (factor dimensions as integer level indices) — the representation restart injection and ``validate_x0`` consume
+                * X_encoded: all evaluated points in the same numeric encoding (numeric dtype even when factor dimensions map to string labels in ``X``)
 
         Examples:
             ```{python}
@@ -2615,9 +2643,16 @@ class SpotOptim(BaseEstimator):
 
                     if self.restart_inject_best:
                         # Inject the current global best into the next run's initial design.
-                        # best_res.x is in natural scale; validate_x0 converts to internal scale
-                        # so the injected point can be mixed with LHS samples.
-                        self.x0 = self.validate_x0(best_res.x)
+                        # Use the pre-string-map numeric encoding (x_encoded) when available:
+                        # best_res.x has factor dims mapped to string labels, which
+                        # validate_x0's `low <= val <= high` bounds check cannot compare
+                        # (UFuncTypeError). x_encoded carries the same full-dim natural-scale
+                        # point with factor dims still as integer codes.
+                        # validate_x0 converts to internal scale so the injected point can be
+                        # mixed with LHS samples.
+                        self.x0 = self.validate_x0(
+                            getattr(best_res, "x_encoded", best_res.x)
+                        )
                         # Keep current_X0 unset so the initial design is rebuilt around the injected x0.
                         current_X0 = None
 
@@ -2641,8 +2676,13 @@ class SpotOptim(BaseEstimator):
         # Find best result based on 'fun'
         best_result = min(self.restarts_results_, key=lambda r: r.fun)
 
-        # Merge results from all restart runs
-        X_all_list = [res.X for res in self.restarts_results_]
+        # Merge results from all restart runs. Use the numeric encoding
+        # (X_encoded) rather than the string-mapped X: on a factor problem the
+        # latter has object dtype, which would leave self.X_ non-numeric after
+        # a restart and break the post-restart surrogate fit.
+        X_all_list = [
+            getattr(res, "X_encoded", res.X) for res in self.restarts_results_
+        ]
         y_all_list = [res.y for res in self.restarts_results_]
 
         # Concatenate all evaluations
@@ -2653,8 +2693,9 @@ class SpotOptim(BaseEstimator):
         # Aggregated iterations (sum of all runs)
         self.n_iter_ = sum(getattr(res, "nit", 0) for res in self.restarts_results_)
 
-        # Update best solution found
-        self.best_x_ = best_result.x
+        # Update best solution found. Same numeric-encoding rationale as X_
+        # above, for cross-path (x0 injection vs. best_x_) consistency.
+        self.best_x_ = getattr(best_result, "x_encoded", best_result.x)
         self.best_y_ = best_result.fun
 
         # If the patience-based early-stopping rule fired, rewrite the result
@@ -3563,6 +3604,14 @@ class SpotOptim(BaseEstimator):
                     message=status_message,
                     X=X_result,
                     y=self.y_,
+                    # Pre-string-map numeric form of x/X (full-dim, natural
+                    # scale, with factor dims as integer codes rather than
+                    # string labels). optimize()'s restart-inject path and the
+                    # cross-restart X_ merge use these instead of x/X, so a
+                    # factor problem's restart never feeds a string into
+                    # validate_x0()/the surrogate (UFuncTypeError).
+                    x_encoded=best_x_full,
+                    X_encoded=X_full,
                 )
                 return "RESTART", res
 
@@ -3621,6 +3670,10 @@ class SpotOptim(BaseEstimator):
             message=message,
             X=X_result,
             y=self.y_,
+            # See the RESTART branch above: pre-string-map numeric x/X, used
+            # by optimize()'s restart-inject path and cross-restart X_ merge.
+            x_encoded=best_x_full,
+            X_encoded=X_full,
         )
 
     def determine_termination(self, timeout_start: float) -> str:

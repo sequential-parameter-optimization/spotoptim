@@ -75,7 +75,6 @@ class SpotOptimKernel(Kernel):
             Note: In standard Kriging usage, this corresponds to `10^theta_log`.
             This kernel expects the LINEAR scale theta values (weights), not log.
         var_type (list of str): List of variable types, e.g. ['float', 'int', 'factor'].
-        p_val (float, optional): Power parameter for ordered distance. Defaults to 2.0.
         metric_factorial (str, optional): Metric for factor distance (passed to cdist/pdist).
             Defaults to 'hamming'. Hamming is a true nominal (order-agnostic) metric;
             canberra distance on integer level indices is order-dependent and singles out
@@ -86,12 +85,10 @@ class SpotOptimKernel(Kernel):
         self,
         theta,
         var_type,
-        p_val=2.0,
         metric_factorial="hamming",
     ):
         self.theta = np.asanyarray(theta)
         self.var_type = var_type
-        self.p_val = p_val
         self.metric_factorial = metric_factorial
 
         # Precompute masks
@@ -166,21 +163,9 @@ class SpotOptimKernel(Kernel):
                 )
             D += D_factor
 
-        # Final exponential (Gaussian correlation)
-        # Note: Kriging's Psi = exp(-D)
-        if self.p_val != 2.0:
-            # If p != 2, the 'sqeuclidean' above was mathematically sum w * (diff^2).
-            # If we strictly want sum w * |diff|^p, we can't use 'sqeuclidean' directly if p != 2.
-            # But standard implementation often assumes p=2 for efficiency.
-            # Kriging code shows:
-            #    pdist(..., metric="sqeuclidean", ...)
-            #    Psi = np.exp(-Psi)
-            # This implies p=2 is hardcoded effectively in 'sqeuclidean' metric usage in Kriging code provided earlier.
-            # The parameter p_val seems unused in the `build_correlation_matrix` snippet I read earlier
-            # (which used `sqeuclidean`).
-            # I will stick to what the code did: sqeuclidean -> exp(-D).
-            pass
-
+        # Final exponential (Gaussian correlation). The Gaussian correlation
+        # power is fixed at 2: D_ordered is computed via the 'sqeuclidean'
+        # metric above (sum w * diff^2), so Psi = exp(-D) is exact.
         return np.exp(-D)
 
     def diag(self, X):

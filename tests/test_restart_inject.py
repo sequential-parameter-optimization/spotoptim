@@ -111,5 +111,60 @@ def test_restart_inject_best():
     assert dist < 1e-6, "Run 2 should start with the best point from Run 1"
 
 
+def test_restart_inject_factor_numeric_encoding():
+    """Regression test for the restart-inject factor crash (ADR 3.0.0, bug 2).
+
+    ``_run_sequential_loop`` maps factor dims to string labels in the
+    ``OptimizeResult.x``/``X`` it returns. Before the fix, ``optimize()``'s
+    restart-inject path fed that string-mapped ``x`` straight into
+    ``validate_x0()``, whose ``low <= val <= high`` bounds check raised
+    ``UFuncTypeError`` on the string factor coordinate — and the cross-restart
+    merge left ``self.X_`` as an object array. A mixed float/factor problem
+    with a stagnating objective (guaranteed restart within a small budget)
+    must complete without raising and keep ``self.X_``/``self.best_x_``
+    numeric throughout.
+    """
+
+    class StagnatingObj:
+        """Returns the real objective once (the initial design), then a
+        constant worse value forever, guaranteeing a zero-success-rate
+        restart within a small iteration budget."""
+
+        def __init__(self):
+            self.n_calls = 0
+
+        def __call__(self, X):
+            self.n_calls += 1
+            if self.n_calls == 1:
+                x1 = X[:, 0].astype(float)
+                x2 = X[:, 1].astype(float)
+                return x1**2 + x2**2
+            return np.full(len(X), 1000.0)
+
+    optimizer = SpotOptim(
+        fun=StagnatingObj(),
+        bounds=[(-5, 5), (-5, 5), ("a", "b", "c", "d")],
+        n_initial=4,
+        max_iter=12,
+        restart_after_n=5,
+        seed=0,
+    )
+
+    result = optimizer.optimize()  # must not raise UFuncTypeError
+
+    assert len(optimizer.restarts_results_) > 1, "Optimization should have restarted"
+    assert np.issubdtype(optimizer.X_.dtype, np.number), (
+        f"self.X_ must stay numeric after a factor-problem restart, got dtype "
+        f"{optimizer.X_.dtype}"
+    )
+    assert np.issubdtype(optimizer.best_x_.dtype, np.number), (
+        f"self.best_x_ must stay numeric after a factor-problem restart, got dtype "
+        f"{optimizer.best_x_.dtype}"
+    )
+    # The public result still maps the factor dim back to its string label.
+    assert result.x[2] in ("a", "b", "c", "d")
+
+
 if __name__ == "__main__":
     test_restart_inject_best()
+    test_restart_inject_factor_numeric_encoding()

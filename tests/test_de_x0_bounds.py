@@ -154,6 +154,73 @@ class TestSanitizeDeX0:
             assert sanitize_de_x0(x0, FIELD_BOUNDS) is None
 
 
+# Asymmetric wide spans seen in practice, raw and transform-induced: the
+# sanitiser operates in INTERNAL scale, so a natural bound (0.01, 100) under
+# log10/sqrt/ln reaches scipy as the transformed span below.
+SPAN_CASES = [
+    pytest.param((0.01, 100.0), id="raw-0.01-100"),
+    pytest.param((0.001, 1000.0), id="raw-0.001-1000"),
+    pytest.param((1e-06, 1.0), id="raw-1e-6-1"),
+    pytest.param((-100.0, -0.01), id="raw-negative-asymmetric"),
+    pytest.param((float(np.log10(1e-4)), float(np.log10(0.1))), id="log10-of-1e-4-0.1"),
+    pytest.param((float(np.sqrt(0.01)), float(np.sqrt(100.0))), id="sqrt-of-0.01-100"),
+    pytest.param((float(np.log(0.01)), float(np.log(100.0))), id="ln-of-0.01-100"),
+]
+
+
+class TestSanitizeDeX0SpanMatrix:
+    """x0 exactly ON a bound survives scipy's REAL x0 validation for a matrix
+    of asymmetric spans (raw and transform-induced), at both endpoints.
+
+    Extends the FIELD_BOUNDS regression above: the existing scipy-constructor
+    tests exercise only the captured field configuration.
+    """
+
+    @pytest.mark.parametrize("endpoint", ["lower", "upper"])
+    @pytest.mark.parametrize("span", SPAN_CASES)
+    def test_bound_incumbent_survives_real_scipy_validation(self, span, endpoint):
+        bounds = [span]
+        raw = span[0] if endpoint == "lower" else span[1]
+        fixed = sanitize_de_x0(np.array([raw]), bounds)
+        assert fixed is not None
+        assert _scipy_accepts(fixed, bounds)
+        # The real upstream constructor check must accept it (must not raise
+        # "Some entries in x0 lay outside the specified bounds").
+        differential_evolution(
+            lambda x: float(np.sum(x**2)),
+            bounds,
+            x0=fixed,
+            maxiter=1,
+            popsize=4,
+            seed=0,
+        )
+        # Faithful: the adjustment stays around the normalized margin x span,
+        # negligible for a warm start.
+        span_width = abs(span[1] - span[0])
+        assert abs(fixed[0] - raw) <= 1e-9 * span_width
+
+    @pytest.mark.parametrize("corner", ["lower", "upper"])
+    def test_corner_incumbent_on_every_bound_survives(self, corner):
+        # Mixed asymmetric spans; the incumbent sits on EVERY bound at once
+        # (optimizers converge to corners).
+        bounds = [(0.01, 100.0), (1e-05, 10.0), (-4.0, -1.0), (0.1, 10.0)]
+        idx = 0 if corner == "lower" else 1
+        x0 = np.array([b[idx] for b in bounds])
+        fixed = sanitize_de_x0(x0, bounds)
+        assert fixed is not None
+        assert _scipy_accepts(fixed, bounds)
+        differential_evolution(
+            lambda x: float(np.sum(x**2)),
+            bounds,
+            x0=fixed,
+            maxiter=1,
+            popsize=4,
+            seed=0,
+        )
+        spans = np.array([abs(b[1] - b[0]) for b in bounds])
+        assert np.all(np.abs(fixed - x0) <= 1e-9 * spans)
+
+
 class TestDeWarmStartIntegration:
     """End-to-end: a boundary incumbent must not abort the optimization."""
 

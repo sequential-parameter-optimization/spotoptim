@@ -164,6 +164,58 @@ class TestRepairNaturalX:
         assert out[0, 0] == 3.0
 
 
+class TestTransformedIntEndpointDecoding:
+    """Property: a transformed int dim always decodes to an int WITHIN the
+    declared natural bounds — including the internal bound endpoints and
+    their one-ULP neighbours (``np.nextafter``), whose inverse transform can
+    land marginally outside the declared box (issue #87).
+    """
+
+    @pytest.mark.parametrize(
+        ("low", "high", "trans"),
+        [
+            (10, 4000, "log10"),
+            (10, 5000, "log10"),
+            (2, 1000, "log"),
+            (1, 100, "sqrt"),
+            (16, 1024, "log(x, 2)"),
+        ],
+    )
+    def test_internal_endpoints_decode_to_int_within_bounds(self, low, high, trans):
+        opt = SpotOptim(
+            fun=lambda X: np.sum(np.atleast_2d(X) ** 2, axis=1),
+            bounds=[(low, high), (0.0, 1.0)],
+            var_type=["int", "float"],
+            var_trans=[trans, None],
+            max_iter=1,
+            n_initial=1,
+        )
+        lo_t, hi_t = opt.bounds[0]
+        internal = np.array(
+            [
+                lo_t,
+                np.nextafter(lo_t, hi_t),  # one ULP inside the internal box
+                np.nextafter(lo_t, -np.inf),  # one ULP outside (rounding drift)
+                0.5 * (lo_t + hi_t),
+                np.nextafter(hi_t, lo_t),
+                np.nextafter(hi_t, np.inf),
+                hi_t,
+            ]
+        )
+        X_internal = np.column_stack([internal, np.full(internal.shape, 0.5)])
+        X_natural = opt.inverse_transform_X(X_internal)
+        X_repaired = opt.repair_natural_X(X_natural)
+        col = X_repaired[:, 0]
+        np.testing.assert_array_equal(col, np.around(col))
+        assert np.all(col >= low), f"decoded {col.min()} below declared lower {low}"
+        assert np.all(
+            col <= high
+        ), f"decoded {col.max()} above declared upper {high} (issue #87)"
+        # The endpoints themselves decode to the exact declared extremes.
+        assert col[0] == low
+        assert col[-1] == high
+
+
 class TestFloatLog10Unchanged:
     """Float + log10 dimensions keep their existing continuous behaviour."""
 

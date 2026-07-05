@@ -16,7 +16,7 @@ def test_spotoptim_kernel_shapes():
     var_type = ["float", "int", "factor"]
     theta = np.array([1.0, 0.5, 2.0])
 
-    kernel = SpotOptimKernel(theta=theta, var_type=var_type, p_val=2.0)
+    kernel = SpotOptimKernel(theta=theta, var_type=var_type)
     K = kernel(X)
 
     assert K.shape == (3, 3)
