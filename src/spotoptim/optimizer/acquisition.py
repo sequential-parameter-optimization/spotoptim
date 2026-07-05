@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+import warnings
+
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import numpy as np
@@ -394,8 +396,12 @@ def try_optimizer_candidates(
         # set here, so suggest_next_infill_point() falls through to the
         # existing acquisition_failure_strategy fallback instead of aborting
         # optimize() entirely.
-        if optimizer.verbose:
-            print(f"Warning: Acquisition optimizer failed ({err}). Falling back.")
+        warnings.warn(
+            f"Acquisition optimizer failed ({err}); falling back to the "
+            f"{optimizer.acquisition_failure_strategy!r} infill strategy.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
         return []
 
     # Ensure iterable of 1D arrays
