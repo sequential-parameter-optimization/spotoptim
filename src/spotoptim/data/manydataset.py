@@ -13,12 +13,12 @@ classes provided here.
 Requires the ``torch`` optional extra (``pip install 'spotoptim[torch]'``).
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import pandas as pd
 import torch
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import Dataset
+from torch.utils.data import ConcatDataset, Dataset
 
 
 class ManyToManyDataset(Dataset):
@@ -234,3 +234,142 @@ class PadSequenceManyToOne:
         lengths = torch.tensor([len(x) for x in batch_x])
 
         return padded_batch_x, lengths, torch.tensor(batch_y)
+
+
+def load_sequence_data(
+    data: pd.DataFrame,
+    target: str,
+    group_by: str,
+    drop: Optional[Union[str, List[str]]] = None,
+    input_features: Optional[List[str]] = None,
+    feature_scaling=None,
+    target_scaling=None,
+    dataset_type: str = "many_to_many",
+) -> Tuple[Dataset, pd.DataFrame]:
+    """Group a DataFrame into a variable-length sequence dataset.
+
+    Splits ``data`` by the values of ``group_by`` (e.g. one compressor speed
+    line per group) and wraps the groups in a `ManyToManyDataset` or
+    `ManyToOneDataset`. Ported from the schu25a study's ``load_data`` helper
+    (``src/rnn/utils.py``); the experiment-specific column defaults were
+    removed.
+
+    Args:
+        data (pd.DataFrame): Input data; one row per time step.
+        target (str): The target column name.
+        group_by (str): Column whose values define the sequences.
+        drop (Optional[Union[str, List[str]]]): Column(s) to drop from the
+            groups before extracting features. Defaults to None.
+        input_features (Optional[List[str]]): Columns scaled by
+            ``feature_scaling``. Only used when ``feature_scaling`` is given;
+            the dataset features are always all columns except ``drop`` and
+            ``target``. Defaults to None.
+        feature_scaling: Optional sklearn-style scaler; applied in place to
+            ``data[input_features]`` via ``fit_transform``. Defaults to None.
+        target_scaling: Optional sklearn-style scaler; applied in place to
+            ``data[target]`` via ``fit_transform``. Defaults to None.
+        dataset_type (str, optional): Dataset flavor. Options:
+            - "many_to_many": one target value per time step.
+            - "many_to_one": one scalar target per sequence.
+            Defaults to "many_to_many".
+
+    Returns:
+        tuple: ``(dataset, data)`` — the sequence dataset and the (possibly
+            scaled) DataFrame.
+
+    Raises:
+        ValueError: If ``dataset_type`` is not "many_to_many" or "many_to_one".
+
+    Examples:
+        ```{python}
+        import pandas as pd
+        from spotoptim.data.manydataset import load_sequence_data
+
+        df = pd.DataFrame({
+            "line": [1, 1, 1, 2, 2],
+            "x": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "y": [1.0, 2.0, 3.0, 4.0, 5.0],
+        })
+        ds, df = load_sequence_data(df, target="y", group_by="line", drop="line")
+        print(len(ds), ds[0][0].shape)
+        ```
+    """
+    if feature_scaling is not None:
+        data[input_features] = feature_scaling.fit_transform(data[input_features])
+
+    if target_scaling is not None:
+        data[target] = target_scaling.fit_transform(data[target])
+
+    groups = [group for _, group in data.groupby(group_by)]
+
+    if dataset_type == "many_to_many":
+        return ManyToManyDataset(groups, target=target, drop=drop), data
+    elif dataset_type == "many_to_one":
+        return ManyToOneDataset(groups, target=target, drop=drop), data
+    raise ValueError(
+        f"dataset_type {dataset_type!r} not supported. "
+        "Options: 'many_to_many', 'many_to_one'."
+    )
+
+
+def load_pooled_sequence_data(
+    data_list: List[pd.DataFrame],
+    target: str,
+    group_by: str,
+    drop: Optional[Union[str, List[str]]] = None,
+    input_features: Optional[List[str]] = None,
+    feature_scaling=None,
+    target_scaling=None,
+    dataset_type: str = "many_to_many",
+) -> ConcatDataset:
+    """Pool several DataFrames into one concatenated sequence dataset.
+
+    Applies `load_sequence_data` to every DataFrame (e.g. one compressor map
+    each) and concatenates the resulting sequence datasets — the pooled
+    training set of the schu25a "global training" workflow (ported from
+    ``load_pretrain_data`` in ``src/rnn/utils.py``).
+
+    Args:
+        data_list (List[pd.DataFrame]): Input DataFrames; one per map.
+        target (str): The target column name.
+        group_by (str): Column whose values define the sequences.
+        drop (Optional[Union[str, List[str]]]): Column(s) to drop from the
+            groups before extracting features. Defaults to None.
+        input_features (Optional[List[str]]): Columns scaled by
+            ``feature_scaling``; see `load_sequence_data`. Defaults to None.
+        feature_scaling: Optional sklearn-style scaler, applied per DataFrame.
+            Defaults to None.
+        target_scaling: Optional sklearn-style scaler, applied per DataFrame.
+            Defaults to None.
+        dataset_type (str, optional): "many_to_many" or "many_to_one".
+            Defaults to "many_to_many".
+
+    Returns:
+        ConcatDataset: The concatenation of the per-DataFrame sequence datasets.
+
+    Examples:
+        ```{python}
+        import pandas as pd
+        from spotoptim.data.manydataset import load_pooled_sequence_data
+
+        df1 = pd.DataFrame({"line": [1, 1, 2], "x": [0.1, 0.2, 0.3], "y": [1.0, 2.0, 3.0]})
+        df2 = pd.DataFrame({"line": [1, 1], "x": [0.4, 0.5], "y": [4.0, 5.0]})
+        pooled = load_pooled_sequence_data([df1, df2], target="y", group_by="line", drop="line")
+        print(len(pooled))
+        ```
+    """
+    ds_ls = []
+    for data in data_list:
+        ds, _ = load_sequence_data(
+            data,
+            target=target,
+            group_by=group_by,
+            drop=drop,
+            input_features=input_features,
+            feature_scaling=feature_scaling,
+            target_scaling=target_scaling,
+            dataset_type=dataset_type,
+        )
+        ds_ls.append(ds)
+
+    return ConcatDataset(ds_ls)

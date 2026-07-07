@@ -11,6 +11,8 @@ __all__ = [
     "ManyToManyRNNRegressor",
     "get_activation",
     "optimizer_handler",
+    "train_sequences",
+    "evaluate_sequences",
 ]
 
 _lazy_map = {
@@ -23,6 +25,8 @@ _lazy_map = {
     ),
     "get_activation": ("spotoptim.nn.many_to_many_rnn", "get_activation"),
     "optimizer_handler": ("spotoptim.nn.optimizer", "optimizer_handler"),
+    "train_sequences": ("spotoptim.nn.training", "train_sequences"),
+    "evaluate_sequences": ("spotoptim.nn.training", "evaluate_sequences"),
 }
 
 
