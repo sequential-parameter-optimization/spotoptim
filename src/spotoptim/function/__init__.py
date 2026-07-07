@@ -69,11 +69,16 @@ __all__ = [
     "branin",
     "onevar",
     "TorchObjective",
+    "SequenceCVObjective",
     "objective_remote",
 ]
 
 _lazy_map = {
     "TorchObjective": ("spotoptim.function.torch_objective", "TorchObjective"),
+    "SequenceCVObjective": (
+        "spotoptim.function.sequence_cv_objective",
+        "SequenceCVObjective",
+    ),
     "objective_remote": ("spotoptim.function.remote", "objective_remote"),
 }
 

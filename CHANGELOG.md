@@ -1,3 +1,9 @@
+## [3.1.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v3.0.0...v3.1.0) (2026-07-07)
+
+### Features
+
+* **nn:** port many-to-many RNN tuning stack from spotPython ([28b217b](https://github.com/sequential-parameter-optimization/spotoptim/commit/28b217bff8ae6dbefc0e8f1bbb1256826daaed08))
+
 ## [3.0.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v2.1.2...v3.0.0) (2026-07-05)
 
 ### ⚠ BREAKING CHANGES
