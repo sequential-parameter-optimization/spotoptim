@@ -1,3 +1,9 @@
+## [3.2.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v3.1.0...v3.2.0) (2026-07-07)
+
+### Features
+
+* **nn:** add global sequence-training helpers from the schu25a study ([c83dc83](https://github.com/sequential-parameter-optimization/spotoptim/commit/c83dc83e1e9fd2cfe1d4d1ed4c021947df1a98e8))
+
 ## [3.1.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v3.0.0...v3.1.0) (2026-07-07)
 
 ### Features

@@ -27,6 +27,7 @@ __all__ = [
     "get_loading_scores",
     "plot_loading_scores",
     "TorchStandardScaler",
+    "seed_everything",
 ]
 
 _lazy_map = {
@@ -44,6 +45,8 @@ _lazy_map = {
     "plot_loading_scores": ("spotoptim.utils.pca", "plot_loading_scores"),
     # scaler (pulls torch)
     "TorchStandardScaler": ("spotoptim.utils.scaler", "TorchStandardScaler"),
+    # seed (pulls torch)
+    "seed_everything": ("spotoptim.utils.seed", "seed_everything"),
 }
 
 

@@ -19,6 +19,8 @@ __all__ = [
     "ManyToOneDataset",
     "PadSequenceManyToMany",
     "PadSequenceManyToOne",
+    "load_sequence_data",
+    "load_pooled_sequence_data",
 ]
 
 _lazy_map = {
@@ -28,6 +30,11 @@ _lazy_map = {
     "ManyToOneDataset": ("spotoptim.data.manydataset", "ManyToOneDataset"),
     "PadSequenceManyToMany": ("spotoptim.data.manydataset", "PadSequenceManyToMany"),
     "PadSequenceManyToOne": ("spotoptim.data.manydataset", "PadSequenceManyToOne"),
+    "load_sequence_data": ("spotoptim.data.manydataset", "load_sequence_data"),
+    "load_pooled_sequence_data": (
+        "spotoptim.data.manydataset",
+        "load_pooled_sequence_data",
+    ),
 }
 
 

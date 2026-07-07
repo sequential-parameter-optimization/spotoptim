@@ -293,6 +293,12 @@ website:
                 file: docs/reference/nn.optimizer.qmd
               - text: optimizer_handler
                 file: docs/reference/nn.optimizer.optimizer_handler.qmd
+              - text: nn.training
+                file: docs/reference/nn.training.qmd
+              - text: train_sequences
+                file: docs/reference/nn.training.train_sequences.qmd
+              - text: evaluate_sequences
+                file: docs/reference/nn.training.evaluate_sequences.qmd
           - section: Plotting & Visualization
             contents:
               - text: plot
@@ -364,6 +370,10 @@ website:
                 file: docs/reference/utils.scaler.qmd
               - text: TorchStandardScaler
                 file: docs/reference/utils.scaler.TorchStandardScaler.qmd
+              - text: utils.seed
+                file: docs/reference/utils.seed.qmd
+              - text: seed_everything
+                file: docs/reference/utils.seed.seed_everything.qmd
               - text: utils.stats
                 file: docs/reference/utils.stats.qmd
               - text: calculate_outliers
@@ -430,6 +440,10 @@ website:
                 file: docs/reference/data.manydataset.PadSequenceManyToMany.qmd
               - text: PadSequenceManyToOne
                 file: docs/reference/data.manydataset.PadSequenceManyToOne.qmd
+              - text: load_sequence_data
+                file: docs/reference/data.manydataset.load_sequence_data.qmd
+              - text: load_pooled_sequence_data
+                file: docs/reference/data.manydataset.load_pooled_sequence_data.qmd
           - section: Exploratory Data Analysis
             contents:
               - text: eda
@@ -801,6 +815,9 @@ quartodoc:
         - nn.many_to_many_rnn.get_activation
         - nn.optimizer
         - nn.optimizer.optimizer_handler
+        - nn.training
+        - nn.training.train_sequences
+        - nn.training.evaluate_sequences
     - title: Plotting & Visualization
       contents:
         - plot
@@ -838,6 +855,8 @@ quartodoc:
         - utils.pca.plot_pca_scree
         - utils.scaler
         - utils.scaler.TorchStandardScaler
+        - utils.seed
+        - utils.seed.seed_everything
         - utils.stats
         - utils.stats.calculate_outliers
         - utils.stats.compute_coefficients_table
@@ -871,6 +890,8 @@ quartodoc:
         - data.manydataset.ManyToOneDataset
         - data.manydataset.PadSequenceManyToMany
         - data.manydataset.PadSequenceManyToOne
+        - data.manydataset.load_sequence_data
+        - data.manydataset.load_pooled_sequence_data
     - title: Exploratory Data Analysis
       contents:
         - eda
