@@ -281,6 +281,18 @@ website:
                 file: docs/reference/nn.mlp.qmd
               - text: MLP
                 file: docs/reference/nn.mlp.MLP.qmd
+              - text: nn.many_to_many_rnn
+                file: docs/reference/nn.many_to_many_rnn.qmd
+              - text: ManyToManyRNN
+                file: docs/reference/nn.many_to_many_rnn.ManyToManyRNN.qmd
+              - text: ManyToManyRNNRegressor
+                file: docs/reference/nn.many_to_many_rnn.ManyToManyRNNRegressor.qmd
+              - text: get_activation
+                file: docs/reference/nn.many_to_many_rnn.get_activation.qmd
+              - text: nn.optimizer
+                file: docs/reference/nn.optimizer.qmd
+              - text: optimizer_handler
+                file: docs/reference/nn.optimizer.optimizer_handler.qmd
           - section: Plotting & Visualization
             contents:
               - text: plot
@@ -408,6 +420,16 @@ website:
                 file: docs/reference/data.diabetes.DiabetesDataset.qmd
               - text: get_diabetes_dataloaders
                 file: docs/reference/data.diabetes.get_diabetes_dataloaders.qmd
+              - text: data.manydataset
+                file: docs/reference/data.manydataset.qmd
+              - text: ManyToManyDataset
+                file: docs/reference/data.manydataset.ManyToManyDataset.qmd
+              - text: ManyToOneDataset
+                file: docs/reference/data.manydataset.ManyToOneDataset.qmd
+              - text: PadSequenceManyToMany
+                file: docs/reference/data.manydataset.PadSequenceManyToMany.qmd
+              - text: PadSequenceManyToOne
+                file: docs/reference/data.manydataset.PadSequenceManyToOne.qmd
           - section: Exploratory Data Analysis
             contents:
               - text: eda
@@ -623,6 +645,10 @@ website:
                 file: docs/reference/function.torch_objective.qmd
               - text: TorchObjective
                 file: docs/reference/function.torch_objective.TorchObjective.qmd
+              - text: function.sequence_cv_objective
+                file: docs/reference/function.sequence_cv_objective.qmd
+              - text: SequenceCVObjective
+                file: docs/reference/function.sequence_cv_objective.SequenceCVObjective.qmd
           - section: Tricands
             contents:
               - text: tricands
@@ -769,6 +795,12 @@ quartodoc:
         - nn.linear_regressor.LinearRegressor
         - nn.mlp
         - nn.mlp.MLP
+        - nn.many_to_many_rnn
+        - nn.many_to_many_rnn.ManyToManyRNN
+        - nn.many_to_many_rnn.ManyToManyRNNRegressor
+        - nn.many_to_many_rnn.get_activation
+        - nn.optimizer
+        - nn.optimizer.optimizer_handler
     - title: Plotting & Visualization
       contents:
         - plot
@@ -834,6 +866,11 @@ quartodoc:
         - data.diabetes
         - data.diabetes.DiabetesDataset
         - data.diabetes.get_diabetes_dataloaders
+        - data.manydataset
+        - data.manydataset.ManyToManyDataset
+        - data.manydataset.ManyToOneDataset
+        - data.manydataset.PadSequenceManyToMany
+        - data.manydataset.PadSequenceManyToOne
     - title: Exploratory Data Analysis
       contents:
         - eda
@@ -932,6 +969,8 @@ quartodoc:
         - function.so.wingwt
         - function.torch_objective
         - function.torch_objective.TorchObjective
+        - function.sequence_cv_objective
+        - function.sequence_cv_objective.SequenceCVObjective
     - title: Tricands
       contents:
         - tricands

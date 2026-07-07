@@ -4,11 +4,25 @@
 
 """Neural network models for spotoptim."""
 
-__all__ = ["LinearRegressor", "MLP"]
+__all__ = [
+    "LinearRegressor",
+    "MLP",
+    "ManyToManyRNN",
+    "ManyToManyRNNRegressor",
+    "get_activation",
+    "optimizer_handler",
+]
 
 _lazy_map = {
     "LinearRegressor": ("spotoptim.nn.linear_regressor", "LinearRegressor"),
     "MLP": ("spotoptim.nn.mlp", "MLP"),
+    "ManyToManyRNN": ("spotoptim.nn.many_to_many_rnn", "ManyToManyRNN"),
+    "ManyToManyRNNRegressor": (
+        "spotoptim.nn.many_to_many_rnn",
+        "ManyToManyRNNRegressor",
+    ),
+    "get_activation": ("spotoptim.nn.many_to_many_rnn", "get_activation"),
+    "optimizer_handler": ("spotoptim.nn.optimizer", "optimizer_handler"),
 }
 
 

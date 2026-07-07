@@ -10,11 +10,24 @@ machine learning tasks.
 
 from .base import Config, FileConfig
 
-__all__ = ["DiabetesDataset", "get_diabetes_dataloaders", "Config", "FileConfig"]
+__all__ = [
+    "DiabetesDataset",
+    "get_diabetes_dataloaders",
+    "Config",
+    "FileConfig",
+    "ManyToManyDataset",
+    "ManyToOneDataset",
+    "PadSequenceManyToMany",
+    "PadSequenceManyToOne",
+]
 
 _lazy_map = {
     "DiabetesDataset": ("spotoptim.data.diabetes", "DiabetesDataset"),
     "get_diabetes_dataloaders": ("spotoptim.data.diabetes", "get_diabetes_dataloaders"),
+    "ManyToManyDataset": ("spotoptim.data.manydataset", "ManyToManyDataset"),
+    "ManyToOneDataset": ("spotoptim.data.manydataset", "ManyToOneDataset"),
+    "PadSequenceManyToMany": ("spotoptim.data.manydataset", "PadSequenceManyToMany"),
+    "PadSequenceManyToOne": ("spotoptim.data.manydataset", "PadSequenceManyToOne"),
 }
 
 
