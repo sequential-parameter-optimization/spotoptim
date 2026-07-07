@@ -1109,6 +1109,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">optimizer_handler</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nn.training</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.train_sequences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">train_sequences</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.evaluate_sequences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">evaluate_sequences</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -1331,6 +1349,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.seed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.seed</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.seed.seed_everything.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">seed_everything</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/utils.stats.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.stats</span></a>
   </div>
@@ -1524,6 +1554,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/data.manydataset.PadSequenceManyToOne.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">PadSequenceManyToOne</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.manydataset.load_sequence_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_sequence_data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.manydataset.load_pooled_sequence_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_pooled_sequence_data</span></a>
   </div>
 </li>
       </ul>
@@ -2183,6 +2225,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#spotoptim.data.manydataset.PadSequenceManyToMany" id="toc-spotoptim.data.manydataset.PadSequenceManyToMany" class="nav-link" data-scroll-target="#spotoptim.data.manydataset.PadSequenceManyToMany">PadSequenceManyToMany</a></li>
   <li><a href="#spotoptim.data.manydataset.PadSequenceManyToOne" id="toc-spotoptim.data.manydataset.PadSequenceManyToOne" class="nav-link" data-scroll-target="#spotoptim.data.manydataset.PadSequenceManyToOne">PadSequenceManyToOne</a></li>
   </ul></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a>
+  <ul class="collapse">
+  <li><a href="#spotoptim.data.manydataset.load_pooled_sequence_data" id="toc-spotoptim.data.manydataset.load_pooled_sequence_data" class="nav-link" data-scroll-target="#spotoptim.data.manydataset.load_pooled_sequence_data">load_pooled_sequence_data</a></li>
+  <li><a href="#spotoptim.data.manydataset.load_sequence_data" id="toc-spotoptim.data.manydataset.load_sequence_data" class="nav-link" data-scroll-target="#spotoptim.data.manydataset.load_sequence_data">load_sequence_data</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/edit/main/docs/reference/data.manydataset.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/sequential-parameter-optimization/spotoptim/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -2321,7 +2368,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="examples" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h4>
-<div id="29aca542" class="cell" data-execution_count="1">
+<div id="8cbaa77e" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.manydataset <span class="im">import</span> ManyToManyDataset</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2418,7 +2465,7 @@ torch.Size([3, 1]) torch.Size([3])</code></pre>
 </section>
 <section id="examples-1" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-1">Examples</h4>
-<div id="d21b37b0" class="cell" data-execution_count="2">
+<div id="7fad5082" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.manydataset <span class="im">import</span> ManyToOneDataset</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -2440,7 +2487,7 @@ torch.Size([3, 1]) torch.Size([3])</code></pre>
 <p>Pads features and targets of a batch of variable-length sequences with zeros to the longest sequence in the batch and records the true lengths, as required by <code>torch.nn.utils.rnn.pack_padded_sequence</code>.</p>
 <section id="examples-2" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-2">Examples</h4>
-<div id="9fa5b93f" class="cell" data-execution_count="3">
+<div id="84d17bf4" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.manydataset <span class="im">import</span> ManyToManyDataset, PadSequenceManyToMany</span>
@@ -2464,7 +2511,7 @@ torch.Size([3, 1]) torch.Size([3])</code></pre>
 <p>Pads the feature sequences with zeros and stacks the scalar targets.</p>
 <section id="examples-3" class="level4 doc-section doc-section-examples">
 <h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-3">Examples</h4>
-<div id="3c91f11a" class="cell" data-execution_count="4">
+<div id="a1d9ebfd" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.manydataset <span class="im">import</span> ManyToOneDataset, PadSequenceManyToOne</span>
@@ -2477,6 +2524,278 @@ torch.Size([3, 1]) torch.Size([3])</code></pre>
 <span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(x.shape, lengths.tolist(), y.shape)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>torch.Size([2, 3, 1]) [3, 2] torch.Size([2])</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="functions" class="level2">
+<h2 class="anchored" data-anchor-id="functions">Functions</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#spotoptim.data.manydataset.load_pooled_sequence_data">load_pooled_sequence_data</a></td>
+<td>Pool several DataFrames into one concatenated sequence dataset.</td>
+</tr>
+<tr class="even">
+<td><a href="#spotoptim.data.manydataset.load_sequence_data">load_sequence_data</a></td>
+<td>Group a DataFrame into a variable-length sequence dataset.</td>
+</tr>
+</tbody>
+</table>
+<section id="spotoptim.data.manydataset.load_pooled_sequence_data" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.data.manydataset.load_pooled_sequence_data">load_pooled_sequence_data</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>data.manydataset.load_pooled_sequence_data(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    data_list,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    target,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    group_by,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    drop<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    input_features<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    feature_scaling<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    target_scaling<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    dataset_type<span class="op">=</span><span class="st">'many_to_many'</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Pool several DataFrames into one concatenated sequence dataset.</p>
+<p>Applies <code>load_sequence_data</code> to every DataFrame (e.g.&nbsp;one compressor map each) and concatenates the resulting sequence datasets — the pooled training set of the schu25a “global training” workflow (ported from <code>load_pretrain_data</code> in <code>src/rnn/utils.py</code>).</p>
+<section id="parameters-2" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-2">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data_list</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a>]</td>
+<td>Input DataFrames; one per map.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>target</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The target column name.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>group_by</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Column whose values define the sequences.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>drop</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]]</td>
+<td>Column(s) to drop from the groups before extracting features. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>input_features</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]</td>
+<td>Columns scaled by <code>feature_scaling</code>; see <code>load_sequence_data</code>. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>feature_scaling</td>
+<td></td>
+<td>Optional sklearn-style scaler, applied per DataFrame. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>target_scaling</td>
+<td></td>
+<td>Optional sklearn-style scaler, applied per DataFrame. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>dataset_type</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>“many_to_many” or “many_to_one”. Defaults to “many_to_many”.</td>
+<td><code>'many_to_many'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns">Returns</h4>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 40%">
+<col style="width: 47%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ConcatDataset</td>
+<td><code>ConcatDataset</code></td>
+<td>The concatenation of the per-DataFrame sequence datasets.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-4" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-4">Examples</h4>
+<div id="47fa51e2" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.manydataset <span class="im">import</span> load_pooled_sequence_data</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>df1 <span class="op">=</span> pd.DataFrame({<span class="st">"line"</span>: [<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>], <span class="st">"x"</span>: [<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>], <span class="st">"y"</span>: [<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>]})</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>df2 <span class="op">=</span> pd.DataFrame({<span class="st">"line"</span>: [<span class="dv">1</span>, <span class="dv">1</span>], <span class="st">"x"</span>: [<span class="fl">0.4</span>, <span class="fl">0.5</span>], <span class="st">"y"</span>: [<span class="fl">4.0</span>, <span class="fl">5.0</span>]})</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>pooled <span class="op">=</span> load_pooled_sequence_data([df1, df2], target<span class="op">=</span><span class="st">"y"</span>, group_by<span class="op">=</span><span class="st">"line"</span>, drop<span class="op">=</span><span class="st">"line"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(pooled))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>3</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="spotoptim.data.manydataset.load_sequence_data" class="level3">
+<h3 class="anchored" data-anchor-id="spotoptim.data.manydataset.load_sequence_data">load_sequence_data</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>data.manydataset.load_sequence_data(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    data,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    target,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    group_by,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    drop<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    input_features<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    feature_scaling<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    target_scaling<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    dataset_type<span class="op">=</span><span class="st">'many_to_many'</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Group a DataFrame into a variable-length sequence dataset.</p>
+<p>Splits <code>data</code> by the values of <code>group_by</code> (e.g.&nbsp;one compressor speed line per group) and wraps the groups in a <code>ManyToManyDataset</code> or <code>ManyToOneDataset</code>. Ported from the schu25a study’s <code>load_data</code> helper (<code>src/rnn/utils.py</code>); the experiment-specific column defaults were removed.</p>
+<section id="parameters-3" class="level4 doc-section doc-section-parameters">
+<h4 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters-3">Parameters</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>data</td>
+<td><a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a></td>
+<td>Input data; one row per time step.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>target</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>The target column name.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="odd">
+<td>group_by</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Column whose values define the sequences.</td>
+<td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>drop</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>, <a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]]</td>
+<td>Column(s) to drop from the groups before extracting features. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>input_features</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a href="https://docs.python.org/3/library/typing.html#typing.List">List</a>[<a href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]]</td>
+<td>Columns scaled by <code>feature_scaling</code>. Only used when <code>feature_scaling</code> is given; the dataset features are always all columns except <code>drop</code> and <code>target</code>. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>feature_scaling</td>
+<td></td>
+<td>Optional sklearn-style scaler; applied in place to <code>data[input_features]</code> via <code>fit_transform</code>. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>target_scaling</td>
+<td></td>
+<td>Optional sklearn-style scaler; applied in place to <code>data[target]</code> via <code>fit_transform</code>. Defaults to None.</td>
+<td><code>None</code></td>
+</tr>
+<tr class="even">
+<td>dataset_type</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Dataset flavor. Options: - “many_to_many”: one target value per time step. - “many_to_one”: one scalar target per sequence. Defaults to “many_to_many”.</td>
+<td><code>'many_to_many'</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="returns-1" class="level4 doc-section doc-section-returns">
+<h4 class="doc-section doc-section-returns anchored" data-anchor-id="returns-1">Returns</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>tuple</td>
+<td><a href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a>[<code>Dataset</code>, <a href="https://pandas.pydata.org/docs/index.html#module-pandas">pd</a>.<a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame">DataFrame</a>]</td>
+<td><code>(dataset, data)</code> — the sequence dataset and the (possibly scaled) DataFrame.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="raises" class="level4 doc-section doc-section-raises">
+<h4 class="doc-section doc-section-raises anchored" data-anchor-id="raises">Raises</h4>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td></td>
+<td><a href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></td>
+<td>If <code>dataset_type</code> is not “many_to_many” or “many_to_one”.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-5" class="level4 doc-section doc-section-examples">
+<h4 class="doc-section doc-section-examples anchored" data-anchor-id="examples-5">Examples</h4>
+<div id="02f7c7b0" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.manydataset <span class="im">import</span> load_sequence_data</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"line"</span>: [<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>],</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"x"</span>: [<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.4</span>, <span class="fl">0.5</span>],</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"y"</span>: [<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">4.0</span>, <span class="fl">5.0</span>],</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>ds, df <span class="op">=</span> load_sequence_data(df, target<span class="op">=</span><span class="st">"y"</span>, group_by<span class="op">=</span><span class="st">"line"</span>, drop<span class="op">=</span><span class="st">"line"</span>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(ds), ds[<span class="dv">0</span>][<span class="dv">0</span>].shape)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>2 torch.Size([3, 1])</code></pre>
 </div>
 </div>
 

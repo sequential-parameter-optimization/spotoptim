@@ -1074,6 +1074,24 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">optimizer_handler</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nn.training</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.train_sequences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">train_sequences</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.evaluate_sequences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">evaluate_sequences</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -1296,6 +1314,18 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.seed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.seed</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.seed.seed_everything.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">seed_everything</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/utils.stats.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.stats</span></a>
   </div>
@@ -1489,6 +1519,18 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/data.manydataset.PadSequenceManyToOne.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">PadSequenceManyToOne</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.manydataset.load_sequence_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_sequence_data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.manydataset.load_pooled_sequence_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_pooled_sequence_data</span></a>
   </div>
 </li>
       </ul>
@@ -2574,6 +2616,18 @@ ul.task-list li input[type="checkbox"] {
 <td><a href="../../docs/reference/nn.optimizer.optimizer_handler.html#spotoptim.nn.optimizer.optimizer_handler">nn.optimizer.optimizer_handler</a></td>
 <td>Return a torch optimizer with spotPython’s base learning-rate convention.</td>
 </tr>
+<tr class="even">
+<td><a href="../../docs/reference/nn.training.html#spotoptim.nn.training">nn.training</a></td>
+<td>Plain training and evaluation loops for variable-length sequence models.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/nn.training.train_sequences.html#spotoptim.nn.training.train_sequences">nn.training.train_sequences</a></td>
+<td>Train a sequence model with a plain epoch loop.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/nn.training.evaluate_sequences.html#spotoptim.nn.training.evaluate_sequences">nn.training.evaluate_sequences</a></td>
+<td>Evaluate a sequence model with per-batch MAPE and RMSE.</td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -2721,6 +2775,14 @@ ul.task-list li input[type="checkbox"] {
 <td>A class for scaling data using standardization with torch tensors.</td>
 </tr>
 <tr class="odd">
+<td><a href="../../docs/reference/utils.seed.html#spotoptim.utils.seed">utils.seed</a></td>
+<td>Global seeding for fully reproducible torch experiments.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/utils.seed.seed_everything.html#spotoptim.utils.seed.seed_everything">utils.seed.seed_everything</a></td>
+<td>Seed every random number generator relevant to a torch experiment.</td>
+</tr>
+<tr class="odd">
 <td><a href="../../docs/reference/utils.stats.html#spotoptim.utils.stats">utils.stats</a></td>
 <td></td>
 </tr>
@@ -2850,6 +2912,14 @@ ul.task-list li input[type="checkbox"] {
 <tr class="even">
 <td><a href="../../docs/reference/data.manydataset.PadSequenceManyToOne.html#spotoptim.data.manydataset.PadSequenceManyToOne">data.manydataset.PadSequenceManyToOne</a></td>
 <td>Padding collate for <code>ManyToOneDataset</code> batches.</td>
+</tr>
+<tr class="odd">
+<td><a href="../../docs/reference/data.manydataset.load_sequence_data.html#spotoptim.data.manydataset.load_sequence_data">data.manydataset.load_sequence_data</a></td>
+<td>Group a DataFrame into a variable-length sequence dataset.</td>
+</tr>
+<tr class="even">
+<td><a href="../../docs/reference/data.manydataset.load_pooled_sequence_data.html#spotoptim.data.manydataset.load_pooled_sequence_data">data.manydataset.load_pooled_sequence_data</a></td>
+<td>Pool several DataFrames into one concatenated sequence dataset.</td>
 </tr>
 </tbody>
 </table>

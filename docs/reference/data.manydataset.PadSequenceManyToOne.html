@@ -1109,6 +1109,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">optimizer_handler</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">nn.training</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.train_sequences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">train_sequences</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/nn.training.evaluate_sequences.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">evaluate_sequences</span></a>
+  </div>
+</li>
       </ul>
   </li>
           <li class="sidebar-item sidebar-item-section">
@@ -1331,6 +1349,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.seed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">utils.seed</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/utils.seed.seed_everything.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">seed_everything</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../../docs/reference/utils.stats.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">utils.stats</span></a>
   </div>
@@ -1524,6 +1554,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../../docs/reference/data.manydataset.PadSequenceManyToOne.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">PadSequenceManyToOne</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.manydataset.load_sequence_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_sequence_data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../docs/reference/data.manydataset.load_pooled_sequence_data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_pooled_sequence_data</span></a>
   </div>
 </li>
       </ul>
@@ -2208,7 +2250,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Pads the feature sequences with zeros and stacks the scalar targets.</p>
 <section id="examples" class="level2 doc-section doc-section-examples">
 <h2 class="doc-section doc-section-examples anchored" data-anchor-id="examples">Examples</h2>
-<div id="32b2ae08" class="cell" data-execution_count="1">
+<div id="801ef610" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> spotoptim.data.manydataset <span class="im">import</span> ManyToOneDataset, PadSequenceManyToOne</span>
