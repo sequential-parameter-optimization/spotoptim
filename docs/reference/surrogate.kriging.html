@@ -2275,11 +2275,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    optim_p<span class="op">=</span><span class="va">False</span>,</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    min_Lambda<span class="op">=-</span><span class="fl">9.0</span>,</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    max_Lambda<span class="op">=</span><span class="fl">0.0</span>,</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    metric_factorial<span class="op">=</span><span class="st">'hamming'</span>,</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    isotropic<span class="op">=</span><span class="va">False</span>,</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    theta<span class="op">=</span><span class="va">None</span>,</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="op">**</span>kwargs,</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    lambda_scale<span class="op">=</span><span class="st">'log10'</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    metric_factorial<span class="op">=</span><span class="st">'hamming'</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    isotropic<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    theta<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">**</span>kwargs,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>A scikit-learn compatible Kriging model class for regression tasks.</p>
 <p>This class provides Ordinary Kriging with support for: - Mixed variable types (continuous, integer, factor) - Gaussian/RBF correlation function - Three fitting methods (Forrester (2008), Section 6): - Isotropic or anisotropic length scales</p>
 <p>Compatible with SpotOptim’s variable type conventions: - ‘float’: continuous numeric variables - ‘int’: integer variables - ‘factor’: categorical/unordered variables</p>
@@ -2376,7 +2377,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td>min_Lambda</td>
 <td><a href="https://docs.python.org/3/library/functions.html#float">float</a></td>
-<td>Minimum log10(Lambda) bound. Defaults to -9.0.</td>
+<td>Minimum log10(Lambda) bound; the admissible nugget range is [10<strong>min_Lambda, 10</strong>max_Lambda] regardless of <code>lambda_scale</code>. Defaults to -9.0.</td>
 <td><code>-9.0</code></td>
 </tr>
 <tr class="odd">
@@ -2386,18 +2387,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>0.0</code></td>
 </tr>
 <tr class="even">
+<td>lambda_scale</td>
+<td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
+<td>Search parametrization of the nugget Lambda within [10<strong>min_Lambda, 10</strong>max_Lambda]. Options: - “log10”: the optimizer searches the exponent log10(Lambda) uniformly, emphasizing small nuggets (near-interpolation). - “linear”: the optimizer searches Lambda itself uniformly, emphasizing larger nuggets (more smoothing on noisy data). Defaults to “log10”.</td>
+<td><code>'log10'</code></td>
+</tr>
+<tr class="odd">
 <td>metric_factorial</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
 <td>Distance metric for factor variables. Defaults to <code>"hamming"</code>. Hamming is a true nominal (order-agnostic) metric; canberra distance on integer level indices is order-dependent and singles out index 0. Any scipy distance metric remains selectable via this kwarg.</td>
 <td><code>'hamming'</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>isotropic</td>
 <td><a href="https://docs.python.org/3/library/functions.html#bool">bool</a></td>
 <td>Use single theta for all dimensions. Defaults to False.</td>
 <td><code>False</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>theta</td>
 <td><a href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></td>
 <td>Initial theta values (log10 scale). Defaults to None.</td>
@@ -2435,7 +2442,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td>Lambda_</td>
 <td><a href="https://docs.python.org/3/library/functions.html#float">float</a> or None</td>
-<td>Optimized log10(Lambda) for regression methods.</td>
+<td>Optimized Lambda parameter in the search scale (the log10 exponent for <code>lambda_scale="log10"</code>, the linear value for <code>lambda_scale="linear"</code>) for regression methods.</td>
 </tr>
 <tr class="odd">
 <td>mu_</td>
