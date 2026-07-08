@@ -1,3 +1,9 @@
+## [3.3.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v3.2.0...v3.3.0) (2026-07-08)
+
+### Features
+
+* **surrogate:** add lambda_scale option for the Kriging nugget search ([0947309](https://github.com/sequential-parameter-optimization/spotoptim/commit/09473094d80874572f554e32449c91bb5811c22c))
+
 ## [3.2.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v3.1.0...v3.2.0) (2026-07-07)
 
 ### Features
