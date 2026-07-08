@@ -73,8 +73,17 @@ class Kriging(BaseEstimator, RegressorMixin):
         theta_init_zero (bool, optional): Initialize theta to zero. Defaults to False.
         n_p (int, optional): Number of p parameters (currently not optimized). Defaults to 1.
         optim_p (bool, optional): Optimize p parameters (currently not supported). Defaults to False.
-        min_Lambda (float, optional): Minimum log10(Lambda) bound. Defaults to -9.0.
+        min_Lambda (float, optional): Minimum log10(Lambda) bound; the admissible
+            nugget range is [10**min_Lambda, 10**max_Lambda] regardless of
+            ``lambda_scale``. Defaults to -9.0.
         max_Lambda (float, optional): Maximum log10(Lambda) bound. Defaults to 0.0.
+        lambda_scale (str, optional): Search parametrization of the nugget Lambda
+            within [10**min_Lambda, 10**max_Lambda]. Options:
+            - "log10": the optimizer searches the exponent log10(Lambda)
+              uniformly, emphasizing small nuggets (near-interpolation).
+            - "linear": the optimizer searches Lambda itself uniformly,
+              emphasizing larger nuggets (more smoothing on noisy data).
+            Defaults to "log10".
         metric_factorial (str, optional): Distance metric for factor variables.
             Defaults to ``"hamming"``. Hamming is a true nominal (order-agnostic) metric;
             canberra distance on integer level indices is order-dependent and singles out
@@ -86,7 +95,9 @@ class Kriging(BaseEstimator, RegressorMixin):
         X_ (ndarray): Training data, shape (n_samples, n_features).
         y_ (ndarray): Training targets, shape (n_samples,).
         theta_ (ndarray): Optimized log10(theta) parameters.
-        Lambda_ (float or None): Optimized log10(Lambda) for regression methods.
+        Lambda_ (float or None): Optimized Lambda parameter in the search scale
+            (the log10 exponent for ``lambda_scale="log10"``, the linear value
+            for ``lambda_scale="linear"``) for regression methods.
         mu_ (float): Mean of Kriging predictor.
         sigma2_ (float): Variance of Kriging predictor.
         U_ (ndarray): Cholesky factor of correlation matrix.
@@ -162,6 +173,7 @@ class Kriging(BaseEstimator, RegressorMixin):
         optim_p: bool = False,
         min_Lambda: float = -9.0,
         max_Lambda: float = 0.0,
+        lambda_scale: str = "log10",
         metric_factorial: str = "hamming",
         isotropic: bool = False,
         theta: Optional[np.ndarray] = None,
@@ -183,6 +195,9 @@ class Kriging(BaseEstimator, RegressorMixin):
         self.max_theta = max_theta
         self.min_Lambda = min_Lambda
         self.max_Lambda = max_Lambda
+        if lambda_scale not in ["log10", "linear"]:
+            raise ValueError("lambda_scale must be 'log10' or 'linear'")
+        self.lambda_scale = lambda_scale
         self.n_theta = n_theta
         self.isotropic = isotropic
         self.n_p = n_p
@@ -215,6 +230,18 @@ class Kriging(BaseEstimator, RegressorMixin):
     def _get_eps(self) -> float:
         """Get square root of machine epsilon."""
         return np.sqrt(np.finfo(float).eps)
+
+    def _lambda_bounds(self) -> Tuple[float, float]:
+        """Search bounds of the Lambda parameter in the configured scale."""
+        if self.lambda_scale == "linear":
+            return (10.0**self.min_Lambda, 10.0**self.max_Lambda)
+        return (self.min_Lambda, self.max_Lambda)
+
+    def _lambda_value(self, param: float) -> float:
+        """Nugget value Lambda from its search-scale parameter."""
+        if self.lambda_scale == "linear":
+            return param
+        return 10.0**param
 
     def _set_variable_types(self) -> None:
         """Set variable type masks for different variable types.
@@ -298,7 +325,7 @@ class Kriging(BaseEstimator, RegressorMixin):
         bounds = [(self.min_theta, self.max_theta)] * self.n_theta
 
         if self.method in ["regression", "reinterpolation"]:
-            bounds += [(self.min_Lambda, self.max_Lambda)]
+            bounds += [self._lambda_bounds()]
 
         if self.optim_p:
             bounds += [(1.0, 2.0)] * self.n_p
@@ -431,8 +458,7 @@ class Kriging(BaseEstimator, RegressorMixin):
         self.theta_ = params[: self.n_theta]
 
         if self.method in ["regression", "reinterpolation"]:
-            lambda_log = params[self.n_theta : self.n_theta + 1][0]
-            lambda_ = 10.0**lambda_log
+            lambda_ = self._lambda_value(params[self.n_theta : self.n_theta + 1][0])
         else:
             lambda_ = self.noise
 
@@ -536,7 +562,7 @@ class Kriging(BaseEstimator, RegressorMixin):
             >>> y_pred, y_std = k.predict_single(x_new)
         """
         if self.method in ["regression", "reinterpolation"]:
-            lambda_ = 10.0**self.Lambda_
+            lambda_ = self._lambda_value(self.Lambda_)
         else:
             lambda_ = self.noise
 
