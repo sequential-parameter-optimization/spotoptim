@@ -373,3 +373,50 @@ def load_pooled_sequence_data(
         ds_ls.append(ds)
 
     return ConcatDataset(ds_ls)
+
+
+def load_map_data(
+    data: pd.DataFrame,
+    target: str,
+    group_by: str,
+    drop: Optional[Union[str, List[str]]] = None,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Group one map's DataFrame into padded line tensors for map-level models.
+
+    Splits ``data`` by the values of ``group_by`` (one sequence per speed
+    line, ascending in ``group_by`` — this row order defines the across-line
+    axis of map-level models such as
+    `spotoptim.nn.map_context_rnn.MapContextRNN`) and pads all lines of the
+    map into one tensor triple, reusing `load_sequence_data` and the
+    `PadSequenceManyToMany` collate.
+
+    Args:
+        data (pd.DataFrame): One map's data; one row per point.
+        target (str): The target column name.
+        group_by (str): Column whose values define the lines.
+        drop (Optional[Union[str, List[str]]]): Column(s) to drop from the
+            groups before extracting features. Defaults to None.
+
+    Returns:
+        tuple: ``(x, lengths, y)`` where ``x`` has shape
+            ``(L, T_max, n_features)``, ``lengths`` is an int tensor of shape
+            ``(L,)``, and ``y`` has shape ``(L, T_max)`` — one map with ``L``
+            lines, ready for ``model(x, lengths)``.
+
+    Examples:
+        ```{python}
+        import pandas as pd
+        from spotoptim.data.manydataset import load_map_data
+
+        df = pd.DataFrame({
+            "line": [1, 1, 1, 2, 2],
+            "x": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "y": [1.0, 2.0, 3.0, 4.0, 5.0],
+        })
+        x, lengths, y = load_map_data(df, target="y", group_by="line", drop="line")
+        print(x.shape, lengths.tolist(), y.shape)
+        ```
+    """
+    groups = [group for _, group in data.groupby(group_by)]
+    ds = ManyToManyDataset(groups, target=target, drop=drop)
+    return PadSequenceManyToMany()([ds[i] for i in range(len(ds))])

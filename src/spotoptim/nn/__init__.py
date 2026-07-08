@@ -9,10 +9,13 @@ __all__ = [
     "MLP",
     "ManyToManyRNN",
     "ManyToManyRNNRegressor",
+    "MapContextRNN",
     "get_activation",
     "optimizer_handler",
     "train_sequences",
     "evaluate_sequences",
+    "train_maps",
+    "evaluate_map",
 ]
 
 _lazy_map = {
@@ -23,10 +26,13 @@ _lazy_map = {
         "spotoptim.nn.many_to_many_rnn",
         "ManyToManyRNNRegressor",
     ),
+    "MapContextRNN": ("spotoptim.nn.map_context_rnn", "MapContextRNN"),
     "get_activation": ("spotoptim.nn.many_to_many_rnn", "get_activation"),
     "optimizer_handler": ("spotoptim.nn.optimizer", "optimizer_handler"),
     "train_sequences": ("spotoptim.nn.training", "train_sequences"),
     "evaluate_sequences": ("spotoptim.nn.training", "evaluate_sequences"),
+    "train_maps": ("spotoptim.nn.training", "train_maps"),
+    "evaluate_map": ("spotoptim.nn.training", "evaluate_map"),
 }
 
 

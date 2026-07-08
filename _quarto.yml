@@ -289,6 +289,10 @@ website:
                 file: docs/reference/nn.many_to_many_rnn.ManyToManyRNNRegressor.qmd
               - text: get_activation
                 file: docs/reference/nn.many_to_many_rnn.get_activation.qmd
+              - text: nn.map_context_rnn
+                file: docs/reference/nn.map_context_rnn.qmd
+              - text: MapContextRNN
+                file: docs/reference/nn.map_context_rnn.MapContextRNN.qmd
               - text: nn.optimizer
                 file: docs/reference/nn.optimizer.qmd
               - text: optimizer_handler
@@ -299,6 +303,10 @@ website:
                 file: docs/reference/nn.training.train_sequences.qmd
               - text: evaluate_sequences
                 file: docs/reference/nn.training.evaluate_sequences.qmd
+              - text: train_maps
+                file: docs/reference/nn.training.train_maps.qmd
+              - text: evaluate_map
+                file: docs/reference/nn.training.evaluate_map.qmd
           - section: Plotting & Visualization
             contents:
               - text: plot
@@ -444,6 +452,8 @@ website:
                 file: docs/reference/data.manydataset.load_sequence_data.qmd
               - text: load_pooled_sequence_data
                 file: docs/reference/data.manydataset.load_pooled_sequence_data.qmd
+              - text: load_map_data
+                file: docs/reference/data.manydataset.load_map_data.qmd
           - section: Exploratory Data Analysis
             contents:
               - text: eda
@@ -813,11 +823,15 @@ quartodoc:
         - nn.many_to_many_rnn.ManyToManyRNN
         - nn.many_to_many_rnn.ManyToManyRNNRegressor
         - nn.many_to_many_rnn.get_activation
+        - nn.map_context_rnn
+        - nn.map_context_rnn.MapContextRNN
         - nn.optimizer
         - nn.optimizer.optimizer_handler
         - nn.training
         - nn.training.train_sequences
         - nn.training.evaluate_sequences
+        - nn.training.train_maps
+        - nn.training.evaluate_map
     - title: Plotting & Visualization
       contents:
         - plot
@@ -892,6 +906,7 @@ quartodoc:
         - data.manydataset.PadSequenceManyToOne
         - data.manydataset.load_sequence_data
         - data.manydataset.load_pooled_sequence_data
+        - data.manydataset.load_map_data
     - title: Exploratory Data Analysis
       contents:
         - eda

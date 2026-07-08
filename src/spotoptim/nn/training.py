@@ -232,3 +232,181 @@ def evaluate_sequences(
     if metrics_only:
         return float(np.mean(mape_loss_ls)), float(np.mean(rmse_loss_ls))
     return x_ls, y_hat_ls, y_ls, mape_loss_ls, rmse_loss_ls
+
+
+def train_maps(
+    model: nn.Module,
+    maps: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor]],
+    optimizer: torch.optim.Optimizer,
+    criterion: nn.Module,
+    epochs: int = 10,
+    device: str = "cpu",
+    verbose: bool = True,
+) -> Tuple[nn.Module, List[float]]:
+    """Train a map-level model on a list of whole maps.
+
+    The map-level analogue of the full-batch protocol in `train_sequences`:
+    every epoch computes the loss of each map (between
+    ``model(x, lengths).squeeze(-1)`` and the padded targets, unmasked like
+    the original study code), averages over the maps, and takes ONE optimizer
+    step. Use with models that consume one map per forward pass, e.g.
+    `spotoptim.nn.map_context_rnn.MapContextRNN`.
+
+    Args:
+        model (nn.Module): Model called as ``model(x, lengths)`` on one map.
+        maps (List[Tuple]): Training maps as ``(x, lengths, y)`` triples,
+            e.g. from `spotoptim.data.manydataset.load_map_data`.
+        optimizer (torch.optim.Optimizer): Optimizer over ``model.parameters()``.
+        criterion (nn.Module): Loss module, e.g. ``nn.MSELoss()``.
+        epochs (int, optional): Number of epochs. Defaults to 10.
+        device (str, optional): Training device. Defaults to "cpu".
+        verbose (bool, optional): Print per-epoch losses. Defaults to True.
+
+    Returns:
+        tuple: ``(model, train_loss_ls)`` with one mean-map loss per epoch.
+
+    Examples:
+        ```{python}
+        import pandas as pd
+        import torch
+        import torch.nn as nn
+        from spotoptim.data.manydataset import load_map_data
+        from spotoptim.nn.map_context_rnn import MapContextRNN
+        from spotoptim.nn.training import train_maps
+        from spotoptim.utils.seed import seed_everything
+
+        seed_everything(42)
+        df = pd.DataFrame({
+            "line": [1, 1, 1, 2, 2],
+            "x": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "y": [1.0, 2.0, 3.0, 4.0, 5.0],
+        })
+        maps = [load_map_data(df, target="y", group_by="line", drop="line")]
+        model = MapContextRNN(input_size=1, rnn_units=8, fc_units=8, context_units=4)
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+        model, losses = train_maps(
+            model, maps, optimizer, nn.MSELoss(), epochs=2, verbose=False
+        )
+        print(len(losses))
+        ```
+    """
+    model.train()
+    model.to(device)
+
+    train_loss_ls = []
+
+    for epoch in range(epochs):
+        model.train()
+        optimizer.zero_grad()
+
+        losses = []
+        for x, lengths, y in maps:
+            outputs = model(x.to(device), lengths).squeeze(-1)
+            losses.append(criterion(outputs, y.to(device)))
+        loss = torch.stack(losses).mean()
+        loss.backward()
+        optimizer.step()
+        train_loss_ls.append(loss.item())
+
+        if verbose:
+            print(f"Epoch: {epoch + 1}/{epochs}, Train Loss: {loss.item():.4f}")
+
+    return model, train_loss_ls
+
+
+@overload
+def evaluate_map(
+    model: nn.Module,
+    map_data: Tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+    device: str = "cpu",
+    metrics_only: Literal[False] = False,
+) -> Tuple[list, list, list, List[float], List[float]]: ...
+
+
+@overload
+def evaluate_map(
+    model: nn.Module,
+    map_data: Tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+    device: str = "cpu",
+    *,
+    metrics_only: Literal[True],
+) -> Tuple[float, float]: ...
+
+
+def evaluate_map(
+    model: nn.Module,
+    map_data: Tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+    device: str = "cpu",
+    metrics_only: bool = False,
+) -> Union[Tuple[float, float], Tuple[list, list, list, List[float], List[float]]]:
+    """Evaluate a map-level model on one held-out map, per line.
+
+    The whole map is passed through the model in a single forward pass (an
+    across-line context model needs all lines at once); MAPE and RMSE are
+    then computed PER LINE on the first ``length`` points only, with the same
+    torchmetrics semantics as `evaluate_sequences` on ``batch_size=1``
+    loaders — the per-line values are directly comparable.
+
+    Args:
+        model (nn.Module): Model called as ``model(x, lengths)`` on one map.
+        map_data (Tuple): The held-out map as an ``(x, lengths, y)`` triple,
+            e.g. from `spotoptim.data.manydataset.load_map_data`.
+        device (str, optional): Evaluation device. Defaults to "cpu".
+        metrics_only (bool, optional): Return only ``(mean_mape, mean_rmse)``.
+            Defaults to False.
+
+    Returns:
+        tuple: ``(x_ls, y_hat_ls, y_ls, mape_loss_ls, rmse_loss_ls)`` with one
+            entry per line, or ``(mean_mape, mean_rmse)`` if ``metrics_only``.
+
+    Examples:
+        ```{python}
+        import pandas as pd
+        import torch
+        from spotoptim.data.manydataset import load_map_data
+        from spotoptim.nn.map_context_rnn import MapContextRNN
+        from spotoptim.nn.training import evaluate_map
+        from spotoptim.utils.seed import seed_everything
+
+        seed_everything(42)
+        df = pd.DataFrame({
+            "line": [1, 1, 1, 2, 2],
+            "x": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "y": [1.0, 2.0, 3.0, 4.0, 5.0],
+        })
+        map_data = load_map_data(df, target="y", group_by="line", drop="line")
+        model = MapContextRNN(input_size=1, rnn_units=8, fc_units=8, context_units=4)
+        x, y_hat, y, mape, rmse = evaluate_map(model, map_data)
+        print(len(y_hat), len(mape), len(rmse))
+        ```
+    """
+    mean_abs_percentage_error = MeanAbsolutePercentageError().to(device)
+    rmse_loss = MeanSquaredError(squared=False).to(device)
+
+    model.eval()
+    model.to(device)
+
+    x, lengths, y = map_data
+    with torch.no_grad():
+        y_hat = model(x.to(device), lengths).squeeze(-1)
+
+    x_ls = []
+    y_hat_ls = []
+    y_ls = []
+    mape_loss_ls = []
+    rmse_loss_ls = []
+
+    for i, length in enumerate(lengths.tolist()):
+        line_y_hat = y_hat[i, :length]
+        line_y = y[i, :length].to(device)
+
+        mape_loss_ls.append(mean_abs_percentage_error(line_y_hat, line_y).item())
+        rmse_loss_ls.append(rmse_loss(line_y_hat, line_y).item())
+
+        x_ls.append(x[i, :length].detach().cpu().numpy().tolist())
+        y_hat_ls.append(line_y_hat.detach().cpu().numpy().tolist())
+        y_ls.append(line_y.detach().cpu().numpy().tolist())
+
+    if metrics_only:
+        return float(np.mean(mape_loss_ls)), float(np.mean(rmse_loss_ls))
+    return x_ls, y_hat_ls, y_ls, mape_loss_ls, rmse_loss_ls
