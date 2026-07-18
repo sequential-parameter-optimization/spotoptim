@@ -296,8 +296,9 @@ class LinearRegressor(nn.Module):
         Args:
             optimizer_name (str, optional): Name of the optimizer from torch.optim.
                 Common options: "Adam", "AdamW", "Adamax", "SGD", "RMSprop", "Adagrad",
-                "Adadelta", "NAdam", "RAdam", "ASGD", "LBFGS", "Rprop".
-                Defaults to "Adam".
+                "Adadelta", "NAdam", "RAdam", "ASGD", "LBFGS", "Rprop". The vendored
+                schedule-free "AdamWScheduleFree" (spotoptim.optimizer) is also
+                supported. Defaults to "Adam".
             lr (float, optional): Unified learning rate multiplier. If None, uses self.lr.
                 This value is automatically scaled to optimizer-specific learning rates.
                 A value of 1.0 corresponds to the optimizer's default learning rate.
@@ -467,6 +468,16 @@ class LinearRegressor(nn.Module):
             optimizer_class = getattr(optim, optimizer_name)
             # Create optimizer with model parameters, mapped learning rate, and additional kwargs
             return optimizer_class(self.parameters(), lr=lr_actual, **kwargs)
+
+        # Check for custom schedule-free optimizer
+        elif optimizer_name == "AdamWScheduleFree":
+            try:
+                from spotoptim.optimizer import AdamWScheduleFree
+
+                return AdamWScheduleFree(self.parameters(), lr=lr_actual, **kwargs)
+            except ImportError as e:
+                raise ImportError(f"Could not import AdamWScheduleFree: {e}")
+
         else:
             raise ValueError(
                 f"Optimizer '{optimizer_name}' not found in torch.optim. "

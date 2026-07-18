@@ -38,6 +38,11 @@ class TestMapLR:
         # Test with Adadelta (default 1.0)
         assert map_lr(1.0, "Adadelta") == 1.0
         assert map_lr(2.0, "Adadelta") == 2.0
+
+        # Test with the vendored schedule-free optimizer (default 0.0025)
+        assert map_lr(1.0, "AdamWScheduleFree") == 0.0025
+        assert map_lr(2.0, "AdamWScheduleFree") == 0.005
+        assert map_lr(0.5, "AdamWScheduleFree") == 0.00125
         assert map_lr(0.5, "Adadelta") == 0.5
 
     def test_all_optimizers(self):
