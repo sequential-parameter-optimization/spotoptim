@@ -78,9 +78,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-8b4baf804e461d9b72633f0de59a0cac.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-03e392deb621e0ee46dae71279056c1d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-dfa0d7b910bff52f92d1d1b3019d41ea.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../site_libs/bootstrap/bootstrap-03e392deb621e0ee46dae71279056c1d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-5f1cadb9b119f382e67a89f3ad5a1227.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-2b0074e53323d47e681c3bbb9ff9f7cb.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-5f1cadb9b119f382e67a89f3ad5a1227.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -2264,7 +2264,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td>optimizer_name</td>
 <td><a href="https://docs.python.org/3/library/stdtypes.html#str">str</a></td>
-<td>Name of the PyTorch optimizer. Must be one of: “Adadelta”, “Adagrad”, “Adam”, “AdamW”, “SparseAdam”, “Adamax”, “ASGD”, “LBFGS”, “NAdam”, “RAdam”, “RMSprop”, “Rprop”, “SGD”.</td>
+<td>Name of the PyTorch optimizer. Must be one of: “Adadelta”, “Adagrad”, “Adam”, “AdamW”, “SparseAdam”, “Adamax”, “ASGD”, “LBFGS”, “NAdam”, “RAdam”, “RMSprop”, “Rprop”, “SGD”, “AdamWScheduleFree” (spotoptim’s vendored schedule-free optimizer, default lr 0.0025).</td>
 <td><em>required</em></td>
 </tr>
 <tr class="odd">
