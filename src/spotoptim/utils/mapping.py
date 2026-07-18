@@ -27,6 +27,8 @@ OPTIMIZER_DEFAULT_LR: Dict[str, float] = {
     "RMSprop": 0.01,
     "Rprop": 0.01,
     "SGD": 0.01,
+    # spotoptim's vendored schedule-free optimizer (spotoptim.optimizer)
+    "AdamWScheduleFree": 0.0025,
 }
 
 
@@ -49,7 +51,9 @@ def map_lr(
             rate, values > 1.0 increase it. Typical range: [0.001, 100.0].
         optimizer_name (str): Name of the PyTorch optimizer. Must be one of:
             "Adadelta", "Adagrad", "Adam", "AdamW", "SparseAdam", "Adamax",
-            "ASGD", "LBFGS", "NAdam", "RAdam", "RMSprop", "Rprop", "SGD".
+            "ASGD", "LBFGS", "NAdam", "RAdam", "RMSprop", "Rprop", "SGD",
+            "AdamWScheduleFree" (spotoptim's vendored schedule-free optimizer,
+            default lr 0.0025).
         use_default_scale (bool, optional): Whether to scale by the optimizer's default
             learning rate. If True (default), lr_unified is multiplied by the default
             lr. If False, returns lr_unified directly. Defaults to True.
