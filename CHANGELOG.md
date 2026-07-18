@@ -1,3 +1,10 @@
+## [3.3.1](https://github.com/sequential-parameter-optimization/spotoptim/compare/v3.3.0...v3.3.1) (2026-07-18)
+
+### Bug Fixes
+
+* **function:** switch schedule-free optimizers between train/eval in TorchObjective ([fe1f4de](https://github.com/sequential-parameter-optimization/spotoptim/commit/fe1f4de2478faacc0fdff376cf78affcc1d0cdc4))
+* **nn:** support AdamWScheduleFree in the unified lr mapping ([8b482d2](https://github.com/sequential-parameter-optimization/spotoptim/commit/8b482d2db611b3f93e179723c215119a084424f0))
+
 ## [3.3.0](https://github.com/sequential-parameter-optimization/spotoptim/compare/v3.2.0...v3.3.0) (2026-07-08)
 
 ### Features

@@ -369,6 +369,10 @@ class TorchObjective:
 
         Executes the training loop for the specified number of epochs. Handles optimizer
         creation, loss calculation, backward pass, and validation evaluation.
+        Schedule-free optimizers (those exposing ``train()``/``eval()``, e.g.
+        ``AdamWScheduleFree``) are switched to training mode before each epoch and to
+        evaluation mode before validation, so validation metrics are computed on the
+        averaged parameters; the optimizer is left in evaluation mode on return.
 
         Args:
             model (nn.Module): The PyTorch model to train.
@@ -438,8 +442,17 @@ class TorchObjective:
         # For now, we train for exact 'epochs'
         trained_epochs = epochs
 
+        # Schedule-free optimizers (e.g. AdamWScheduleFree) keep the training
+        # iterate and the averaged parameters separate; they require
+        # optimizer.train()/optimizer.eval() around the respective phases so
+        # that validation sees the averaged weights.
+        optimizer_train = getattr(optimizer, "train", None)
+        optimizer_eval = getattr(optimizer, "eval", None)
+
         for epoch in range(epochs):
             model.train()
+            if callable(optimizer_train):
+                optimizer_train()
             train_loss = 0.0
             steps = 0
             for X_batch, y_batch in train_loader:
@@ -459,6 +472,8 @@ class TorchObjective:
             # Validation
             if val_loader:
                 model.eval()
+                if callable(optimizer_eval):
+                    optimizer_eval()
                 val_loss = 0.0
                 val_steps = 0
                 with torch.no_grad():
@@ -480,6 +495,11 @@ class TorchObjective:
                 # If no validation set, min_val_loss tracks train loss
                 if final_train_loss < min_val_loss:
                     min_val_loss = final_train_loss
+
+        # Leave schedule-free optimizers in eval mode so the model holds the
+        # averaged parameters for any downstream use.
+        if callable(optimizer_eval):
+            optimizer_eval()
 
         # Collect metrics
         metrics_out = {}
